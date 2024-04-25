@@ -422,6 +422,8 @@ def render_objects(
     # shuffle the objects
     objects = objects.sample(frac=1).reset_index(drop=True)
 
+    oxl.get_annotations(download_dir='./')
+
     oxl.download_objects(
         objects=objects,
         processes=processes,
