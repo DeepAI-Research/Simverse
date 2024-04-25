@@ -1,0 +1,5 @@
+blender
+blender-*
+.DS_Store
+__pycache__
+blendgen/__pycache__

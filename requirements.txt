@@ -1,0 +1,11 @@
+requests
+pandas
+pyarrow
+tqdm
+loguru
+fsspec>=2022.11.0
+gputil==1.4.0
+argparse
+numpy
+mathutils
+fire
