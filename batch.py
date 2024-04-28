@@ -68,6 +68,8 @@ def handle_found_object(
     render_timeout: int,
     successful_log_file: Optional[str] = "handle-found-object-successful.csv",
     failed_log_file: Optional[str] = "handle-found-object-failed.csv",
+    width: int = 1920,
+    height: int = 1080
 ) -> bool:
     """Called when an object is successfully found and downloaded.
 
@@ -79,8 +81,6 @@ def handle_found_object(
         local_path (str): Local path to the downloaded 3D object.
         file_identifier (str): File identifier of the 3D object.
         sha256 (str): SHA256 of the contents of the 3D object.
-        metadata (Dict[str, Any]): Metadata about the 3D object, such as the GitHub
-            organization and repo names.
         render_dir (str): Directory where the objects will be rendered.
         gpu_devices (Union[int, List[int]]): GPU device(s) to use for rendering. If
             an int, the GPU device will be randomly selected from 0 to gpu_devices - 1.
@@ -94,7 +94,7 @@ def handle_found_object(
     Returns: True if the object was rendered successfully, False otherwise.
     """
     save_uid = get_uid_from_str(file_identifier)
-    args = f"--object_path '{local_path}"
+    args = f"--object_path '{local_path}' --width {width} --height {height}"
 
     # get the GPU to use for rendering
     using_gpu: bool = True
@@ -111,97 +111,69 @@ def handle_found_object(
             f"gpu_devices must be an int > 0, 0, or a list of ints. Got {gpu_devices}."
         )
 
-    with tempfile.TemporaryDirectory() as temp_dir:
-        # get the target directory for the rendering job
-        target_directory = os.path.join(temp_dir, save_uid)
-        os.makedirs(target_directory, exist_ok=True)
-        args += f" --output_dir {target_directory}"
+    # find the "renders" directory in same folder as this script
+    scripts_dir = os.path.dirname(os.path.realpath(__file__))
 
-        # if we are on macOS, then application_path is /Applications/Blender.app/Contents/MacOS/Blender
-        if platform.system() == "Darwin":
-            application_path = "/Applications/Blender.app/Contents/MacOS/Blender"
-        else:
-            application_path = "./blender/blender"
+    # get the target directory for the rendering job
+    target_directory = os.path.join(scripts_dir, "renders")
+    os.makedirs(target_directory, exist_ok=True)
+    args += f" --output_dir {target_directory}"
 
-        # check if application_path exists
-        if not os.path.exists(application_path):
-            raise FileNotFoundError(f"Blender not found at {application_path}.")
+    # if we are on macOS, then application_path is /Applications/Blender.app/Contents/MacOS/Blender
+    if platform.system() == "Darwin":
+        application_path = "/Applications/Blender.app/Contents/MacOS/Blender"
+    else:
+        application_path = "./blender/blender"
 
-        # if we are on linux, then application_path is /usr/bin/blender
-        # https://builder.blender.org/download/daily/archive/blender-4.1.1-stable+v41.e1743a0317bc-linux.x86_64-release.tar.xz
-        # get the command to run
-        command = f"{application_path} --background --python blendgen/main.py -- {args}"
-        print(command)
-        if using_gpu:
-            command = f"export DISPLAY=:0.{gpu_i} && {command}"
+    # check if application_path exists
+    if not os.path.exists(application_path):
+        raise FileNotFoundError(f"Blender not found at {application_path}.")
 
-        # render the object (put in dev null)
-        subprocess.run(
-            ["bash", "-c", command],
-            timeout=render_timeout,
-            check=False,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
+    # if we are on linux, then application_path is /usr/bin/blender
+    # https://builder.blender.org/download/daily/archive/blender-4.1.1-stable+v41.e1743a0317bc-linux.x86_64-release.tar.xz
+    # get the command to run
+    command = f"{application_path} --background --python blendgen/main.py -- {args}"
+    print(command)
+    if using_gpu:
+        command = f"export DISPLAY=:0.{gpu_i} && {command}"
+
+    # render the object (put in dev null)
+    subprocess.run(
+        ["bash", "-c", command],
+        timeout=render_timeout,
+        check=False,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+
+    # check that the renders were saved successfully
+    video_files = glob.glob(os.path.join(target_directory, "*.mp4"))
+    if (
+        (len(video_files) != 1)
+    ):
+        logger.error(
+            f"Found object {file_identifier} was not rendered successfully!"
         )
-
-        # check that the renders were saved successfully
-        png_files = glob.glob(os.path.join(target_directory, "*.mp4"))
-        metadata_files = glob.glob(os.path.join(target_directory, "*.json"))
-        if (
-            (len(png_files) != 1)
-            or (len(metadata_files) != 1)
-        ):
-            logger.error(
-                f"Found object {file_identifier} was not rendered successfully!"
+        if failed_log_file is not None:
+            log_processed_object(
+                failed_log_file,
+                file_identifier,
+                sha256,
             )
-            if failed_log_file is not None:
-                log_processed_object(
-                    failed_log_file,
-                    file_identifier,
-                    sha256,
-                )
-            return False
+        return False
 
-        # update the metadata
-        metadata_path = os.path.join(target_directory, "metadata.json")
-        with open(metadata_path, "r", encoding="utf-8") as f:
-            metadata_file = json.load(f)
-        metadata_file["sha256"] = sha256
-        metadata_file["file_identifier"] = file_identifier
-        metadata_file["save_uid"] = save_uid
-        metadata_file["metadata"] = metadata
-        with open(metadata_path, "w", encoding="utf-8") as f:
-            json.dump(metadata_file, f, indent=2, sort_keys=True)
+    # log that this object was rendered successfully
+    if successful_log_file is not None:
+        log_processed_object(successful_log_file, file_identifier, sha256)
 
-        # Make a zip of the target_directory.
-        # Keeps the {save_uid} directory structure when unzipped
-        with zipfile.ZipFile(
-            f"{target_directory}.zip", "w", zipfile.ZIP_DEFLATED
-        ) as ziph:
-            zipdir(target_directory, ziph)
-
-        # move the zip to the render_dir
-        fs, path = fsspec.core.url_to_fs(render_dir)
-
-        # move the zip to the render_dir
-        fs.makedirs(os.path.join(path, "renders"), exist_ok=True)
-        fs.put(
-            os.path.join(f"{target_directory}.zip"),
-            os.path.join(path, "renders", f"{save_uid}.zip"),
-        )
-
-        # log that this object was rendered successfully
-        if successful_log_file is not None:
-            log_processed_object(successful_log_file, file_identifier, sha256)
-
-        return True
+    return True
 
 
 def handle_new_object(
     local_path: str,
+    metadata: Dict[str, Any],
     file_identifier: str,
     sha256: str,
-    metadata: Dict[str, Any],
     log_file: str = "handle-new-object.csv",
 ) -> None:
     """Called when a new object is found.
@@ -215,8 +187,6 @@ def handle_new_object(
         local_path (str): Local path to the downloaded 3D object.
         file_identifier (str): The file identifier of the new 3D object.
         sha256 (str): SHA256 of the contents of the 3D object.
-        metadata (Dict[str, Any]): Metadata about the 3D object, including the GitHub
-            organization and repo names.
         log_file (str): Name of the log file to save the handle_new_object logs to.
 
     Returns:
@@ -228,13 +198,15 @@ def handle_new_object(
 
 def handle_modified_object(
     local_path: str,
+    metadata: Dict[str, Any],
     file_identifier: str,
     new_sha256: str,
     old_sha256: str,
-    metadata: Dict[str, Any],
     render_dir: str,
     gpu_devices: Union[int, List[int]],
     render_timeout: int,
+    width: int = 1920,
+    height: int = 1080
 ) -> None:
     """Called when a modified object is found and downloaded.
 
@@ -249,8 +221,6 @@ def handle_modified_object(
         new_sha256 (str): SHA256 of the contents of the newly downloaded 3D object.
         old_sha256 (str): Expected SHA256 of the contents of the 3D object as it was
             when it was downloaded with Objaverse-XL.
-        metadata (Dict[str, Any]): Metadata about the 3D object, such as the GitHub
-            organization and repo names.
         render_dir (str): Directory where the objects will be rendered.
         gpu_devices (Union[int, List[int]]): GPU device(s) to use for rendering. If
             an int, the GPU device will be randomly selected from 0 to gpu_devices - 1.
@@ -265,13 +235,15 @@ def handle_modified_object(
     success = handle_found_object(
         local_path=local_path,
         file_identifier=file_identifier,
-        sha256=new_sha256,
         metadata=metadata,
+        sha256=new_sha256,
         render_dir=render_dir,
         gpu_devices=gpu_devices,
         render_timeout=render_timeout,
         successful_log_file=None,
         failed_log_file=None,
+        width=width,
+        height=height
     )
 
     if success:
@@ -293,7 +265,6 @@ def handle_modified_object(
 def handle_missing_object(
     file_identifier: str,
     sha256: str,
-    metadata: Dict[str, Any],
     log_file: str = "handle-missing-object.csv",
 ) -> None:
     """Called when an object that is in Objaverse-XL is not found.
@@ -304,8 +275,6 @@ def handle_missing_object(
     Args:
         file_identifier (str): File identifier of the 3D object.
         sha256 (str): SHA256 of the contents of the original 3D object.
-        metadata (Dict[str, Any]): Metadata about the 3D object, such as the GitHub
-            organization and repo names.
         log_file (str): Name of the log file to save missing renders to.
 
     Returns:
@@ -327,6 +296,8 @@ def render_objects(
     save_repo_format: Optional[Literal["zip", "tar", "tar.gz", "files"]] = None,
     render_timeout: int = 300,
     gpu_devices: Optional[Union[int, List[int]]] = None,
+    width=1920,
+    height=1080,
 ) -> None:
     """Renders objects in the Objaverse-XL dataset with Blender
 
@@ -411,6 +382,8 @@ def render_objects(
             render_dir=render_dir,
             gpu_devices=parsed_gpu_devices,
             render_timeout=render_timeout,
+            width=width,
+            height=height,
         ),
         handle_new_object=handle_new_object,
         handle_modified_object=partial(
@@ -418,6 +391,8 @@ def render_objects(
             render_dir=render_dir,
             gpu_devices=parsed_gpu_devices,
             render_timeout=render_timeout,
+            width=width,
+            height=height,
         ),
         handle_missing_object=handle_missing_object,
     )

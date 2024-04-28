@@ -26,12 +26,12 @@ for category in categories:
     with open(f"data/{category}.json", 'w') as file:
         json.dump(category_data, file, indent=4)
 
-files = os.listdir('./data')
+files = os.listdir('./datasets')
 
 model_count = 0
 
 for file in files:
-    data = json.load(open(f'./data/{file}'))
+    data = json.load(open(f'./datasets/{file}'))
     
     # Filter data entries ensuring all required fields are present and meet criteria
     filtered_data = []
@@ -48,14 +48,14 @@ for file in files:
     annotations_slim = [{"uid": model["uid"], "name": model["name"], "categories": [cat['name'] for cat in model["categories"]], "description": model["description"], "tags": [tag['name'] for tag in model["tags"]]} for model in filtered_data]
     model_count += len(annotations_slim)
     # Overwrite the file with filtered data
-    with open(f"./data/{file}", 'w') as file:
+    with open(f"./datasets/{file}", 'w') as file:
         json.dump(annotations_slim, file, indent=4)
         
 print(f"Extracted data for {model_count} models")
 
-# files = os.listdir('./data')
+# files = os.listdir('./datasets')
 # for file in files:
-#     data = json.load(open(f'./data/{file}'))
+#     data = json.load(open(f'./datasets/{file}'))
 
 #     # for each entry get https://api.sketchfab.com/v3/models/<uid>
 #     # get the "description" field and save it to the existing entry
@@ -71,5 +71,5 @@ print(f"Extracted data for {model_count} models")
 #             model["description"] = ""
 #         time.sleep(.1)
 
-#     with open(f"./data/{file}", 'w') as file:
+#     with open(f"./datasets/{file}", 'w') as file:
 #         json.dump(data, file, indent=4)

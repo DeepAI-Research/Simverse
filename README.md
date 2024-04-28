@@ -29,48 +29,6 @@ After setup, we can start to render objects using the `batch.py` script:
 python3 batch.py
 ```
 
-After running this, you should see 10 zip files located in `./renders`:
-
-Finally, we also have a `metadata.json` file, which contains metadata about the object and scene:
-
-```json
-{
-  "animation_count": 0,
-  "armature_count": 0,
-  "edge_count": 2492,
-  "file_identifier": "https://github.com/mattdeitke/objaverse-xl-test-files/blob/ead0bed6a76012452273bbe18d12e4d68a881956/example.abc",
-  "file_size": 108916,
-  "lamp_count": 1,
-  "linked_files": [],
-  "material_count": 0,
-  "mesh_count": 3,
-  "missing_textures": {
-    "count": 0,
-    "file_path_to_color": {},
-    "files": []
-  },
-  "object_count": 8,
-  "poly_count": 984,
-  "random_color": null,
-  "save_uid": "0fde27a0-99f0-5029-8e20-be9b8ecabb59",
-  "scene_size": {
-    "bbox_max": [
-      4.999998569488525,
-      6.0,
-      1.0
-    ],
-    "bbox_min": [
-      -4.999995231628418,
-      -6.0,
-      -1.0
-    ]
-  },
-  "sha256": "879bc9d2d85e4f3866f0cfef41f5236f9fff5f973380461af9f69cdbed53a0da",
-  "shape_key_count": 0,
-  "vert_count": 2032
-}
-```
-
 ### 🎛 Configuration
 
 Inside of `batch.py` there is a `render_objects` function that provides various parameters allowing for customization during the rendering process:

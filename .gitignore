@@ -10,7 +10,8 @@ smithsonian
 thingiverse
 combinations.json
 annotations*.json
-data/*
+datasets/*
+renders/*
 sampled_df.json
 *.blend1
 *.obj
