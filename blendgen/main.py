@@ -2,21 +2,17 @@
 
 import argparse
 import json
-import math
 import os
 import platform
-import random
 import sys
-from typing import Any, Callable, Dict, Generator, List, Literal, Optional, Set, Tuple
+from typing import Any, Dict, List, Set
 
 import bpy
 import numpy as np
-from mathutils import Matrix, Vector
 
-from .camera import reset_cameras, randomize_camera, get_3x4_RT_matrix_from_blender
-from .scene import reset_scene, normalize_scene, delete_missing_textures, scene_bbox
-from .light import randomize_lighting
-from .object import delete_invisible_objects, load_object, apply_single_random_color_to_all_objects
+from .camera import reset_cameras, get_3x4_RT_matrix_from_blender
+from .scene import reset_scene, scene_bbox
+from .object import delete_invisible_objects, load_object
 
 class MetadataExtractor:
     """Class to extract metadata from a Blender scene."""
@@ -195,28 +191,21 @@ def render_scene(
         None
     """
     os.makedirs(output_dir, exist_ok=True)
+    scene = context.scene
 
     # load the object
     if object_file.endswith(".blend"):
         bpy.ops.object.mode_set(mode="OBJECT")
-        reset_cameras()
+        reset_cameras(scene)
         delete_invisible_objects(context)
     else:
         reset_scene()
         load_object(object_file, context=context)
-    scene = context.scene
+        
     # Set up cameras
-    cam = scene.objects["Camera"]
-    cam.data.lens = 35
-    cam.data.sensor_width = 32
-
-    # Set up camera constraints
-    cam_constraint = cam.constraints.new(type="TRACK_TO")
-    cam_constraint.track_axis = "TRACK_NEGATIVE_Z"
-    cam_constraint.up_axis = "UP_Y"
-    empty = bpy.data.objects.new("Empty", None)
-    scene.collection.objects.link(empty)
-    cam_constraint.target = empty
+    camera = scene.objects["Camera"]
+    camera.data.lens = 35
+    camera.data.sensor_width = 32
 
     # Extract the metadata. This must be done before normalizing the scene to get
     # accurate bounding box information.
@@ -225,39 +214,14 @@ def render_scene(
     )
     metadata = metadata_extractor.get_metadata()
 
-    # delete all objects that are not meshes
-    if object_file.lower().endswith(".usdz"):
-        # don't delete missing textures on usdz files, lots of them are embedded
-        missing_textures = None
-    else:
-        missing_textures = delete_missing_textures()
-    metadata["missing_textures"] = missing_textures
-
-    # possibly apply a random color to all objects
-    if object_file.endswith(".stl") or object_file.endswith(".ply"):
-        assert len(bpy.context.selected_objects) == 1
-        rand_color = apply_single_random_color_to_all_objects()
-        metadata["random_color"] = rand_color
-    else:
-        metadata["random_color"] = None
-
     # save metadata
     metadata_path = os.path.join(output_dir, "metadata.json")
     os.makedirs(os.path.dirname(metadata_path), exist_ok=True)
     with open(metadata_path, "w", encoding="utf-8") as f:
         json.dump(metadata, f, sort_keys=True, indent=2)
 
-    # normalize the scene
-    normalize_scene()
-
-    # randomize the lighting
-    randomize_lighting()
-
     # render the images
     for i in range(num_renders):
-        # set camera
-        camera = randomize_camera()
-
         # render the image
         render_path = os.path.join(output_dir, f"{i:03d}.png")
         scene.render.filepath = render_path

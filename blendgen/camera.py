@@ -6,7 +6,7 @@ import bpy
 import numpy as np
 from mathutils import Matrix, Vector
 
-def reset_cameras() -> None:
+def reset_cameras(scene) -> None:
     """Resets the cameras in the scene to a single default camera."""
     # Delete all existing cameras
     bpy.ops.object.select_all(action="DESELECT")

@@ -3,3 +3,13 @@ blender-*
 .DS_Store
 __pycache__
 blendgen/__pycache__
+github
+hf-objaverse-v1
+sketchfab
+smithsonian
+thingiverse
+combinations.json
+annotations*.json
+data/*
+sampled_df.json
+*.blend1

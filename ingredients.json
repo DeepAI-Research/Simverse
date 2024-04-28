@@ -29,6 +29,8 @@
         "framings": [
             {
                 "name": "full",
+                "zOffset": 0,
+                "fov": 50,
                 "descriptions": [
                     "Full view of the <object>",
                     "The <object> fills the frame"
@@ -39,6 +41,8 @@
             },
             {
                 "name": "close",
+                "zOffset": 0,
+                "fov": 30,
                 "descriptions": [
                     "Close-up of the <object>",
                     "The <object> fills the frame"

@@ -27,6 +27,9 @@ for category in categories:
         json.dump(category_data, file, indent=4)
 
 files = os.listdir('./data')
+
+model_count = 0
+
 for file in files:
     data = json.load(open(f'./data/{file}'))
     
@@ -37,16 +40,18 @@ for file in files:
         if ('faceCount' in model and 50 < model['faceCount'] < 1000000 and 
             'vertexCount' in model and 50 < model['vertexCount'] < 1000000 and 
             'tags' in model and 
-            not any(tag.lower().find("scan") != -1 or tag.lower().find("photogrammetry") != -1 for tag in model['tags']) and
+            not any(tag['name'].lower().find("scan") != -1 or tag['name'].lower().find("photogrammetry") != -1 for tag in model['tags']) and
             'archives' in model and 
             not any(archive_data.get("textureCount") == 0 for archive_data in model['archives'].values())):
             filtered_data.append(model)
     
-    annotations_slim = [{"uid": model["uid"], "name": model["name"], "categories": [cat['name'] for cat in model["categories"]], "tags": [tag['name'] for tag in model["tags"]]} for model in filtered_data]
-
+    annotations_slim = [{"uid": model["uid"], "name": model["name"], "categories": [cat['name'] for cat in model["categories"]], "description": model["description"], "tags": [tag['name'] for tag in model["tags"]]} for model in filtered_data]
+    model_count += len(annotations_slim)
     # Overwrite the file with filtered data
     with open(f"./data/{file}", 'w') as file:
         json.dump(annotations_slim, file, indent=4)
+        
+print(f"Extracted data for {model_count} models")
 
 # files = os.listdir('./data')
 # for file in files:

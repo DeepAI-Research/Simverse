@@ -97,17 +97,3 @@ def _apply_color_to_object(
     if principled_bsdf:
         principled_bsdf.inputs["Base Color"].default_value = color
     obj.data.materials.append(mat)
-
-
-def apply_single_random_color_to_all_objects() -> Tuple[float, float, float, float]:
-    """Applies a single random color to all objects in the scene.
-
-    Returns:
-        Tuple[float, float, float, float]: The random color that was applied to all
-        objects.
-    """
-    rand_color = _get_random_color()
-    for obj in bpy.context.scene.objects:
-        if obj.type == "MESH":
-            _apply_color_to_object(obj, rand_color)
-    return rand_color
