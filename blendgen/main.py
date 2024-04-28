@@ -1,18 +1,31 @@
 """Blender script to render images of 3D models."""
 
 import argparse
-import json
-import os
 import platform
 import sys
+import json
+import os
 from typing import Any, Dict, List, Set
 
 import bpy
-import numpy as np
+"""Blender script to render images of 3D models."""
 
-from .camera import reset_cameras, get_3x4_RT_matrix_from_blender, set_camera_settings
-from .scene import reset_scene, scene_bbox
-from .object import delete_invisible_objects, load_object
+# Get the directory of the currently executing script
+current_dir = os.path.dirname(os.path.abspath(__file__))
+
+# if the directory is blendgen, remove that
+if current_dir.endswith("blendgen"):
+    current_dir = os.path.dirname(current_dir)
+
+# Append the blendgen directory to sys.path
+blendgen_path = os.path.join(current_dir)
+sys.path.append(blendgen_path)
+
+import bpy
+
+from blendgen.camera import reset_cameras, set_camera_settings
+from blendgen.scene import reset_scene, scene_bbox
+from blendgen.object import delete_invisible_objects, load_object
 
 class MetadataExtractor:
     """Class to extract metadata from a Blender scene."""
@@ -228,3 +241,62 @@ def render_scene(
     render_path = os.path.join(output_dir, "output.mp4")
     scene.render.filepath = render_path
     bpy.ops.render.render(animation=True)  # Use animation=True for video rendering
+    
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--object_path",
+        type=str,
+        required=True,
+        help="Path to the object file",
+    )
+    parser.add_argument(
+        "--output_dir",
+        type=str,
+        required=True,
+        help="Path to the directory where the rendered images and metadata will be saved.",
+    )
+    parser.add_argument(
+        "--combination_file",
+        type=str,
+        default="combinations.json",
+        help="Path to the JSON file containing camera combinations.",
+    )
+    parser.add_argument(
+        "--combination_index",
+        type=int,
+        default=0,
+        help="Index of the camera combination to use from the JSON file.",
+    )
+    argv = sys.argv[sys.argv.index("--") + 1 :]
+    args = parser.parse_args(argv)
+
+    context = bpy.context
+
+    bpy.ops.wm.open_mainfile(filepath="scene.blend")
+
+    scene = context.scene
+    render = scene.render
+
+    scene.render.film_transparent = True
+
+    os_system = platform.system()
+
+    # if we are on mac, device type is METAL
+    # if we are on windows or linux, device type is CUDA
+    if os_system == "Darwin":
+        bpy.context.preferences.addons[
+            "cycles"
+        ].preferences.compute_device_type = "METAL"
+    else:
+        bpy.context.preferences.addons["cycles"].preferences.compute_device_type = "CUDA"
+
+    # Render the images
+    render_scene(
+        object_file=args.object_path,
+        output_dir=args.output_dir,
+        context=context,
+        combination_file=args.combination_file,
+        combination_index=args.combination_index,
+    )

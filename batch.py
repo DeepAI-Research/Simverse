@@ -117,19 +117,6 @@ def handle_found_object(
         os.makedirs(target_directory, exist_ok=True)
         args += f" --output_dir {target_directory}"
 
-        # check for Linux / Ubuntu or MacOS
-        if platform.system() == "Linux" and using_gpu:
-            args += " --engine BLENDER_EEVEE"
-        elif platform.system() == "Darwin" or (
-            platform.system() == "Linux" and not using_gpu
-        ):
-            # As far as I know, MacOS does not support BLENER_EEVEE, which uses GPU
-            # rendering. Generally, I'd only recommend using MacOS for debugging and
-            # small rendering jobs, since CYCLES is much slower than BLENDER_EEVEE.
-            args += " --engine BLENDER_EEVEE"
-        else:
-            raise NotImplementedError(f"Platform {platform.system()} is not supported.")
-
         # if we are on macOS, then application_path is /Applications/Blender.app/Contents/MacOS/Blender
         if platform.system() == "Darwin":
             application_path = "/Applications/Blender.app/Contents/MacOS/Blender"
@@ -143,7 +130,7 @@ def handle_found_object(
         # if we are on linux, then application_path is /usr/bin/blender
         # https://builder.blender.org/download/daily/archive/blender-4.1.1-stable+v41.e1743a0317bc-linux.x86_64-release.tar.xz
         # get the command to run
-        command = f"{application_path} --background --python run.py -- {args}"
+        command = f"{application_path} --background --python blendgen/main.py -- {args}"
         print(command)
         if using_gpu:
             command = f"export DISPLAY=:0.{gpu_i} && {command}"
@@ -160,7 +147,6 @@ def handle_found_object(
         # check that the renders were saved successfully
         png_files = glob.glob(os.path.join(target_directory, "*.mp4"))
         metadata_files = glob.glob(os.path.join(target_directory, "*.json"))
-        npy_files = glob.glob(os.path.join(target_directory, "*.npy"))
         if (
             (len(png_files) != 1)
             or (len(metadata_files) != 1)
