@@ -63,7 +63,6 @@ def handle_found_object(
     file_identifier: str,
     sha256: str,
     metadata: Dict[str, Any],
-    num_renders: int,
     render_dir: str,
     gpu_devices: Union[int, List[int]],
     render_timeout: int,
@@ -82,7 +81,6 @@ def handle_found_object(
         sha256 (str): SHA256 of the contents of the 3D object.
         metadata (Dict[str, Any]): Metadata about the 3D object, such as the GitHub
             organization and repo names.
-        num_renders (int): Number of renders to save of the object.
         render_dir (str): Directory where the objects will be rendered.
         gpu_devices (Union[int, List[int]]): GPU device(s) to use for rendering. If
             an int, the GPU device will be randomly selected from 0 to gpu_devices - 1.
@@ -96,7 +94,7 @@ def handle_found_object(
     Returns: True if the object was rendered successfully, False otherwise.
     """
     save_uid = get_uid_from_str(file_identifier)
-    args = f"--object_path '{local_path}' --num_renders {num_renders}"
+    args = f"--object_path '{local_path}"
 
     # get the GPU to use for rendering
     using_gpu: bool = True
@@ -160,12 +158,11 @@ def handle_found_object(
         )
 
         # check that the renders were saved successfully
-        png_files = glob.glob(os.path.join(target_directory, "*.png"))
+        png_files = glob.glob(os.path.join(target_directory, "*.mp4"))
         metadata_files = glob.glob(os.path.join(target_directory, "*.json"))
         npy_files = glob.glob(os.path.join(target_directory, "*.npy"))
         if (
-            (len(png_files) != num_renders)
-            or (len(npy_files) != num_renders)
+            (len(png_files) != 1)
             or (len(metadata_files) != 1)
         ):
             logger.error(
@@ -249,7 +246,6 @@ def handle_modified_object(
     new_sha256: str,
     old_sha256: str,
     metadata: Dict[str, Any],
-    num_renders: int,
     render_dir: str,
     gpu_devices: Union[int, List[int]],
     render_timeout: int,
@@ -269,7 +265,6 @@ def handle_modified_object(
             when it was downloaded with Objaverse-XL.
         metadata (Dict[str, Any]): Metadata about the 3D object, such as the GitHub
             organization and repo names.
-        num_renders (int): Number of renders to save of the object.
         render_dir (str): Directory where the objects will be rendered.
         gpu_devices (Union[int, List[int]]): GPU device(s) to use for rendering. If
             an int, the GPU device will be randomly selected from 0 to gpu_devices - 1.
@@ -286,7 +281,6 @@ def handle_modified_object(
         file_identifier=file_identifier,
         sha256=new_sha256,
         metadata=metadata,
-        num_renders=num_renders,
         render_dir=render_dir,
         gpu_devices=gpu_devices,
         render_timeout=render_timeout,
@@ -343,7 +337,6 @@ def get_example_objects() -> pd.DataFrame:
 def render_objects(
     render_dir: str = "./",
     download_dir: Optional[str] = None,
-    num_renders: int = 12,
     processes: Optional[int] = None,
     save_repo_format: Optional[Literal["zip", "tar", "tar.gz", "files"]] = None,
     render_timeout: int = 300,
@@ -355,8 +348,6 @@ def render_objects(
         render_dir (str, optional): Directory where the objects will be rendered.
         download_dir (Optional[str], optional): Directory where the objects will be
             downloaded. If None, the objects will not be downloaded. Defaults to None.
-        num_renders (int, optional): Number of renders to save of the object. Defaults
-            to 12.
         processes (Optional[int], optional): Number of processes to use for downloading
             the objects. If None, defaults to multiprocessing.cpu_count() * 3. Defaults
             to None.
@@ -432,7 +423,6 @@ def render_objects(
         handle_found_object=partial(
             handle_found_object,
             render_dir=render_dir,
-            num_renders=num_renders,
             gpu_devices=parsed_gpu_devices,
             render_timeout=render_timeout,
         ),
@@ -440,7 +430,6 @@ def render_objects(
         handle_modified_object=partial(
             handle_modified_object,
             render_dir=render_dir,
-            num_renders=num_renders,
             gpu_devices=parsed_gpu_devices,
             render_timeout=render_timeout,
         ),

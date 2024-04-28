@@ -38,12 +38,6 @@ if __name__ == "__main__":
         choices=["CYCLES", "BLENDER_EEVEE"],
     )
     parser.add_argument(
-        "--num_renders",
-        type=int,
-        default=12,
-        help="Number of renders to save of the object.",
-    )
-    parser.add_argument(
         "--combination_file",
         type=str,
         default="combinations.json",
@@ -99,7 +93,6 @@ if __name__ == "__main__":
     # Render the images
     render_scene(
         object_file=args.object_path,
-        num_renders=args.num_renders,
         output_dir=args.output_dir,
         context=context,
         combination_file=args.combination_file,

@@ -182,29 +182,18 @@ def read_combination(combination_file, index=0):
 
 def render_scene(
     object_file: str,
-    num_renders: int,
     output_dir: str,
     context: bpy.types.Context,
     combination_file,
     combination_index=0,
 ) -> None:
-    """Saves rendered images with its camera matrix and metadata of the object.
-
-    Args:
-        object_file (str): Path to the object file.
-        num_renders (int): Number of renders to save of the object.
-        output_dir (str): Path to the directory where the rendered images and metadata
-            will be saved.
-
-    Returns:
-        None
-    """
+    """Saves rendered images with its camera matrix and metadata of the object."""
     os.makedirs(output_dir, exist_ok=True)
     scene = context.scene
     
     combination = read_combination(combination_file, combination_index)
 
-    # load the object
+    # Load the object
     if object_file.endswith(".blend"):
         bpy.ops.object.mode_set(mode="OBJECT")
         reset_cameras(scene)
@@ -217,27 +206,25 @@ def render_scene(
     camera = scene.objects["Camera"]
     set_camera_settings(camera, combination)
 
-    # Extract the metadata. This must be done before normalizing the scene to get
-    # accurate bounding box information.
+    # Extract the metadata
     metadata_extractor = MetadataExtractor(
         object_path=object_file, scene=scene, bdata=bpy.data
     )
     metadata = metadata_extractor.get_metadata()
 
-    # save metadata
+    # Save metadata
     metadata_path = os.path.join(output_dir, "metadata.json")
     os.makedirs(os.path.dirname(metadata_path), exist_ok=True)
     with open(metadata_path, "w", encoding="utf-8") as f:
         json.dump(metadata, f, sort_keys=True, indent=2)
 
-    # render the images
-    for i in range(num_renders):
-        # render the image
-        render_path = os.path.join(output_dir, f"{i:03d}.png")
-        scene.render.filepath = render_path
-        bpy.ops.render.render(write_still=True)
+    # Configure output settings for rendering an MP4 video
+    scene.render.image_settings.file_format = 'FFMPEG'
+    scene.render.ffmpeg.format = 'MPEG4'
+    scene.render.ffmpeg.codec = 'H264'
+    scene.render.ffmpeg.constant_rate_factor = 'MEDIUM'
 
-        # save camera RT matrix
-        rt_matrix = get_3x4_RT_matrix_from_blender(camera)
-        rt_matrix_path = os.path.join(output_dir, f"{i:03d}.npy")
-        np.save(rt_matrix_path, rt_matrix)
+    # Set output path and start rendering
+    render_path = os.path.join(output_dir, "output.mp4")
+    scene.render.filepath = render_path
+    bpy.ops.render.render(animation=True)  # Use animation=True for video rendering
