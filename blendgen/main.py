@@ -10,7 +10,7 @@ from typing import Any, Dict, List, Set
 import bpy
 import numpy as np
 
-from .camera import reset_cameras, get_3x4_RT_matrix_from_blender
+from .camera import reset_cameras, get_3x4_RT_matrix_from_blender, set_camera_settings
 from .scene import reset_scene, scene_bbox
 from .object import delete_invisible_objects, load_object
 
@@ -173,11 +173,20 @@ class MetadataExtractor:
         }
 
 
+def read_combination(combination_file, index=0):
+    """Reads a specified camera combination from a JSON file."""
+    with open(combination_file, 'r') as file:
+        combinations = json.load(file)
+        return combinations[min(index, len(combinations) - 1)]
+
+
 def render_scene(
     object_file: str,
     num_renders: int,
     output_dir: str,
     context: bpy.types.Context,
+    combination_file,
+    combination_index=0,
 ) -> None:
     """Saves rendered images with its camera matrix and metadata of the object.
 
@@ -192,6 +201,8 @@ def render_scene(
     """
     os.makedirs(output_dir, exist_ok=True)
     scene = context.scene
+    
+    combination = read_combination(combination_file, combination_index)
 
     # load the object
     if object_file.endswith(".blend"):
@@ -204,8 +215,7 @@ def render_scene(
         
     # Set up cameras
     camera = scene.objects["Camera"]
-    camera.data.lens = 35
-    camera.data.sensor_width = 32
+    set_camera_settings(camera, combination)
 
     # Extract the metadata. This must be done before normalizing the scene to get
     # accurate bounding box information.
@@ -231,79 +241,3 @@ def render_scene(
         rt_matrix = get_3x4_RT_matrix_from_blender(camera)
         rt_matrix_path = os.path.join(output_dir, f"{i:03d}.npy")
         np.save(rt_matrix_path, rt_matrix)
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--object_path",
-        type=str,
-        required=True,
-        help="Path to the object file",
-    )
-    parser.add_argument(
-        "--output_dir",
-        type=str,
-        required=True,
-        help="Path to the directory where the rendered images and metadata will be saved.",
-    )
-    parser.add_argument(
-        "--engine",
-        type=str,
-        default="BLENDER_EEVEE",
-        choices=["CYCLES", "BLENDER_EEVEE"],
-    )
-    parser.add_argument(
-        "--num_renders",
-        type=int,
-        default=12,
-        help="Number of renders to save of the object.",
-    )
-    argv = sys.argv[sys.argv.index("--") + 1 :]
-    args = parser.parse_args(argv)
-
-    context = bpy.context
-
-    bpy.ops.wm.open_mainfile(filepath="scene.blend")
-
-    scene = context.scene
-    render = scene.render
-
-    # Set render settings
-    render.engine = args.engine
-    render.image_settings.file_format = "PNG"
-    render.image_settings.color_mode = "RGBA"
-    render.resolution_x = 512
-    render.resolution_y = 512
-    render.resolution_percentage = 100
-
-    # Set cycles settings
-    scene.cycles.device = "GPU"
-    scene.cycles.samples = 128
-    scene.cycles.diffuse_bounces = 1
-    scene.cycles.glossy_bounces = 1
-    scene.cycles.transparent_max_bounces = 3
-    scene.cycles.transmission_bounces = 3
-    scene.cycles.filter_width = 0.01
-    scene.cycles.use_denoising = True
-    scene.render.film_transparent = True
-    bpy.context.preferences.addons["cycles"].preferences.get_devices()
-
-    os_system = platform.system()
-
-    # if we are on mac, device type is METAL
-    # if we are on windows or linux, device type is CUDA
-    if os_system == "Darwin":
-        bpy.context.preferences.addons[
-            "cycles"
-        ].preferences.compute_device_type = "METAL"
-    else:
-        bpy.context.preferences.addons["cycles"].preferences.compute_device_type = "CUDA"
-
-    # Render the images
-    render(
-        object_file=args.object_path,
-        num_renders=args.num_renders,
-        output_dir=args.output_dir,
-        context=context,
-    )

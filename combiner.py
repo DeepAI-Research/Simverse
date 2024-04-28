@@ -31,6 +31,8 @@ def generate_combinations(camera_data, count):
     for _ in range(count):
         orientation = random.choice(camera_data['orientations'])
         framing = random.choice(camera_data['framings'])
+        print('framing')
+        print(framing)
         animation = random.choice(camera_data['animations'])
         
         description = (
@@ -53,6 +55,7 @@ def generate_combinations(camera_data, count):
             },
             'framing': {
                 'name': framing['name'],
+                'fov': framing['fov'],
                 'description': random.choice(framing['descriptions']),
                 'instruction': random.choice(framing['instructions'])
             },

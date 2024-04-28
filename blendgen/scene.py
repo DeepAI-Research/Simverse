@@ -1,6 +1,4 @@
 import math
-import os
-import random
 from typing import Any, Dict, Generator, Optional, Tuple
 
 import bpy
@@ -28,7 +26,7 @@ def reset_scene() -> None:
     """
     # delete everything that isn't part of a camera or a light
     for obj in bpy.data.objects:
-        if obj.type not in {"CAMERA", "LIGHT"}:
+        if obj.type not in {"CAMERA", "LIGHT", "EMPTY"}:
             bpy.data.objects.remove(obj, do_unlink=True)
 
     # delete all the materials

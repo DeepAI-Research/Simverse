@@ -1,17 +1,19 @@
 """Blender script to render images of 3D models."""
 
+
 import argparse
-import json
-import math
-import os
 import platform
-import random
+import os
 import sys
-from typing import Any, Callable, Dict, Generator, List, Literal, Optional, Set, Tuple
+
+# Get the directory of the currently executing script
+current_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Append the blendgen directory to sys.path
+blendgen_path = os.path.join(current_dir)
+sys.path.append(blendgen_path)
 
 import bpy
-import numpy as np
-from mathutils import Matrix, Vector
 
 from blendgen.main import render_scene
 
@@ -40,6 +42,18 @@ if __name__ == "__main__":
         type=int,
         default=12,
         help="Number of renders to save of the object.",
+    )
+    parser.add_argument(
+        "--combination_file",
+        type=str,
+        default="combinations.json",
+        help="Path to the JSON file containing camera combinations.",
+    )
+    parser.add_argument(
+        "--combination_index",
+        type=int,
+        default=0,
+        help="Index of the camera combination to use from the JSON file.",
     )
     argv = sys.argv[sys.argv.index("--") + 1 :]
     args = parser.parse_args(argv)
@@ -88,4 +102,6 @@ if __name__ == "__main__":
         num_renders=args.num_renders,
         output_dir=args.output_dir,
         context=context,
+        combination_file=args.combination_file,
+        combination_index=args.combination_index,
     )
