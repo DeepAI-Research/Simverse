@@ -4,20 +4,20 @@ import random
 import argparse
 
 datasets = [
-    "animals-pets.json",
-    "cars-vehicles.json",
-    "characters-creatures.json",
-    "electronics-gadgets.json",
-    "fashion-style.json",
-    "food-drink.json",
-    "furniture-home.json",
-    "music.json",
-    "nature-plants.json",
-    "news-politics.json",
-    "people.json",
-    "science-technology.json",
-    "sports-fitness.json",
-    "weapons-military.json"
+    "animals-pets",
+    "cars-vehicles",
+    "characters-creatures",
+    "electronics-gadgets",
+    "fashion-style",
+    "food-drink",
+    "furniture-home",
+    "music",
+    "nature-plants",
+    "news-politics",
+    "people",
+    "science-technology",
+    "sports-fitness",
+    "weapons-military"
 ]
 
 # example of the structure one of these JSON files:
@@ -60,23 +60,45 @@ file_path = 'ingredients.json'
 data = read_json_file(file_path)
 camera_data = data['camera']
 
-# TODO: load the datasets into a dictionary of lists keyed by the dataset name
-# Our goal is to randomly get one of the entries, weighted by the length of that dataset so that we don't overrepresent one dataset with less entries over another with more entries
+object_map = {}
+category_map = {}
 
 dataset_dict = {}
+# TODO: This is slow!
 for dataset in datasets:
     # get the current path of this file
     current_path = os.path.dirname(os.path.realpath(__file__))
-    dataset_path = os.path.join('datasets', dataset)
+    dataset_path = os.path.join('datasets', dataset + '.json')
     dataset_full_path = os.path.join(current_path, dataset_path)
     print(f"Loading {dataset_full_path}")
     if os.path.exists(dataset_full_path):
         dataset_data = read_json_file(dataset_full_path)
-        # print the length of dataset_data
-        print(f"Loaded {len(dataset_data)} entries from {dataset}")
+        local_count = 0
+        
+        # TODO: SLOW
+        for object in dataset_data:
+            object_id = object['uid']
+            categories = object['categories']
+            
+            if object_id not in object_map:
+                object_map[object_id] = object
+                local_count += 1
+            
+            for category in categories:
+                if category not in category_map:
+                    category_map[category] = set()
+                category_map[category].add(object_id)
+        
+        print(f"Loaded {local_count} unique entries out of {len(dataset_data)} from {dataset}")
         dataset_dict[dataset] = dataset_data
     else:
         print(f"Dataset file {dataset_path} not found")
+
+# count the total length of all entries
+total_length = 0
+for dataset in dataset_dict:
+    total_length += len(dataset_dict[dataset])
+print(f"Total length of all entries: {total_length}")
     
 # Seed the random number generator for reproducibility
 if args.seed is not None:
@@ -105,9 +127,6 @@ def generate_combinations(camera_data, count):
             f"{random.choice(animation['instructions'])}."
         )
         
-        # TODO: get a random entry from the datasets dictionary
-        # and add it to the combination
-        # also add a "from" field to the combination to indicate which dataset the entry came from
         dataset_names = list(dataset_dict.keys())
         dataset_weights = [len(dataset_dict[name]) for name in dataset_names]
         chosen_dataset = random.choices(dataset_names, weights=dataset_weights)[0]
