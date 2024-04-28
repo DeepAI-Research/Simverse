@@ -139,12 +139,15 @@ def generate_combinations(camera_data, count):
             'from': chosen_dataset,
             'orientation': {
                 'name': orientation['name'],
+                'yaw': orientation['yaw'],
+                'pitch': orientation['pitch'],
                 'description': random.choice(orientation['descriptions']),
                 'instruction': random.choice(orientation['instructions'])
             },
             'framing': {
                 'name': framing['name'],
                 'fov': framing['fov'],
+                'distance': framing['distance'],
                 'description': random.choice(framing['descriptions']),
                 'instruction': random.choice(framing['instructions'])
             },

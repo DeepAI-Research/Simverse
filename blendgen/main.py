@@ -6,6 +6,7 @@ import sys
 import json
 import os
 from typing import Any, Dict, List, Set
+from mathutils import Vector
 
 import bpy
 """Blender script to render images of 3D models."""
@@ -33,6 +34,34 @@ def read_combination(combination_file, index=0):
         combinations = json.load(file)
         return combinations[min(index, len(combinations) - 1)]
 
+def get_hierarchy_bbox(obj, context):
+    """Calculate the bounding box of an object and its children."""
+    # Ensure the object's matrix_world is updated
+    context.view_layer.update()
+    
+    # Initialize min and max coordinates with extremely large and small values
+    min_coord = [float('inf'), float('inf'), float('inf')]
+    max_coord = [-float('inf'), -float('inf'), -float('inf')]
+    
+    # Function to update min and max coordinates
+    def update_bounds(obj):
+        # Update the object's bounding box based on its world matrix
+        bbox_corners = [obj.matrix_world @ Vector(corner) for corner in obj.bound_box]
+        for corner in bbox_corners:
+            for i in range(3):
+                min_coord[i] = min(min_coord[i], corner[i])
+                max_coord[i] = max(max_coord[i], corner[i])
+    
+    # Recursive function to process each object
+    def process_object(obj):
+        update_bounds(obj)
+        for child in obj.children:
+            process_object(child)
+
+    # Start processing from the root object
+    process_object(obj)
+    
+    return min_coord, max_coord
 
 def render_scene(
     object_file: str,
@@ -57,6 +86,25 @@ def render_scene(
     else:
         reset_scene()
         load_object(object_file, context=context)
+    
+    # Get the object just loaded and ensure all children are selected
+    obj = [obj for obj in context.view_layer.objects.selected][0]
+    obj.select_set(True)
+    
+    # Get the bounding box of the object and its children
+    bbox_min, bbox_max = get_hierarchy_bbox(obj, context)
+    print("Bounding box:", bbox_min, bbox_max)
+    
+    # Calculate the scale of the bounding box and scale the object if necessary
+    bbox_dimensions = [bbox_max[i] - bbox_min[i] for i in range(3)]
+    max_dimension = max(bbox_dimensions)
+    print("Max dimension:", max_dimension)
+    
+    if max_dimension > 1:
+        print("Scaling object")
+        scale = 1 / max_dimension
+        print("scale", scale)
+        obj.scale = (scale, scale, scale)
         
     # Set up cameras
     camera = scene.objects["Camera"]

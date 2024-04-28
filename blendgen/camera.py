@@ -9,7 +9,21 @@ def set_camera_settings(camera, combination):
     # Assuming combination has keys like 'fov', 'animation'
     print(combination)
     orientation = combination['orientation']
+    # rotate CameraOrientationPivotYaw by the Y
+    camera_orientation_pivot_yaw = bpy.data.objects.get("CameraOrientationPivotYaw")
+    # orientation['pitch'] is in degrees, but Blender uses radians
+    camera_orientation_pivot_yaw.rotation_euler[2] = orientation['yaw'] * math.pi / 180
+    
+    # rotate CameraOrientationPivotPitch by the X
+    camera_orientation_pivot_pitch = bpy.data.objects.get("CameraOrientationPivotPitch")
+    # orientation['pitch'] is in degrees, but Blender uses radians
+    camera_orientation_pivot_pitch.rotation_euler[1] = orientation['pitch'] * math.pi / -180 # negative so that 45 degrees is up
     framing = combination['framing']
+    
+    # set the CameraFramingPivot X to the framing  
+    camera_framing_pivot = bpy.data.objects.get("CameraFramingPivot")
+    camera_framing_pivot.location[0] = framing['distance']
+    
     print('framing', framing)
     camera.data.lens = framing['fov']
     print("combination['animation']")

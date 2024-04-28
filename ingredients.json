@@ -10,7 +10,9 @@
                 "instructions": [
                     "Place the camera in front of and level with the <object>",
                     "Place the camera at the same height as the <object> and perpendicular to the ground"
-                ]
+                ],
+                "yaw": 0,
+                "pitch": 0
             },
             {
                 "name": "front_angled_down_45",
@@ -23,13 +25,15 @@
                     "Place the camera in front of the <object> and angle it down 45 degrees",
                     "Place the camera at a 45 degree angle to the ground",
                     "Tilt the camera down"
-                ]
+                ],
+                "yaw": 0,
+                "pitch": 45
             }
         ],
         "framings": [
             {
                 "name": "full",
-                "zOffset": 0,
+                "distance": 5,
                 "fov": 50,
                 "descriptions": [
                     "Full view of the <object>",
@@ -41,8 +45,8 @@
             },
             {
                 "name": "close",
-                "zOffset": 0,
-                "fov": 30,
+                "distance": 2,
+                "fov": 40,
                 "descriptions": [
                     "Close-up of the <object>",
                     "The <object> fills the frame"
@@ -52,7 +56,7 @@
                 ]
             }
         ],
-        "animations": [
+        "animations_disabled": [
             {
                 "name": "pan_left",
                 "descriptions": [
@@ -63,7 +67,9 @@
                     "Move the camera to the left",
                     "Pan the camera left"
                 ]
-            },
+            }
+        ],
+        "animations": [
             {
                 "name": "orbit_left",
                 "descriptions": [
