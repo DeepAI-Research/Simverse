@@ -74,9 +74,8 @@ def render_scene(
     scene.render.ffmpeg.constant_rate_factor = 'PERC_LOSSLESS'
     scene.render.ffmpeg.ffmpeg_preset = 'BEST'
     
-
     # Set output path and start rendering
-    render_path = os.path.join(output_dir, "output.mp4")
+    render_path = os.path.join(output_dir, f"{combination_index}.mp4")
     
     scene.render.filepath = render_path
     bpy.ops.render.render(animation=True)  # Use animation=True for video rendering
