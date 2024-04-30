@@ -9,7 +9,6 @@ from typing import Any, Dict, List, Set
 from mathutils import Vector
 
 import bpy
-"""Blender script to render images of 3D models."""
 
 # Get the directory of the currently executing script
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -22,11 +21,10 @@ if current_dir.endswith("blendgen"):
 blendgen_path = os.path.join(current_dir)
 sys.path.append(blendgen_path)
 
-import bpy
-
 from blendgen.camera import reset_cameras, set_camera_settings
 from blendgen.scene import reset_scene, scene_bbox
 from blendgen.object import delete_invisible_objects, load_object
+from blendgen.background import set_background
 
 def read_combination(combination_file, index=0):
     """Reads a specified camera combination from a JSON file."""
@@ -107,8 +105,9 @@ def render_scene(
         obj.scale = (scale, scale, scale)
         
     # Set up cameras
-    camera = scene.objects["Camera"]
-    set_camera_settings(camera, combination)
+    
+    set_camera_settings(context, combination)
+    set_background(context, args, combination)
     
     # set height and width of rendered output
     scene.render.resolution_x = width
@@ -148,6 +147,12 @@ if __name__ == "__main__":
         type=str,
         default="combinations.json",
         help="Path to the JSON file containing camera combinations.",
+    )
+    parser.add_argument(
+        "--background_path",
+        type=str,
+        default="backgrounds",
+        help="Path to the directory where the background HDRs will be saved.",
     )
     parser.add_argument(
         "--combination_index",

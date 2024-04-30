@@ -20,27 +20,7 @@ datasets = [
     "weapons-military"
 ]
 
-# example of the structure one of these JSON files:
-# [
-    # {
-    #     "uid": "2b3b6a5abe784dfe816fec5bf62542c2",
-    #     "name": "Pots the Raccoon",
-    #     "categories": [
-    #         "animals-pets",
-    #         "nature-plants"
-    #     ],
-    #     "description": "My attempt to make an original character in the style of Animal Crossing. Her name is Pots, a business raccoon only interested in one kind of business: GORBAGE!",
-    #     "tags": [
-    #         "pot",
-    #         "raccoon",
-    #         "garbage",
-    #         "animalcrossing",
-    #         "pothead",
-    #         "animal"
-    #     ]
-    # }
-# ]
-
+backgrounds = ["hdri_urls"]
 
 # Function to read data from a JSON file
 def read_json_file(file_path):
@@ -51,19 +31,25 @@ def read_json_file(file_path):
 parser = argparse.ArgumentParser(description='Generate random camera combinations.')
 parser.add_argument('--count', type=int, default=10, help='Number of combinations to generate')
 parser.add_argument('--seed', type=int, default=None, help='Seed for the random number generator')
+parser.add_argument('--camera_file_path', type=str, default='camera_data.json', help='Path to the JSON file containing camera data')
+parser.add_argument('--max_number_of_objects', type=int, default=3, help='Maximum number of objects to randomly select')
 args = parser.parse_args()
 
 # Path to the JSON file
-file_path = 'ingredients.json'
+camera_file_path = args.camera_file_path
+
+max_number_of_objects = args.max_number_of_objects
 
 # Load the data
-data = read_json_file(file_path)
-camera_data = data['camera']
+camera_data = read_json_file(camera_file_path)
+
+background_data = {}
 
 object_map = {}
 category_map = {}
 
 dataset_dict = {}
+background_dict = {}
 # TODO: This is slow!
 for dataset in datasets:
     # get the current path of this file
@@ -98,66 +84,75 @@ for dataset in datasets:
 total_length = 0
 for dataset in dataset_dict:
     total_length += len(dataset_dict[dataset])
-print(f"Total length of all entries: {total_length}")
+print(f"Total number of objects: {total_length}")     
+
+for background in backgrounds:
+    # get the current path of this file
+    current_path = os.path.dirname(os.path.realpath(__file__))
+    background_path = os.path.join('datasets', background + '.json')
+    background_full_path = os.path.join(current_path, background_path)
+    print(f"Loading {background_full_path}")
+    if os.path.exists(background_full_path):
+        background_data = read_json_file(background_full_path)
+        
+        print(f"Loaded {len(background_data)} from {background}")
+        background_dict[background] = background_data
+    else:
+        print(f"Dataset file {background_path} not found")
+        
+total_length = 0
+for background in background_dict:
+    total_length += len(background_dict[background])
+print(f"Total number of backgrounds: {total_length}")
     
 # Seed the random number generator for reproducibility
 if args.seed is not None:
     random.seed(args.seed)
 
+dataset_names = list(dataset_dict.keys())
+dataset_weights = [len(dataset_dict[name]) for name in dataset_names]
+
+background_names = list(background_dict.keys())
+background_weights = [len(background_dict[name]) for name in background_names]
+    
 def generate_combinations(camera_data, count):
     combinations = []
-
+    
     # Generate combinations on the fly up to the specified count
     for _ in range(count):
         orientation = random.choice(camera_data['orientations'])
         framing = random.choice(camera_data['framings'])
-        print('framing')
-        print(framing)
         animation = random.choice(camera_data['animations'])
         
-        description = (
-            f"{random.choice(orientation['descriptions'])}. "
-            f"{random.choice(framing['descriptions'])}. "
-            f"{random.choice(animation['descriptions'])}."
-        )
-        
-        instruction = (
-            f"{random.choice(orientation['instructions'])}. "
-            f"{random.choice(framing['instructions'])}. "
-            f"{random.choice(animation['instructions'])}."
-        )
-        
-        dataset_names = list(dataset_dict.keys())
-        dataset_weights = [len(dataset_dict[name]) for name in dataset_names]
         chosen_dataset = random.choices(dataset_names, weights=dataset_weights)[0]
-        object = random.choice(dataset_dict[chosen_dataset])
-        print('object')
-        print(object)
         
+        # randomly generate max_number_of_objects
+        number_of_objects = random.randint(1, max_number_of_objects)
+        
+        objects = []
+        for _ in range(number_of_objects):
+            object = random.choice(dataset_dict[chosen_dataset])
+            objects.append(object)
+        
+        chosen_background = random.choices(background_names, weights=background_weights)[0]
+        print(f"Choosing background from {chosen_background}")
+        print(background_dict[chosen_background])
+        
+        # get the keys from the chosen background
+        background_keys = list(background_dict[chosen_background].keys())
+        print(f"Choosing background from {background_keys}")
+        
+        background_id = random.choice(background_keys)
+        background = background_dict[chosen_background][background_id]
+        background['id'] = background_id
+        background['from'] = chosen_background
+        object['from'] = chosen_dataset
         combination = {
             'object': object,
-            'from': chosen_dataset,
-            'orientation': {
-                'name': orientation['name'],
-                'yaw': orientation['yaw'],
-                'pitch': orientation['pitch'],
-                'description': random.choice(orientation['descriptions']),
-                'instruction': random.choice(orientation['instructions'])
-            },
-            'framing': {
-                'name': framing['name'],
-                'fov': framing['fov'],
-                'distance': framing['distance'],
-                'description': random.choice(framing['descriptions']),
-                'instruction': random.choice(framing['instructions'])
-            },
-            'animation': {
-                'name': animation['name'],
-                'description': random.choice(animation['descriptions']),
-                'instruction': random.choice(animation['instructions'])
-            },
-            'description': description,
-            'instruction': instruction
+            'background': background,
+            'orientation': orientation,
+            'framing': framing,
+            'animation': animation
         }
         combinations.append(combination)
 

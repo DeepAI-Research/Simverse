@@ -12,6 +12,7 @@ combinations.json
 annotations*.json
 datasets/*
 renders/*
+backgrounds/*
 sampled_df.json
 *.blend1
 *.obj

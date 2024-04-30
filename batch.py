@@ -19,7 +19,6 @@ def get_combination_objects() -> pd.DataFrame:
 
 
 def render_objects(
-    render_dir: str = "./",
     download_dir: Optional[str] = None,
     processes: Optional[int] = None,
     save_repo_format: Optional[Literal["zip", "tar", "tar.gz", "files"]] = None,
@@ -30,10 +29,9 @@ def render_objects(
     start_index: int = 0,
     end_index: int = 9
 ) -> None:
-    """Renders objects in the Objaverse-XL dataset with Blender
+    """Renders objects in the Objaverse dataset with Blender
 
     Args:
-        render_dir (str, optional): Directory where the objects will be rendered.
         download_dir (Optional[str], optional): Directory where the objects will be
             downloaded. If None, the objects will not be downloaded. Defaults to None.
         processes (Optional[int], optional): Number of processes to use for downloading
@@ -108,6 +106,9 @@ def render_objects(
         target_directory = os.path.join(scripts_dir, "renders")
         os.makedirs(target_directory, exist_ok=True)
         args += f" --output_dir {target_directory}"
+        
+        background_path = os.path.join(scripts_dir, "backgrounds")
+        args += f" --background_path {background_path}"
 
         # if we are on macOS, then application_path is /Applications/Blender.app/Contents/MacOS/Blender
         if platform.system() == "Darwin":
@@ -129,10 +130,14 @@ def render_objects(
         subprocess.run(
             ["bash", "-c", command],
             timeout=render_timeout,
-            check=False,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
+            check=False
+            # pipe the output to the console
         )
+        
+        
+        print(f"Rendering object {i} with command {command}")
+        
+        
     
 
 

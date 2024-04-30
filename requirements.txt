@@ -8,3 +8,4 @@ gputil==1.4.0
 argparse
 mathutils
 fire
+objaverse
