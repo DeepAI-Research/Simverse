@@ -1,3 +1,9 @@
+# blendgen
+
+A synthetic data generator for video caption pairs.
+
+Currently a work in progress <3 Watch this space for v0.1!
+
 ## 🖥️ Setup
 
 1. Download Blender. If you're on Linux, set it up with this script:
