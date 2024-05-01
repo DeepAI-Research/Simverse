@@ -43,9 +43,18 @@ pip install -r requirements.txt && pip install -e .
 python3 blendgen/combiner.py --count 1000 --seed 42
 ```
 
-## Batching
+## Generating Videos
 
-After setup, we can start to render objects using the `batch.py` script:
+You can generate individually:
+```bash
+# MacOS
+/Applications/Blender.app/Contents/MacOS/Blender --background --python blendgen/main.py -- --object_path 'example.glb' --width 1920 --height 1080 --combination_index 0 --output_dir ./renders --background_path ./backgrounds
+
+# Linux
+blender --background --python blendgen/main.py -- --object_path 'example.glb' --width 1920 --height 1080 --combination_index 0 --output_dir ./renders --background_path ./backgrounds
+```
+
+Or generate all or part of the combination set using the `batch.py` script:
 
 ```bash
 python3 blendgen/batch.py --start_index 0 --end_index 1000 --width 1024 --height 576
