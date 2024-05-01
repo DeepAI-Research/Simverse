@@ -3,7 +3,7 @@ A synthetic data generator for video caption pairs.
 
 https://github.com/RaccoonResearch/blendgen/assets/18633264/54346aa8-fde4-4c11-b210-52525082a650
 
-*Medium wide shot, orbiting subject The Moon to the right. It's mid-day and the sky is clear. The background is a small airstrip with a few planes parked.*
+*Medium wide shot, orbiting subject The Moon to the right. It's mid-day and the sky is clear. The background is an air museum with a few planes parked.*
 
 Blendgen creates synthetic data that is usable for generative video and video captioning tasks. The data consists of videos and captions. The videos are generated using Blender, a 3D modeling software.
 
