@@ -24,7 +24,7 @@ def load_object(object_path: str, context) -> None:
     if file_extension == "usdz":
         # install usdz io package
         dirname = os.path.dirname(os.path.realpath(__file__))
-        usdz_package = os.path.join(dirname, "io_scene_usdz.zip")
+        usdz_package = os.path.join(dirname, "plugins/io_scene_usdz.zip")
         bpy.ops.preferences.addon_install(filepath=usdz_package)
         # enable it
         addon_name = "io_scene_usdz"

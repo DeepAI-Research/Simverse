@@ -167,7 +167,7 @@ if __name__ == "__main__":
 
     context = bpy.context
 
-    bpy.ops.wm.open_mainfile(filepath="scene.blend")
+    bpy.ops.wm.open_mainfile(filepath="scenes/video_generation_v1.blend")
 
     scene = context.scene
     render = scene.render
