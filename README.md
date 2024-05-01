@@ -1,23 +1,27 @@
-# blendgen
+# Blendgen
 A synthetic data generator for video caption pairs.
 
 https://github.com/RaccoonResearch/blendgen/assets/18633264/54346aa8-fde4-4c11-b210-52525082a650
 
-Currently a work in progress <3 Watch this space for v0.1!
+*Medium wide shot, orbiting subject The Moon to the right. It's mid-day and the sky is clear. The background is a small airstrip with a few planes parked.*
+
+Blendgen creates synthetic data that is usable for generative video and video captioning tasks. The data consists of videos and captions. The videos are generated using Blender, a 3D modeling software.
+
+For example, a video could be:
 
 ## 🖥️ Setup
 
 1. Download Blender. If you're on Linux, set it up with this script:
 
 ```bash
-bash install_blender_linux.sh
+bash scripts/install_blender_linux.sh
 ```
 
 2. If you're on a headless Linux server, install Xorg and start it:
 
 ```bash
 sudo apt-get install xserver-xorg -y && \
-  sudo python3 start_x_server.py start
+  sudo python3 scripts/start_x_server.py start
 ```
 
 3. Install the Python dependencies. Note that Python >3.8 is required:
@@ -28,17 +32,66 @@ pip install -r requirements.txt && pip install -e .
 
 4. Download the datasets:
 ```bash
-./get_data.sh
+./scripts/get_data.sh
 ```
 
 ## 📸 Usage
 
+## Generating Combinations
+
+```bash
+python3 blendgen/combiner.py --count 1000 --seed 42
+```
+
+## Batching
+
 After setup, we can start to render objects using the `batch.py` script:
 
 ```bash
-python3 scripts/batch.py
+python3 blendgen/batch.py --start_index 0 --end_index 1000 --width 1024 --height 576
 ```
 
-## Advanced usage
+# 📁 Datasets
 
-TODO: We will outline usage with tutorials here when ready.
+We are currently using the following datasets:
+[Objaverse](https://huggingface.co/datasets/allenai/objaverse)
+
+Backgrounds are loaded from:
+https://polyhaven.com
+
+# 🦝 Contributing
+
+We welcome contributions!
+
+## Prerequisites
+
+If you have never used Blender before, we recommend you to go through the following tutorials:
+
+Blender Scripting Series:
+https://www.youtube.com/watch?v=cyt0O7saU4Q&list=PLFtLHTf5bnym_wk4DcYIMq1DkjqB7kDb-
+
+Blender Modeling Series:
+https://www.youtube.com/playlist?list=PLjEaoINr3zgEPv5y--4MKpciLaoQYZB1Z
+
+## How to contribute
+
+1. Check out the issues here: https://github.com/RaccoonResearch/blendgen/issues
+2. Join our Discord here: https://discord.gg/JMfbmHdPNB
+3. Get in touch with us so we can coordinate on development.
+4. Or, you know, just YOLO a pull request. We're pretty chill.
+
+# 📜 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+If you use it, please cite us:
+
+```bibtex
+@misc{Blendgen,
+  author = {Raccoon Research},
+  title = {Blendgen: A Synthetic Data Generator for Video Caption Pairs},
+  year = {2024},
+  publisher = {GitHub},
+  howpublished = {\url{https://github.com/RaccoonResearch/blendgen}}
+}
+```

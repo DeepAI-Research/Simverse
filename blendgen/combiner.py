@@ -31,7 +31,7 @@ def read_json_file(file_path):
 parser = argparse.ArgumentParser(description='Generate random camera combinations.')
 parser.add_argument('--count', type=int, default=10, help='Number of combinations to generate')
 parser.add_argument('--seed', type=int, default=None, help='Seed for the random number generator')
-parser.add_argument('--camera_file_path', type=str, default='camera_data.json', help='Path to the JSON file containing camera data')
+parser.add_argument('--camera_file_path', type=str, default='datasets/camera_data.json', help='Path to the JSON file containing camera data')
 parser.add_argument('--max_number_of_objects', type=int, default=3, help='Maximum number of objects to randomly select')
 args = parser.parse_args()
 
@@ -55,7 +55,7 @@ for dataset in datasets:
     # get the current path of this file
     current_path = os.path.dirname(os.path.realpath(__file__))
     dataset_path = os.path.join('datasets', dataset + '.json')
-    dataset_full_path = os.path.join(current_path, dataset_path)
+    dataset_full_path = os.path.join(current_path, '../', dataset_path)
     print(f"Loading {dataset_full_path}")
     if os.path.exists(dataset_full_path):
         dataset_data = read_json_file(dataset_full_path)
@@ -90,7 +90,7 @@ for background in backgrounds:
     # get the current path of this file
     current_path = os.path.dirname(os.path.realpath(__file__))
     background_path = os.path.join('datasets', background + '.json')
-    background_full_path = os.path.join(current_path, background_path)
+    background_full_path = os.path.join(current_path, '../', background_path)
     print(f"Loading {background_full_path}")
     if os.path.exists(background_full_path):
         background_data = read_json_file(background_full_path)
@@ -135,13 +135,8 @@ def generate_combinations(camera_data, count):
             objects.append(object)
         
         chosen_background = random.choices(background_names, weights=background_weights)[0]
-        print(f"Choosing background from {chosen_background}")
-        print(background_dict[chosen_background])
-        
         # get the keys from the chosen background
-        background_keys = list(background_dict[chosen_background].keys())
-        print(f"Choosing background from {background_keys}")
-        
+        background_keys = list(background_dict[chosen_background].keys())        
         background_id = random.choice(background_keys)
         background = background_dict[chosen_background][background_id]
         background['id'] = background_id
