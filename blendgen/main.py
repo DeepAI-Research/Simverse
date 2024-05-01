@@ -5,6 +5,8 @@ import subprocess
 import sys
 import json
 import os
+import ssl
+ssl._create_default_https_context = ssl._create_unverified_context
 
 def check_imports():
     # what was the CLI command used to run this script?
@@ -15,7 +17,7 @@ def check_imports():
     with open("requirements.txt", "r") as f:
         requirements = f.readlines()
     for requirement in requirements:
-        requirement = requirement.split("==")[0].split("@")[0].strip()
+        requirement = requirement.split(">=")[0].split("==")[0].split("@")[0].strip()
         try:
             __import__(requirement)
         except ImportError:
@@ -45,6 +47,7 @@ from blendgen.camera import reset_cameras, set_camera_settings
 from blendgen.scene import reset_scene, scene_bbox
 from blendgen.object import delete_invisible_objects, load_object
 from blendgen.background import set_background
+from blendgen.postprocessing import enable_effect
 
 def read_combination(combination_file, index=0):
     """Reads a specified camera combination from a JSON file."""
@@ -216,7 +219,6 @@ if __name__ == "__main__":
     print(downloaded)
     # returns {'489bedad97b14989b99a7ea47096410a': '/Users/shawwalters/.objaverse/hf-objaverse-v1/glbs/000-143/489bedad97b14989b99a7ea47096410a.glb'}
     download_dir = downloaded[uid]
-
     # Render the images
     render_scene(
         object_file=download_dir,
