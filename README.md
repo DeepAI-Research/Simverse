@@ -36,7 +36,7 @@ pip install -r requirements.txt && pip install -e .
 After setup, we can start to render objects using the `batch.py` script:
 
 ```bash
-python3 batch.py
+python3 scripts/batch.py
 ```
 
 ## Advanced usage

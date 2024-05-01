@@ -103,11 +103,11 @@ def render_objects(
         scripts_dir = os.path.dirname(os.path.realpath(__file__))
 
         # get the target directory for the rendering job
-        target_directory = os.path.join(scripts_dir, "renders")
+        target_directory = os.path.join(scripts_dir, "../", "renders")
         os.makedirs(target_directory, exist_ok=True)
         args += f" --output_dir {target_directory}"
         
-        background_path = os.path.join(scripts_dir, "backgrounds")
+        background_path = os.path.join(scripts_dir, "../", "backgrounds")
         args += f" --background_path {background_path}"
 
         # if we are on macOS, then application_path is /Applications/Blender.app/Contents/MacOS/Blender
