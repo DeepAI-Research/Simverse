@@ -66,7 +66,7 @@ We are currently using the following datasets:
 [Objaverse](https://huggingface.co/datasets/allenai/objaverse)
 
 Backgrounds are loaded from:
-https://polyhaven.com
+[Poly Haven](https://polyhaven.com)
 
 # 🦝 Contributing
 
