@@ -1,16 +1,19 @@
 import multiprocessing
 import os
 import platform
-import random
 import subprocess
-from typing import Any, Dict, List, Literal, Optional, Union
+from typing import List, Literal, Optional, Union
 
 import fire
 import GPUtil
 import pandas as pd
 from loguru import logger
 
-import objaverse
+# if we are on macOS, then application_path is /Applications/Blender.app/Contents/MacOS/Blender
+if platform.system() == "Darwin":
+    application_path = "/Applications/Blender.app/Contents/MacOS/Blender"
+else:
+    application_path = "./blender/blender"
 
 def get_combination_objects() -> pd.DataFrame:
     """Returns a DataFrame of example objects to use for debugging."""
@@ -79,25 +82,8 @@ def render_objects(
     print(objects)
     print(f"Rendering {len(objects)} objects.")
 
-    for i in range(start_index, end_index):
-        object = objects.iloc[i]
-        print(object)
-        
-        # get the object uid from the 'object' column, which is a dictionary
-        objects_column = object["object"]
-        uid = objects_column["uid"]
-        
-        print("Loading uid")
-        print(uid)
-        
-        # Download object with objaverse to download_dir
-        downloaded = objaverse.load_objects([uid])
-        print("downloaded")
-        print(downloaded)
-        # returns {'489bedad97b14989b99a7ea47096410a': '/Users/shawwalters/.objaverse/hf-objaverse-v1/glbs/000-143/489bedad97b14989b99a7ea47096410a.glb'}
-        download_dir = downloaded[uid]
-        
-        args = f"--object_path '{download_dir}' --width {width} --height {height} --combination_index {i}"
+    for i in range(start_index, end_index):        
+        args = f"--width {width} --height {height} --combination_index {i}"
 
         # find the "renders" directory in same folder as this script
         scripts_dir = os.path.dirname(os.path.realpath(__file__))
@@ -109,12 +95,6 @@ def render_objects(
         
         background_path = os.path.join(scripts_dir, "../", "backgrounds")
         args += f" --background_path {background_path}"
-
-        # if we are on macOS, then application_path is /Applications/Blender.app/Contents/MacOS/Blender
-        if platform.system() == "Darwin":
-            application_path = "/Applications/Blender.app/Contents/MacOS/Blender"
-        else:
-            application_path = "./blender/blender"
 
         # check if application_path exists
         if not os.path.exists(application_path):
@@ -137,9 +117,7 @@ def render_objects(
         
         print(f"Rendering object {i} with command {command}")
         
-        
-    
-
 
 if __name__ == "__main__":
+    # 
     fire.Fire(render_objects)

@@ -1,12 +1,32 @@
 """Blender script to render images of 3D models."""
-
 import argparse
 import platform
+import subprocess
 import sys
 import json
 import os
-from typing import Any, Dict, List, Set
+
+def check_imports():
+    # what was the CLI command used to run this script?
+    application_path = sys.argv[0]
+    print("Application path")
+    print(application_path)
+    # read from requirements.txt
+    with open("requirements.txt", "r") as f:
+        requirements = f.readlines()
+    for requirement in requirements:
+        requirement = requirement.split("==")[0].split("@")[0].strip()
+        try:
+            __import__(requirement)
+        except ImportError:
+            print(f"Installing {requirement}")
+            subprocess.run(["bash", "-c", f"{sys.executable} -m pip install {requirement}"])
+
+check_imports()
+
 from mathutils import Vector
+import pandas as pd
+import objaverse
 
 import bpy
 
@@ -131,12 +151,6 @@ def render_scene(
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--object_path",
-        type=str,
-        required=True,
-        help="Path to the object file",
-    )
-    parser.add_argument(
         "--output_dir",
         type=str,
         required=True,
@@ -184,10 +198,28 @@ if __name__ == "__main__":
         ].preferences.compute_device_type = "METAL"
     else:
         bpy.context.preferences.addons["cycles"].preferences.compute_device_type = "CUDA"
+        
+    objects = pd.read_json("combinations.json", orient="records")
+    object = objects.iloc[args.combination_index]
+    print(object)
+    
+    # get the object uid from the 'object' column, which is a dictionary
+    objects_column = object["object"]
+    uid = objects_column["uid"]
+    
+    print("Loading uid")
+    print(uid)
+    
+    # Download object with objaverse to download_dir
+    downloaded = objaverse.load_objects([uid])
+    print("downloaded")
+    print(downloaded)
+    # returns {'489bedad97b14989b99a7ea47096410a': '/Users/shawwalters/.objaverse/hf-objaverse-v1/glbs/000-143/489bedad97b14989b99a7ea47096410a.glb'}
+    download_dir = downloaded[uid]
 
     # Render the images
     render_scene(
-        object_file=args.object_path,
+        object_file=download_dir,
         output_dir=args.output_dir,
         context=context,
         combination_file=args.combination_file,

@@ -17,22 +17,16 @@ For example, a video could be:
 bash scripts/install_blender_linux.sh
 ```
 
-2. If you're on a headless Linux server, install Xorg and start it:
+2. Download the datasets:
+```bash
+./scripts/get_data.sh
+```
+
+3. If you're on a headless Linux server, install Xorg and start it:
 
 ```bash
 sudo apt-get install xserver-xorg -y && \
-  sudo python3 scripts/start_x_server.py start
-```
-
-3. Install the Python dependencies. Note that Python >3.8 is required:
-
-```bash
-pip install -r requirements.txt && pip install -e .
-```
-
-4. Download the datasets:
-```bash
-./scripts/get_data.sh
+sudo python3 scripts/start_x_server.py start
 ```
 
 ## 📸 Usage
@@ -48,10 +42,10 @@ python3 blendgen/combiner.py --count 1000 --seed 42
 You can generate individually:
 ```bash
 # MacOS
-/Applications/Blender.app/Contents/MacOS/Blender --background --python blendgen/main.py -- --object_path 'example.glb' --width 1920 --height 1080 --combination_index 0 --output_dir ./renders --background_path ./backgrounds
+/Applications/Blender.app/Contents/MacOS/Blender --background --python blendgen/main.py -- --width 1920 --height 1080 --combination_index 0 --output_dir ./renders --background_path ./backgrounds
 
 # Linux
-blender --background --python blendgen/main.py -- --object_path 'example.glb' --width 1920 --height 1080 --combination_index 0 --output_dir ./renders --background_path ./backgrounds
+blender --background --python blendgen/main.py -- --width 1920 --height 1080 --combination_index 0 --output_dir ./renders --background_path ./backgrounds
 ```
 
 Or generate all or part of the combination set using the `batch.py` script:
