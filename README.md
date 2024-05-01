@@ -61,7 +61,14 @@ https://polyhaven.com
 
 # 🦝 Contributing
 
-We welcome contributions!
+We welcome contributions! We're especially interested in help adding and refining datasets, improving generation quality, adding new features and dynamics and allowing the project to meet more use cases.
+
+## How to contribute
+
+1. Check out the issues here: https://github.com/RaccoonResearch/blendgen/issues
+2. Join our Discord here: https://discord.gg/JMfbmHdPNB
+3. Get in touch with us so we can coordinate on development.
+4. Or, you know, just YOLO a pull request. We're pretty chill.
 
 ## Prerequisites
 
@@ -72,13 +79,6 @@ https://www.youtube.com/watch?v=cyt0O7saU4Q&list=PLFtLHTf5bnym_wk4DcYIMq1DkjqB7k
 
 Blender Modeling Series:
 https://www.youtube.com/playlist?list=PLjEaoINr3zgEPv5y--4MKpciLaoQYZB1Z
-
-## How to contribute
-
-1. Check out the issues here: https://github.com/RaccoonResearch/blendgen/issues
-2. Join our Discord here: https://discord.gg/JMfbmHdPNB
-3. Get in touch with us so we can coordinate on development.
-4. Or, you know, just YOLO a pull request. We're pretty chill.
 
 # 📜 License
 
