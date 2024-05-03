@@ -179,18 +179,6 @@ def get_meshes_in_hierarchy(obj):
         meshes = []
         if obj.type == 'MESH':
             meshes.append(obj)
-            # go into edit mode
-            # select the mesh
-            bpy.context.view_layer.objects.active = obj
-            
-            # go to edit mode
-            bpy.ops.object.mode_set(mode='EDIT')
-            
-            # select all verts
-            bpy.ops.mesh.select_all(action='SELECT')
-            
-            # return to object mode
-            bpy.ops.object.mode_set(mode='OBJECT')
         
         new_meshes = []
         for child in obj.children:
@@ -198,12 +186,55 @@ def get_meshes_in_hierarchy(obj):
         return meshes + new_meshes
 
 
+def apply_and_remove_armatures():
+    # Ensure context is correct
+    bpy.ops.object.mode_set(mode='OBJECT')
+    bpy.ops.object.select_all(action='DESELECT')
+
+    # Iterate over all objects in the scene
+    for obj in bpy.data.objects:
+        # Check if the object is a mesh with an armature modifier
+        if obj.type == 'MESH':
+            for modifier in obj.modifiers:
+                if modifier.type == 'ARMATURE' and modifier.object is not None:
+                    # Select and make the mesh active
+                    bpy.context.view_layer.objects.active = obj
+                    obj.select_set(True)
+
+                    # Apply the armature modifier
+                    bpy.ops.object.modifier_apply(modifier=modifier.name)
+
+                    # Optionally, delete the armature
+                    armature = modifier.object
+                    if armature is not None:
+                        bpy.ops.object.select_all(action='DESELECT')
+                        bpy.context.view_layer.objects.active = armature
+                        armature.select_set(True)
+                        bpy.ops.object.delete()
+
+                    # Deselect everything to clean up for the next iteration
+                    bpy.ops.object.select_all(action='DESELECT')
+
+
+
+def apply_all_modifiers(obj):
+    # traverse the hierarchy and apply all modifiers
+    def recurse(obj):
+        bpy.context.view_layer.objects.active = obj
+        if obj.modifiers:
+            for modifier in obj.modifiers:
+                bpy.ops.object.modifier_apply(modifier=modifier.name)
+    for child in obj.children:
+        recurse(child)
+        recurse(obj)
+
+
 def optimize_meshes_in_hierarchy(obj):
         if obj.type == 'MESH':
             # go into edit mode
             # select the mesh
             bpy.context.view_layer.objects.active = obj
-            
+
             # go to edit mode
             bpy.ops.object.mode_set(mode='EDIT')
             
@@ -213,7 +244,7 @@ def optimize_meshes_in_hierarchy(obj):
             bpy.ops.mesh.remove_doubles(threshold=0.0005)
     
             # perform a limited dissolve with a max angle of 1
-            bpy.ops.mesh.dissolve_limited(angle_limit=.017)
+            bpy.ops.mesh.dissolve_limited(angle_limit=.001)
             
             # return to object mode
             bpy.ops.object.mode_set(mode='OBJECT')
@@ -288,7 +319,7 @@ def join_objects_in_hierarchy(object: list) -> bpy.types.Object:
 
     # Set the last selected mesh as active and check if it's valid for mode setting
     if meshes:
-        bpy.context.view_layer.objects.active = meshes[-1]
+        bpy.context.view_layer.objects.active = meshes[0]
         if bpy.context.view_layer.objects.active is not None and bpy.context.view_layer.objects.active.type == 'MESH':
             # Use Context.temp_override() to create a temporary context override
             with bpy.context.temp_override(active_object=bpy.context.view_layer.objects.active, selected_objects=meshes):
@@ -339,10 +370,8 @@ def unparent_keep_transform(obj):
     Returns:
         None
     """
-    # Apply the current transform, then clear the parent
-    obj.matrix_world = obj.matrix_world
-    obj.parent = None
-    obj.matrix_basis = Matrix()
+    # clear the parent object, but keep the transform
+    bpy.ops.object.parent_clear(type='CLEAR_KEEP_TRANSFORM')
 
 def delete_all_empties():
     """Deletes all empty objects in the scene.

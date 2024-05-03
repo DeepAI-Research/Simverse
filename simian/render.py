@@ -44,7 +44,7 @@ simian_path = os.path.join(current_dir)
 sys.path.append(simian_path)
 
 from simian.camera import reset_cameras, set_camera_settings
-from simian.object import delete_all_empties, delete_invisible_objects, get_meshes_in_hierarchy, join_objects_in_hierarchy, load_object, lock_all_objects, normalize_object_scale, optimize_meshes_in_hierarchy, remove_loose_meshes, remove_small_geometry, set_pivot_to_bottom, unlock_objects, unparent_keep_transform
+from simian.object import apply_all_modifiers, apply_and_remove_armatures, delete_all_empties, delete_invisible_objects, get_meshes_in_hierarchy, join_objects_in_hierarchy, load_object, lock_all_objects, normalize_object_scale, optimize_meshes_in_hierarchy, remove_loose_meshes, remove_small_geometry, set_pivot_to_bottom, unlock_objects, unparent_keep_transform
 from simian.background import set_background
 
 def read_combination(combination_file, index=0):
@@ -88,17 +88,26 @@ def render_scene(
     print("Mesh statistics")
     print(obj.data)
 
+    apply_and_remove_armatures()
+    apply_all_modifiers(obj)
     optimize_meshes_in_hierarchy(obj)
     
     join_objects_in_hierarchy(obj)
     
-    # remove_loose_meshes(obj)
+    optimize_meshes_in_hierarchy(obj)
+    
+    remove_loose_meshes(obj)
         
     meshes = get_meshes_in_hierarchy(obj)
     obj = meshes[0]
     
+    print("Mesh statistics")
+    print(obj.data)
+    
+    unparent_keep_transform(obj)
     set_pivot_to_bottom(obj)
-    # unparent_keep_transform(obj)
+    obj.location = (0, 0, 0)
+    obj.scale = (1, 1, 1)
     normalize_object_scale(obj)
     # delete_all_empties()
     
@@ -126,6 +135,8 @@ def render_scene(
     
     scene.render.filepath = render_path
     bpy.ops.render.render(animation=True)  # Use animation=True for video rendering
+    # DEBUG: save the blend to rendered/<i>.blend
+    # bpy.ops.wm.save_as_mainfile(filepath=os.path.join(output_dir, f"{combination_index}.blend"))
     
 
 if __name__ == "__main__":

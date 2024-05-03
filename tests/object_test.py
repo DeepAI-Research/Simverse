@@ -10,9 +10,44 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 simian_path = os.path.join(current_dir, "../")
 sys.path.append(simian_path)
 
-from simian.object import delete_all_empties, join_objects_in_hierarchy, lock_all_objects, normalize_object_scale, optimize_meshes_in_hierarchy, remove_loose_meshes, get_meshes_in_hierarchy, set_pivot_to_bottom, unlock_objects, unparent_keep_transform
+from simian.object import delete_all_empties, get_hierarchy_bbox, join_objects_in_hierarchy, lock_all_objects, normalize_object_scale, optimize_meshes_in_hierarchy, remove_loose_meshes, get_meshes_in_hierarchy, set_pivot_to_bottom, unlock_objects, unparent_keep_transform
 import numpy as np
 import bpy
+
+# Test function for the hierarchy bounding box
+def test_hierarchy_bbox():
+    # Load an empty scene
+    bpy.ops.wm.open_mainfile(filepath="../scenes/empty.blend")
+    
+    # Create two cubes 1 meter apart
+    bpy.ops.mesh.primitive_cube_add(size=2, location=(0, 0, 0))
+    cube1 = bpy.context.active_object
+    bpy.ops.mesh.primitive_cube_add(size=2, location=(3, 0, 0))
+    cube2 = bpy.context.active_object
+    
+    # Create an empty and parent cube1 to it
+    bpy.ops.object.empty_add(location=(0, 0, 0))
+    empty1 = bpy.context.active_object
+    cube1.parent = empty1
+    
+    # Create a second empty, parent it to the first empty, and parent cube2 to this second empty
+    bpy.ops.object.empty_add(location=(0, 0, 0))
+    empty2 = bpy.context.active_object
+    empty2.parent = empty1
+    cube2.parent = empty2
+    
+    # Call the function on the root empty
+    min_coord, max_coord = get_hierarchy_bbox(empty1)
+    
+    # The expected width of the bounding box should be the distance between the centers plus the size of one cube (since both cubes have a center at their geometric center)
+    expected_width = 5  # 3 meters apart plus 1 meter half-width of each cube
+    calculated_width = max_coord[0] - min_coord[0]
+    
+    # Assert to check if the calculated width matches the expected width
+    assert abs(calculated_width - expected_width) < 0.001, "Bounding box width is incorrect"
+
+# Run the test
+test_hierarchy_bbox()
 
 def test_remove_small_geometry():
     current_dir = os.path.dirname(__file__)
