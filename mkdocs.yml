@@ -2,6 +2,7 @@ site_name: Simian
 theme:
     name: material
     logo: assets/logo.png
+    favicon: assets/favicon.ico
 plugins:
 - search
 - autorefs
