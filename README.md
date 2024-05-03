@@ -73,6 +73,11 @@ Now issue work to your task queue
 python3 blendgen/distributed.py --start_index 0 --end_index 10 --width 1024 --height 576
 ```
 
+If you want to use a custom or hosted Redis instance (recommended), you can add th redis details like this:
+```bash
+EXPORT REDIS_URL=<my_redis_url>
+```
+
 # 📁 Datasets
 
 We are currently using the following datasets:
