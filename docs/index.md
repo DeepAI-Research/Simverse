@@ -1,6 +1,10 @@
-# Welcome
+# Simian
 
 Simian is a synthetic data generation tool for creating image caption or video caption pairs. What is novel about Simian is that it focuses on high-quality, specific captioning for features that are difficult to capture in current image and video description models-- for example camera movement, actor intent or physical interactions.
+
+## Welcome
+
+This documentation is intended to help you understand the structure of the Simian codebase and how to use it to generate synthetic data for your projects. Please select a topic from the sidebar to get started.
 
 ## Core Use Cases
 Use Simian data to train image, video and 3D models.
@@ -15,4 +19,4 @@ Use Simian data to train image, video and 3D models.
 
 ## Getting Started
 
-This documentation is intended to help you understand the structure of the Simian codebase and how to use it to generate synthetic data for your projects. Please select a topic from the sidebar to get started.
+Please visit the [Getting Started](/getting_started) page to learn how to set up your environment and generate synthetic data.
