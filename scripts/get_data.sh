@@ -1,4 +1,4 @@
 #!/bin/bash
-git clone https://github.com/RaccoonResearch/blendata
-mv blendata/datasets datasets
-rm -rf blendata
+git clone https://github.com/RaccoonResearch/simdata
+mv simdata/datasets datasets
+rm -rf simdata
