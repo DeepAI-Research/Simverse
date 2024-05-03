@@ -97,16 +97,6 @@ We welcome contributions! We're especially interested in help adding and refinin
 3. Get in touch with us so we can coordinate on development.
 4. Or, you know, just YOLO a pull request. We're pretty chill.
 
-## Prerequisites
-
-If you have never used Blender before, we recommend you to go through the following tutorials:
-
-Blender Scripting Series:
-https://www.youtube.com/watch?v=cyt0O7saU4Q&list=PLFtLHTf5bnym_wk4DcYIMq1DkjqB7kDb-
-
-Blender Modeling Series:
-https://www.youtube.com/playlist?list=PLjEaoINr3zgEPv5y--4MKpciLaoQYZB1Z
-
 # 📜 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
