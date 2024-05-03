@@ -136,7 +136,7 @@ def render_scene(
     scene.render.filepath = render_path
     bpy.ops.render.render(animation=True)  # Use animation=True for video rendering
     # DEBUG: save the blend to rendered/<i>.blend
-    # bpy.ops.wm.save_as_mainfile(filepath=os.path.join(output_dir, f"{combination_index}.blend"))
+    bpy.ops.wm.save_as_mainfile(filepath=os.path.join(output_dir, f"{combination_index}.blend"))
     
 
 if __name__ == "__main__":

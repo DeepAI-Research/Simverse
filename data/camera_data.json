@@ -1,0 +1,208 @@
+{
+        "orientations": [
+            {
+                "name": "front_level",
+                "descriptions": [
+                    "Front camera level with the <object>",
+                    "Front camera at same height as the <object> and perpendicular to the ground"
+                ],
+                "instructions": [
+                    "Place the camera in front of and level with the <object>",
+                    "Place the camera at the same height as the <object> and perpendicular to the ground"
+                ],
+                "yaw": 0,
+                "pitch": 0
+            },
+            {
+                "name": "front_angled_down_45",
+                "descriptions": [
+                    "Front camera angled down 45 degrees",
+                    "Front camera at 45 degree angle to the ground",
+                    "Front camera tilted down"
+                ],
+                "instructions": [
+                    "Place the camera in front of the <object> and angle it down 45 degrees",
+                    "Place the camera at a 45 degree angle to the ground",
+                    "Tilt the camera down"
+                ],
+                "yaw": 0,
+                "pitch": 45
+            },
+            {
+                "name": "rear_level",
+                "descriptions": [
+                    "Rear camera level with the <object>",
+                    "Rear camera at same height as the <object> and perpendicular to the ground"
+                ],
+                "instructions": [
+                    "Place the camera behind and level with the <object>",
+                    "Place the camera at the same height as the <object> and behind it"
+                ],
+                "yaw": 180,
+                "pitch": 0
+            },
+            {
+                "name": "rear_angled_down_45",
+                "descriptions": [
+                    "Rear camera angled down 45 degrees",
+                    "Camera behind and 45 degree angle down",
+                    "Rear camera tilted down"
+                ],
+                "instructions": [
+                    "Place the camera behind the <object> and angle it down 45 degrees",
+                    "Place the camera at a 45 degree angle to the ground behind the <object>",
+                    "Tilt the camera down a lot"
+                ],
+                "yaw": 180,
+                "pitch": 45
+            },
+            {
+                "name": "left_level",
+                "descriptions": [
+                    "Camera on the left side and level with the <object>",
+                    "Camera at same height as the <object> on the left side"
+                ],
+                "instructions": [
+                    "Place the camera on the left side of <object>",
+                    "Place the camera at the same height as the <object> and on the left side of it"
+                ],
+                "yaw": 90,
+                "pitch": 0
+            },
+            {
+                "name": "left_angled_down_45",
+                "descriptions": [
+                    "Left camera angled down 45 degrees",
+                    "Camera at 45 degree angle to the ground and 90 degrees to the left side",
+                    "Camera tilted down and to the left of the subject"
+                ],
+                "instructions": [
+                    "Place the camera 90 degrees to the left of the <object> and angle it down 45 degrees",
+                    "Place the camera the left left of <object> and title it 45 degree angle to the ground",
+                    "Tilt the camera down and look from the left"
+                ],
+                "yaw": 90,
+                "pitch": 45
+            },
+            {
+                "name": "right_level",
+                "descriptions": [
+                    "Camera on the right side and level with the <object>",
+                    "Camera at same height as the <object> on the right side"
+                ],
+                "instructions": [
+                    "Place the camera on the right side of <object>",
+                    "Place the camera at the same height as the <object> and on the right side of it"
+                ],
+                "yaw": -90,
+                "pitch": 0
+            },
+            {
+                "name": "right_angled_down_45",
+                "descriptions": [
+                    "Right camera angled down 45 degrees",
+                    "Camera at 45 degree angle to the ground and 90 degrees to the right side",
+                    "Camera tilted down and to the right of the subject"
+                ],
+                "instructions": [
+                    "Place the camera 90 degrees to the right of the <object> and angle it down 45 degrees",
+                    "Place the camera the right right of <object> and title it 45 degree angle to the ground",
+                    "Tilt the camera down and look from the right"
+                ],
+                "yaw": -90,
+                "pitch": 45
+            }
+        ],
+        "framings": [
+            {
+                "name": "full",
+                "distance": 3,
+                "fov": 40,
+                "descriptions": [
+                    "Full view of the <object>",
+                    "The <object> fills the frame"
+                ],
+                "instructions": [
+                    "Frame the <object> so that it fills the frame"
+                ]
+            },
+            {
+                "name": "close",
+                "distance": 2,
+                "fov": 30,
+                "descriptions": [
+                    "Close-up of the <object>",
+                    "The <object> fills the frame"
+                ],
+                "instructions": [
+                    "Frame the <object> so that it fills the frame"
+                ]
+            }
+        ],
+        "animations": [
+            {
+                "name": "pan_left",
+                "descriptions": [
+                    "The camera pans to the left",
+                    "The camera moves left"
+                ],
+                "instructions": [
+                    "Move the camera to the left",
+                    "Pan the camera left"
+                ]
+            },
+            {
+                "name": "orbit_left",
+                "descriptions": [
+                    "Orbit left",
+                    "Move the camera around the <object> to the left"
+                ],
+                "instructions": [
+                    "Move the camera around the <object> to the left"
+                ]
+            },
+            {
+                "name": "pan_right",
+                "descriptions": [
+                    "The camera pans to the right",
+                    "The camera moves right"
+                ],
+                "instructions": [
+                    "Move the camera to the right",
+                    "Pan the camera right"
+                ]
+            },
+            {
+                "name": "orbit_right",
+                "descriptions": [
+                    "Orbit right",
+                    "Move the camera around the <object> to the right"
+                ],
+                "instructions": [
+                    "Move the camera around the <object> to the right"
+                ]
+            },
+            {
+                "name": "zoom_in",
+                "descriptions": [
+                    "The camera zooms in",
+                    "The camera moves closer to the <object>"
+                ],
+                "instructions": [
+                    "Move the camera closer to the <object>",
+                    "Zoom in"
+                ]
+            },
+            {
+                "name": "zoom_out",
+                "descriptions": [
+                    "The camera zooms out",
+                    "The camera moves away from the <object>"
+                ],
+                "instructions": [
+                    "Move the camera away from the <object>",
+                    "Zoom out"
+                ]
+            }
+        ]
+    }

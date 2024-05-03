@@ -31,7 +31,7 @@ def read_json_file(file_path):
 parser = argparse.ArgumentParser(description='Generate random camera combinations.')
 parser.add_argument('--count', type=int, default=10, help='Number of combinations to generate')
 parser.add_argument('--seed', type=int, default=None, help='Seed for the random number generator')
-parser.add_argument('--camera_file_path', type=str, default='datasets/camera_data.json', help='Path to the JSON file containing camera data')
+parser.add_argument('--camera_file_path', type=str, default='data/camera_data.json', help='Path to the JSON file containing camera data')
 parser.add_argument('--max_number_of_objects', type=int, default=3, help='Maximum number of objects to randomly select')
 args = parser.parse_args()
 

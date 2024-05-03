@@ -19,7 +19,7 @@ def set_camera_settings(context, combination):
     # orientation['pitch'] is in degrees, but Blender uses radians
     camera_orientation_pivot_pitch.rotation_euler[1] = orientation['pitch'] * math.pi / -180 # negative so that 45 degrees is up
     framing = combination['framing']
-    
+        
     # set the CameraFramingPivot X to the framing  
     camera_framing_pivot = bpy.data.objects.get("CameraFramingPivot")
     camera_framing_pivot.location[0] = framing['distance']
@@ -39,17 +39,42 @@ def set_camera_animation(animation_name: str) -> None:
     print('camera')
     print(camera_animation_root)
     
-    # find the NLA track with the given animation name on camera_animation_root
-    for track in camera_animation_root.animation_data.nla_tracks:
-        if track.name == animation_name:
-            action = track.strips[0].action
-            return
+    # get camera_animation_root and all empty children and store inan array
+    empties = []
+    # add obj to empties
+    empties.append(camera_animation_root)
+    def recurse_children(obj):
+        for child in obj.children:
+            if child.type == 'EMPTY':
+                empties.append(child)
+                recurse_children(child)
+    recurse_children(camera_animation_root)
+    
+    print("empties length is", len(empties))
+    
+    action_object = None
+    
+    print("animation_name is", animation_name)
+    
+    for empty in empties:
+        # find the NLA track with the given animation name on camera_animation_root
+        if empty.animation_data is None or empty.animation_data.nla_tracks is None:
+            continue
+        for track in empty.animation_data.nla_tracks:
+            if track.name == animation_name:
+                action_object = empty
+                action = track.strips[0].action
+                print('***** FOUND ANIMATION', empty.name, action.name)
+                break
     
     if action is None:
         raise ValueError(f"Animation {animation_name} not found on camera")
     
+    if action_object is None:
+        raise ValueError(f"Animation target object not found for animation {animation_name}")
+    
     # set the action to the camera
-    camera_animation_root.animation_data.action = action
+    action_object.animation_data.action = action
     
     # play the action
     bpy.context.scene.frame_set(0)

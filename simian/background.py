@@ -2,11 +2,6 @@ import os
 import requests
 import bpy
 
-def reset_background(context) -> None:
-    """Reset the background"""
-    # TODO: Implement this function, we may want to clean out the background image
-    pass
-
 def get_background_path(args, combination) -> str:
     background = combination['background']
     background_id = background['id']
