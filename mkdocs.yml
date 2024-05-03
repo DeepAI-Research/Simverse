@@ -1,0 +1,10 @@
+site_name: Simian
+theme:
+    name: material
+    logo: assets/logo.png
+plugins:
+- search
+- autorefs
+- mkdocstrings:
+    enabled: true
+    default_handler: python

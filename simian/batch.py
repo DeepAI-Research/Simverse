@@ -103,7 +103,7 @@ def render_objects(
         # if we are on linux, then application_path is /usr/bin/blender
         # https://builder.blender.org/download/daily/archive/blender-4.1.1-stable+v41.e1743a0317bc-linux.x86_64-release.tar.xz
         # get the command to run
-        command = f"{application_path} --background --python simian/main.py -- {args}"
+        command = f"{application_path} --background --python simian/render.py -- {args}"
         print(command)
 
         # render the object (put in dev null)

@@ -2,7 +2,7 @@ blender
 blender-*
 .DS_Store
 __pycache__
-blendgen/__pycache__
+simian/__pycache__
 github
 hf-objaverse-v1
 sketchfab

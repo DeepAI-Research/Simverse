@@ -1,11 +1,11 @@
-# Blendgen
+# Simian
 A synthetic data generator for video caption pairs.
 
-https://github.com/RaccoonResearch/blendgen/assets/18633264/54346aa8-fde4-4c11-b210-52525082a650
+https://github.com/RaccoonResearch/simian/assets/18633264/54346aa8-fde4-4c11-b210-52525082a650
 
 *Medium shot, orbiting The Moon to the right. It's mid-day and the sky is clear. The background is an air museum with a few planes parked.*
 
-Blendgen creates synthetic data that is usable for generative video and video captioning tasks. The data consists of videos and captions. The videos are generated using Blender, a 3D modeling software.
+Simian creates synthetic data that is usable for generative video and video captioning tasks. The data consists of videos and captions. The videos are generated using Blender, a 3D modeling software.
 
 For example, a video could be:
 
@@ -34,7 +34,7 @@ sudo python3 scripts/start_x_server.py start
 ## Generating Combinations
 
 ```bash
-python3 blendgen/combiner.py --count 1000 --seed 42
+python3 simian/combiner.py --count 1000 --seed 42
 ```
 
 ## Generating Videos
@@ -42,16 +42,16 @@ python3 blendgen/combiner.py --count 1000 --seed 42
 You can generate individually:
 ```bash
 # MacOS
-/Applications/Blender.app/Contents/MacOS/Blender --background --python blendgen/main.py -- --width 1920 --height 1080 --combination_index 0 --output_dir ./renders --background_path ./backgrounds
+/Applications/Blender.app/Contents/MacOS/Blender --background --python simian/render.py -- --width 1920 --height 1080 --combination_index 0 --output_dir ./renders --background_path ./backgrounds
 
 # Linux
-blender --background --python blendgen/main.py -- --width 1920 --height 1080 --combination_index 0 --output_dir ./renders --background_path ./backgrounds
+blender --background --python simian/render.py -- --width 1920 --height 1080 --combination_index 0 --output_dir ./renders --background_path ./backgrounds
 ```
 
 Or generate all or part of the combination set using the `batch.py` script:
 
 ```bash
-python3 blendgen/batch.py --start_index 0 --end_index 1000 --width 1024 --height 576
+python3 simian/batch.py --start_index 0 --end_index 1000 --width 1024 --height 576
 ```
 
 ## Distributed rendering
@@ -64,13 +64,13 @@ scripts/setup_redis.sh
 
 Now, start your workers
 ```bash
-celery -A blendgen.worker worker --loglevel=info
+celery -A simian.worker worker --loglevel=info
 ```
 
 Now issue work to your task queue
 
 ```bash
-python3 blendgen/distributed.py --start_index 0 --end_index 10 --width 1024 --height 576
+python3 simian/distributed.py --start_index 0 --end_index 10 --width 1024 --height 576
 ```
 
 If you want to use a custom or hosted Redis instance (recommended), you can add th redis details like this:
@@ -92,7 +92,7 @@ We welcome contributions! We're especially interested in help adding and refinin
 
 ## How to contribute
 
-1. Check out the issues here: https://github.com/RaccoonResearch/blendgen/issues
+1. Check out the issues here: https://github.com/RaccoonResearch/simian/issues
 2. Join our Discord here: https://discord.gg/JMfbmHdPNB
 3. Get in touch with us so we can coordinate on development.
 4. Or, you know, just YOLO a pull request. We're pretty chill.
@@ -114,11 +114,11 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 If you use it, please cite us:
 
 ```bibtex
-@misc{Blendgen,
+@misc{Simian,
   author = {Raccoon Research},
-  title = {Blendgen: A Synthetic Data Generator for Video Caption Pairs},
+  title = {Simian: A Synthetic Data Generator for Video Caption Pairs},
   year = {2024},
   publisher = {GitHub},
-  howpublished = {\url{https://github.com/RaccoonResearch/blendgen}}
+  howpublished = {\url{https://github.com/RaccoonResearch/simian}}
 }
 ```

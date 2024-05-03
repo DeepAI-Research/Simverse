@@ -35,18 +35,18 @@ import bpy
 # Get the directory of the currently executing script
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
-# if the directory is blendgen, remove that
-if current_dir.endswith("blendgen"):
+# if the directory is simian, remove that
+if current_dir.endswith("simian"):
     current_dir = os.path.dirname(current_dir)  
 
-# Append the blendgen directory to sys.path
+# Append the simian directory to sys.path
 blendgen_path = os.path.join(current_dir)
 sys.path.append(blendgen_path)
 
-from blendgen.camera import reset_cameras, set_camera_settings
-from blendgen.scene import reset_scene
-from blendgen.object import combine_and_centralize_hierarchy, delete_invisible_objects, load_object, merge_close_vertices, normalize_object_scale, remove_small_geometry
-from blendgen.background import set_background
+from simian.camera import reset_cameras, set_camera_settings
+from simian.scene import reset_scene
+from simian.object import combine_and_centralize_hierarchy, delete_invisible_objects, load_object, merge_close_vertices, normalize_object_scale, remove_small_geometry
+from simian.background import set_background
 
 def read_combination(combination_file, index=0):
     """Reads a specified camera combination from a JSON file."""
@@ -187,9 +187,6 @@ if __name__ == "__main__":
     
     # Download object with objaverse to download_dir
     downloaded = objaverse.load_objects([uid])
-    print("downloaded")
-    print(downloaded)
-    # returns {'489bedad97b14989b99a7ea47096410a': '/Users/shawwalters/.objaverse/hf-objaverse-v1/glbs/000-143/489bedad97b14989b99a7ea47096410a.glb'}
     download_dir = downloaded[uid]
     # Render the images
     render_scene(

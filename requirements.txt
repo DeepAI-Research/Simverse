@@ -9,3 +9,7 @@ argparse
 mathutils
 fire
 objaverse
+mkdocstrings
+mkdocs
+mkdocs-material
+mkdocstrings-python
