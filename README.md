@@ -54,6 +54,25 @@ Or generate all or part of the combination set using the `batch.py` script:
 python3 blendgen/batch.py --start_index 0 --end_index 1000 --width 1024 --height 576
 ```
 
+## Distributed rendering
+Rendering can be distributed across multiple machines using the "distributed.py" and "worker.py" scripts.
+
+First, make sure you have Redis set up
+```bash
+scripts/setup_redis.sh
+```
+
+Now, start your workers
+```bash
+celery -A blendgen.worker worker --loglevel=info
+```
+
+Now issue work to your task queue
+
+```bash
+python3 blendgen/distributed.py --start_index 0 --end_index 10 --width 1024 --height 576
+```
+
 # 📁 Datasets
 
 We are currently using the following datasets:

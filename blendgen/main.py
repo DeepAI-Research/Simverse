@@ -6,6 +6,8 @@ import sys
 import json
 import os
 import ssl
+import pandas as pd
+
 ssl._create_default_https_context = ssl._create_unverified_context
 
 def check_imports():
@@ -26,10 +28,8 @@ def check_imports():
 
 check_imports()
 
-from mathutils import Vector
 import pandas as pd
 import objaverse
-
 import bpy
 
 # Get the directory of the currently executing script
@@ -44,45 +44,15 @@ blendgen_path = os.path.join(current_dir)
 sys.path.append(blendgen_path)
 
 from blendgen.camera import reset_cameras, set_camera_settings
-from blendgen.scene import reset_scene, scene_bbox
-from blendgen.object import delete_invisible_objects, load_object
+from blendgen.scene import reset_scene
+from blendgen.object import combine_and_centralize_hierarchy, delete_invisible_objects, load_object, merge_close_vertices, normalize_object_scale, remove_small_geometry
 from blendgen.background import set_background
-from blendgen.postprocessing import enable_effect
 
 def read_combination(combination_file, index=0):
     """Reads a specified camera combination from a JSON file."""
     with open(combination_file, 'r') as file:
         combinations = json.load(file)
         return combinations[min(index, len(combinations) - 1)]
-
-def get_hierarchy_bbox(obj, context):
-    """Calculate the bounding box of an object and its children."""
-    # Ensure the object's matrix_world is updated
-    context.view_layer.update()
-    
-    # Initialize min and max coordinates with extremely large and small values
-    min_coord = [float('inf'), float('inf'), float('inf')]
-    max_coord = [-float('inf'), -float('inf'), -float('inf')]
-    
-    # Function to update min and max coordinates
-    def update_bounds(obj):
-        # Update the object's bounding box based on its world matrix
-        bbox_corners = [obj.matrix_world @ Vector(corner) for corner in obj.bound_box]
-        for corner in bbox_corners:
-            for i in range(3):
-                min_coord[i] = min(min_coord[i], corner[i])
-                max_coord[i] = max(max_coord[i], corner[i])
-    
-    # Recursive function to process each object
-    def process_object(obj):
-        update_bounds(obj)
-        for child in obj.children:
-            process_object(child)
-
-    # Start processing from the root object
-    process_object(obj)
-    
-    return min_coord, max_coord
 
 def render_scene(
     object_file: str,
@@ -110,22 +80,24 @@ def render_scene(
     
     # Get the object just loaded and ensure all children are selected
     obj = [obj for obj in context.view_layer.objects.selected][0]
-    obj.select_set(True)
     
-    # Get the bounding box of the object and its children
-    bbox_min, bbox_max = get_hierarchy_bbox(obj, context)
-    print("Bounding box:", bbox_min, bbox_max)
+    # print mesh statistics
+    print("Mesh statistics")
+    print(obj.data)
     
-    # Calculate the scale of the bounding box and scale the object if necessary
-    bbox_dimensions = [bbox_max[i] - bbox_min[i] for i in range(3)]
-    max_dimension = max(bbox_dimensions)
-    print("Max dimension:", max_dimension)
+    combine_and_centralize_hierarchy(context, obj)
+    obj = [obj for obj in context.view_layer.objects.selected][0]
+    print("Mesh statistics")
+    print(obj.data)
+    # merge_close_vertices(context, obj, 0.001)
+    obj = [obj for obj in context.view_layer.objects.selected][0]
     
-    if max_dimension > 1:
-        print("Scaling object")
-        scale = 1 / max_dimension
-        print("scale", scale)
-        obj.scale = (scale, scale, scale)
+    # print mesh statistics
+    print("Mesh statistics")
+    print(obj.data)
+    
+    # remove_small_geometry(context, obj, 10)
+    obj = normalize_object_scale(context, obj)
         
     # Set up cameras
     
