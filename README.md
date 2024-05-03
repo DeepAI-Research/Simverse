@@ -7,7 +7,9 @@ https://github.com/RaccoonResearch/simian/assets/18633264/54346aa8-fde4-4c11-b21
 
 Simian creates synthetic data that is usable for generative video and video captioning tasks. The data consists of videos and captions. The videos are generated using Blender, a 3D modeling software.
 
-For example, a video could be:
+## Experimental Pre-Alpha
+
+This project is in open development phase and is not ready for public use. Many things are still being actively developed for an initial release. Use at your own risk.
 
 ## 🖥️ Setup
 
