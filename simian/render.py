@@ -44,8 +44,7 @@ simian_path = os.path.join(current_dir)
 sys.path.append(simian_path)
 
 from simian.camera import reset_cameras, set_camera_settings
-from simian.scene import reset_scene
-from simian.object import combine_and_centralize_hierarchy, delete_invisible_objects, load_object, merge_close_vertices, normalize_object_scale, remove_small_geometry
+from simian.object import delete_all_empties, delete_invisible_objects, get_meshes_in_hierarchy, join_objects_in_hierarchy, load_object, lock_all_objects, normalize_object_scale, optimize_meshes_in_hierarchy, remove_loose_meshes, remove_small_geometry, set_pivot_to_bottom, unlock_objects, unparent_keep_transform
 from simian.background import set_background
 
 def read_combination(combination_file, index=0):
@@ -65,7 +64,12 @@ def render_scene(
 ) -> None:
     """Saves rendered video of the object."""
     os.makedirs(output_dir, exist_ok=True)
+        
+    bpy.ops.wm.open_mainfile(filepath="scenes/video_generation_v1.blend")
+
     scene = context.scene
+    
+    initial_objects = lock_all_objects()
     
     combination = read_combination(combination_file, combination_index)
 
@@ -73,10 +77,9 @@ def render_scene(
     if object_file.endswith(".blend"):
         bpy.ops.object.mode_set(mode="OBJECT")
         reset_cameras(scene)
-        delete_invisible_objects(context)
+        delete_invisible_objects()
     else:
-        reset_scene()
-        load_object(object_file, context=context)
+        load_object(object_file)
     
     # Get the object just loaded and ensure all children are selected
     obj = [obj for obj in context.view_layer.objects.selected][0]
@@ -84,20 +87,22 @@ def render_scene(
     # print mesh statistics
     print("Mesh statistics")
     print(obj.data)
+
+    optimize_meshes_in_hierarchy(obj)
     
-    combine_and_centralize_hierarchy(context, obj)
-    obj = [obj for obj in context.view_layer.objects.selected][0]
-    print("Mesh statistics")
-    print(obj.data)
-    # merge_close_vertices(context, obj, 0.001)
-    obj = [obj for obj in context.view_layer.objects.selected][0]
+    join_objects_in_hierarchy(obj)
     
-    # print mesh statistics
-    print("Mesh statistics")
-    print(obj.data)
+    # remove_loose_meshes(obj)
+        
+    meshes = get_meshes_in_hierarchy(obj)
+    obj = meshes[0]
     
-    # remove_small_geometry(context, obj, 10)
-    obj = normalize_object_scale(context, obj)
+    set_pivot_to_bottom(obj)
+    # unparent_keep_transform(obj)
+    normalize_object_scale(obj)
+    # delete_all_empties()
+    
+    unlock_objects(initial_objects)
         
     # Set up cameras
     

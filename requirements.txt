@@ -6,10 +6,12 @@ loguru
 fsspec>=2022.11.0
 gputil==1.4.0
 argparse
-mathutils
 fire
 objaverse
 mkdocstrings
 mkdocs
 mkdocs-material
 mkdocstrings-python
+pytest-blender
+pytest
+numpy
