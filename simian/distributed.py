@@ -33,8 +33,8 @@ if current_dir.endswith("simian"):
     current_dir = os.path.dirname(current_dir)  
 
 # Append the simian directory to sys.path
-blendgen_path = os.path.join(current_dir)
-sys.path.append(blendgen_path)
+simian_path = os.path.join(current_dir)
+sys.path.append(simian_path)
 
 # if we are on macOS, then application_path is /Applications/Blender.app/Contents/MacOS/Blender
 if platform.system() == "Darwin":

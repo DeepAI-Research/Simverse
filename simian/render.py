@@ -40,8 +40,8 @@ if current_dir.endswith("simian"):
     current_dir = os.path.dirname(current_dir)  
 
 # Append the simian directory to sys.path
-blendgen_path = os.path.join(current_dir)
-sys.path.append(blendgen_path)
+simian_path = os.path.join(current_dir)
+sys.path.append(simian_path)
 
 from simian.camera import reset_cameras, set_camera_settings
 from simian.scene import reset_scene
