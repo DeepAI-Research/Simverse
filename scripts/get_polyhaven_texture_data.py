@@ -5,7 +5,7 @@ import os
 if not os.path.exists("./datasets"):
     os.makedirs("./datasets")
 
-json_file = "./datasets/texture_urls.json"
+json_file = "./datasets/texture_data.json"
 
 if os.path.exists(json_file):
     with open(json_file, "r") as file:

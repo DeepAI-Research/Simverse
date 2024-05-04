@@ -45,6 +45,8 @@ camera_data = read_json_file(camera_file_path)
 
 background_data = {}
 
+material_data = {}
+
 object_map = {}
 category_map = {}
 
@@ -104,7 +106,11 @@ total_length = 0
 for background in background_dict:
     total_length += len(background_dict[background])
 print(f"Total number of backgrounds: {total_length}")
-    
+
+
+# load material_data
+texture_data = read_json_file('datasets/texture_data.json')
+
 # Seed the random number generator for reproducibility
 if args.seed is not None:
     random.seed(args.seed)
@@ -114,6 +120,9 @@ dataset_weights = [len(dataset_dict[name]) for name in dataset_names]
 
 background_names = list(background_dict.keys())
 background_weights = [len(background_dict[name]) for name in background_names]
+
+texture_names = list(texture_data.keys())
+texture_weights = [len(texture_data[name]['maps']) for name in texture_names]
     
 def generate_combinations(camera_data, count):
     combinations = []
@@ -142,12 +151,17 @@ def generate_combinations(camera_data, count):
         background['id'] = background_id
         background['from'] = chosen_background
         object['from'] = chosen_dataset
+        chosen_texture = random.choices(texture_names, weights=texture_weights)[0]
+        
+        # get chosen_texture from dataset_dict
+        
         combination = {
             'object': object,
             'background': background,
             'orientation': orientation,
             'framing': framing,
-            'animation': animation
+            'animation': animation,
+            'stage_material': texture_data[chosen_texture],
         }
         combinations.append(combination)
 
