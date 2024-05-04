@@ -206,6 +206,11 @@ def apply_and_remove_armatures():
 
                     # Optionally, delete the armature
                     armature = modifier.object
+                    
+                    # armature is an id, get the object
+                    if isinstance(armature, str):
+                        armature = bpy.data.objects.get(armature)
+                    
                     if armature is not None:
                         bpy.ops.object.select_all(action='DESELECT')
                         bpy.context.view_layer.objects.active = armature

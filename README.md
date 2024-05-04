@@ -13,18 +13,17 @@ This project is in open development phase and is not ready for public use. Many 
 
 ## 🖥️ Setup
 
-1. Download Blender. If you're on Linux, set it up with this script:
+### ⚠️ IMPORTANT: Simian requires Python 3.10 or lower to run. Blender does not support Python 3.11 yet.
 
-```bash
-bash scripts/install_blender_linux.sh
-```
+1. Install Python 3.10. If you're on Linux, set it up with this (gist)[https://gist.github.com/lalalune/986704a935d202ab2350ca90b2fc9755]
+
 
 2. Download the datasets:
 ```bash
 ./scripts/get_data.sh
 ```
 
-3. If you're on a headless Linux server, install Xorg and start it:
+3. [OPTIONAL] If you're on a headless Linux server, install Xorg and start it:
 
 ```bash
 sudo apt-get install xserver-xorg -y && \
@@ -33,13 +32,13 @@ sudo python3 scripts/start_x_server.py start
 
 ## 📸 Usage
 
-## Generating Combinations
+### Generating Combinations
 
 ```bash
 python3 simian/combiner.py --count 1000 --seed 42
 ```
 
-## Generating Videos
+### Generating Videos
 
 You can generate individually:
 ```bash
@@ -56,7 +55,7 @@ Or generate all or part of the combination set using the `batch.py` script:
 python3 simian/batch.py --start_index 0 --end_index 1000 --width 1024 --height 576
 ```
 
-## Distributed rendering
+### Distributed rendering
 Rendering can be distributed across multiple machines using the "distributed.py" and "worker.py" scripts.
 
 First, make sure you have Redis set up
@@ -80,7 +79,7 @@ If you want to use a custom or hosted Redis instance (recommended), you can add 
 EXPORT REDIS_URL=<my_redis_url>
 ```
 
-# 📁 Datasets
+## 📁 Datasets
 
 We are currently using the following datasets:
 [Objaverse](https://huggingface.co/datasets/allenai/objaverse)
@@ -88,18 +87,18 @@ We are currently using the following datasets:
 Backgrounds are loaded from:
 [Poly Haven](https://polyhaven.com)
 
-# 🦝 Contributing
+## 🦝 Contributing
 
 We welcome contributions! We're especially interested in help adding and refining datasets, improving generation quality, adding new features and dynamics and allowing the project to meet more use cases.
 
-## How to contribute
+### How to contribute
 
 1. Check out the issues here: https://github.com/RaccoonResearch/simian/issues
 2. Join our Discord here: https://discord.gg/JMfbmHdPNB
 3. Get in touch with us so we can coordinate on development.
 4. Or, you know, just YOLO a pull request. We're pretty chill.
 
-# 📜 License
+## 📜 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
