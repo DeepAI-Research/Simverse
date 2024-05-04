@@ -13,7 +13,7 @@ This project is in open development phase and is not ready for public use. Many 
 
 ## 🖥️ Setup
 
-### ⚠️ IMPORTANT: Simian requires Python 3.10 or lower to run. Blender does not support Python 3.11 yet.
+### ⚠️ IMPORTANT: Simian requires Python 3.10 or lower to run.
 
 1. Install Python 3.10. If you're on Linux, set it up with this (gist)[https://gist.github.com/lalalune/986704a935d202ab2350ca90b2fc9755]
 
