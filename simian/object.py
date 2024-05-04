@@ -248,8 +248,8 @@ def optimize_meshes_in_hierarchy(obj):
             
             bpy.ops.mesh.remove_doubles(threshold=0.0005)
     
-            # perform a limited dissolve with a max angle of 1
-            bpy.ops.mesh.dissolve_limited(angle_limit=.001)
+            # perform a limited dissolve with a max angle of .5 degrees
+            bpy.ops.mesh.dissolve_limited(angle_limit=0.0085225, delimit={'NORMAL', 'UV'})
             
             # return to object mode
             bpy.ops.object.mode_set(mode='OBJECT')

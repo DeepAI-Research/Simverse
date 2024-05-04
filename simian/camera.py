@@ -4,10 +4,10 @@ from typing import Tuple
 
 import bpy
 
-def set_camera_settings(context, combination):
+def set_camera_settings(combination):
     """Applies camera settings from a combination."""
     # Assuming combination has keys like 'fov', 'animation'
-    camera = context.scene.objects["Camera"]
+    camera = bpy.context.scene.objects["Camera"]
     orientation = combination['orientation']
     # rotate CameraOrientationPivotYaw by the Y
     camera_orientation_pivot_yaw = bpy.data.objects.get("CameraOrientationPivotYaw")

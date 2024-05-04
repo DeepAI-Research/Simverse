@@ -76,12 +76,6 @@ def render_objects(
     if processes is None:
         processes = multiprocessing.cpu_count() * 3
 
-    # get the objects to render
-    objects = get_combination_objects()
-    
-    print(objects)
-    print(f"Rendering {len(objects)} objects.")
-
     for i in range(start_index, end_index):        
         args = f"--width {width} --height {height} --combination_index {i}"
 
@@ -113,9 +107,6 @@ def render_objects(
             check=False
             # pipe the output to the console
         )
-        
-        
-        print(f"Rendering object {i} with command {command}")
         
 
 if __name__ == "__main__":

@@ -11,10 +11,6 @@ import pandas as pd
 ssl._create_default_https_context = ssl._create_unverified_context
 
 def check_imports():
-    # what was the CLI command used to run this script?
-    application_path = sys.argv[0]
-    print("Application path")
-    print(application_path)
     # read from requirements.txt
     with open("requirements.txt", "r") as f:
         requirements = f.readlines()
@@ -45,7 +41,7 @@ sys.path.append(simian_path)
 
 from simian.camera import reset_cameras, set_camera_settings
 from simian.object import apply_all_modifiers, apply_and_remove_armatures, delete_all_empties, delete_invisible_objects, get_meshes_in_hierarchy, join_objects_in_hierarchy, load_object, lock_all_objects, normalize_object_scale, optimize_meshes_in_hierarchy, remove_loose_meshes, remove_small_geometry, set_pivot_to_bottom, unlock_objects, unparent_keep_transform
-from simian.background import set_background
+from simian.background import create_photosphere, set_background
 
 def read_combination(combination_file, index=0):
     """Reads a specified camera combination from a JSON file."""
@@ -58,16 +54,22 @@ def render_scene(
     output_dir: str,
     context: bpy.types.Context,
     combination_file,
+    start_frame: int = 1,
+    end_frame: int = 25,
     combination_index=0,
     height=1080,
     width=1920
 ) -> None:
-    """Saves rendered video of the object."""
+    """Renders a scene with the specified object and camera combination."""
+    print (f"Rendering scene with object {object_file} and combination {combination_index}")
+    
     os.makedirs(output_dir, exist_ok=True)
         
     bpy.ops.wm.open_mainfile(filepath="scenes/video_generation_v1.blend")
 
     scene = context.scene
+    context.scene.frame_start = start_frame
+    context.scene.frame_end = end_frame
     
     initial_objects = lock_all_objects()
     
@@ -83,10 +85,6 @@ def render_scene(
     
     # Get the object just loaded and ensure all children are selected
     obj = [obj for obj in context.view_layer.objects.selected][0]
-    
-    # print mesh statistics
-    print("Mesh statistics")
-    print(obj.data)
 
     apply_and_remove_armatures()
     apply_all_modifiers(obj)
@@ -101,22 +99,21 @@ def render_scene(
     meshes = get_meshes_in_hierarchy(obj)
     obj = meshes[0]
     
-    print("Mesh statistics")
-    print(obj.data)
-    
     unparent_keep_transform(obj)
     set_pivot_to_bottom(obj)
     obj.location = (0, 0, 0)
     obj.scale = (1, 1, 1)
     normalize_object_scale(obj)
-    # delete_all_empties()
+    # delete_all_empties() # this is causing the camera empties to be deleted
     
     unlock_objects(initial_objects)
-        
-    # Set up cameras
     
-    set_camera_settings(context, combination)
-    set_background(context, args, combination)
+    set_camera_settings(combination)
+    set_background(args.background_path, combination)
+    
+    create_photosphere(args.background_path, combination).scale = (10, 10, 10)
+    
+    # create a stage
     
     # set height and width of rendered output
     scene.render.resolution_x = width
@@ -137,6 +134,7 @@ def render_scene(
     bpy.ops.render.render(animation=True)  # Use animation=True for video rendering
     # DEBUG: save the blend to rendered/<i>.blend
     bpy.ops.wm.save_as_mainfile(filepath=os.path.join(output_dir, f"{combination_index}.blend"))
+    print(f"Rendered video saved to {render_path}")
     
 
 if __name__ == "__main__":
@@ -165,19 +163,26 @@ if __name__ == "__main__":
         default=0,
         help="Index of the camera combination to use from the JSON file.",
     )
+    parser.add_argument(
+        "--start_frame",
+        type=int,
+        default=1,
+        help="Start frame of the animation.",
+    )
+    parser.add_argument(
+        "--end_frame",
+        type=int,
+        default=25,
+        help="End frame of the animation.",
+    )
     parser.add_argument("--width", type=int, default=1920, help="Render output width.")
     parser.add_argument("--height", type=int, default=1080, help="Render output height.")
     argv = sys.argv[sys.argv.index("--") + 1 :]
     args = parser.parse_args(argv)
 
     context = bpy.context
-
-    bpy.ops.wm.open_mainfile(filepath="scenes/video_generation_v1.blend")
-
     scene = context.scene
     render = scene.render
-
-    scene.render.film_transparent = True
 
     os_system = platform.system()
 
@@ -192,20 +197,18 @@ if __name__ == "__main__":
         
     objects = pd.read_json("combinations.json", orient="records")
     object = objects.iloc[args.combination_index]
-    print(object)
     
     # get the object uid from the 'object' column, which is a dictionary
     objects_column = object["object"]
     uid = objects_column["uid"]
-    
-    print("Loading uid")
-    print(uid)
-    
+
     # Download object with objaverse to download_dir
     downloaded = objaverse.load_objects([uid])
     download_dir = downloaded[uid]
     # Render the images
     render_scene(
+        start_frame=args.start_frame,
+        end_frame=args.end_frame,
         object_file=download_dir,
         output_dir=args.output_dir,
         context=context,
