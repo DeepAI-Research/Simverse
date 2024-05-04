@@ -30,7 +30,9 @@ def render_objects(
     width=1920,
     height=1080,
     start_index: int = 0,
-    end_index: int = 9
+    end_index: int = 9,
+    start_frame: int = 1,
+    end_frame: int = 25,
 ) -> None:
     """Renders objects in the Objaverse dataset with Blender
 
@@ -77,7 +79,7 @@ def render_objects(
         processes = multiprocessing.cpu_count() * 3
 
     for i in range(start_index, end_index):        
-        args = f"--width {width} --height {height} --combination_index {i}"
+        args = f"--width {width} --height {height} --combination_index {i} --start_frame {start_frame} --end_frame {end_frame}"
 
         # find the "renders" directory in same folder as this script
         scripts_dir = os.path.dirname(os.path.realpath(__file__))
