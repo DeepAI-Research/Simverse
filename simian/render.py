@@ -42,6 +42,7 @@ sys.path.append(simian_path)
 from simian.camera import reset_cameras, set_camera_settings
 from simian.object import apply_all_modifiers, apply_and_remove_armatures, delete_all_empties, delete_invisible_objects, get_meshes_in_hierarchy, join_objects_in_hierarchy, load_object, lock_all_objects, normalize_object_scale, optimize_meshes_in_hierarchy, remove_loose_meshes, remove_small_geometry, set_pivot_to_bottom, unlock_objects, unparent_keep_transform
 from simian.background import create_photosphere, set_background
+from simian.scene import apply_stage_material, create_stage
 
 def read_combination(combination_file, index=0):
     """Reads a specified camera combination from a JSON file."""
@@ -112,6 +113,9 @@ def render_scene(
     set_background(args.background_path, combination)
     
     create_photosphere(args.background_path, combination).scale = (10, 10, 10)
+    
+    # stage = create_stage()
+    # apply_stage_material(stage, combination)
     
     # create a stage
     
