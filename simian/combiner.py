@@ -164,7 +164,7 @@ def generate_caption(combination):
                 "petite",
                 "extra small",
                 ],
-                "factor": 0.25,
+                "factor": 0.4,
             },
             "small": {
                 "names": [
@@ -177,7 +177,7 @@ def generate_caption(combination):
                 "undersized",
                 "smaller",
                 ],
-                "factor": 0.5,
+                "factor": 0.6,
             },
             "small-medium": {
                 "names": [
@@ -191,7 +191,7 @@ def generate_caption(combination):
                 "shorter than normal",
                 "small-ish",
                 ],
-                "factor": 0.75,
+                "factor": 0.8,
             },
             "medium": {
                 "names": [
@@ -249,13 +249,13 @@ def generate_caption(combination):
                 "very large",
                 "extra large",
                 ],
-                "factor": 2.0,
+                "factor": 1.75,
             }
         }
         keys = object_scales.keys()
         # choose a key randomly
         scale_key = random.choice(list(keys))
-        object["distance_modifier"] = random.uniform(1.2, 2)
+        object["distance_modifier"] = random.uniform(1, 1.5)
         object["scale"] = {
             "factor": object_scales[scale_key]["factor"] * random.uniform(0.9, 1.0),
             "name": scale_key,
@@ -268,11 +268,15 @@ def generate_caption(combination):
             
             r = random.random()
             
+            # add some amount of name noise
             if r < 0.8:
                 delimiter = random.choice([" ", " ", ": ", " - ", " | ", "::", "> "])
-                name = object['name'] + delimiter + object_new_name
+                if object_new_name is not None:
+                    name = object['name'] + delimiter + object_new_name
+                else:
+                    name = object['name']
             elif r < 0.9:
-                name = object_new_name
+                name = object_new_name if object_new_name is not None else object['name']
             else: 
                 name = object['name']
             

@@ -508,11 +508,11 @@
         {
             "name": "full",
             "position": [
-                2,
+                3,
                 0,
                 0
             ],
-            "fov": 35,
+            "fov": 25,
             "descriptions": [
                 "Full view of <objects>.",
                 "The <objects> fills the frame.",
@@ -541,11 +541,11 @@
         {
             "name": "close",
             "position": [
-                1,
+                2,
                 0,
                 0
             ],
-            "fov": 30,
+            "fov": 20,
             "descriptions": [
                 "Close-up of <objects>.",
                 "The <objects> fills the frame.",
@@ -574,11 +574,11 @@
         {
             "name": "medium",
             "position": [
-                2.5,
+                3.5,
                 0,
                 0
             ],
-            "fov": 35,
+            "fov": 30,
             "descriptions": [
                 "Medium shot of <objects>.",
                 "<objects> framed at moderate distance.",
@@ -611,7 +611,7 @@
                 0,
                 0
             ],
-            "fov": 50,
+            "fov": 45,
             "descriptions": [
                 "Wide shot of <objects>.",
                 "Broad perspective on <objects>.",
@@ -635,6 +635,39 @@
                 "Frame <objects> to appear small against its larger setting.",
                 "Take the broadest, most zoomed out shot including <objects>.",
                 "Photograph an extreme long shot of <objects> within sweeping environment."
+            ]
+        },
+        {
+            "name": "far",
+            "position": [
+                5,
+                0,
+                0
+            ],
+            "fov": 60,
+            "descriptions": [
+                "Far shot of <objects>.",
+                "Distant perspective on <objects>.",
+                "Long view of <objects> from a distance.",
+                "Zoomed out view of <objects> in full context.",
+                "Extensive <objects> framing with ample surroundings.",
+                "Long shot of <objects> at a distance.",
+                "Far angle capture of <objects> with extensive background.",
+                "<objects> shown small against vast setting.",
+                "Most zoomed out shot of <objects> in full environment.",
+                "Establishing shot of <objects> from afar."
+            ],
+            "instructions": [
+                "Frame <objects> in a far shot.",
+                "Zoom all the way out to capture <objects> from a distance.",
+                "Use a far angle perspective to capture broad context around <objects>.",
+                "Back up to take an extensive, zoomed out shot of <objects>.",
+                "Compose a long shot framing <objects> at a far range.",
+                "Show <objects> from afar to establish its vast surroundings.",
+                "Capture a far view of <objects> and extensive background.",
+                "Frame <objects> to appear small against its larger setting.",
+                "Take the broadest, most zoomed out shot including <objects>.",
+                "Photograph an establishing shot of <objects> from a distance."
             ]
         }
     ],
