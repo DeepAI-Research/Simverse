@@ -204,19 +204,6 @@ def apply_and_remove_armatures():
                     # Apply the armature modifier
                     bpy.ops.object.modifier_apply(modifier=modifier.name)
 
-                    # Optionally, delete the armature
-                    armature = modifier.object
-                    
-                    # armature is an id, get the object
-                    if isinstance(armature, str):
-                        armature = bpy.data.objects.get(armature)
-                    
-                    if armature is not None:
-                        bpy.ops.object.select_all(action='DESELECT')
-                        bpy.context.view_layer.objects.active = armature
-                        armature.select_set(True)
-                        bpy.ops.object.delete()
-
                     # Deselect everything to clean up for the next iteration
                     bpy.ops.object.select_all(action='DESELECT')
 
@@ -246,10 +233,25 @@ def optimize_meshes_in_hierarchy(obj):
             # select all verts
             bpy.ops.mesh.select_all(action='SELECT')
             
-            bpy.ops.mesh.remove_doubles(threshold=0.0005)
-    
-            # perform a limited dissolve with a max angle of .5 degrees
-            bpy.ops.mesh.dissolve_limited(angle_limit=0.0085225, delimit={'NORMAL', 'UV'})
+            bpy.ops.mesh.remove_doubles(threshold=0.0001)
+            angle_limit = 0.000174533 * 10
+            
+            # go to lines mode
+            bpy.ops.mesh.select_mode(type="EDGE")
+            
+            # deselect all
+            bpy.ops.mesh.select_all(action='DESELECT')
+            
+            # select all edges
+            bpy.ops.mesh.select_all(action='SELECT')
+            
+            # bpy.ops.mesh.dissolve_limited(angle_limit=angle_limit, use_dissolve_boundaries=True, delimit={'NORMAL', 'MATERIAL', 'SEAM', 'SHARP', 'UV'})
+            
+            # set all materials to be double sided
+            for slot in obj.material_slots:
+                slot.material.use_backface_culling = False
+                if slot.material.blend_method == 'BLEND':
+                    slot.material.blend_method = 'HASHED'
             
             # return to object mode
             bpy.ops.object.mode_set(mode='OBJECT')
@@ -364,7 +366,12 @@ def set_pivot_to_bottom(obj):
 
     # Set origin to the center of mass, then adjust Z-coordinate to the bottom of the bounding box
     bpy.ops.object.origin_set(type='ORIGIN_CENTER_OF_MASS', center='BOUNDS')
-    obj.location.z = bbox_min.z - center_of_mass.z
+    obj.location.z =  center_of_mass.z - bbox_min.z
+    obj.location.y = 0
+    obj.location.x = 0
+    
+    bpy.context.scene.cursor.location = (0, 0, 0)
+    bpy.ops.object.origin_set(type='ORIGIN_CURSOR')
 
 def unparent_keep_transform(obj):
     """Unparents an object but keeps its transform.

@@ -14,6 +14,7 @@ datasets
 renders
 backgrounds
 examples
+materials
 sampled_df.json
 *.blend1
 *.obj

@@ -11,7 +11,8 @@
                     "Place the camera at the same height as the <object> and perpendicular to the ground"
                 ],
                 "yaw": 0,
-                "pitch": 0
+                "pitch": 0,
+                "position": [0, 0, 0.5]
             },
             {
                 "name": "front_angled_down_45",
@@ -26,7 +27,8 @@
                     "Tilt the camera down"
                 ],
                 "yaw": 0,
-                "pitch": 45
+                "pitch": 45,
+                "position": [0, 0, 0.5]
             },
             {
                 "name": "rear_level",
@@ -39,7 +41,8 @@
                     "Place the camera at the same height as the <object> and behind it"
                 ],
                 "yaw": 180,
-                "pitch": 0
+                "pitch": 0,
+                "position": [0, 0, 0.5]
             },
             {
                 "name": "rear_angled_down_45",
@@ -54,7 +57,8 @@
                     "Tilt the camera down a lot"
                 ],
                 "yaw": 180,
-                "pitch": 45
+                "pitch": 45,
+                "position": [0, 0, 0.5]
             },
             {
                 "name": "left_level",
@@ -67,7 +71,8 @@
                     "Place the camera at the same height as the <object> and on the left side of it"
                 ],
                 "yaw": 90,
-                "pitch": 0
+                "pitch": 0,
+                "position": [0, 0, 0.5]
             },
             {
                 "name": "left_angled_down_45",
@@ -82,7 +87,8 @@
                     "Tilt the camera down and look from the left"
                 ],
                 "yaw": 90,
-                "pitch": 45
+                "pitch": 45,
+                "position": [0, 0, 0.5]
             },
             {
                 "name": "right_level",
@@ -95,7 +101,8 @@
                     "Place the camera at the same height as the <object> and on the right side of it"
                 ],
                 "yaw": -90,
-                "pitch": 0
+                "pitch": 0,
+                "position": [0, 0, 0.5]
             },
             {
                 "name": "right_angled_down_45",
@@ -110,13 +117,14 @@
                     "Tilt the camera down and look from the right"
                 ],
                 "yaw": -90,
-                "pitch": 45
+                "pitch": 45,
+                "position": [0, 0, 0.5]
             }
         ],
         "framings": [
             {
                 "name": "full",
-                "distance": 3,
+                "position": [3, 0, 0],
                 "fov": 40,
                 "descriptions": [
                     "Full view of the <object>",
@@ -128,7 +136,7 @@
             },
             {
                 "name": "close",
-                "distance": 2,
+                "position": [2, 0, 0],
                 "fov": 30,
                 "descriptions": [
                     "Close-up of the <object>",

@@ -114,8 +114,8 @@ def render_scene(
     
     create_photosphere(args.background_path, combination).scale = (10, 10, 10)
     
-    # stage = create_stage()
-    # apply_stage_material(stage, combination)
+    stage = create_stage()
+    apply_stage_material(stage, combination)
     
     # create a stage
     
