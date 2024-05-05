@@ -3,8 +3,8 @@
         {
             "name": "front_level",
             "descriptions": [
-                "Front camera level with the <object>.",
-                "Front camera at same height as the <object> and perpendicular to the ground.",
+                "Front camera level with <object>.",
+                "Front camera at same height as <object> and perpendicular to the ground.",
                 "Camera directly in front of <object> at eye level.",
                 "Front view of <object> with camera parallel to horizon.",
                 "Frontal shot of <object> from straight ahead.",
@@ -15,8 +15,8 @@
                 "Capture <object> from the front with a flat, forward-facing camera angle."
             ],
             "instructions": [
-                "Place the camera in front of and level with the <object>.",
-                "Position the camera at the same height as the <object> and perpendicular to the ground.",
+                "Place the camera in front of and level with <object>.",
+                "Position the camera at the same height as <object> and perpendicular to the ground.",
                 "Set camera directly opposite <object> at its vertical center point.",
                 "Align camera to be parallel with <object> at eye level.",
                 "Face camera head-on toward <object> at mid height.",
@@ -49,7 +49,7 @@
                 "Capture frontally from a 45 degree angle between horizontal and straight down."
             ],
             "instructions": [
-                "Place the camera in front of the <object> and angle it down 45 degrees.",
+                "Place the camera in front of <object> and angle it down 45 degrees.",
                 "Position the camera at a 45 degree angle to the ground facing <object>.",
                 "Tilt the camera halfway down toward floor while centered in front of <object>.",
                 "Aim camera at front of <object> pitched forward midway between flat and straight down.",
@@ -71,8 +71,8 @@
         {
             "name": "rear_level",
             "descriptions": [
-                "Rear camera level with the <object>.",
-                "Rear camera at same height as the <object> and perpendicular to the ground.",
+                "Rear camera level with <object>.",
+                "Rear camera at same height as <object> and perpendicular to the ground.",
                 "Camera directly behind <object> at its mid-elevation.",
                 "Back view of <object> with camera parallel to horizon.",
                 "Rear-facing shot of <object> from centered position.",
@@ -83,8 +83,8 @@
                 "Capture <object> from behind with camera flat and lined up to its middle."
             ],
             "instructions": [
-                "Place the camera behind and level with the <object>.",
-                "Position camera at the same height as the <object> directly at its rear.",
+                "Place the camera behind and level with <object>.",
+                "Position camera at the same height as <object> directly at its rear.",
                 "Situate camera 180 degrees rotated from front, flat and at <object>'s middle.",
                 "Align camera parallel to ground and centered behind <object>.",
                 "Set camera straight back from <object> at its mid-height.",
@@ -117,7 +117,7 @@
                 "Backside photo angled halfway down from behind <object>."
             ],
             "instructions": [
-                "Place the camera behind the <object> and angle it down 45 degrees.",
+                "Place the camera behind <object> and angle it down 45 degrees.",
                 "Position camera at a 45 degree angle to the ground behind <object>.",
                 "Set camera facing <object>'s back tilted halfway between level and 90 degrees down.",
                 "Aim camera rearward at 45 degree downward pitch.",
@@ -139,8 +139,8 @@
         {
             "name": "left_level",
             "descriptions": [
-                "Camera on the left side and level with the <object>.",
-                "Camera at same height as the <object> on the left side.",
+                "Camera on the left side and level with <object>.",
+                "Camera at same height as <object> on the left side.",
                 "<object>'s left side view from even elevation.",
                 "Side shot from left of <object> with flat camera angle.",
                 "Left side of <object> straight on from midpoint height.",
@@ -152,7 +152,7 @@
             ],
             "instructions": [
                 "Place the camera on the left side of <object>.",
-                "Position camera at the same height as the <object> and 90 degrees to its left.",
+                "Position camera at the same height as <object> and 90 degrees to its left.",
                 "Align camera to <object>'s left side head on from its midpoint.",
                 "Set camera perpendicular to <object> and even with the ground on the left.",
                 "Aim camera directly at left side of <object> from midway up.",
@@ -185,7 +185,7 @@
                 "<object>'s left captured from 45 degree angle between horizontal and vertical."
             ],
             "instructions": [
-                "Place the camera 90 degrees to the left of the <object> and angle it down 45 degrees.",
+                "Place the camera 90 degrees to the left of <object> and angle it down 45 degrees.",
                 "Position camera to the left of <object> and tilt it 45 degree angle to the ground.",
                 "Set camera to <object>'s left, halfway between level and straight down.",
                 "Aim camera 45 degrees down and 90 degrees left of <object>'s front.",
@@ -207,8 +207,8 @@
         {
             "name": "right_level",
             "descriptions": [
-                "Camera on the right side and level with the <object>.",
-                "Camera at same height as the <object> on the right side.",
+                "Camera on the right side and level with <object>.",
+                "Camera at same height as <object> on the right side.",
                 "Right side view of <object> from even elevation.",
                 "Side shot 90 degrees right of <object> with level camera.",
                 "Right side of <object> head on from midpoint height.",
@@ -220,7 +220,7 @@
             ],
             "instructions": [
                 "Place the camera on the right side of <object>.",
-                "Position camera at the same height as the <object>, 90 degrees to its right.",
+                "Position camera at the same height as <object>, 90 degrees to its right.",
                 "Align camera horizontally in line with right side of <object> at its midpoint.",
                 "Set camera perpendicular to <object> and parallel to ground on the right.",
                 "Aim camera head on at right side of <object> from middle elevation.",
@@ -253,7 +253,7 @@
                 "Shot from <object>'s right tilted 45 degrees toward the ground."
             ],
             "instructions": [
-                "Place the camera 90 degrees to the right of the <object> and angle it down 45 degrees.",
+                "Place the camera 90 degrees to the right of <object> and angle it down 45 degrees.",
                 "Position camera to <object>'s right tilted 45 degree angle to the ground.",
                 "Set camera right of <object>, halfway between perpendicular and straight down.",
                 "Aim 45 degrees down and 90 degrees right of <object>'s front.",
@@ -514,28 +514,28 @@
             ],
             "fov": 40,
             "descriptions": [
-                "Full view of the <object>.",
+                "Full view of <object>.",
                 "The <object> fills the frame.",
                 "Entire <object> inside the shot.",
-                "Everything about the <object> is captured.",
+                "Everything about <object> is captured.",
                 "The entire <object> is shown.",
                 "Comprehensive view of the entire <object>.",
-                "Complete perspective on the <object>.",
+                "Complete perspective on <object>.",
                 "The <object> in its entirety.",
-                "Full scope of the <object> covered.",
-                "Rendering of the <object> from end to end."
+                "Full scope of <object> covered.",
+                "Rendering of <object> from end to end."
             ],
             "instructions": [
-                "Frame the <object> so that it fills the frame.",
+                "Frame <object> so that it fills the frame.",
                 "Fit the entire <object> within the shot.",
-                "Show the comprehensive view of the <object>.",
-                "Capture the <object> completely from end to end.",
+                "Show the comprehensive view of <object>.",
+                "Capture <object> completely from end to end.",
                 "Include every part of <object> in the frame.",
-                "Render the total view of the <object>.",
-                "Cover the exhaustive perspective of the <object>.",
-                "Encompass the <object> fully in the shot.",
-                "Photograph the <object> in its entirety within frame boundaries.",
-                "Fill the frame with the unabridged view of the <object>."
+                "Render the total view of <object>.",
+                "Cover the exhaustive perspective of <object>.",
+                "Encompass <object> fully in the shot.",
+                "Photograph <object> in its entirety within frame boundaries.",
+                "Fill the frame with the unabridged view of <object>."
             ]
         },
         {
@@ -547,7 +547,7 @@
             ],
             "fov": 30,
             "descriptions": [
-                "Close-up of the <object>.",
+                "Close-up of <object>.",
                 "The <object> fills the frame.",
                 "Zoomed in tight on <object>.",
                 "Near view of <object> with little background.",
@@ -559,14 +559,14 @@
                 "<object> at nearest possible non-macro range."
             ],
             "instructions": [
-                "Frame the <object> so that it fills the frame.",
-                "Move in close to the <object> to exclude most background.",
-                "Fill the frame with the <object> at near distance.",
-                "Capture the <object> up close and personal.",
-                "Zoom in tight until the <object> crowds the shot.",
-                "Closely frame the <object> at intimate range.",
-                "Photograph the <object> at closest non-macro distance.",
-                "Tightly frame the <object> to eliminate surrounding context.",
+                "Frame <object> so that it fills the frame.",
+                "Move in close to <object> to exclude most background.",
+                "Fill the frame with <object> at near distance.",
+                "Capture <object> up close and personal.",
+                "Zoom in tight until <object> crowds the shot.",
+                "Closely frame <object> at intimate range.",
+                "Photograph <object> at closest non-macro distance.",
+                "Tightly frame <object> to eliminate surrounding context.",
                 "Achieve an object-focused composition at near proximity.",
                 "Render a zoomed-in view of <object> at close range."
             ]
@@ -580,28 +580,28 @@
             ],
             "fov": 35,
             "descriptions": [
-                "Medium shot of the <object>.",
+                "Medium shot of <object>.",
                 "<object> framed at moderate distance.",
-                "Midrange capture of the <object>.",
+                "Midrange capture of <object>.",
                 "Typical framing of <object> at normal distance.",
                 "Average perspective on <object>.",
                 "Moderate scope <object> composition.",
                 "Neutral distance and zoom on <object>.",
                 "Halfway between close-up and full shots of <object>.",
-                "Waist-up equivalent framing of the <object>.",
+                "Waist-up equivalent framing of <object>.",
                 "Standard medium-distance perspective on <object>."
             ],
             "instructions": [
-                "Frame the <object> at a medium distance.",
-                "Stand back to a moderate range from the <object>.",
-                "Capture the <object> from an average perspective.",
+                "Frame <object> at a medium distance.",
+                "Stand back to a moderate range from <object>.",
+                "Capture <object> from an average perspective.",
                 "Back up to a neutral distance from <object>.",
-                "Zoom out to a midrange scope on the <object>.",
+                "Zoom out to a midrange scope on <object>.",
                 "Photograph <object> from typical framing distance.",
                 "Position the camera a moderate space away from <object>.",
-                "Shoot the <object> from halfway between close-up and full.",
-                "Capture a waist-up equivalent view of the <object>.",
-                "Take a standard medium-distance shot of the <object>."
+                "Shoot <object> from halfway between close-up and full.",
+                "Capture a waist-up equivalent view of <object>.",
+                "Take a standard medium-distance shot of <object>."
             ]
         },
         {
@@ -613,8 +613,8 @@
             ],
             "fov": 50,
             "descriptions": [
-                "Wide shot of the <object>.",
-                "Broad perspective on the <object>.",
+                "Wide shot of <object>.",
+                "Broad perspective on <object>.",
                 "Expansive <object> framing with ample surroundings.",
                 "Zoomed out view of <object> in broad context.",
                 "Long shot of <object> at a distance.",
@@ -625,14 +625,14 @@
                 "Extreme long shot framing <object> within sweeping view."
             ],
             "instructions": [
-                "Frame the <object> in a wide shot.",
+                "Frame <object> in a wide shot.",
                 "Zoom all the way out to capture <object> from a distance.",
                 "Use a wide angle perspective to capture broad context around <object>.",
-                "Back up to take an expansive, zoomed out shot of the <object>.",
+                "Back up to take an expansive, zoomed out shot of <object>.",
                 "Compose a long shot framing <object> at a far range.",
-                "Show the <object> from afar to establish its vast surroundings.",
+                "Show <object> from afar to establish its vast surroundings.",
                 "Capture an extremely wide view of <object> and extensive background.",
-                "Frame the <object> to appear small against its larger setting.",
+                "Frame <object> to appear small against its larger setting.",
                 "Take the broadest, most zoomed out shot including <object>.",
                 "Photograph an extreme long shot of <object> within sweeping environment."
             ]
@@ -670,7 +670,7 @@
             "name": "orbit_left",
             "descriptions": [
                 "Orbit left.",
-                "Move the camera around the <object> to the left.",
+                "Move the camera around <object> to the left.",
                 "Circular motion of camera counter-clockwise.",
                 "Camera arcs left around <object>.",
                 "Revolving around <object> leftwards.",
@@ -681,11 +681,11 @@
                 "Leftward arc of camera circling <object>."
             ],
             "instructions": [
-                "Move the camera around the <object> to the left.",
+                "Move the camera around <object> to the left.",
                 "Circle the camera counter-clockwise with <object> as the center.",
-                "Revolve the camera left around the <object>.",
+                "Revolve the camera left around <object>.",
                 "Pivot camera around <object> in a counter-clockwise arc.",
-                "Rotate around the <object> while moving camera to its left side.",
+                "Rotate around <object> while moving camera to its left side.",
                 "Sweep camera in a leftward circular motion focused on <object>.",
                 "Orbit the camera around left side of <object>.",
                 "Spiral camera in a counter-clockwise path with <object> in the middle.",
@@ -724,7 +724,7 @@
             "name": "orbit_right",
             "descriptions": [
                 "Orbit right.",
-                "Move the camera around the <object> to the right.",
+                "Move the camera around <object> to the right.",
                 "Camera circles <object> clockwise.",
                 "Arcing right around <object>.",
                 "Camera motion spirals around <object> rightward.",
@@ -735,7 +735,7 @@
                 "Sweeping arc around right side of <object>."
             ],
             "instructions": [
-                "Move the camera around the <object> to the right.",
+                "Move the camera around <object> to the right.",
                 "Circle around <object> in a clockwise arc.",
                 "Rotate camera to the right while revolving around <object>.",
                 "Pivot in a circular rightward motion with <object> in the middle.",
@@ -744,16 +744,16 @@
                 "Swing rightwards in a circle keeping <object> at the center.",
                 "Rotate around <object> clockwise, arcing camera to the right.",
                 "Sweep camera 360 degrees around <object> turning to the right.",
-                "Revolve camera in a right-orbiting path focused on the <object>."
+                "Revolve camera in a right-orbiting path focused on <object>."
             ]
         },
         {
             "name": "zoom_in",
             "descriptions": [
                 "The camera zooms in.",
-                "The camera moves closer to the <object>.",
+                "The camera moves closer to <object>.",
                 "View narrows in on <object>.",
-                "Focal length tightens on the <object>.",
+                "Focal length tightens on <object>.",
                 "Zooming reduces distance to <object>.",
                 "Camera pushes in closer to <object>.",
                 "Narrowing field of view on <object>.",
@@ -762,10 +762,10 @@
                 "Magnifying <object> by zooming."
             ],
             "instructions": [
-                "Move the camera closer to the <object>.",
+                "Move the camera closer to <object>.",
                 "Zoom in.",
                 "Decrease distance between camera and <object>.",
-                "Magnify the <object> using camera zoom.",
+                "Magnify <object> using camera zoom.",
                 "Narrow field of view to enlarge <object> in frame.",
                 "Tighten focal length and push in on <object>.",
                 "Zoom to make <object> appear closer and larger.",
@@ -778,7 +778,7 @@
             "name": "zoom_out",
             "descriptions": [
                 "The camera zooms out.",
-                "The camera moves away from the <object>.",
+                "The camera moves away from <object>.",
                 "Expanding view to reveal more around <object>.",
                 "Camera pulls back from <object>.",
                 "Zooming out widens the field of view.",
@@ -789,7 +789,7 @@
                 "Zooming out makes <object> appear further."
             ],
             "instructions": [
-                "Move the camera away from the <object>.",
+                "Move the camera away from <object>.",
                 "Zoom out.",
                 "Widen field of view to expand perspective beyond <object>.",
                 "Increase apparent distance from camera to <object> by zooming out.",

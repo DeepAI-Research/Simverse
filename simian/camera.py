@@ -11,7 +11,7 @@ def set_camera_settings(combination):
     orientation = combination['orientation']
     # rotate CameraOrientationPivotYaw by the Y
     camera_orientation_pivot_yaw = bpy.data.objects.get("CameraOrientationPivotYaw")
-    random_yaw_offset = random.random() * 10 - 5
+    random_yaw_offset = orientation['rotation_offset'][0]
     # orientation['pitch'] is in degrees, but Blender uses radians
     camera_orientation_pivot_yaw.rotation_euler[2] = (orientation['yaw'] + random_yaw_offset) * math.pi / 180
     
@@ -19,21 +19,20 @@ def set_camera_settings(combination):
     camera_orientation_pivot_pitch = bpy.data.objects.get("CameraOrientationPivotPitch")
     # orientation['pitch'] is in degrees, but Blender uses radians
     # randomly add 3 to -3 degrees to the pitch
-    random_pitch_offset = random.random() * 6 - 3
+    random_pitch_offset = orientation['rotation_offset'][1]
     camera_orientation_pivot_pitch.rotation_euler[1] = (orientation['pitch'] + random_pitch_offset) * math.pi / -180 # negative so that 45 degrees is up
     framing = combination['framing']
     
     # set the root of the whole rig to the orientation position
     camera_animation_root = bpy.data.objects.get("CameraAnimationRoot")
     
-    random_vector = [random.random() * 0.05 for _ in range(3)]
-    camera_animation_root.location = [sum(x) for x in zip(orientation['position'], random_vector)]
+    camera_animation_root.location = [sum(x) for x in zip(orientation['position'], orientation['position_offset'])]
         
     # set the CameraFramingPivot X to the framing  
     camera_framing_pivot = bpy.data.objects.get("CameraFramingPivot")
     
-    random_vector = [random.random() * 0.05 for _ in range(3)]
-    camera_framing_pivot.location = [sum(x) for x in zip(framing['position'], random_vector)]
+    camera_framing_pivot.location = [sum(x) for x in zip(framing['position'], framing['position_offset'])]
+    camera.rotation_euler = [camera.rotation_euler[i] + (framing['rotation_offset'][i]) * math.pi / 180 for i in range(3)]
 
     camera.data.lens = framing['fov'] + random.random() * 5 - 2.5
     set_camera_animation(combination['animation']['name'])
