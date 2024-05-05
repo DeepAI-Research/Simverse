@@ -78,7 +78,7 @@ def create_photosphere(background_path, combination):
         segments=64,
         ring_count=32,
         radius=1.0,
-        location=(0, 0, 2)
+        location=(0, 0, 3)
     )
     bpy.ops.object.shade_smooth()
     

@@ -127,32 +127,44 @@ texture_names = list(texture_data.keys())
 texture_weights = [len(texture_data[name]['maps']) for name in texture_names]
 
 def generate_caption(combination):
-    object_name = combination["object"]["name"]
+    object_names = [obj['name'] for obj in combination['objects']]
+    object_name = ', '.join(object_names[:-1]) + ' and ' + object_names[-1]
+
     background_name = combination["background"]["name"]
     floor_material_name = combination["stage_material"]["name"]
 
     camera_data = random.choice(["descriptions", "instructions"])
     camera_text = random.choice(combination["orientation"][camera_data])
 
-    object_id = combination["object"]["uid"]
-    print("object_id", object_id)
+    objects = combination["objects"]
+    
+    positions_taken = set()
+    
+    for object in objects:
+        # if this is the first object, set 'placement' to 5
+        if object == objects[0]:
+            object['placement'] = 5
+            positions_taken.add(5)
+        else:
+            # randomly choose a position that hasn't been taken
+            object['placement'] = random.choice([i for i in range(1, 9) if i not in positions_taken])
+        object_id = object["uid"]
+        print("object_id", object_id)
 
-    if object_id in captions_data:
-        object_new_name = captions_data[object_id]
-        object_name = object_name + " (" + object_new_name + ")"
-    else:
-        object_name = combination["object"]["name"]
+        if object_id in captions_data:
+            object_new_name = captions_data[object_id]
+            object['name'] = object['name'] + " (" + object_new_name + ")"
 
     object_name_prefixes = [
-        "The subject is <object>.",
-        "[subject: <object>]",
-        "The focus is on <object>.",
-        "The view is focused on <object>.",
-        "The camera is pointed at <object>.",
-        "The frame is centered on <object>.",
-        "Featuring <object>.",
-        "Focus on <object>.",
-        "The object is <object>."
+        "The subject is <objects>.",
+        "[subject: <objects>]",
+        "The focus is on <objects>.",
+        "The view is focused on <objects>.",
+        "The camera is pointed at <objects>.",
+        "The frame is centered on <objects>.",
+        "Featuring <objects>.",
+        "Focus on <objects>.",
+        "The object is <objects>."
     ]
     
     object_name_suffixes = [
@@ -167,18 +179,21 @@ def generate_caption(combination):
     random_object_name_prefix = random.choice(object_name_prefixes)
     random_object_name_suffix = random.choice(object_name_suffixes)
 
-    if "<object>" not in camera_text:
-        camera_text += random_object_name_prefix
+    if "<objects>" not in camera_text:
+        camera_text = camera_text.strip() + " " + random_object_name_prefix
+        
+    # join all of the names of the objects together
+    object_names = ', '.join([obj['name'] for obj in combination['objects']])
 
-    # replace the first instance of <object> with the object name
-    camera_text = camera_text.replace("<object>", object_name, 1)
+    # replace the first instance of <objects> with the object name
+    camera_text = camera_text.replace("<objects>", object_names, 1)
     
     # replace all instances of object with "the subject"
-    camera_text = camera_text.replace(object_name, random_object_name_suffix)
+    camera_text = camera_text.replace(object_names, random_object_name_suffix)
 
     framing_data = random.choice(["descriptions", "instructions"])
     framing_text = random.choice(combination["framing"][framing_data])
-    framing_text = framing_text.replace("<object>", object_name)
+    framing_text = framing_text.replace("<objects>", object_names)
 
     caption_parts = [camera_text, framing_text]
     
@@ -225,13 +240,99 @@ def generate_caption(combination):
 
     if random.random() < 0.2:
         caption_parts.append(f"The {floor_prefix} is {floor_material_name}.")
-        
+    
+    
+    to_the_left = [
+        "to the left of",
+        "left of",
+        "beside",
+        "next to",
+        "adjacent to",
+        "left-side of",
+        "on the left of",
+    ]
+    
+    to_the_right = [
+        "is to the right of",
+        "is right of",
+        "is beside",
+        "is next to",
+        "is adjacent to",
+        "is right-side of",
+        "is on the right of",
+    ]
+    
+    in_front_of = [
+        "is in front of",
+        "is front of",
+        "is before",
+        "is ahead of",
+        "is at the fore"
+    ]
+    
+    behind = [
+        "is behind",
+        "is to the back of",
+        "is in back of",
+        "is after",
+        "is at the rear of",
+        "is to the rear of",
+        "flanks"
+    ]
+    
+    relationships = []
+    for i, obj1 in enumerate(combination['objects']):
+        for j, obj2 in enumerate(combination['objects']):
+            if i != j:
+                print("obj1", obj1['name'])
+                print("obj2", obj2['name'])
+                row_diff = (obj1['placement'] - 1) // 3 - (obj2['placement'] - 1) // 3
+                col_diff = (obj1['placement'] - 1) % 3 - (obj2['placement'] - 1) % 3
+                
+                if row_diff == 0 and col_diff == -1:
+                    # randomly choose one of th eleft options
+                    relationships.append(f"{obj1['name']} {random.choice(to_the_left)} {obj2['name']}.")
+                    relationships.append(f"{obj2['name']} {random.choice(to_the_right)} {obj1['name']}.")
+                    print("row_diff == 0 and col_diff == -1")
+                elif row_diff == 0 and col_diff == 1:
+                    relationships.append(f"{obj1['name']} {random.choice(to_the_right)} {obj2['name']}.")
+                    relationships.append(f"{obj2['name']} {random.choice(to_the_left)} {obj1['name']}.")
+                    print("row_diff == 0 and col_diff == 1")
+                elif row_diff == -1 and col_diff == 0:
+                    relationships.append(f"{obj1['name']} {random.choice(in_front_of)} {obj2['name']}.")
+                    relationships.append(f"{obj2['name']} {random.choice(behind)} {obj1['name']}.")
+                    print("row_diff == -1 and col_diff == 0")
+                elif row_diff == 1 and col_diff == 0:
+                    relationships.append(f"{obj1['name']} {random.choice(behind)} {obj2['name']}.")
+                    relationships.append(f"{obj2['name']} {random.choice(in_front_of)} {obj1['name']}.")
+                    print("row_diff == 1 and col_diff == 0")
+                elif row_diff == -1 and col_diff == -1:
+                    relationships.append(f"{obj1['name']} {random.choice(to_the_left)} and {random.choice(in_front_of)} {obj2['name']}.")
+                    relationships.append(f"{obj2['name']} {random.choice(to_the_right)} and {random.choice(behind)} {obj1['name']}.")
+                    print("row_diff == -1 and col_diff == -1")
+                elif row_diff == -1 and col_diff == 1:
+                    relationships.append(f"{obj1['name']} {random.choice(to_the_right)} and {random.choice(in_front_of)} {obj2['name']}.")
+                    relationships.append(f"{obj2['name']} {random.choice(to_the_left)} and {random.choice(behind)} {obj1['name']}.")
+                    print("row_diff == -1 and col_diff == 1")
+                elif row_diff == 1 and col_diff == -1:
+                    relationships.append(f"{obj1['name']} {random.choice(to_the_left)} and {random.choice(behind)} {obj2['name']}.")
+                    relationships.append(f"{obj2['name']} {random.choice(to_the_right)} and {random.choice(in_front_of)} {obj1['name']}.")
+                    print("row_diff == 1 and col_diff == -1")
+                elif row_diff == 1 and col_diff == 1:
+                    relationships.append(f"{obj1['name']} {random.choice(to_the_right)} and {random.choice(behind)} {obj2['name']}.")
+                    relationships.append(f"{obj2['name']} {random.choice(to_the_left)} and {random.choice(in_front_of)} {obj1['name']}.")
+                    print("row_diff == 1 and col_diff == 1")
+    
+    selected_relationships = random.sample(relationships, len(combination['objects']) - 1)
+    print("selected_relationships", selected_relationships)
+    caption_parts.extend(selected_relationships)
+
     # randomize the caption parts order
     caption_parts = random.sample(caption_parts, len(caption_parts))
     
-    caption = " ".join(caption_parts).replace('..', '.').strip()
+    caption = " ".join(caption_parts).replace('..', '.')
 
-    return caption
+    return caption.strip()
 
 def generate_combinations(camera_data, count):
     combinations = []
@@ -250,6 +351,7 @@ def generate_combinations(camera_data, count):
         objects = []
         for _ in range(number_of_objects):
             object = random.choice(dataset_dict[chosen_dataset])
+            object['from'] = chosen_dataset
             objects.append(object)
         
         chosen_background = random.choices(background_names, weights=background_weights)[0]
@@ -259,7 +361,7 @@ def generate_combinations(camera_data, count):
         background = background_dict[chosen_background][background_id]
         background['id'] = background_id
         background['from'] = chosen_background
-        object['from'] = chosen_dataset
+        
         chosen_texture = random.choices(texture_names, weights=texture_weights)[0]
         
         framing["position_offset"] = [random.uniform(-0.1, 0.1), random.uniform(-0.1, 0.1), random.uniform(-0.1, 0.1)]
@@ -269,7 +371,7 @@ def generate_combinations(camera_data, count):
         
         combination = {
             'index': i,
-            'object': object,
+            'objects': objects,
             'background': background,
             'orientation': orientation,
             'framing': framing,
