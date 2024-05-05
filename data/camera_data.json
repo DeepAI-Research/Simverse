@@ -11,7 +11,7 @@
                 "Head-on view of <object> with level camera",
                 "Camera squared up facing <object> at its vertical midpoint",
                 "Front-facing picture of <object> taken from directly opposite",
-                "Photograph <object> head-on at its center height",
+                "Frame <object> head-on at its center height",
                 "Capture <object> from the front with a flat, forward-facing camera angle"
             ],
             "instructions": [
@@ -266,6 +266,244 @@
             ],
             "yaw": -90,
             "pitch": 45,
+            "position": [
+                0,
+                0,
+                0.5
+            ]
+        },
+        {
+            "name": "front_angled_down_15",
+            "descriptions": [
+                "Front camera angled down 15 degrees",
+                "Front camera tilted slightly toward the ground",
+                "Modest downward angle from front of <object>",
+                "Shallow 15 degree decline from front and center",
+                "Front camera angled a bit below level",
+                "Slightly downward tilt from <object> front",
+                "Mild 15 degree dip from anterior view",
+                "Subtle downward camera angle from forward perspective",
+                "Front camera angled timidly toward the floor",
+                "Facing <object> with gentle downward slope"
+            ],
+            "instructions": [
+                "Place camera in front of <object> tilted down 15 degrees",
+                "Angle camera forward and down a small amount",
+                "Tilt camera 15 degrees below horizon centered on <object>",
+                "Position camera just below level in line with <object> front",
+                "Point camera at <object> front dipped shallowly downward",
+                "Align camera a bit low while facing <object>",
+                "Set slight 15 degree downward angle from <object> front",
+                "Decline camera mildly from forward and level",
+                "Aim a tad down from head-on view of <object>",
+                "Slant camera timidly toward ground centered on fore of <object>"
+            ],
+            "yaw": 0,
+            "pitch": 15,
+            "position": [
+                0,
+                0,
+                0.5
+            ]
+        },
+        {
+            "name": "front_angled_down_30",
+            "descriptions": [
+                "Front camera angled down 30 degrees",
+                "Front camera tilted moderately toward the ground",
+                "Thirty degree downward view from <object> front",
+                "Distinct but not steep downward angle head-on to <object>",
+                "Front camera sloped 30 degrees below horizon",
+                "Angled view a third of the way down from level front",
+                "Moderately low angle facing front of <object>",
+                "Downward tilt equivalent to 1/3 of perpendicular, centered forward",
+                "Front vantage point with camera pitched a third below even",
+                "Camera at 30 degree declination from <object> anterior"
+            ],
+            "instructions": [
+                "Place camera in front of <object> angled down 30 degrees",
+                "Tilt camera forward and moderately toward the floor",
+                "Aim 30 degrees down from camera level with front of <object>",
+                "Position camera a third of 90 degrees below horizon head-on to <object>",
+                "Set camera facing <object> front at an angle 1/3 of the way to vertical",
+                "Point 30 degrees down from even with front and center of <object>",
+                "Slope camera a distinct but not steep amount below level forward view",
+                "Align camera pitched downwards a moderate 30 degrees from anterior",
+                "Angle camera 1/3 of perpendicular decline from facing <object>",
+                "Orient a 30 degree dipped camera centerline to fore of <object>"
+            ],
+            "yaw": 0,
+            "pitch": 30,
+            "position": [
+                0,
+                0,
+                0.5
+            ]
+        },
+        {
+            "name": "left_45_angled_down_45",
+            "descriptions": [
+                "Camera 45 degrees left and angled down 45 degrees",
+                "45 degree left view of <object> tilted halfway to the ground",
+                "Midway between level and 90 down, looking from 45 to the left",
+                "45 left camera also 45 degrees toward floor",
+                "Halfway down and halfway rotated left from <object> front",
+                "45 degree angle both downward and to the side",
+                "Camera rotated left 1/8 turn and pitched down 1/8 turn",
+                "Diagonally left and down from <object> at 45 degrees each",
+                "Tilted view from 45 left of fore and 45 down from flat",
+                "Angled equidistantly down and sideways left"
+            ],
+            "instructions": [
+                "Place camera 45 degrees left of <object> front, tilted down 45 degrees",
+                "From 45 left of fore, also angle camera halfway to the ground",
+                "Turn camera left 1/8 circle and down 1/8 circle from forward and level",
+                "Rotate 45 degrees left from <object> front, pitch 45 down from even",
+                "Align 45 left of head-on then dip camera 45 degrees toward floor",
+                "PositionCamera midway from forward to left side and level to downward",
+                "Look diagonally down and left 45 degrees each from origin",
+                "Set camera 45 degrees sideways and 45 sloped from start",
+                "Angle view equidistantly left of centerline and declined toward ground",
+                "Tilt 1/8 turn down and pan 1/8 turn left to frame <object>"
+            ],
+            "yaw": 45,
+            "pitch": 45,
+            "position": [
+                0,
+                0,
+                0.5
+            ]
+        },
+        {
+            "name": "right_45_angled_down_45",
+            "descriptions": [
+                "Camera 45 degrees right and angled down 45 degrees",
+                "45 degree right view of <object> tilted halfway to the ground",
+                "Midway between level and 90 down, looking from 45 to the right",
+                "45 right camera also 45 degrees toward floor",
+                "Halfway down and halfway rotated right from <object> front",
+                "45 degree angle both downward and to the right side",
+                "Camera rotated right 1/8 turn and pitched down 1/8 turn",
+                "Diagonally right and down from <object> at 45 degrees each",
+                "Tilted view from 45 right of fore and 45 down from flat",
+                "Angled equidistantly down and sideways right"
+            ],
+            "instructions": [
+                "Place camera 45 degrees right of <object> front, tilted down 45 degrees",
+                "From 45 right of fore, also angle camera halfway to the ground",
+                "Turn camera right 1/8 circle and down 1/8 circle from forward and level",
+                "Rotate 45 degrees right from <object> front, pitch 45 down from even",
+                "Align 45 right of head-on then dip camera 45 degrees toward floor",
+                "Position Camera midway from forward to right side and level to downward",
+                "Look diagonally down and right 45 degrees each from origin",
+                "Set camera 45 degrees starboard and 45 inclined from start",
+                "Angle view equidistantly right of centerline and declined toward ground",
+                "Tilt 1/8 turn down and pan 1/8 turn right to frame <object>"
+            ],
+            "yaw": -45,
+            "pitch": 45,
+            "position": [
+                0,
+                0,
+                0.5
+            ]
+        },
+        {
+            "name": "left_90",
+            "descriptions": [
+                "Camera 90 degrees to the left of <object>",
+                "Viewing <object> fully from the left side",
+                "Left profile perspective on <object>",
+                "Camera rotated 90 left, perpendicular to <object>'s front",
+                "Squarely facing <object>'s left, turned 1/4 circle from fore",
+                "Looking head-on at the left of <object>",
+                "Left-side close-up view, turned completely sideways",
+                "Fully pivoted from front to left, 90 degrees",
+                "Camera spun a quarter turn counter-clockwise to <object>'s side",
+                "Point of view directly left of <object>, at a right angle from fore"
+            ],
+            "instructions": [
+                "Place camera at a 90 degree angle to the left of <object>'s front",
+                "Rotate 1/4 turn counter-clockwise to <object>'s left side",
+                "Pivot camera 90 degrees left to face <object> from the side",
+                "Shift camera squarely to the left for profile view of <object>",
+                "Turn perpendicular to fore of <object>, aiming head-on from its left",
+                "Spin view sideways from front to left of <object>, a full 90 degrees",
+                "Go fully left from <object>'s front to capture it in profile",
+                "Position camera at a right angle to fore, directly facing left side",
+                "Swivel 1/4 circle leftwards to view <object> from side-on",
+                "Point camera to the left flank, forming 90 degree corner with fore"
+            ],
+            "yaw": 90,
+            "pitch": 0,
+            "position": [
+                0,
+                0,
+                0.5
+            ]
+        },
+        {
+            "name": "right_90",
+            "descriptions": [
+                "Camera 90 degrees to the right of <object>",
+                "Viewing <object> fully from the right side",
+                "Right profile perspective on <object>",
+                "Camera rotated 90 right, perpendicular to <object>'s front",
+                "Squarely facing <object>'s right, turned 1/4 circle from fore",
+                "Looking head-on at the right of <object>",
+                "Right-side close-up view, turned completely sideways",
+                "Fully pivoted from front to right, 90 degrees",
+                "Camera spun a quarter turn clockwise to <object>'s side",
+                "Point of view directly right of <object>, at a right angle from fore"
+            ],
+            "instructions": [
+                "Place camera at a 90 degree angle to the right of <object>'s front",
+                "Rotate 1/4 turn clockwise to <object>'s right side",
+                "Pivot camera 90 degrees right to face <object> from the side",
+                "Shift camera squarely to the right for profile view of <object>",
+                "Turn perpendicular to fore of <object>, aiming head-on from its right",
+                "Spin view sideways from front to right of <object>, a full 90 degrees",
+                "Go fully right from <object>'s front to capture it in profile",
+                "Position camera at a right angle to fore, directly facing right side",
+                "Swivel 1/4 circle rightwards to view <object> from side-on",
+                "Point camera to the right flank, forming 90 degree corner with fore"
+            ],
+            "yaw": -90,
+            "pitch": 0,
+            "position": [
+                0,
+                0,
+                0.5
+            ]
+        },
+        {
+            "name": "back",
+            "descriptions": [
+                "Camera directly behind <object>",
+                "Viewing <object> straight-on from the rear",
+                "Back view fully opposite to <object>'s front",
+                "Posterior perspective head-on to <object>",
+                "Behind <object>, looking squarely at its back",
+                "Camera rotated 180 degrees from front to back of <object>",
+                "Back side close-up from directly behind <object>",
+                "Spun 1/2 turn from fore to aft for rear view",
+                "Straight back alignment 180 from <object>'s anterior",
+                "Point of view completely reversed to <object>'s posterior"
+            ],
+            "instructions": [
+                "Place camera directly behind <object> facing its rear",
+                "Rotate 180 degrees or 1/2 turn from front to back of <object>",
+                "Pivot camera to perfectly opposing position behind <object>",
+                "Shift view to straight-on angle to the back side of <object>",
+                "Spin from anterior to posterior, now head-on to <object>'s rear",
+                "Turn around to <object>'s back from a centered frontal position",
+                "Swivel 1/2 circle from fore to aft for a posterior close-up",
+                "Go to <object>'s back side and aim camera directly at it",
+                "Position camera 180 degrees flipped from front to back of <object>",
+                "Point directly at <object>'s rear, completely opposite to its front"
+            ],
+            "yaw": 180,
+            "pitch": 0,
             "position": [
                 0,
                 0,
