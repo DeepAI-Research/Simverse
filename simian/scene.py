@@ -21,7 +21,7 @@ def download_texture(url, material_name, texture_name):
     return local_path
 
 
-def create_stage(stage_size=(100, 100), stage_height=0.01):
+def create_stage(stage_size=(100, 100), stage_height=0.002):
     """
     Creates a simple stage object in the scene.
     """

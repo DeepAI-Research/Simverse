@@ -1,5 +1,6 @@
 """Blender script to render images of 3D models."""
 import argparse
+import math
 import platform
 import subprocess
 import sys
@@ -102,9 +103,14 @@ def render_scene(
         grid_cell = object_data['placement']
         row = (grid_cell - 1) // 3
         col = (grid_cell - 1) % 3
-        obj.location = (col - 1, row - 1, 0)
         
-        obj.scale = (1, 1, 1)
+        obj.location = [(col - 1 + object_data['position_offset'][0]) * object_data['distance_modifier'],
+                        (row - 1 + object_data['position_offset'][1]) * object_data['distance_modifier'],
+                        object_data['position_offset'][2] * object_data['distance_modifier']]
+        
+        obj.rotation_euler = [obj.rotation_euler[i] + (object_data['rotation_offset'][i]) * math.pi / 180 for i in range(3)]
+        
+        obj.scale = [object_data['scale']['factor'] for _ in range(3)]
         normalize_object_scale(obj)
 
     # Unlock and unhide the initial objects

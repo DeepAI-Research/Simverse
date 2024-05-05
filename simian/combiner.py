@@ -140,20 +140,151 @@ def generate_caption(combination):
     
     positions_taken = set()
     
-    for object in objects:
-        # if this is the first object, set 'placement' to 5
+    for object in objects:        
         if object == objects[0]:
             object['placement'] = 5
             positions_taken.add(5)
         else:
-            # randomly choose a position that hasn't been taken
             object['placement'] = random.choice([i for i in range(1, 9) if i not in positions_taken])
         object_id = object["uid"]
-        print("object_id", object_id)
+        
+        position_offset = [random.uniform(-0.3, 0.3), random.uniform(-0.1, 0.1), 0]
+        rotation_offset = [random.uniform(-3, 3), random.uniform(-3, 3), 0]
 
+        object["position_offset"] = position_offset
+        object["rotation_offset"] = rotation_offset
+        
+        object_scales = {
+            "tiny": {
+                "names": [
+                "tiny",
+                "mini",
+                "miniscule",
+                "minature",
+                "petite",
+                "extra small",
+                ],
+                "factor": 0.25,
+            },
+            "small": {
+                "names": [
+                "small",
+                "little",
+                "mini",
+                "petite",
+                "miniature",
+                "short",
+                "undersized",
+                "smaller",
+                ],
+                "factor": 0.5,
+            },
+            "small-medium": {
+                "names": [
+                "small-medium",
+                "medium-small",
+                "medium-sized",
+                "average sized",
+                "below average sized",
+                "smaller than average",
+                "smaller than usual",
+                "shorter than normal",
+                "small-ish",
+                ],
+                "factor": 0.75,
+            },
+            "medium": {
+                "names": [
+                "medium",
+                "average",
+                "normal",
+                "standard",
+                "typical",
+                "regular",
+                "standard",
+                "usual",
+                ],
+                "factor": 1.0,
+            },
+            "medium-large": {
+                "names": [
+                "medium-large",
+                "large-medium",
+                "large-ish",
+                "larger than average",
+                "larger than usual",
+                "larger than normal",
+                "bigger than average",
+                "bigger than usual",
+                "bigger than normal",
+                "above average sized",
+                ],
+                "factor": 1.25,
+            },
+            "large": {
+                "names": [
+                "large",
+                "big",
+                "huge",
+                "massive",
+                "giant",
+                "tall",
+                ],
+                "factor": 1.5,
+            },
+            "huge": {
+                "names": [
+                "huge",
+                "towering",
+                "massive",
+                "giant",
+                "gigantic",
+                "enormous",
+                "colossal",
+                "really big",
+                "really tall",
+                "really large",
+                "very big",
+                "very tall",
+                "very large",
+                "extra large",
+                ],
+                "factor": 2.0,
+            }
+        }
+        keys = object_scales.keys()
+        # choose a key randomly
+        scale_key = random.choice(list(keys))
+        object["distance_modifier"] = random.uniform(1.2, 2)
+        object["scale"] = {
+            "factor": object_scales[scale_key]["factor"] * random.uniform(0.9, 1.0),
+            "name": scale_key,
+            "name_synonym": object_scales[scale_key]["names"][random.randint(0, len(object_scales[scale_key]["names"]) - 1)]
+        }
         if object_id in captions_data:
             object_new_name = captions_data[object_id]
-            object['name'] = object['name'] + " (" + object_new_name + ")"
+            
+            name = ""
+            
+            r = random.random()
+            
+            if r < 0.8:
+                delimiter = random.choice([" ", " ", ": ", " - ", " | ", "::", "> "])
+                name = object['name'] + delimiter + object_new_name
+            elif r < 0.9:
+                name = object_new_name
+            else: 
+                name = object['name']
+            
+            r = random.random()
+
+            if r < 0.05:
+                name = name + " (" + object["scale"]["name_synonym"] + ")"
+            elif r < 0.3:
+                name = object["scale"]["name_synonym"] + name
+
+            object['name'] = name
+
 
     object_name_prefixes = [
         "The subject is <objects>.",
