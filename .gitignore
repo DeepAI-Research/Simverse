@@ -10,6 +10,7 @@ smithsonian
 thingiverse
 combinations.json
 annotations*.json
+captions.json
 datasets
 renders
 backgrounds

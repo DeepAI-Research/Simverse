@@ -22,6 +22,95 @@ datasets = [
 
 backgrounds = ["hdri_urls"]
 
+
+def generate_caption(combination):
+    object_name = combination["object"]["name"]
+    background_name = combination["background"]["name"]
+    floor_material_name = combination["stage_material"]["name"]
+
+    camera_data = random.choice(["descriptions", "instructions"])
+    camera_text = random.choice(combination["orientation"][camera_data])
+
+    object_name_prefixes = [
+        "The subject is <object>.",
+        "(subject:<object>)",
+        "The focus is on <object>.",
+        "The view is focused on <object>.",
+        "The camera is pointed at <object>.",
+        "The frame is centered on <object>.",
+        "Featuring <object>.",
+        "Focus on <object>.",
+        "The object is <object>."
+    ]
+    
+    random_object_name_prefix = random.choice(object_name_prefixes)
+
+    if "<object>" not in camera_text:
+        camera_text += random_object_name_prefix
+
+    # replace the first instance of <object> with the object name
+    camera_text = camera_text.replace("<object>", object_name, 1)
+    
+    # replace all instances of object with "the subject"
+    camera_text = camera_text.replace(object_name, "the subject")
+
+    framing_data = random.choice(["descriptions", "instructions"])
+    framing_text = random.choice(combination["framing"][framing_data])
+    framing_text = framing_text.replace("<object>", object_name)
+
+    caption_parts = [camera_text, framing_text]
+    
+    floor_material_names = [
+        'floor material',
+        'floor texture',
+        'floor',
+        'ground material',
+        'ground texture',
+        'ground',
+        'stage material',
+        'stage texture',
+        'stage'
+        'flooring',
+        'flooring material',
+        'flooring texture'
+    ]
+    
+    background_names = [
+        'background',
+        'background scene',
+        'background view',
+        'background setting',
+        'background environment',
+        'backdrop',
+        'scene',
+        'setting',
+        'envionrment',
+        'view',
+        'panorama',
+        'landscape',
+        'scenery'
+    ]
+    
+    background_prefix = random.choice(background_names)
+    floor_prefix = random.choice(floor_material_names)
+    
+    # remove all numbers and trim
+    floor_material_name = ''.join([i for i in floor_material_name if not i.isdigit()]).strip()
+    background_name = ''.join([i for i in background_name if not i.isdigit()]).strip()
+
+    if random.random() < 0.3:
+        caption_parts.append(f"The {background_prefix} is {background_name}.")
+
+    if random.random() < 0.2:
+        caption_parts.append(f"The {floor_prefix} is {floor_material_name}.")
+        
+    # randomize the caption parts order
+    caption_parts = random.sample(caption_parts, len(caption_parts))
+    
+    caption = " ".join(caption_parts)
+
+    return caption
+
 # Function to read data from a JSON file
 def read_json_file(file_path):
     with open(file_path, 'r') as file:
@@ -44,17 +133,13 @@ max_number_of_objects = args.max_number_of_objects
 camera_data = read_json_file(camera_file_path)
 
 background_data = {}
-
 material_data = {}
-
 object_map = {}
 category_map = {}
-
 dataset_dict = {}
 background_dict = {}
-# TODO: This is slow!
+
 for dataset in datasets:
-    # get the current path of this file
     current_path = os.path.dirname(os.path.realpath(__file__))
     dataset_path = os.path.join('datasets', dataset + '.json')
     dataset_full_path = os.path.join(current_path, '../', dataset_path)
@@ -63,7 +148,6 @@ for dataset in datasets:
         dataset_data = read_json_file(dataset_full_path)
         local_count = 0
         
-        # TODO: SLOW
         for object in dataset_data:
             object_id = object['uid']
             categories = object['categories']
@@ -128,7 +212,7 @@ def generate_combinations(camera_data, count):
     combinations = []
     
     # Generate combinations on the fly up to the specified count
-    for _ in range(count):
+    for i in range(count):
         orientation = random.choice(camera_data['orientations'])
         framing = random.choice(camera_data['framings'])
         animation = random.choice(camera_data['animations'])
@@ -153,16 +237,42 @@ def generate_combinations(camera_data, count):
         object['from'] = chosen_dataset
         chosen_texture = random.choices(texture_names, weights=texture_weights)[0]
         
-        # get chosen_texture from dataset_dict
+        framing["position_offset"] = [random.uniform(-0.1, 0.1), random.uniform(-0.1, 0.1), random.uniform(-0.1, 0.1)]
+        framing["rotation_offset"] = [random.uniform(-1, 1), random.uniform(-1, 1), random.uniform(-1, 1)]
+        orientation["position_offset"] = [random.uniform(-0.1, 0.1), random.uniform(-.1, 0.1), 0]
+        orientation["rotation_offset"] = [random.uniform(-1, 1), random.uniform(-1, 1), 0]
         
         combination = {
+            'index': i,
             'object': object,
             'background': background,
             'orientation': orientation,
             'framing': framing,
             'animation': animation,
-            'stage_material': texture_data[chosen_texture],
+            'stage_material': texture_data[chosen_texture]
         }
+        
+        caption = generate_caption(combination)
+        combination['caption'] = caption
+        
+        # remove description and instructions from framing, animation and orientation
+        framing = framing.copy()
+        
+        framing.pop("descriptions", None)
+        framing.pop("instructions", None)
+        
+        orientation = orientation.copy()
+        orientation.pop("descriptions", None)    
+        orientation.pop("instructions", None)
+        
+        animation = animation.copy()
+        animation.pop("descriptions", None)
+        animation.pop("instructions", None)
+        
+        combination["orientation"] = orientation
+        combination["framing"] = framing
+        combination["animation"] = animation
+        
         combinations.append(combination)
 
     return combinations
