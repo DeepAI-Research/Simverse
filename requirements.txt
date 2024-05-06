@@ -11,3 +11,4 @@ mkdocs-material
 mkdocstrings-python
 pytest
 numpy
+pandas
