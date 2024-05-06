@@ -21,7 +21,7 @@ datasets = [
     "weapons-military"
 ]
 
-backgrounds = ["hdri_urls"]
+backgrounds = ["hdri_data"]
 
 # Function to read data from a JSON file
 def read_json_file(file_path):

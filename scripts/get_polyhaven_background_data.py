@@ -3,7 +3,7 @@ import json
 import os
 
 # JSON file path
-json_file = "../hdri_urls.json"
+json_file = "../hdri_data.json"
 
 # Check if the JSON file exists, otherwise create an empty dictionary
 if os.path.exists(json_file):
