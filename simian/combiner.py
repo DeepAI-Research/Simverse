@@ -179,24 +179,19 @@ def generate_caption(combination):
     random_object_name_prefix = random.choice(object_name_prefixes)
     random_object_name_suffix = random.choice(object_name_suffixes)
 
-    if "<objects>" not in camera_text:
-        camera_text = camera_text.strip() + " " + random_object_name_prefix
-
-    # join object names and descriptions
-    object_name_descriptions = ', '.join([obj['name'] + " " + obj['description'] if obj['description'] is not None else obj['name'] for obj in combination['objects']])
-
     # join all of the names of the objects together
     object_names = ', '.join([obj['name'] for obj in combination['objects']])
     object_descriptions = ', '.join(obj['description'] if not None else "" for obj in combination['objects'])
-    
-    camera_text = camera_text.replace("<objects>", object_names, 1)
+    object_name_descriptions = ', '.join([obj['name'] + ", " + obj['description'] if obj['description'] is not None else obj['name'] for obj in combination['objects']])
 
-    # replace the first instance of <objects> with the object name
-    camera_text = camera_text.replace("<objects>", object_descriptions, 1)
-    camera_text = camera_text.replace(object_names, random_object_name_suffix, 1)
+    if "<objects>" not in camera_text:
+        # at least one <objects> gets added to the camera text
+        camera_text = camera_text.strip() + " " + random_object_name_prefix
+    # replace the first <objects> with the object names
     camera_text = camera_text.replace("<objects>", object_name_descriptions, 1)
+    # replace the rest of the <objects> with the object name suffix
     camera_text = camera_text.replace("<objects>", random_object_name_suffix)
-
+   
     framing_data = random.choice(["descriptions", "instructions"])
     framing_text = random.choice(combination["framing"][framing_data])
     framing_text = framing_text.replace("<objects>", object_names)
@@ -235,29 +230,29 @@ def generate_caption(combination):
                 col_diff = (obj1['placement'] - 1) % 3 - (obj2['placement'] - 1) % 3
                 
                 if row_diff == 0 and col_diff == -1:
-                    relationships.append(f"{obj1['description']} {random.choice(to_the_left)} {obj2['description']}.")
-                    relationships.append(f"{obj2['description']} {random.choice(to_the_right)} {obj1['description']}.")
+                    relationships.append(f"{obj1['name']} {random.choice(to_the_left)} {obj2['name']}.")
+                    relationships.append(f"{obj2['name']} {random.choice(to_the_right)} {obj1['name']}.")
                 elif row_diff == 0 and col_diff == 1:
-                    relationships.append(f"{obj1['description']} {random.choice(to_the_right)} {obj2['description']}.")
-                    relationships.append(f"{obj2['description']} {random.choice(to_the_left)} {obj1['description']}.")
+                    relationships.append(f"{obj1['name']} {random.choice(to_the_right)} {obj2['name']}.")
+                    relationships.append(f"{obj2['name']} {random.choice(to_the_left)} {obj1['name']}.")
                 elif row_diff == -1 and col_diff == 0:
-                    relationships.append(f"{obj1['description']} {random.choice(in_front_of)} {obj2['description']}.")
-                    relationships.append(f"{obj2['description']} {random.choice(behind)} {obj1['description']}.")
+                    relationships.append(f"{obj1['name']} {random.choice(in_front_of)} {obj2['name']}.")
+                    relationships.append(f"{obj2['name']} {random.choice(behind)} {obj1['name']}.")
                 elif row_diff == 1 and col_diff == 0:
-                    relationships.append(f"{obj1['description']} {random.choice(behind)} {obj2['description']}.")
-                    relationships.append(f"{obj2['description']} {random.choice(in_front_of)} {obj1['description']}.")
+                    relationships.append(f"{obj1['name']} {random.choice(behind)} {obj2['name']}.")
+                    relationships.append(f"{obj2['name']} {random.choice(in_front_of)} {obj1['name']}.")
                 elif row_diff == -1 and col_diff == -1:
-                    relationships.append(f"{obj1['description']} {random.choice(to_the_left)} and {random.choice(in_front_of)} {obj2['description']}.")
-                    relationships.append(f"{obj2['description']} {random.choice(to_the_right)} and {random.choice(behind)} {obj1['description']}.")
+                    relationships.append(f"{obj1['name']} {random.choice(to_the_left)} and {random.choice(in_front_of)} {obj2['name']}.")
+                    relationships.append(f"{obj2['name']} {random.choice(to_the_right)} and {random.choice(behind)} {obj1['name']}.")
                 elif row_diff == -1 and col_diff == 1:
-                    relationships.append(f"{obj1['description']} {random.choice(to_the_right)} and {random.choice(in_front_of)} {obj2['description']}.")
-                    relationships.append(f"{obj2['description']} {random.choice(to_the_left)} and {random.choice(behind)} {obj1['description']}.")
+                    relationships.append(f"{obj1['name']} {random.choice(to_the_right)} and {random.choice(in_front_of)} {obj2['name']}.")
+                    relationships.append(f"{obj2['name']} {random.choice(to_the_left)} and {random.choice(behind)} {obj1['name']}.")
                 elif row_diff == 1 and col_diff == -1:
-                    relationships.append(f"{obj1['description']} {random.choice(to_the_left)} and {random.choice(behind)} {obj2['description']}.")
-                    relationships.append(f"{obj2['description']} {random.choice(to_the_right)} and {random.choice(in_front_of)} {obj1['description']}.")
+                    relationships.append(f"{obj1['name']} {random.choice(to_the_left)} and {random.choice(behind)} {obj2['name']}.")
+                    relationships.append(f"{obj2['name']} {random.choice(to_the_right)} and {random.choice(in_front_of)} {obj1['name']}.")
                 elif row_diff == 1 and col_diff == 1:
-                    relationships.append(f"{obj1['description']} {random.choice(to_the_right)} and {random.choice(behind)} {obj2['description']}.")
-                    relationships.append(f"{obj2['description']} {random.choice(to_the_left)} and {random.choice(in_front_of)} {obj1['description']}.")
+                    relationships.append(f"{obj1['name']} {random.choice(to_the_right)} and {random.choice(behind)} {obj2['name']}.")
+                    relationships.append(f"{obj2['name']} {random.choice(to_the_left)} and {random.choice(in_front_of)} {obj1['name']}.")
     
     selected_relationships = random.sample(relationships, len(combination['objects']) - 1)
     caption_parts.extend(selected_relationships)
