@@ -23,7 +23,7 @@ def render_objects(
     download_dir: Optional[str] = None,
     processes: Optional[int] = None,
     save_repo_format: Optional[Literal["zip", "tar", "tar.gz", "files"]] = None,
-    render_timeout: int = 300,
+    render_timeout: int = 3000,
     gpu_devices: Optional[Union[int, List[int]]] = None,
     width=1920,
     height=1080,
@@ -98,7 +98,7 @@ def render_objects(
         subprocess.run(
             ["bash", "-c", command],
             timeout=render_timeout,
-            check=False
+            check=False,
             # pipe the output to the console
         )
         
