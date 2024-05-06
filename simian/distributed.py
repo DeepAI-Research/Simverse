@@ -8,15 +8,10 @@ import pandas as pd
 from celery import Celery
 
 def check_imports():
-    # what was the CLI command used to run this script?
-    application_path = sys.argv[0]
-    print("Application path")
-    print(application_path)
-    # read from requirements.txt
     with open("requirements.txt", "r") as f:
         requirements = f.readlines()
     for requirement in requirements:
-        requirement = requirement.split(">=")[0].split("==")[0].split("@")[0].strip()
+        requirement = requirement.strip()
         try:
             __import__(requirement)
         except ImportError:

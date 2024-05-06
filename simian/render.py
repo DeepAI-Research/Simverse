@@ -12,11 +12,9 @@ import pandas as pd
 ssl._create_default_https_context = ssl._create_unverified_context
 
 def check_imports():
-    # read from requirements.txt
     with open("requirements.txt", "r") as f:
         requirements = f.readlines()
     for requirement in requirements:
-        requirement = requirement.split(">=")[0].split("==")[0].split("@")[0].strip()
         try:
             __import__(requirement)
         except ImportError:
@@ -121,7 +119,7 @@ def render_scene(
     
     create_photosphere(args.background_path, combination).scale = (10, 10, 10)
     
-    stage = create_stage()
+    stage = create_stage(combination)
     apply_stage_material(stage, combination)
 
     # Set height and width of rendered output

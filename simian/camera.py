@@ -46,9 +46,6 @@ def set_camera_animation(animation_name: str) -> None:
     
     action = None
     
-    print('camera')
-    print(camera_animation_root)
-    
     # get camera_animation_root and all empty children and store inan array
     empties = []
     # add obj to empties
@@ -59,13 +56,9 @@ def set_camera_animation(animation_name: str) -> None:
                 empties.append(child)
                 recurse_children(child)
     recurse_children(camera_animation_root)
-    
-    print("empties length is", len(empties))
-    
+        
     action_object = None
-    
-    print("animation_name is", animation_name)
-    
+        
     for empty in empties:
         # find the NLA track with the given animation name on camera_animation_root
         if empty.animation_data is None or empty.animation_data.nla_tracks is None:
@@ -74,7 +67,6 @@ def set_camera_animation(animation_name: str) -> None:
             if track.name == animation_name:
                 action_object = empty
                 action = track.strips[0].action
-                print('***** FOUND ANIMATION', empty.name, action.name)
                 break
     
     if action is None:

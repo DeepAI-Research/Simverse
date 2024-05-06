@@ -1,0 +1,31 @@
+{
+    "material_names": [
+        "floor material",
+        "floor texture",
+        "floor",
+        "ground material",
+        "ground texture",
+        "ground",
+        "stage material",
+        "stage texture",
+        "stage",
+        "flooring",
+        "flooring material",
+        "flooring texture"
+    ],
+    "background_names": [
+        "background",
+        "background scene",
+        "background view",
+        "background setting",
+        "background environment",
+        "backdrop",
+        "scene",
+        "setting",
+        "envionrment",
+        "view",
+        "panorama",
+        "landscape",
+        "scenery"
+    ]
+}

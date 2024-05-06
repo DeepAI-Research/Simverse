@@ -1,10 +1,7 @@
 requests
 pandas
-pyarrow
 tqdm
-loguru
-fsspec>=2022.11.0
-gputil==1.4.0
+fsspec
 argparse
 fire
 objaverse
@@ -12,6 +9,5 @@ mkdocstrings
 mkdocs
 mkdocs-material
 mkdocstrings-python
-pytest-blender
 pytest
 numpy

@@ -5,9 +5,7 @@ import subprocess
 from typing import List, Literal, Optional, Union
 
 import fire
-import GPUtil
 import pandas as pd
-from loguru import logger
 
 # if we are on macOS, then application_path is /Applications/Blender.app/Contents/MacOS/Blender
 if platform.system() == "Darwin":
@@ -65,15 +63,9 @@ def render_objects(
             f"If {save_repo_format=} is not None, {download_dir=} must be specified."
         )
     if download_dir is not None and save_repo_format is None:
-        logger.warning(
+        print(
             f"GitHub repos will not save. While {download_dir=} is specified, {save_repo_format=} None."
         )
-
-    # get the gpu devices to use
-    parsed_gpu_devices: Union[int, List[int]] = 0
-    if gpu_devices is None:
-        parsed_gpu_devices = len(GPUtil.getGPUs())
-    logger.info(f"Using {parsed_gpu_devices} GPU devices for rendering.")
 
     if processes is None:
         processes = multiprocessing.cpu_count() * 3

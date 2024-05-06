@@ -161,16 +161,11 @@ def normalize_object_scale( obj: bpy.types.Object, scale_factor: float = 1.0) ->
     
     # Get the bounding box of the object and its children
     bbox_min, bbox_max = get_hierarchy_bbox(obj)
-    print("Bounding box:", bbox_min, bbox_max)
     
     # Calculate the scale of the bounding box and scale the object if necessary
     bbox_dimensions = [bbox_max[i] - bbox_min[i] for i in range(3)]
     max_dimension = max(bbox_dimensions)
-    print("Max dimension:", max_dimension)
-    
-    print("Scaling object")
     scale = scale_factor / max_dimension
-    print("scale", scale)
     obj.scale = (scale, scale, scale)
     return obj
 
@@ -316,7 +311,6 @@ def join_objects_in_hierarchy(object: list) -> bpy.types.Object:
     Returns:
         None
     """
-    print("object", object.name)
     meshes = get_meshes_in_hierarchy(object)
 
     # Select and activate meshes

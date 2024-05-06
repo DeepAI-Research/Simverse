@@ -19,3 +19,4 @@ materials
 sampled_df.json
 *.blend1
 *.obj
+venv/

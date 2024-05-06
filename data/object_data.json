@@ -1,0 +1,152 @@
+{
+    "name_prefixes": [
+        "The subject is <objects>.",
+        "[subject: <objects>]",
+        "The focus is on <objects>.",
+        "The view is focused on <objects>.",
+        "The camera is pointed at <objects>.",
+        "The frame is centered on <objects>.",
+        "Featuring <objects>.",
+        "Focus on <objects>.",
+        "The object is <objects>."
+    ],
+    "name_suffixes": [
+        "the subject",
+        "the object",
+        "the focus",
+        "the actor",
+        "the actors",
+        "the model"
+    ],
+    "relationships": {
+        "to_the_left": [
+            "is to the left of",
+            "is left of",
+            "is beside",
+            "is on the left side of",
+            "is left-side of",
+            "is on the left of"
+        ],
+        "to_the_right": [
+            "is to the right of",
+            "is right of",
+            "is beside",
+            "is next to",
+            "is adjacent to",
+            "is right-side of",
+            "is on the right of"
+        ],
+        "in_front_of": [
+            "is in front of",
+            "is front of",
+            "is before",
+            "is ahead of"
+        ],
+        "behind": [
+            "is behind",
+            "is to the back of",
+            "is in back of",
+            "is after",
+            "is at the rear of",
+            "is to the rear of"
+        ]
+    },
+    "scales": {
+        "tiny": {
+            "names": [
+                "tiny",
+                "mini",
+                "miniscule",
+                "minature",
+                "petite",
+                "extra small"
+            ],
+            "factor": 0.4
+        },
+        "small": {
+            "names": [
+                "small",
+                "little",
+                "mini",
+                "petite",
+                "miniature",
+                "short",
+                "undersized",
+                "smaller"
+            ],
+            "factor": 0.6
+        },
+        "small-medium": {
+            "names": [
+                "small-medium",
+                "medium-small",
+                "medium-sized",
+                "average sized",
+                "below average sized",
+                "smaller than average",
+                "smaller than usual",
+                "shorter than normal",
+                "small-ish"
+            ],
+            "factor": 0.8
+        },
+        "medium": {
+            "names": [
+                "medium",
+                "average",
+                "normal",
+                "standard",
+                "typical",
+                "regular",
+                "standard",
+                "usual"
+            ],
+            "factor": 1.0
+        },
+        "medium-large": {
+            "names": [
+                "medium-large",
+                "large-medium",
+                "large-ish",
+                "larger than average",
+                "larger than usual",
+                "larger than normal",
+                "bigger than average",
+                "bigger than usual",
+                "bigger than normal",
+                "above average sized"
+            ],
+            "factor": 1.25
+        },
+        "large": {
+            "names": [
+                "large",
+                "big",
+                "huge",
+                "massive",
+                "giant",
+                "tall"
+            ],
+            "factor": 1.5
+        },
+        "huge": {
+            "names": [
+                "huge",
+                "towering",
+                "massive",
+                "giant",
+                "gigantic",
+                "enormous",
+                "colossal",
+                "really big",
+                "really tall",
+                "really large",
+                "very big",
+                "very tall",
+                "very large",
+                "extra large"
+            ],
+            "factor": 1.75
+        }
+    }
+}

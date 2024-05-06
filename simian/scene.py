@@ -1,3 +1,4 @@
+from math import cos, sin
 import bpy
 import bmesh
 import os
@@ -21,13 +22,18 @@ def download_texture(url, material_name, texture_name):
     return local_path
 
 
-def create_stage(stage_size=(100, 100), stage_height=0.002):
+def create_stage(combination, stage_size=(100, 100), stage_height=0.002):
     """
     Creates a simple stage object in the scene.
     """
     # Create a new plane object
     bpy.ops.mesh.primitive_plane_add(size=1)
     stage = bpy.context.active_object
+    
+    stage_data = combination.get('stage', {})
+    stage_material = stage_data.get('material', {})
+    uv_scale = stage_data.get('uv_scale', [1.0, 1.0])
+    uv_rotation = stage_data.get('uv_rotation', 0.0)
     
     # Scale the stage to the desired size
     stage.scale = (stage_size[0], stage_size[1], 1)
@@ -39,8 +45,8 @@ def create_stage(stage_size=(100, 100), stage_height=0.002):
     stage.name = "Stage"
     
     # Rescale the UVs based on the inverse of the scale multiplied by 2
-    scale_x = stage_size[0]
-    scale_y = stage_size[1] 
+    scale_x = stage_size[0] * uv_scale[0]
+    scale_y = stage_size[1] * uv_scale[1]
     
     # Enter edit mode
     bpy.ops.object.mode_set(mode='EDIT')
@@ -51,12 +57,25 @@ def create_stage(stage_size=(100, 100), stage_height=0.002):
     # Get the UV layer
     uv_layer = bm.loops.layers.uv.verify()
     
+    # convert uv rotation to radians
+    uv_rotation = uv_rotation * 3.14159 / 180.0
+    
+    # create a 2x2 rotation matrix for the UVs
+    rotation_matrix = [
+        [cos(uv_rotation), -sin(uv_rotation)],
+        [sin(uv_rotation), cos(uv_rotation)]
+    ]
+    
     # Iterate over the faces and rescale the UVs
     for face in bm.faces:
         for loop in face.loops:
             uv = loop[uv_layer].uv
-            uv.x *= scale_x
-            uv.y *= scale_y
+            
+            # rotate the UVs by multiplying by the rotation matrix
+            uv.x, uv.y = (
+                (rotation_matrix[0][0] * uv.x + rotation_matrix[0][1] * uv.y) * scale_x,
+                (rotation_matrix[1][0] * uv.x + rotation_matrix[1][1] * uv.y) * scale_y
+            )
     
     # Update the mesh and return to object mode
     bmesh.update_edit_mesh(stage.data)
@@ -69,7 +88,8 @@ def apply_stage_material(stage, combination):
     Applies the stage material to the given stage object based on the combination settings.
     """
     # Get the stage material settings from the combination
-    stage_material = combination.get('stage_material', {})
+    stage_data = combination.get('stage', {})
+    stage_material = stage_data.get('material', {})
     material_name = stage_material.get('name', 'DefaultMaterial')
 
     # Create a new material for the stage
