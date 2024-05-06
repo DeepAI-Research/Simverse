@@ -147,15 +147,6 @@ def apply_stage_material(stage, combination):
         links.new(mapping.outputs['Vector'], rough_ao_tex.inputs['Vector'])
         links.new(rough_ao_tex.outputs['Color'], principled.inputs['Roughness'])
 
-    # Load and connect AO texture
-    if 'AO' in stage_material['maps']:
-        ao_url = stage_material['maps']['AO']
-        ao_path = download_texture(ao_url, material_name, "AO")
-        ao_tex = nodes.new(type='ShaderNodeTexImage')
-        ao_tex.image = bpy.data.images.load(ao_path)
-        links.new(mapping.outputs['Vector'], ao_tex.inputs['Vector'])
-        links.new(ao_tex.outputs['Color'], principled.inputs['Base Color'])
-
     # Load and connect displacement texture
     if 'Displacement' in stage_material['maps']:
         disp_url = stage_material['maps']['Displacement']
@@ -167,14 +158,14 @@ def apply_stage_material(stage, combination):
         links.new(disp_tex.outputs['Color'], disp_node.inputs['Height'])
         links.new(disp_node.outputs['Displacement'], output.inputs['Displacement'])
 
-    # Load and connect roughness texture
-    if 'Rough' in stage_material['maps']:
-        rough_url = stage_material['maps']['Rough']
-        rough_path = download_texture(rough_url, material_name, "Rough")
-        rough_tex = nodes.new(type='ShaderNodeTexImage')
-        rough_tex.image = bpy.data.images.load(rough_path)
-        links.new(mapping.outputs['Vector'], rough_tex.inputs['Vector'])
-        links.new(rough_tex.outputs['Color'], principled.inputs['Roughness'])
+    # # Load and connect roughness texture
+    # if 'Rough' in stage_material['maps']:
+    #     rough_url = stage_material['maps']['Rough']
+    #     rough_path = download_texture(rough_url, material_name, "Rough")
+    #     rough_tex = nodes.new(type='ShaderNodeTexImage')
+    #     rough_tex.image = bpy.data.images.load(rough_path)
+    #     links.new(mapping.outputs['Vector'], rough_tex.inputs['Vector'])
+    #     links.new(rough_tex.outputs['Color'], principled.inputs['Roughness'])
 
     # Connect the nodes
     links.new(principled.outputs['BSDF'], output.inputs['Surface'])
