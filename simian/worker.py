@@ -1,4 +1,3 @@
-"""Blender script to render images of 3D models."""
 import platform
 import subprocess
 import sys
@@ -7,9 +6,20 @@ import ssl
 
 from celery import Celery
 import pandas as pd
+
 ssl._create_default_https_context = ssl._create_unverified_context
 
-def check_imports():
+
+def check_imports() -> None:
+    """
+    Checks and installs required Python packages specified in the requirements.txt file.
+    
+    Args:
+        None
+    
+    Returns:
+        None
+    """
     with open("requirements.txt", "r") as f:
         requirements = f.readlines()
     for requirement in requirements:
@@ -38,16 +48,46 @@ if platform.system() == "Darwin":
 else:
     application_path = "./blender/blender"
 
+
 def get_combination_objects() -> pd.DataFrame:
-    """Returns a DataFrame of example objects to use for debugging."""
+    """
+    Returns a DataFrame of example objects to use for debugging.
+    
+    Args:
+    - None
+    
+    Returns:
+    - pd.DataFrame: DataFrame of example objects.
+    """
     combinations = pd.read_json("combinations.json", orient="records")
     return combinations
+
 
 redis_url = os.environ.get('REDIS_URL', 'redis://localhost:6379')
 app = Celery('tasks', broker=redis_url)
 
+
 @app.task(name='render_object', acks_late=True, reject_on_worker_lost=True)
-def render_object(combination_index, width, height, output_dir, background_path):
+def render_object(
+    combination_index: int,
+    width: int,
+    height: int,
+    output_dir: str,
+    background_path: str
+) -> None:
+    """
+    Renders a 3D object based on the provided combination index and settings.
+
+    Args:
+    - combination_index (int): The index of the camera combination to use.
+    - width (int): The width of the rendered output.
+    - height (int): The height of the rendered output.
+    - output_dir (str): The directory where the rendered video will be saved.
+    - background_path (str): The path to the background HDRs.
+    
+    Returns:
+    - None
+    """
     args = f"--width {width} --height {height} --combination_index {combination_index}"
     args += f" --output_dir {output_dir}"
     args += f" --background_path {background_path}"

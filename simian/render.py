@@ -1,4 +1,3 @@
-"""Blender script to render images of 3D models."""
 import argparse
 import math
 import platform
@@ -8,10 +7,23 @@ import json
 import os
 import ssl
 import pandas as pd
+import pandas as pd
+import objaverse
+import bpy
 
 ssl._create_default_https_context = ssl._create_unverified_context
 
-def check_imports():
+
+def check_imports() -> None:
+    """
+    Checks and installs required dependencies specified in the requirements.txt file.
+    
+    Args:
+        None
+    
+    Returns:
+        None
+    """
     with open("requirements.txt", "r") as f:
         requirements = f.readlines()
     for requirement in requirements:
@@ -20,12 +32,7 @@ def check_imports():
         except ImportError:
             print(f"Installing {requirement}")
             subprocess.run(["bash", "-c", f"{sys.executable} -m pip install {requirement}"])
-
 check_imports()
-
-import pandas as pd
-import objaverse
-import bpy
 
 # Get the directory of the currently executing script
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -43,11 +50,21 @@ from simian.object import apply_all_modifiers, apply_and_remove_armatures, delet
 from simian.background import create_photosphere, set_background
 from simian.scene import apply_stage_material, create_stage
 
-def read_combination(combination_file, index=0):
-    """Reads a specified camera combination from a JSON file."""
+
+def read_combination(combination_file: str, index: int = 0) -> dict:
+    """
+    Reads a specified camera combination from a JSON file.
+
+    Args:
+        None
+    
+    Returns:
+        None
+    """
     with open(combination_file, 'r') as file:
         combinations = json.load(file)
         return combinations[min(index, len(combinations) - 1)]
+
 
 def render_scene(
     output_dir: str,
@@ -59,6 +76,23 @@ def render_scene(
     height=1080,
     width=1920
 ) -> None:
+    """
+    Renders a scene with specified parameters.
+
+    Args:
+        - output_dir (str): Path to the directory where the rendered video will be saved.
+        - context (bpy.types.Context): Blender context.
+        - combination_file (str): Path to the JSON file containing camera combinations.
+        - start_frame (int): Start frame of the animation. Defaults to 1.
+        - end_frame (int): End frame of the animation. Defaults to 25.
+        - combination_index (int): Index of the camera combination to use from the JSON file. Defaults to 0.
+        - height (int): Render output height. Defaults to 1080.
+        - width (int): Render output width. Defaults to 1920.
+
+    Returns:
+        None
+    """
+        
     print(f"Rendering scene with combination {combination_index}")
     
     os.makedirs(output_dir, exist_ok=True)
@@ -141,7 +175,7 @@ def render_scene(
     bpy.ops.render.render(animation=True)
     bpy.ops.wm.save_as_mainfile(filepath=os.path.join(output_dir, f"{combination_index}.blend"))
     print(f"Rendered video saved to {render_path}")
-    
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -183,7 +217,11 @@ if __name__ == "__main__":
     )
     parser.add_argument("--width", type=int, default=1920, help="Render output width.")
     parser.add_argument("--height", type=int, default=1080, help="Render output height.")
+
     argv = sys.argv[sys.argv.index("--") + 1 :]
+    args = parser.parse_args(argv)
+
+    # Now parse the arguments from the correct starting point
     args = parser.parse_args(argv)
 
     context = bpy.context

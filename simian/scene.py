@@ -1,13 +1,23 @@
 from math import cos, sin
 import bpy
+from typing import Tuple
 import bmesh
 import os
 import requests
 
-def download_texture(url, material_name, texture_name):
+
+def download_texture(url: str, material_name: str, texture_name: str) -> str:
     """
     Downloads the texture from the given URL and saves it in the materials/<material_name> folder.
     Returns the local file path of the downloaded texture.
+
+    Args:
+    - url (str): The URL of the texture to download.
+    - material_name (str): The name of the material.
+    - texture_name (str): The name of the texture.
+
+    Returns:
+    - str: The local file path of the downloaded texture.
     """
     materials_dir = os.path.join("materials", material_name)
     os.makedirs(materials_dir, exist_ok=True)
@@ -22,9 +32,17 @@ def download_texture(url, material_name, texture_name):
     return local_path
 
 
-def create_stage(combination, stage_size=(100, 100), stage_height=0.002):
+def create_stage(combination: dict, stage_size: Tuple[int, int] = (100, 100), stage_height: float = 0.002) -> bpy.types.Object:
     """
     Creates a simple stage object in the scene.
+
+    Args:
+    - combination (dict): A dictionary containing the stage settings.
+    - stage_size (Tuple[int, int], optional): The size of the stage in Blender units (width, height). Defaults to (100, 100).
+    - stage_height (float, optional): The height of the stage above the ground plane. Defaults to 0.002.
+
+    Returns:
+    - bpy.types.Object: The created stage object.
     """
     # Create a new plane object
     bpy.ops.mesh.primitive_plane_add(size=1)
@@ -83,9 +101,13 @@ def create_stage(combination, stage_size=(100, 100), stage_height=0.002):
     return stage
 
 
-def apply_stage_material(stage, combination):
+def apply_stage_material(stage: bpy.types.Object, combination: dict) -> None:
     """
     Applies the stage material to the given stage object based on the combination settings.
+
+    Args:
+    - stage (bpy.types.Object): The stage object to apply the material to.
+    - combination (dict): A dictionary containing the stage material settings.
     """
     # Get the stage material settings from the combination
     stage_data = combination.get('stage', {})
