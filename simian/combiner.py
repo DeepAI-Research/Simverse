@@ -46,6 +46,7 @@ def read_json_file(file_path):
     with open(file_path, 'r') as file:
         return json.load(file)
 
+
 for dataset in models:
     current_path = os.path.dirname(os.path.realpath(__file__))
     dataset_path = os.path.join(args.simdata_path, dataset + '.json')

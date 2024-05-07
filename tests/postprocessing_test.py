@@ -20,6 +20,7 @@ def test_setup_compositor_for_black_and_white():
 
     print("test_setup_compositor_for_black_and_white passed")
 
+
 def test_setup_compositor_for_cel_shading():
     bpy.ops.wm.open_mainfile(filepath="../scenes/empty.blend")
     context = bpy.context
@@ -35,6 +36,7 @@ def test_setup_compositor_for_cel_shading():
     assert "CompositorNodeComposite" in [node.bl_idname for node in tree.nodes]
 
     print("test_setup_compositor_for_cel_shading passed")
+
 
 def test_setup_compositor_for_depth():
     bpy.ops.wm.open_mainfile(filepath="../scenes/empty.blend")

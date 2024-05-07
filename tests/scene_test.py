@@ -20,6 +20,7 @@ test_data = {
     }
 }
 
+
 def test_download_texture():
     material_name = test_data["stage"]["material"]["name"]
     for texture_name, url in test_data["stage"]["material"]["maps"].items():
