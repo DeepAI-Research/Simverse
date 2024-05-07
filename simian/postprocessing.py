@@ -164,6 +164,7 @@ effects = {
     "depth": setup_compositor_for_depth
 }
 
+
 def enable_effect(context: bpy.types.Context, effect_name: str) -> None:
     """
     Enables the cel shading effect in the compositor.
