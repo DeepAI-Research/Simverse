@@ -2,7 +2,7 @@ import multiprocessing
 import os
 import platform
 import subprocess
-from typing import List, Literal, Optional, Union
+from typing import Literal, Optional
 import fire
 import pandas as pd
 
@@ -33,7 +33,6 @@ def render_objects(
     processes: Optional[int] = None,
     save_repo_format: Optional[Literal["zip", "tar", "tar.gz", "files"]] = None,
     render_timeout: int = 3000,
-    gpu_devices: Optional[Union[int, List[int]]] = None,
     width: int = 1920,
     height: int = 1080,
     start_index: int = 0,
@@ -56,8 +55,6 @@ def render_objects(
         - save_repo_format (Optional[Literal["zip", "tar", "tar.gz", "files"]]):
             Format to save repositories after rendering. If None, no saving is performed.
         - render_timeout (int): Maximum time in seconds for a single rendering process.
-        - gpu_devices (Optional[Union[int, List[int]]]): Specific GPU device IDs to use for rendering.
-            If None, all available GPUs are used.
         - width (int): Width of the rendering in pixels.
         - height (int): Height of the rendering in pixels.
         - start_index (int): Starting index for rendering from the combinations DataFrame.

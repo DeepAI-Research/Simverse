@@ -232,6 +232,43 @@ def get_meshes_in_hierarchy(obj: bpy.types.Object) -> List[bpy.types.Object]:
     return meshes + new_meshes
 
 
+def remove_blendshapes_from_hierarchy(obj: bpy.types.Object) -> None:
+    """
+    Recursively removes blendshapes from all models in the hierarchy under the given object.
+
+    Args:
+        obj (bpy.types.Object): The root object of the hierarchy.
+
+    Returns:
+        None
+    """
+    # Ensure context is correct
+    bpy.ops.object.mode_set(mode='OBJECT')
+    bpy.ops.object.select_all(action='DESELECT')
+
+    def remove_blendshapes(obj):
+        if obj.type == 'MESH':
+            # Select and make the mesh active
+            bpy.context.view_layer.objects.active = obj
+            obj.select_set(True)
+
+            # Remove blendshapes
+            if obj.data.shape_keys:
+                obj.shape_key_clear()
+
+    # Traverse the hierarchy and remove blendshapes
+    def traverse_hierarchy(obj):
+        remove_blendshapes(obj)
+        for child in obj.children:
+            traverse_hierarchy(child)
+
+    # Start traversing from the given object
+    traverse_hierarchy(obj)
+
+    # Deselect everything to clean up
+    bpy.ops.object.select_all(action='DESELECT')
+
+
 def apply_and_remove_armatures():
     """
     Apply armature modifiers to meshes and remove armature objects.
@@ -253,6 +290,13 @@ def apply_and_remove_armatures():
         if obj.type == 'MESH':
             for modifier in obj.modifiers:
                 if modifier.type == 'ARMATURE' and modifier.object is not None:
+                    try:
+                        remove_blendshapes_from_hierarchy(obj)
+                    except:
+                        print("Error removing blendshapes from object.")
+                        # write a log file with the error
+                        with open("error_log.txt", "a") as f:
+                            f.write("Error removing blendshapes from object.\n")
                     # Select and make the mesh active
                     bpy.context.view_layer.objects.active = obj
                     obj.select_set(True)
