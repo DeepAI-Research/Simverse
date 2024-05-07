@@ -1,12 +1,14 @@
 import os
+from typing import List, Optional
 import numpy as np
-
 from .constants import IMPORT_FUNCTIONS
 import bpy
 from mathutils import Matrix, Vector
 
+
 def load_object(object_path: str) -> None:
-    """Loads a model with a supported file extension into the scene.
+    """
+    Loads a model with a supported file extension into the scene.
 
     Args:
         object_path (str): Path to the model file.
@@ -45,8 +47,13 @@ def load_object(object_path: str) -> None:
     else:
         import_function(filepath=object_path)
 
+
 def delete_invisible_objects() -> None:
-    """Deletes all invisible objects in the scene.
+    """
+    Deletes all invisible objects in the scene.
+
+    Args: 
+        None
 
     Returns:
         None
@@ -66,9 +73,18 @@ def delete_invisible_objects() -> None:
     invisible_collections = [col for col in bpy.data.collections if col.hide_viewport]
     for col in invisible_collections:
         bpy.data.collections.remove(col)
+    
 
-def get_hierarchy_bbox(obj):
-    """Calculate the bounding box of an object and its children."""
+def get_hierarchy_bbox(obj) -> tuple[float, float]:
+    """
+    Calculate the bounding box of an object and its children.
+
+    Args:
+        obj (bpy.types.Object): The root object.
+
+    Returns:
+        tuple: A tuple containing the minimum and maximum coordinates of the bounding box.
+    """
     # Ensure the object's matrix_world is updated
     bpy.context.view_layer.update()
     
@@ -77,7 +93,16 @@ def get_hierarchy_bbox(obj):
     max_coord = [-float('inf'), -float('inf'), -float('inf')]
     
     # Function to update min and max coordinates
-    def update_bounds(obj):
+    def update_bounds(obj: bpy.types.Object) -> None:
+        """
+        Update the minimum and maximum coordinates based on the object's bounding box.
+
+        Args:
+            obj (bpy.types.Object): The object whose bounding box is to be updated.
+        
+        Returns:
+            None
+        """
         # Update the object's bounding box based on its world matrix
         bbox_corners = [obj.matrix_world @ Vector(corner) for corner in obj.bound_box]
         for corner in bbox_corners:
@@ -86,7 +111,16 @@ def get_hierarchy_bbox(obj):
                 max_coord[i] = max(max_coord[i], corner[i])
     
     # Recursive function to process each object
-    def process_object(obj):
+    def process_object(obj: bpy.types.Object) -> None:
+        """
+        Recursively process each object and update bounding box coordinates.
+
+        Args:
+            obj (bpy.types.Object): The object to be processed.
+        
+        Returns:
+            None
+        """
         update_bounds(obj)
         for child in obj.children:
             process_object(child)
@@ -96,21 +130,23 @@ def get_hierarchy_bbox(obj):
     
     return min_coord, max_coord
 
-def remove_small_geometry(obj, min_vertex_count: int = 10) -> bpy.types.Object:
-    """Remove free-hanging geometry with fewer vertices than specified by separating by loose parts,
+
+def remove_small_geometry(obj: bpy.types.Object, min_vertex_count: int = 10) -> Optional[bpy.types.Object]:
+    """
+    Remove free-hanging geometry with fewer vertices than specified by separating by loose parts,
     deleting small ones, and re-joining them.
 
     Args:
-        obj (bpy.types.Object): The object to process.
-        min_vertex_count (int): Minimum number of vertices required to keep a part of the mesh.
+        - obj (bpy.types.Object): The object to process.
+        - min_vertex_count (int, optional): Minimum number of vertices required to keep a part of the mesh. Default is 10.
 
     Returns:
-        None
+        bpy.types.Object or None: The processed object if successful, None otherwise.
     """
     # Ensure the object is a mesh
     if obj is not None and obj.type != 'MESH':
         print("Object is not a mesh.")
-        return
+        return None
 
     # Make sure the object is active and we're in object mode
     bpy.context.view_layer.objects.active = obj
@@ -145,17 +181,17 @@ def remove_small_geometry(obj, min_vertex_count: int = 10) -> bpy.types.Object:
     print("Processed geometry, removing parts with fewer than", min_vertex_count, "vertices.")
     return obj
 
-def normalize_object_scale( obj: bpy.types.Object, scale_factor: float = 1.0) -> bpy.types.Object:
-    """Scales the object by a factor.
+def normalize_object_scale(obj: bpy.types.Object, scale_factor: float = 1.0) -> bpy.types.Object:
+    """
+    Scales the object by a factor.
 
     Args:
-        obj (bpy.types.Object): The object to scale.
-        scale_factor (float, optional): The factor to scale the object by. Defaults to 1.0.
+        - obj (bpy.types.Object): The object to scale.
+        - scale_factor (float, optional): The factor to scale the object by. Defaults to 1.0.
 
     Returns:
-        None
+        bpy.types.Object: The scaled object.
     """
-    
     # Get the bounding box of the object and its children
     bbox_min, bbox_max = get_hierarchy_bbox(obj)
     
@@ -167,18 +203,46 @@ def normalize_object_scale( obj: bpy.types.Object, scale_factor: float = 1.0) ->
     return obj
 
 
-def get_meshes_in_hierarchy(obj):
-        meshes = []
-        if obj.type == 'MESH':
-            meshes.append(obj)
-        
-        new_meshes = []
-        for child in obj.children:
-            new_meshes += get_meshes_in_hierarchy(child)
-        return meshes + new_meshes
+def get_meshes_in_hierarchy(obj: bpy.types.Object) -> List[bpy.types.Object]:
+    """
+    Recursively collects all mesh objects in the hierarchy starting from the given object.
+
+    Args:
+        obj (bpy.types.Object): The root object from which to start collecting mesh objects.
+
+    Returns:
+        List[bpy.types.Object]: A list of mesh objects found in the hierarchy.
+    """
+    # Initialize an empty list to store mesh objects
+    meshes = []
+    
+    # Check if the current object is a mesh and add it to the list if it is
+    if obj.type == 'MESH':
+        meshes.append(obj)
+    
+    # Initialize an empty list to store mesh objects from child objects
+    new_meshes = []
+    
+    # Recursively call the function for each child object and collect their meshes
+    for child in obj.children:
+        # Add meshes from child objects to the list
+        new_meshes += get_meshes_in_hierarchy(child)
+    
+    # Combine meshes from the current object and its children and return the list
+    return meshes + new_meshes
 
 
 def apply_and_remove_armatures():
+    """
+    Apply armature modifiers to meshes and remove armature objects.
+
+    Args:
+        None
+
+    Returns:
+        None
+    """
+        
     # Ensure context is correct
     bpy.ops.object.mode_set(mode='OBJECT')
     bpy.ops.object.select_all(action='DESELECT')
@@ -200,59 +264,94 @@ def apply_and_remove_armatures():
                     bpy.ops.object.select_all(action='DESELECT')
 
 
+def apply_all_modifiers(obj: bpy.types.Object):
+    """
+    Recursively apply all modifiers to the object and its children.
 
-def apply_all_modifiers(obj):
-    # traverse the hierarchy and apply all modifiers
+    Args:
+        obj (bpy.types.Object): The root object.
+
+    Return:
+        None
+    """
+
+    # Traverse the hierarchy and apply all modifiers
     def recurse(obj):
+        # Set the active object to the current object
         bpy.context.view_layer.objects.active = obj
+        # Check if the object has modifiers
         if obj.modifiers:
+            # Apply each modifier
             for modifier in obj.modifiers:
                 bpy.ops.object.modifier_apply(modifier=modifier.name)
+
+    # Recursively apply modifiers to children
     for child in obj.children:
         recurse(child)
-        recurse(obj)
+
+    # Apply modifiers to the root object itself
+    recurse(obj)
 
 
-def optimize_meshes_in_hierarchy(obj):
-        if obj.type == 'MESH':
-            # go into edit mode
-            # select the mesh
-            bpy.context.view_layer.objects.active = obj
+def optimize_meshes_in_hierarchy(obj: bpy.types.Object) -> None:
+    """
+    Recursively optimize meshes in the hierarchy by removing doubles and setting materials to double-sided.
 
-            # go to edit mode
-            bpy.ops.object.mode_set(mode='EDIT')
-            
-            # select all verts
-            bpy.ops.mesh.select_all(action='SELECT')
-            
-            bpy.ops.mesh.remove_doubles(threshold=0.0001)
-            angle_limit = 0.000174533 * 10
-            
-            # go to lines mode
-            bpy.ops.mesh.select_mode(type="EDGE")
-            
-            # deselect all
-            bpy.ops.mesh.select_all(action='DESELECT')
-            
-            # select all edges
-            bpy.ops.mesh.select_all(action='SELECT')
-            
-            # bpy.ops.mesh.dissolve_limited(angle_limit=angle_limit, use_dissolve_boundaries=True, delimit={'NORMAL', 'MATERIAL', 'SEAM', 'SHARP', 'UV'})
-            
-            # set all materials to be double sided
-            for slot in obj.material_slots:
-                slot.material.use_backface_culling = False
-                if slot.material.blend_method == 'BLEND':
-                    slot.material.blend_method = 'HASHED'
-            
-            # return to object mode
-            bpy.ops.object.mode_set(mode='OBJECT')
+    Args:
+        obj (bpy.types.Object): The root object.
+
+    Returns:
+        None
+    """
         
-        for child in obj.children:
-            optimize_meshes_in_hierarchy(child)
+    if obj.type == 'MESH':
+        # Go into edit mode and select the mesh
+        bpy.context.view_layer.objects.active = obj
+
+        # Go to edit mode
+        bpy.ops.object.mode_set(mode='EDIT')
+        
+        # Select all verts
+        bpy.ops.mesh.select_all(action='SELECT')
+        
+        bpy.ops.mesh.remove_doubles(threshold=0.0001)
+        angle_limit = 0.000174533 * 10
+        
+        # Go to lines mode
+        bpy.ops.mesh.select_mode(type="EDGE")
+        
+        # Deselect all
+        bpy.ops.mesh.select_all(action='DESELECT')
+        
+        # Select all edges
+        bpy.ops.mesh.select_all(action='SELECT')
+        
+        # bpy.ops.mesh.dissolve_limited(angle_limit=angle_limit, use_dissolve_boundaries=True, delimit={'NORMAL', 'MATERIAL', 'SEAM', 'SHARP', 'UV'})
+        
+        # Set all materials to be double sided
+        for slot in obj.material_slots:
+            slot.material.use_backface_culling = False
+            if slot.material.blend_method == 'BLEND':
+                slot.material.blend_method = 'HASHED'
+        
+        # Return to object mode
+        bpy.ops.object.mode_set(mode='OBJECT')
+    
+    for child in obj.children:
+        optimize_meshes_in_hierarchy(child)
 
 
-def remove_loose_meshes(obj, min_vertex_count: int = 6):
+def remove_loose_meshes(obj: bpy.types.Object, min_vertex_count: int = 6) -> None:
+    """
+    Remove loose meshes with fewer vertices than specified and join remaining meshes.
+
+    Args:
+        obj (bpy.types.Object): The root object.
+        min_vertex_count (int, optional): The minimum number of vertices required to keep a mesh. Defaults to 6.
+
+    Returns:
+        None
+    """
     meshes = get_meshes_in_hierarchy(obj)
     
     # Check if there is only one mesh object
@@ -261,7 +360,7 @@ def remove_loose_meshes(obj, min_vertex_count: int = 6):
         bpy.context.view_layer.objects.active = meshes[0]
         bpy.ops.object.mode_set(mode='EDIT')
         
-        # select all
+        # Select all
         bpy.ops.mesh.select_all(action='SELECT')
         
         # Separate the disconnected geometry into individual mesh objects
@@ -271,7 +370,7 @@ def remove_loose_meshes(obj, min_vertex_count: int = 6):
     
     meshes = get_meshes_in_hierarchy(obj)
         
-    # Remove meshes with less than 12 vertices
+    # Remove meshes with less than the specified number of vertices
     meshes_to_remove = []
     for mesh in meshes:
         if len(mesh.data.vertices) < min_vertex_count:
@@ -283,7 +382,7 @@ def remove_loose_meshes(obj, min_vertex_count: int = 6):
     
     meshes = get_meshes_in_hierarchy(obj)
 
-    # # Join the remaining meshes back together
+    # Join the remaining meshes back together if there are more than one
     if len(meshes) > 1:
         # Set the last selected mesh as active
         bpy.context.view_layer.objects.active = meshes[-1]
@@ -294,21 +393,20 @@ def remove_loose_meshes(obj, min_vertex_count: int = 6):
         
         # Join the selected meshes
         bpy.ops.object.join()
-        
 
 
-def join_objects_in_hierarchy(object: list) -> bpy.types.Object:
-    """Joins a list of objects into a single object.
-    
-    
+def join_objects_in_hierarchy(obj: bpy.types.Object) -> None:
+    """
+    Joins a list of objects into a single object.
+
     Args:
-        object (list): List of objects to join.
-        context (context): Blender context.
-        
+        objects (List[bpy.types.Object]): List of objects to join.
+
     Returns:
         None
     """
-    meshes = get_meshes_in_hierarchy(object)
+
+    meshes = get_meshes_in_hierarchy(obj)
 
     # Select and activate meshes
     bpy.ops.object.select_all(action='DESELECT')
@@ -335,8 +433,10 @@ def join_objects_in_hierarchy(object: list) -> bpy.types.Object:
     else:
         print("No meshes found to set as active.")
         
-def set_pivot_to_bottom(obj):
-    """Set the pivot of the object to the center of mass, and the Z-coordinate to the bottom of the bounding box.
+
+def set_pivot_to_bottom(obj: bpy.types.Object) -> None:
+    """
+    Set the pivot of the object to the center of mass, and the Z-coordinate to the bottom of the bounding box.
 
     Args:
         obj (bpy.types.Object): The object to adjust.
@@ -364,8 +464,10 @@ def set_pivot_to_bottom(obj):
     bpy.context.scene.cursor.location = (0, 0, 0)
     bpy.ops.object.origin_set(type='ORIGIN_CURSOR')
 
-def unparent_keep_transform(obj):
-    """Unparents an object but keeps its transform.
+
+def unparent_keep_transform(obj: bpy.types.Object) -> None:
+    """
+    Unparents an object but keeps its transform.
 
     Args:
         obj (bpy.types.Object): The object to unparent.
@@ -376,8 +478,12 @@ def unparent_keep_transform(obj):
     # clear the parent object, but keep the transform
     bpy.ops.object.parent_clear(type='CLEAR_KEEP_TRANSFORM')
 
-def delete_all_empties():
+
+def delete_all_empties() -> None:
     """Deletes all empty objects in the scene.
+
+    Args:
+        None
 
     Returns:
         None
@@ -389,9 +495,16 @@ def delete_all_empties():
                 continue
             bpy.data.objects.remove(obj, do_unlink=True)
             
-def lock_all_objects():
+
+def lock_all_objects() -> None:
     """
     Locks all objects in the scene from selection and returns a list of these objects.
+
+    Args:
+        None
+
+    Returns:
+        None
     """
     locked_objects = []
     for obj in bpy.context.scene.objects:
@@ -399,12 +512,16 @@ def lock_all_objects():
         locked_objects.append(obj)
     return locked_objects
 
-def unlock_objects(objects):
+
+def unlock_objects(objs: List[bpy.types.Object]) -> None:
     """
     Unlocks a given list of objects for selection.
     
     Args:
-    objects (list): A list of Blender objects to be unlocked.
+        objs (list): A list of Blender objects to be unlocked.
+    
+    Returns:
+        None
     """
-    for obj in objects:
+    for obj in objs:
         obj.hide_select = False

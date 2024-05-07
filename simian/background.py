@@ -3,6 +3,7 @@ from typing import Dict
 import requests
 import bpy
 
+
 def get_background_path(background_path: str, combination: Dict) -> str:
     """
     Get the local file path for the background HDR image.
@@ -17,7 +18,9 @@ def get_background_path(background_path: str, combination: Dict) -> str:
     background_id = background['id']
     background_from = background['from']
     background_path = f"{background_path}/{background_from}/{background_id}.hdr"
+    
     return background_path
+
 
 def get_background(background_path: str, combination: Dict) -> None:
     """
@@ -50,6 +53,7 @@ def get_background(background_path: str, combination: Dict) -> None:
     else:
         print(f"Background {background_path} already exists")
         
+
 def set_background(background_path: str, combination: Dict) -> None:
     """
     Set the background HDR image of the scene.
@@ -109,6 +113,7 @@ def set_background(background_path: str, combination: Dict) -> None:
     
     print(f"Set background to {background_path}")
 
+
 def create_photosphere(background_path: str, combination: Dict) -> bpy.types.Object:
     """
     Create a photosphere object in the scene.
@@ -144,6 +149,7 @@ def create_photosphere(background_path: str, combination: Dict) -> bpy.types.Obj
     sphere.data.name = "PhotosphereMesh"
     create_photosphere_material(background_path, combination, sphere)
     return sphere
+
 
 def create_photosphere_material(background_path: str, combination: Dict, sphere: bpy.types.Object) -> None:
     """

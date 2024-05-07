@@ -4,24 +4,6 @@ import random
 import argparse
 import re
 
-datasets = [
-    "animals-pets",
-    "cars-vehicles",
-    "characters-creatures",
-    "electronics-gadgets",
-    "fashion-style",
-    "food-drink",
-    "furniture-home",
-    "music",
-    "nature-plants",
-    "news-politics",
-    "people",
-    "science-technology",
-    "sports-fitness",
-    "weapons-military"
-]
-
-backgrounds = ["hdri_data"]
 
 # Function to read data from a JSON file
 def read_json_file(file_path):
@@ -32,17 +14,26 @@ def read_json_file(file_path):
 parser = argparse.ArgumentParser(description='Generate random camera combinations.')
 parser.add_argument('--count', type=int, default=10, help='Number of combinations to generate')
 parser.add_argument('--seed', type=int, default=None, help='Seed for the random number generator')
-parser.add_argument('--camera_file_path', type=str, default='data/camera_data.json', help='Path to the JSON file containing camera data')
 parser.add_argument('--max_number_of_objects', type=int, default=5, help='Maximum number of objects to randomly select')
+parser.add_argument('--camera_file_path', type=str, default='data/camera_data.json', help='Path to the JSON file containing camera data')
+parser.add_argument('--object_data_path', type=str, default='data/object_data.json', help='Path to the JSON file containing object data')
+parser.add_argument('--texture_data_path', type=str, default='datasets/texture_data.json', help='Path to the JSON file containing texture data')
+parser.add_argument('--datasets_path', type=str, default='data/datasets.json', help='Path to the file which lists all the datasets to use')
+parser.add_argument('--cap3d_captions_path', type=str, default='datasets/cap3d_captions.json', help='Path to the JSON file containing captions data')
+parser.add_argument('--simdata_path', type=str, default='datasets', help='Path to the simdata directory')
+parser.add_argument('--output_path', type=str, default='combinations.json', help='Path to the output file')
 args = parser.parse_args()
 
 # Path to the JSON file
-camera_file_path = args.camera_file_path
-
 max_number_of_objects = args.max_number_of_objects
+camera_data = read_json_file(args.camera_file_path)
+captions_data = read_json_file(args.cap3d_captions_path)
+object_data = read_json_file(args.object_data_path)
+texture_data = read_json_file(args.texture_data_path)
+datasets = read_json_file(args.datasets_path)
 
-# Load the data
-camera_data = read_json_file(camera_file_path)
+models = datasets["models"]
+backgrounds = datasets["backgrounds"]
 
 background_data = {}
 material_data = {}
@@ -55,12 +46,9 @@ def read_json_file(file_path):
     with open(file_path, 'r') as file:
         return json.load(file)
 
-captions_file_path = 'datasets/cap3d_captions.json'
-captions_data = read_json_file(captions_file_path)
-
-for dataset in datasets:
+for dataset in models:
     current_path = os.path.dirname(os.path.realpath(__file__))
-    dataset_path = os.path.join('datasets', dataset + '.json')
+    dataset_path = os.path.join(args.simdata_path, dataset + '.json')
     dataset_full_path = os.path.join(current_path, '../', dataset_path)
     print(f"Loading {dataset_full_path}")
     if os.path.exists(dataset_full_path):
@@ -94,7 +82,7 @@ print(f"Total number of objects: {total_length}")
 for background in backgrounds:
     # get the current path of this file
     current_path = os.path.dirname(os.path.realpath(__file__))
-    background_path = os.path.join('datasets', background + '.json')
+    background_path = os.path.join(args.simdata_path, background + '.json')
     background_full_path = os.path.join(current_path, '../', background_path)
     print(f"Loading {background_full_path}")
     if os.path.exists(background_full_path):
@@ -109,10 +97,6 @@ total_length = 0
 for background in background_dict:
     total_length += len(background_dict[background])
 print(f"Total number of backgrounds: {total_length}")
-
-
-# load material_data
-texture_data = read_json_file('datasets/texture_data.json')
 
 # Seed the random number generator for reproducibility
 if args.seed is not None:
@@ -153,9 +137,6 @@ def generate_caption(combination):
 
         object["position_offset"] = position_offset
         object["rotation_offset"] = rotation_offset
-        
-        # read in from ./data/object_data.json
-        object_data = read_json_file('data/object_data.json')
         
         object_scales = object_data["scales"]
         
@@ -345,7 +326,7 @@ def generate_combinations(camera_data, count):
 combinations = generate_combinations(camera_data, args.count)
 
 # Write to JSON file
-with open('combinations.json', 'w') as f:
+with open(args.output_path, 'w') as f:
     json.dump(combinations, f, indent=4)
 
-print("Combinations have been successfully written to combinations.json")
+print(f"Combinations have been successfully written to {args.output_path}")
