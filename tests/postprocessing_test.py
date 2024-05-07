@@ -1,5 +1,13 @@
-import bpy
+import pytest
 from simian.object import setup_compositor_for_black_and_white, setup_compositor_for_cel_shading, setup_compositor_for_depth, enable_effect
+
+current_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Append the simian directory to sys.path
+simian_path = os.path.join(current_dir, "../")
+sys.path.append(simian_path)
+
+import bpy
 
 
 def test_setup_compositor_for_black_and_white():
@@ -102,9 +110,6 @@ def test_enable_effect():
         print(f"Test passed for enabling {effect} effect.")
 
 
-# Execute tests
+# Run tests if this file is executed as a script
 if __name__ == "__main__":
-    test_setup_compositor_for_black_and_white()
-    test_setup_compositor_for_cel_shading()
-    test_setup_compositor_for_depth()
-    test_enable_effect()
+    pytest.main()

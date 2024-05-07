@@ -1,7 +1,6 @@
 import subprocess
 import sys
 import os
-import pytest
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -9,12 +8,10 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 simian_path = os.path.join(current_dir, "../")
 sys.path.append(simian_path)
 
+import pytest
 from simian.object import delete_all_empties, get_hierarchy_bbox, join_objects_in_hierarchy, lock_all_objects, normalize_object_scale, optimize_meshes_in_hierarchy, remove_loose_meshes, get_meshes_in_hierarchy, set_pivot_to_bottom, unlock_objects, unparent_keep_transform
 import numpy as np
 import bpy
-
-
-print("starting object_test.py")
 
 
 # Test function for the hierarchy bounding box
@@ -120,10 +117,7 @@ def test_normalize_object_scale():
     epsilon = 0.001  # Small threshold to account for floating point arithmetic errors
     assert abs(max_dimension_after_scaling - expected_dimension) < epsilon, f"Expected max dimension to be close to {expected_dimension}, but got {max_dimension_after_scaling}"
 
-
  
+# Run tests if this file is executed as a script
 if __name__ == "__main__":
-    # pytest.main(["-s", __file__])
-    test_hierarchy_bbox()
-    test_remove_small_geometry()
-    test_normalize_object_scale()
+    pytest.main()

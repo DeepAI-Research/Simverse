@@ -1,4 +1,5 @@
 import os
+import pytest
 import subprocess
 from unittest.mock import patch, MagicMock
 import pandas as pd
@@ -15,6 +16,7 @@ def test_check_imports():
         check_imports()
         mock_run.assert_called()  # Ensure subprocess.run is called to handle ImportError
 
+
 def test_get_combination_objects():
     # Test the get_combination_objects function
     test_data = {'objects': [{'name': 'Object1'}, {'name': 'Object2'}]}
@@ -23,6 +25,7 @@ def test_get_combination_objects():
         assert len(result) == 2  # Expecting two objects
         assert result.iloc[0]['name'] == 'Object1'  # Check the content of the DataFrame
 
+
 @patch('distributed.render_object')
 def test_render_objects(mock_render_object):
     # Test the render_objects function to ensure tasks are dispatched correctly
@@ -30,3 +33,8 @@ def test_render_objects(mock_render_object):
     assert mock_render_object.delay.call_count == 2  # Check if the render_object function was called twice
     mock_render_object.delay.assert_any_call(0, 1920, 1080, "./renders", "./backgrounds")
     mock_render_object.delay.assert_any_call(1, 1920, 1080, "./renders", "./backgrounds")
+
+
+# Run tests if this file is executed as a script
+if __name__ == "__main__":
+    pytest.main()

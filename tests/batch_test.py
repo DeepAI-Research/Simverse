@@ -4,7 +4,8 @@ import subprocess
 from unittest.mock import patch, MagicMock
 import pytest
 import pandas as pd
-from batch import render_objects, get_combination_objects
+from simian.batch import render_objects, get_combination_objects
+
 
 def test_get_combination_objects():
     # Setup the expected DataFrame
@@ -14,6 +15,7 @@ def test_get_combination_objects():
     with patch('pandas.read_json', return_value=expected_df):
         df = get_combination_objects()
         pd.testing.assert_frame_equal(df, expected_df)
+
 
 def test_render_objects():
     # Mock subprocess.run to avoid actual execution

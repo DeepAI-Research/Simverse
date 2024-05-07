@@ -1,6 +1,15 @@
 import os
-import bpy
+import sys
+import pytest
+
+current_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Append the simian directory to sys.path
+simian_path = os.path.join(current_dir, "../")
+sys.path.append(simian_path)
+
 from simian.scene import download_texture, create_stage, apply_stage_material
+import bpy
 
 # Setup test data
 test_data = {
@@ -43,6 +52,6 @@ def test_create_stage():
     print("Stage created and material applied successfully.")
 
 
+# Run tests if this file is executed as a script
 if __name__ == "__main__":
-    test_download_texture()
-    test_create_stage()
+    pytest.main()

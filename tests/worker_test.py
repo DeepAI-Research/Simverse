@@ -1,4 +1,5 @@
 import os
+import pytest
 from unittest.mock import patch
 from simian.worker import check_imports, render_object
 
@@ -24,7 +25,6 @@ def test_functionality():
     pass
 
 
-if __name__ == '__main__':
-    test_package_installation()
-    test_blender_script_execution()
-    test_functionality()
+# Run tests if this file is executed as a script
+if __name__ == "__main__":
+    pytest.main()

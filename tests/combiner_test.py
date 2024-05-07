@@ -4,6 +4,7 @@ import pytest
 import random
 from simian.combiner import read_json_file, generate_caption, generate_combinations
 
+
 def test_read_json_file():
     # Mock the open function and json.load
     test_data = {'key': 'value'}
@@ -13,6 +14,7 @@ def test_read_json_file():
         mock_file.assert_called_once_with("dummy_path.json", 'r')
         mock_json_load.assert_called()
         assert result == test_data, "The read_json_file function did not return the expected data"
+
 
 def test_generate_caption():
     # Setup test data for generating a caption
@@ -27,6 +29,7 @@ def test_generate_caption():
         caption = generate_caption(combination)
         assert 'Object1' in caption and 'Object2' in caption and 'Beach' in caption, "Caption does not include all elements"
 
+
 def test_generate_combinations():
     # Mock dependencies and inputs
     camera_data = {'orientations': ['Orientation1'], 'framings': ['Framing1'], 'animations': ['Animation1']}
@@ -37,6 +40,7 @@ def test_generate_combinations():
         combinations = generate_combinations(camera_data, 1)
         assert len(combinations) == 1, "Should generate exactly one combination"
         assert combinations[0]['index'] == 0, "Index of the generated combination should be 0"
+
 
 # Run tests if this file is executed as a script
 if __name__ == "__main__":

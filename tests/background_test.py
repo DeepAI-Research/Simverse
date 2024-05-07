@@ -1,8 +1,16 @@
 import os
-import bpy
 from unittest.mock import patch, MagicMock
 import pytest
 from simian.background import get_background_path, get_background, set_background, create_photosphere, create_photosphere_material
+
+current_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Append the simian directory to sys.path
+simian_path = os.path.join(current_dir, "../")
+sys.path.append(simian_path)
+
+import bpy
+
 
 def test_get_background_path():
     combination = {
@@ -15,6 +23,7 @@ def test_get_background_path():
     expected_result = f"/fake/path/test_dataset/123.hdr"
     result = get_background_path(background_path, combination)
     assert result == expected_result, "Background path is not correct."
+
 
 def test_get_background():
     combination = {
@@ -35,6 +44,7 @@ def test_get_background():
         get_background(background_path, combination)
         mock_get.assert_called_with("http://example.com/image.hdr")
 
+
 def test_set_background():
     combination = {
         "background": {
@@ -52,6 +62,7 @@ def test_set_background():
          patch('bpy.context'):
         set_background(background_path, combination)
         mock_images.load.assert_called_with("/fake/path/test_dataset/123.hdr")
+
 
 def test_create_photosphere():
     background_path = "/fake/path"
@@ -75,6 +86,7 @@ def test_create_photosphere():
         mock_create_material.assert_called_once()
         assert sphere.name == "Photosphere"
 
+
 def test_create_photosphere_material():
     sphere = MagicMock()
     background_path = "/fake/path"
@@ -92,6 +104,7 @@ def test_create_photosphere_material():
         create_photosphere_material(background_path, combination, sphere)
         mock_materials.new.assert_called_with(name="PhotosphereMaterial")
         mock_load.assert_called_with("/fake/path/test_dataset/123.hdr")
+
 
 # Run tests if this file is executed as a script
 if __name__ == "__main__":
