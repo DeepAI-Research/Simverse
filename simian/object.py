@@ -396,7 +396,7 @@ def remove_loose_meshes(obj: bpy.types.Object, min_vertex_count: int = 6) -> Non
         bpy.ops.object.join()
 
 
-def join_objects_in_hierarchy(objects: List[bpy.types.Object]) -> None:
+def join_objects_in_hierarchy(obj: bpy.types.Object) -> None:
     """
     Joins a list of objects into a single object.
 
@@ -407,7 +407,7 @@ def join_objects_in_hierarchy(objects: List[bpy.types.Object]) -> None:
         None
     """
 
-    meshes = get_meshes_in_hierarchy(object)
+    meshes = get_meshes_in_hierarchy(obj)
 
     # Select and activate meshes
     bpy.ops.object.select_all(action='DESELECT')
