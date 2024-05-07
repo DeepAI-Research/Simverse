@@ -181,7 +181,6 @@ def remove_small_geometry(obj: bpy.types.Object, min_vertex_count: int = 10) -> 
     print("Processed geometry, removing parts with fewer than", min_vertex_count, "vertices.")
     return obj
 
-
 def normalize_object_scale(obj: bpy.types.Object, scale_factor: float = 1.0) -> bpy.types.Object:
     """
     Scales the object by a factor.
