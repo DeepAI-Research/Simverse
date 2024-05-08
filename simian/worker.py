@@ -13,10 +13,10 @@ ssl._create_default_https_context = ssl._create_unverified_context
 def check_imports() -> None:
     """
     Checks and installs required Python packages specified in the requirements.txt file.
-    
+
     Args:
         None
-    
+
     Returns:
         None
     """
@@ -27,7 +27,10 @@ def check_imports() -> None:
             __import__(requirement)
         except ImportError:
             print(f"Installing {requirement}")
-            subprocess.run(["bash", "-c", f"{sys.executable} -m pip install {requirement}"])
+            subprocess.run(
+                ["bash", "-c", f"{sys.executable} -m pip install {requirement}"]
+            )
+
 
 check_imports()
 
@@ -36,7 +39,7 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 
 # if the directory is simian, remove that
 if current_dir.endswith("simian"):
-    current_dir = os.path.dirname(current_dir)  
+    current_dir = os.path.dirname(current_dir)
 
 # Append the simian directory to sys.path
 simian_path = os.path.join(current_dir)
@@ -52,10 +55,10 @@ else:
 def get_combination_objects() -> pd.DataFrame:
     """
     Returns a DataFrame of example objects to use for debugging.
-    
+
     Args:
     - None
-    
+
     Returns:
     - pd.DataFrame: DataFrame of example objects.
     """
@@ -63,17 +66,17 @@ def get_combination_objects() -> pd.DataFrame:
     return combinations
 
 
-redis_url = os.environ.get('REDIS_URL', 'redis://localhost:6379')
-app = Celery('tasks', broker=redis_url)
+redis_url = os.environ.get("REDIS_URL", "redis://localhost:6379")
+app = Celery("tasks", broker=redis_url)
 
 
-@app.task(name='render_object', acks_late=True, reject_on_worker_lost=True)
+@app.task(name="render_object", acks_late=True, reject_on_worker_lost=True)
 def render_object(
     combination_index: int,
     width: int,
     height: int,
     output_dir: str,
-    background_path: str
+    background_path: str,
 ) -> None:
     """
     Renders a 3D object based on the provided combination index and settings.
@@ -84,7 +87,7 @@ def render_object(
     - height (int): The height of the rendered output.
     - output_dir (str): The directory where the rendered video will be saved.
     - background_path (str): The path to the background HDRs.
-    
+
     Returns:
     - None
     """

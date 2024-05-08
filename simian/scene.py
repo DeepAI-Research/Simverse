@@ -5,6 +5,14 @@ import bmesh
 import os
 import requests
 
+def initialize_scene() -> None:
+    # start bpy from scratch
+    bpy.ops.wm.read_factory_settings(use_empty=True)
+    
+    # delete all objects
+    bpy.ops.object.select_all(action='SELECT')
+    
+    bpy.ops.object.delete()
 
 def download_texture(url: str, material_name: str, texture_name: str) -> str:
     """
@@ -21,18 +29,22 @@ def download_texture(url: str, material_name: str, texture_name: str) -> str:
     """
     materials_dir = os.path.join("materials", material_name)
     os.makedirs(materials_dir, exist_ok=True)
-    
+
     local_path = os.path.join(materials_dir, f"{texture_name}.jpg")
-    
+
     if not os.path.exists(local_path):
         response = requests.get(url)
         with open(local_path, "wb") as file:
             file.write(response.content)
-    
+
     return local_path
 
 
-def create_stage(combination: dict, stage_size: Tuple[int, int] = (100, 100), stage_height: float = 0.002) -> bpy.types.Object:
+def create_stage(
+    combination: dict,
+    stage_size: Tuple[int, int] = (100, 100),
+    stage_height: float = 0.002,
+) -> bpy.types.Object:
     """
     Creates a simple stage object in the scene.
 
@@ -47,57 +59,57 @@ def create_stage(combination: dict, stage_size: Tuple[int, int] = (100, 100), st
     # Create a new plane object
     bpy.ops.mesh.primitive_plane_add(size=1)
     stage = bpy.context.active_object
-    
-    stage_data = combination.get('stage', {})
-    stage_material = stage_data.get('material', {})
-    uv_scale = stage_data.get('uv_scale', [1.0, 1.0])
-    uv_rotation = stage_data.get('uv_rotation', 0.0)
-    
+
+    stage_data = combination.get("stage", {})
+    stage_material = stage_data.get("material", {})
+    uv_scale = stage_data.get("uv_scale", [1.0, 1.0])
+    uv_rotation = stage_data.get("uv_rotation", 0.0)
+
     # Scale the stage to the desired size
     stage.scale = (stage_size[0], stage_size[1], 1)
-    
+
     # Set the stage location to be at the bottom of the scene
     stage.location = (0, 0, stage_height)
-    
+
     # Rename the stage object
     stage.name = "Stage"
-    
+
     # Rescale the UVs based on the inverse of the scale multiplied by 2
     scale_x = stage_size[0] * uv_scale[0]
     scale_y = stage_size[1] * uv_scale[1]
-    
+
     # Enter edit mode
-    bpy.ops.object.mode_set(mode='EDIT')
-    
+    bpy.ops.object.mode_set(mode="EDIT")
+
     # Get the bmesh representation of the stage
     bm = bmesh.from_edit_mesh(stage.data)
-    
+
     # Get the UV layer
     uv_layer = bm.loops.layers.uv.verify()
-    
+
     # convert uv rotation to radians
     uv_rotation = uv_rotation * 3.14159 / 180.0
-    
+
     # create a 2x2 rotation matrix for the UVs
     rotation_matrix = [
         [cos(uv_rotation), -sin(uv_rotation)],
-        [sin(uv_rotation), cos(uv_rotation)]
+        [sin(uv_rotation), cos(uv_rotation)],
     ]
-    
+
     # Iterate over the faces and rescale the UVs
     for face in bm.faces:
         for loop in face.loops:
             uv = loop[uv_layer].uv
-            
+
             # rotate the UVs by multiplying by the rotation matrix
             uv.x, uv.y = (
                 (rotation_matrix[0][0] * uv.x + rotation_matrix[0][1] * uv.y) * scale_x,
-                (rotation_matrix[1][0] * uv.x + rotation_matrix[1][1] * uv.y) * scale_y
+                (rotation_matrix[1][0] * uv.x + rotation_matrix[1][1] * uv.y) * scale_y,
             )
-    
+
     # Update the mesh and return to object mode
     bmesh.update_edit_mesh(stage.data)
-    bpy.ops.object.mode_set(mode='OBJECT')
+    bpy.ops.object.mode_set(mode="OBJECT")
     return stage
 
 
@@ -110,9 +122,9 @@ def apply_stage_material(stage: bpy.types.Object, combination: dict) -> None:
     - combination (dict): A dictionary containing the stage material settings.
     """
     # Get the stage material settings from the combination
-    stage_data = combination.get('stage', {})
-    stage_material = stage_data.get('material', {})
-    material_name = stage_material.get('name', 'DefaultMaterial')
+    stage_data = combination.get("stage", {})
+    stage_material = stage_data.get("material", {})
+    material_name = stage_material.get("name", "DefaultMaterial")
 
     # Create a new material for the stage
     material = bpy.data.materials.new(name="StageMaterial")
@@ -129,65 +141,56 @@ def apply_stage_material(stage: bpy.types.Object, combination: dict) -> None:
         nodes.remove(node)
 
     # Create shader nodes
-    output = nodes.new(type='ShaderNodeOutputMaterial')
-    principled = nodes.new(type='ShaderNodeBsdfPrincipled')
+    output = nodes.new(type="ShaderNodeOutputMaterial")
+    principled = nodes.new(type="ShaderNodeBsdfPrincipled")
 
     # Create texture coordinate and mapping nodes
-    tex_coord = nodes.new(type='ShaderNodeTexCoord')
-    mapping = nodes.new(type='ShaderNodeMapping')
+    tex_coord = nodes.new(type="ShaderNodeTexCoord")
+    mapping = nodes.new(type="ShaderNodeMapping")
 
     # Connect texture coordinate to mapping
     links = material.node_tree.links
-    links.new(tex_coord.outputs['UV'], mapping.inputs['Vector'])
+    links.new(tex_coord.outputs["UV"], mapping.inputs["Vector"])
 
     # Load and connect diffuse texture
-    if 'Diffuse' in stage_material['maps']:
-        diffuse_url = stage_material['maps']['Diffuse']
+    if "Diffuse" in stage_material["maps"]:
+        diffuse_url = stage_material["maps"]["Diffuse"]
         diffuse_path = download_texture(diffuse_url, material_name, "Diffuse")
-        diffuse_tex = nodes.new(type='ShaderNodeTexImage')
+        diffuse_tex = nodes.new(type="ShaderNodeTexImage")
         diffuse_tex.image = bpy.data.images.load(diffuse_path)
-        links.new(mapping.outputs['Vector'], diffuse_tex.inputs['Vector'])
-        links.new(diffuse_tex.outputs['Color'], principled.inputs['Base Color'])
+        links.new(mapping.outputs["Vector"], diffuse_tex.inputs["Vector"])
+        links.new(diffuse_tex.outputs["Color"], principled.inputs["Base Color"])
 
     # Load and connect normal texture
-    if 'nor_gl' in stage_material['maps']:
-        normal_url = stage_material['maps']['nor_gl']
+    if "nor_gl" in stage_material["maps"]:
+        normal_url = stage_material["maps"]["nor_gl"]
         normal_path = download_texture(normal_url, material_name, "Normal")
-        normal_tex = nodes.new(type='ShaderNodeTexImage')
+        normal_tex = nodes.new(type="ShaderNodeTexImage")
         normal_tex.image = bpy.data.images.load(normal_path)
-        normal_map = nodes.new(type='ShaderNodeNormalMap')
-        links.new(mapping.outputs['Vector'], normal_tex.inputs['Vector'])
-        links.new(normal_tex.outputs['Color'], normal_map.inputs['Color'])
-        links.new(normal_map.outputs['Normal'], principled.inputs['Normal'])
+        normal_map = nodes.new(type="ShaderNodeNormalMap")
+        links.new(mapping.outputs["Vector"], normal_tex.inputs["Vector"])
+        links.new(normal_tex.outputs["Color"], normal_map.inputs["Color"])
+        links.new(normal_map.outputs["Normal"], principled.inputs["Normal"])
 
     # Load and connect rough_ao texture
-    if 'rough_ao' in stage_material['maps']:
-        rough_ao_url = stage_material['maps']['rough_ao']
+    if "rough_ao" in stage_material["maps"]:
+        rough_ao_url = stage_material["maps"]["rough_ao"]
         rough_ao_path = download_texture(rough_ao_url, material_name, "RoughAO")
-        rough_ao_tex = nodes.new(type='ShaderNodeTexImage')
+        rough_ao_tex = nodes.new(type="ShaderNodeTexImage")
         rough_ao_tex.image = bpy.data.images.load(rough_ao_path)
-        links.new(mapping.outputs['Vector'], rough_ao_tex.inputs['Vector'])
-        links.new(rough_ao_tex.outputs['Color'], principled.inputs['Roughness'])
+        links.new(mapping.outputs["Vector"], rough_ao_tex.inputs["Vector"])
+        links.new(rough_ao_tex.outputs["Color"], principled.inputs["Roughness"])
 
     # Load and connect displacement texture
-    if 'Displacement' in stage_material['maps']:
-        disp_url = stage_material['maps']['Displacement']
+    if "Displacement" in stage_material["maps"]:
+        disp_url = stage_material["maps"]["Displacement"]
         disp_path = download_texture(disp_url, material_name, "Displacement")
-        disp_tex = nodes.new(type='ShaderNodeTexImage')
+        disp_tex = nodes.new(type="ShaderNodeTexImage")
         disp_tex.image = bpy.data.images.load(disp_path)
-        disp_node = nodes.new(type='ShaderNodeDisplacement')
-        links.new(mapping.outputs['Vector'], disp_tex.inputs['Vector'])
-        links.new(disp_tex.outputs['Color'], disp_node.inputs['Height'])
-        links.new(disp_node.outputs['Displacement'], output.inputs['Displacement'])
-
-    # # Load and connect roughness texture
-    # if 'Rough' in stage_material['maps']:
-    #     rough_url = stage_material['maps']['Rough']
-    #     rough_path = download_texture(rough_url, material_name, "Rough")
-    #     rough_tex = nodes.new(type='ShaderNodeTexImage')
-    #     rough_tex.image = bpy.data.images.load(rough_path)
-    #     links.new(mapping.outputs['Vector'], rough_tex.inputs['Vector'])
-    #     links.new(rough_tex.outputs['Color'], principled.inputs['Roughness'])
+        disp_node = nodes.new(type="ShaderNodeDisplacement")
+        links.new(mapping.outputs["Vector"], disp_tex.inputs["Vector"])
+        links.new(disp_tex.outputs["Color"], disp_node.inputs["Height"])
+        links.new(disp_node.outputs["Displacement"], output.inputs["Displacement"])
 
     # Connect the nodes
-    links.new(principled.outputs['BSDF'], output.inputs['Surface'])
+    links.new(principled.outputs["BSDF"], output.inputs["Surface"])
