@@ -2,8 +2,8 @@
     "orientation": {
         "yaw_max": 360,
         "yaw_min": 0,
-        "pitch_max": 15,
-        "pitch_min": -90,
+        "pitch_max": 90,
+        "pitch_min": 0,
         "labels": {
             "yaw": {
                 "0": [
@@ -313,7 +313,7 @@
                     "<degrees> forward"
                 ]
             }
-        },        
+        },
         "descriptions": [
             "The camera is <yaw>, <pitch>.",
             "The camera is <pitch>, <yaw>.",
@@ -503,6 +503,26 @@
                 "Swivel the camera to the left, expanding the scene.",
                 "Turn the camera to the left, capturing a broader view.",
                 "Slide the camera leftward to enhance the panoramic perspective."
+            ],
+            "keyframes": [
+                {
+                    "CameraAnimationPivot": {
+                        "position": [
+                            -1,
+                            0,
+                            0
+                        ]
+                    }
+                },
+                {
+                    "CameraAnimationPivot": {
+                        "position": [
+                            1,
+                            0,
+                            0
+                        ]
+                    }
+                }
             ]
         },
         {
@@ -530,6 +550,26 @@
                 "Spiral the camera to the left around the objects, capturing comprehensive views.",
                 "Encircle the objects with the camera moving left, providing a full rotational perspective.",
                 "Navigate the camera in a counter-clockwise orbit around the objects, showcasing all dimensions."
+            ],
+            "keyframes": [
+                {
+                    "CameraAnimationRoot": {
+                        "rotation": [
+                            0,
+                            0,
+                            360
+                        ]
+                    }
+                },
+                {
+                    "CameraAnimationRoot": {
+                        "rotation": [
+                            0,
+                            0,
+                            0
+                        ]
+                    }
+                }
             ]
         },
         {
@@ -557,6 +597,26 @@
                 "Swivel the camera to the right, expanding the scene.",
                 "Turn the camera to the right, capturing a broader view.",
                 "Slide the camera rightward to enhance the panoramic perspective."
+            ],
+            "keyframes": [
+                {
+                    "CameraAnimationPivot": {
+                        "position": [
+                            1,
+                            0,
+                            0
+                        ]
+                    }
+                },
+                {
+                    "CameraAnimationPivot": {
+                        "position": [
+                            -1,
+                            0,
+                            0
+                        ]
+                    }
+                }
             ]
         },
         {
@@ -584,6 +644,26 @@
                 "Spiral the camera to the right around the objects, capturing comprehensive views.",
                 "Encircle the objects with the camera moving right, providing a full rotational perspective.",
                 "Navigate the camera in a clockwise orbit around the objects, showcasing all dimensions."
+            ],
+            "keyframes": [
+                {
+                    "CameraAnimationRoot": {
+                        "rotation": [
+                            0,
+                            0,
+                            0
+                        ]
+                    }
+                },
+                {
+                    "CameraAnimationRoot": {
+                        "rotation": [
+                            0,
+                            0,
+                            360
+                        ]
+                    }
+                }
             ]
         },
         {
@@ -611,6 +691,26 @@
                 "Tighten the focal length to make the objects appear larger and more detailed.",
                 "Zoom in to focus intensely on the objects, making them the central visual element.",
                 "Close in on the objects with the zoom, highlighting their features more prominently."
+            ],
+            "keyframes": [
+                {
+                    "CameraAnimationPivot": {
+                        "position": [
+                            4,
+                            0,
+                            0
+                        ]
+                    }
+                },
+                {
+                    "CameraAnimationPivot": {
+                        "position": [
+                            0,
+                            0,
+                            0
+                        ]
+                    }
+                }
             ]
         },
         {
@@ -638,6 +738,26 @@
                 "Widen the focal length to shrink the objects' visual size, offering a broader perspective.",
                 "Zoom out to de-emphasize the objects, focusing on the larger scene around them.",
                 "Pull back with the camera zoom, broadening the perspective to include a wider area."
+            ],
+            "keyframes": [
+                {
+                    "CameraAnimationPivot": {
+                        "position": [
+                            0,
+                            0,
+                            0
+                        ]
+                    }
+                },
+                {
+                    "CameraAnimationPivot": {
+                        "position": [
+                            4,
+                            0,
+                            0
+                        ]
+                    }
+                }
             ]
         }
     ]

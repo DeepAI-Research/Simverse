@@ -19,28 +19,38 @@ def create_camera_rig() -> bpy.types.Object:
             - camera: The camera data.
     """
     camera_animation_root = bpy.data.objects.new("CameraAnimationRoot", None)
+    bpy.context.scene.collection.objects.link(camera_animation_root)
 
     camera_orientation_pivot_yaw = bpy.data.objects.new(
         "CameraOrientationPivotYaw", None
     )
     camera_orientation_pivot_yaw.parent = camera_animation_root
+    bpy.context.scene.collection.objects.link(camera_orientation_pivot_yaw)
 
     camera_orientation_pivot_pitch = bpy.data.objects.new(
         "CameraOrientationPivotPitch", None
     )
     camera_orientation_pivot_pitch.parent = camera_orientation_pivot_yaw
+    bpy.context.scene.collection.objects.link(camera_orientation_pivot_pitch)
 
     camera_framing_pivot = bpy.data.objects.new("CameraFramingPivot", None)
     camera_framing_pivot.parent = camera_orientation_pivot_pitch
+    bpy.context.scene.collection.objects.link(camera_framing_pivot)
 
     camera_animation_pivot = bpy.data.objects.new("CameraAnimationPivot", None)
+    camera_animation_pivot.parent = camera_framing_pivot
+    bpy.context.scene.collection.objects.link(camera_animation_pivot)
 
     camera = bpy.data.cameras.new("Camera")
     camera_object = bpy.data.objects.new("Camera", camera)
+    
+    # rotate the Camera 90º,
+    camera_object.delta_rotation_euler = [1.5708, 0, 1.5708]
+    
     camera_object.parent = camera_animation_pivot
+    bpy.context.scene.collection.objects.link(camera_object)
 
     bpy.context.scene.camera = camera_object
-    bpy.context.scene.collection.objects.link(camera_animation_root)
 
     return {
         "camera_animation_root": camera_animation_root,
@@ -66,7 +76,14 @@ def set_camera_settings(combination: dict) -> None:
     Returns:
         None
     """
+    print("Setting camera settings")
+    print(bpy.context.scene.objects.keys())
+    # save the scene for debug right here
+    bpy.ops.wm.save_as_mainfile(filepath="./scene.blend")
     camera = bpy.context.scene.objects["Camera"]
+    
+    # get the camera on the camera object
+    camera = camera.data
 
     camera.lens = combination["framing"]["fov"]
 
@@ -98,67 +115,48 @@ def set_camera_settings(combination: dict) -> None:
     # Set the CameraFramingPivot X to the framing
     camera_framing_pivot = bpy.data.objects.get("CameraFramingPivot")
     camera_framing_pivot.location = framing["position"]
-    set_camera_animation(combination["animation"]["name"])
+    set_camera_animation(combination)
 
 
-def set_camera_animation(animation_name: str) -> None:
+def set_camera_animation(combination: dict, frame_distance: int = 120) -> None:
     """
-    Plays the specified NLA track animation on the camera.
-
-    This function finds and applies an NLA track with the given animation name to the camera object
-    in the Blender scene.
+    Applies the specified animation to the camera based on the keyframes from the camera_data.json file.
 
     Args:
-        animation_name (str): The name of the animation to play on the camera.
+        animation_name (str): The name of the animation to apply to the camera.
+        camera_data (dict): The dictionary containing the camera data from the JSON file.
 
     Raises:
-        ValueError: If the animation or the animation target object is not found.
+        ValueError: If the animation is not found in the camera data.
 
     Returns:
         None
     """
+    # Find the animation in the camera data
+    animation = combination["animation"]
 
-    # Get CameraAnimationRoot object
-    camera_animation_root = bpy.data.objects.get("CameraAnimationRoot")
+    # Get the keyframes from the animation
+    keyframes = animation["keyframes"]
 
-    action = None
+    # Iterate over the keyframes and apply the transformations to the corresponding objects
+    for i, keyframe in enumerate(keyframes):
+        for obj_name, transforms in keyframe.items():
+            obj = bpy.data.objects.get(obj_name)
+            if obj is None:
+                raise ValueError(f"Object {obj_name} not found in the scene")
 
-    # Get camera_animation_root and all empty children and store in an array
-    empties = []
+            # Set the keyframe for each transformation
+            frame = i * frame_distance
+            for transform_name, value in transforms.items():
+                if transform_name == "position":
+                    obj.location = value
+                    obj.keyframe_insert(data_path="location", frame=frame)
+                elif transform_name == "rotation":
+                    obj.rotation_euler = [math.radians(angle) for angle in value]
+                    obj.keyframe_insert(data_path="rotation_euler", frame=frame)
+                elif transform_name == "scale":
+                    obj.scale = value
+                    obj.keyframe_insert(data_path="scale", frame=frame)
 
-    # Add obj to empties
-    empties.append(camera_animation_root)
-
-    def recurse_children(obj):
-        for child in obj.children:
-            if child.type == "EMPTY":
-                empties.append(child)
-                recurse_children(child)
-
-    recurse_children(camera_animation_root)
-
-    action_object = None
-
-    for empty in empties:
-        # Find the NLA track with the given animation name on camera_animation_root
-        if empty.animation_data is None or empty.animation_data.nla_tracks is None:
-            continue
-        for track in empty.animation_data.nla_tracks:
-            if track.name == animation_name:
-                action_object = empty
-                action = track.strips[0].action
-                break
-
-    if action is None:
-        raise ValueError(f"Animation {animation_name} not found on camera")
-
-    if action_object is None:
-        raise ValueError(
-            f"Animation target object not found for animation {animation_name}"
-        )
-
-    # Set the action to the camera
-    action_object.animation_data.action = action
-
-    # Play the action
+    # Set the current frame to the start of the animation
     bpy.context.scene.frame_set(0)

@@ -73,37 +73,34 @@ def set_background(background_path: str, combination: Dict) -> None:
     get_background(background_path, combination)
     background_path = get_background_path(background_path, combination)
 
+    # Check if the scene has a world, and create one if it doesn't
+    if bpy.context.scene.world is None:
+        bpy.context.scene.world = bpy.data.worlds.new("World")
+
     # Ensure world nodes are used
     bpy.context.scene.world.use_nodes = True
     tree = bpy.context.scene.world.node_tree
 
-    # Find the existing Environment Texture node
-    env_tex_node = None
-    for node in tree.nodes:
-        if node.type == "TEX_ENVIRONMENT":
-            env_tex_node = node
-            break
+    # Clear existing nodes
+    tree.nodes.clear()
 
-    if env_tex_node is None:
-        raise ValueError("Environment Texture node not found in the world node graph")
+    # Create the Environment Texture node
+    env_tex_node = tree.nodes.new(type="ShaderNodeTexEnvironment")
+    env_tex_node.location = (-300, 0)
 
     # Load the HDR image
     env_tex_node.image = bpy.data.images.load(background_path)
 
-    # Connect the Environment Texture node to the Background node
-    background_node = tree.nodes.get("Background")
-    if background_node is None:
-        # If the Background node doesn't exist, create it
-        background_node = tree.nodes.new(type="ShaderNodeBackground")
+    # Create the Background node
+    background_node = tree.nodes.new(type="ShaderNodeBackground")
+    background_node.location = (0, 0)
 
     # Connect the Environment Texture node to the Background node
     tree.links.new(env_tex_node.outputs["Color"], background_node.inputs["Color"])
 
-    # Connect the Background node to the World Output
-    output_node = tree.nodes.get("World Output")
-    if output_node is None:
-        # If the World Output node doesn't exist, create it
-        output_node = tree.nodes.new(type="ShaderNodeOutputWorld")
+    # Create the World Output node
+    output_node = tree.nodes.new(type="ShaderNodeOutputWorld")
+    output_node.location = (300, 0)
 
     # Connect the Background node to the World Output
     tree.links.new(background_node.outputs["Background"], output_node.inputs["Surface"])

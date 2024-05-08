@@ -7,7 +7,6 @@ import json
 import os
 import ssl
 import pandas as pd
-import pandas as pd
 import objaverse
 import bpy
 
@@ -49,7 +48,7 @@ if current_dir.endswith("simian"):
 simian_path = os.path.join(current_dir)
 sys.path.append(simian_path)
 
-from simian.camera import set_camera_settings
+from simian.camera import create_camera_rig, set_camera_settings
 from simian.object import (
     apply_all_modifiers,
     apply_and_remove_armatures,
@@ -68,7 +67,7 @@ from simian.object import (
     unparent_keep_transform,
 )
 from simian.background import create_photosphere, set_background
-from simian.scene import apply_stage_material, create_stage
+from simian.scene import apply_stage_material, create_stage, initialize_scene
 
 
 def read_combination(combination_file: str, index: int = 0) -> dict:
@@ -116,8 +115,9 @@ def render_scene(
     print(f"Rendering scene with combination {combination_index}")
 
     os.makedirs(output_dir, exist_ok=True)
-
-    bpy.ops.wm.open_mainfile(filepath="scenes/video_generation_v1.blend")
+    
+    initialize_scene()
+    create_camera_rig()
 
     scene = context.scene
     context.scene.frame_start = start_frame
@@ -193,7 +193,6 @@ def render_scene(
         filepath=os.path.join(output_dir, f"{combination_index}.blend")
     )
     print(f"Rendered video saved to {render_path}")
-
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

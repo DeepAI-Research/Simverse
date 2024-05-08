@@ -3,6 +3,8 @@ import subprocess
 import sys
 import os
 import pytest
+from simian.camera import create_camera_rig
+from simian.scene import initialize_scene
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -17,8 +19,8 @@ import bpy
 # Test function for the hierarchy bounding box
 def test_hierarchy_bbox():
     # Load an empty scene
-    bpy.ops.wm.open_mainfile(filepath="../scenes/empty.blend")
-    
+    initialize_scene()
+        
     # Create two cubes 1 meter apart
     bpy.ops.mesh.primitive_cube_add(size=2, location=(0, 0, 0))
     cube1 = bpy.context.active_object
@@ -53,8 +55,9 @@ def test_remove_small_geometry():
     current_dir = os.path.dirname(__file__)
 
     # Load an empty scene
-    bpy.ops.wm.open_mainfile(filepath=os.path.join(current_dir, "../", "scenes/video_generation_v1.blend"))
-
+    initialize_scene()
+    create_camera_rig()
+    
     initial_objects = lock_all_objects()
 
     # Path to the GLB file
@@ -93,8 +96,7 @@ def test_remove_small_geometry():
     assert len(meshes) == 1
 
 # def test_normalize_object_scale():
-#     # load scene from ./scenes/empty.blend
-#     bpy.ops.wm.open_mainfile(filepath="scenes/empty.blend")
+#     initialize_scene()
 #     context = bpy.context
     
 #     models = ["examples/animated_model.glb", "examples/animated.glb", "examples/dangling_parts.glb", "examples/separate_faces.glb"]
