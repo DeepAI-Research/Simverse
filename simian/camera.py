@@ -67,23 +67,18 @@ def set_camera_settings(combination: dict) -> None:
         None
     """
     camera = bpy.context.scene.objects["Camera"]
-    
+
     camera.lens = combination["framing"]["fov"]
-    
+
     orientation_data = combination["orientation"]
 
-    orientation = {
-        "pitch": orientation_data["pitch"],
-        "yaw": orientation_data["yaw"]
-    }
+    orientation = {"pitch": orientation_data["pitch"], "yaw": orientation_data["yaw"]}
 
     # Rotate CameraOrientationPivotYaw by the Y
     camera_orientation_pivot_yaw = bpy.data.objects.get("CameraOrientationPivotYaw")
 
     # Convert from degrees to radians. orientation['pitch'] is in degrees, but Blender uses radians
-    camera_orientation_pivot_yaw.rotation_euler[2] = (
-        orientation["yaw"]* math.pi / 180
-    )
+    camera_orientation_pivot_yaw.rotation_euler[2] = orientation["yaw"] * math.pi / 180
 
     # Rotate CameraOrientationPivotPitch by the X
     camera_orientation_pivot_pitch = bpy.data.objects.get("CameraOrientationPivotPitch")
@@ -96,7 +91,7 @@ def set_camera_settings(combination: dict) -> None:
 
     # Set the root of the whole rig to the orientation position
     camera_animation_root = bpy.data.objects.get("CameraAnimationRoot")
-    
+
     # TODO: Get the center of the bounding box of the focus object and set the camera to that position
     camera_animation_root.location = [0, 0, 0.5]
 

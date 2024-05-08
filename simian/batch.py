@@ -17,10 +17,10 @@ else:
 def get_combination_objects() -> pd.DataFrame:
     """
     Fetches a DataFrame of example objects from a JSON file.
-    
+
     This function is used primarily for debugging purposes, where combinations
     of objects are read from a JSON file and returned as a pandas DataFrame.
-    
+
     Returns:
         pd.DataFrame: DataFrame containing example object combinations.
     """
@@ -42,11 +42,11 @@ def render_objects(
 ) -> None:
     """
     Automates the rendering of objects using Blender based on predefined combinations.
-    
+
     This function orchestrates the rendering of multiple objects within a specified range
     from the combinations DataFrame. It allows for configuration of rendering dimensions,
     use of specific GPU devices, and selection of frames for animation sequences.
-    
+
     Args:
         - download_dir (Optional[str]): Directory to download the objects to.
             If None, objects are not downloaded. Defaults to None.
@@ -69,21 +69,25 @@ def render_objects(
     Returns:
         None
     """
-    
+
     # Check if the operating system is supported for rendering.
     if platform.system() not in ["Linux", "Darwin"]:
-        raise NotImplementedError(f"Rendering on {platform.system()} is not supported. Use Linux or macOS.")
+        raise NotImplementedError(
+            f"Rendering on {platform.system()} is not supported. Use Linux or macOS."
+        )
 
     # Ensure download directory is specified if a save format is set.
     if download_dir is None and save_repo_format is not None:
-        raise ValueError(f"Download directory must be specified if save_repo_format is set.")
+        raise ValueError(
+            f"Download directory must be specified if save_repo_format is set."
+        )
 
     # Set the number of processes to three times the number of CPU cores if not specified.
     if processes is None:
         processes = multiprocessing.cpu_count() * 3
 
     # Loop over each combination index to set up and run the rendering process.
-    for i in range(start_index, end_index):        
+    for i in range(start_index, end_index):
         args = f"--width {width} --height {height} --combination_index {i} --start_frame {start_frame} --end_frame {end_frame}"
         scripts_dir = os.path.dirname(os.path.realpath(__file__))
         target_directory = os.path.join(scripts_dir, "../", "renders")
@@ -91,7 +95,7 @@ def render_objects(
         args += f" --output_dir {target_directory}"
         background_path = os.path.join(scripts_dir, "../", "backgrounds")
         args += f" --background_path {background_path}"
-        
+
         # Check if Blender application exists at the specified path.
         if not os.path.exists(application_path):
             raise FileNotFoundError(f"Blender not found at {application_path}.")
@@ -99,13 +103,9 @@ def render_objects(
         # Construct and print the Blender command line.
         command = f"{application_path} --background --python simian/render.py -- {args}"
         print(command)
-        
+
         # Execute the rendering command with a timeout.
-        subprocess.run(
-            ["bash", "-c", command], 
-            timeout=render_timeout, 
-            check=False
-        )
+        subprocess.run(["bash", "-c", command], timeout=render_timeout, check=False)
 
 
 if __name__ == "__main__":
