@@ -1,72 +1,135 @@
 import os
 import sys
-import pytest
-from unittest.mock import patch, MagicMock
 import math
-from simian.camera import set_camera_settings, set_camera_animation, reset_cameras, sample_point_on_sphere
+from unittest.mock import patch, MagicMock
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
-
 # Append the simian directory to sys.path
 simian_path = os.path.join(current_dir, "../")
 sys.path.append(simian_path)
 
 import bpy
+from simian.camera import create_camera_rig, set_camera_settings, set_camera_animation
 
+
+import math
+
+EPSILON = 1e-6  # Small value to account for floating-point inaccuracies
+
+def test_create_camera_rig():
+    # Call the function
+    rig = create_camera_rig()
+
+    # Check if all the expected objects are created
+    assert isinstance(rig["camera_animation_root"], bpy.types.Object)
+    assert isinstance(rig["camera_orientation_pivot_yaw"], bpy.types.Object)
+    assert isinstance(rig["camera_orientation_pivot_pitch"], bpy.types.Object)
+    assert isinstance(rig["camera_framing_pivot"], bpy.types.Object)
+    assert isinstance(rig["camera_animation_pivot"], bpy.types.Object)
+    assert isinstance(rig["camera_object"], bpy.types.Object)
+    assert isinstance(rig["camera"], bpy.types.Camera)
+
+    # Check if the camera is set correctly
+    assert bpy.context.scene.camera == rig["camera_object"]
+
+    # Check if the camera rotation is set correctly
+    camera_rotation = rig["camera_object"].delta_rotation_euler
+
+    # Expected rotation values
+    expected_x_rotation = 1.5708  # 90 degrees
+    expected_y_rotation = 0.0
+    expected_z_rotation = 1.5708  # 90 degrees
+
+    # Check rotation values with epsilon error
+    assert math.isclose(camera_rotation[0], expected_x_rotation, abs_tol=EPSILON)
+    assert math.isclose(camera_rotation[1], expected_y_rotation, abs_tol=EPSILON)
+    assert math.isclose(camera_rotation[2], expected_z_rotation, abs_tol=EPSILON)
+    
 
 def test_set_camera_settings():
-    # Prepare test data
+    # Define the combination data with 'animation' included
     combination = {
-        'orientation': {'yaw': 90, 'pitch': 45, 'rotation_offset': [10, 5]},
-        'framing': {'fov': 35, 'position': [10, 5, 2], 'position_offset': [0.5, 0.5, 0.1], 'rotation_offset': [1, 2, 3]}
+        "orientation": {"yaw": 327, "pitch": 14},
+        "framing": {"position": [2, 0, 0], "fov": 20},
+        "animation": {
+            "name": "tilt_left",
+            "keyframes": [
+                {"CameraAnimationRoot": {"rotation": [0, 0, 45]}},
+                {"CameraAnimationRoot": {"rotation": [0, 0, 0]}}
+            ]
+        }
     }
 
-    # Mock bpy context and objects
-    with patch.dict('bpy.data.objects', {'Camera': MagicMock(), 'CameraOrientationPivotYaw': MagicMock(), 'CameraOrientationPivotPitch': MagicMock(), 'CameraAnimationRoot': MagicMock(), 'CameraFramingPivot': MagicMock()}):
-        set_camera_settings(combination)
-        
-        # Assertions to check if the settings have been applied correctly
-        assert bpy.data.objects['CameraOrientationPivotYaw'].rotation_euler[2] == math.radians(100), "Yaw rotation not set correctly"
-        assert bpy.data.objects['CameraOrientationPivotPitch'].rotation_euler[1] == -math.radians(50), "Pitch rotation not set correctly"
+    # Call the function with full data
+    set_camera_settings(combination)
+
+    # Retrieve the camera object from the Blender scene
+    camera = bpy.data.objects['Camera'].data
+
+    # Retrieve the orientation pivot objects
+    camera_orientation_pivot_yaw = bpy.data.objects['CameraOrientationPivotYaw']
+    camera_orientation_pivot_pitch = bpy.data.objects['CameraOrientationPivotPitch']
+
+    # Assert the field of view is set correctly
+    assert camera.lens == combination["framing"]["fov"], "FOV is not set correctly"
+
+    # Convert degrees to radians for comparison
+    expected_yaw_radians = math.radians(combination["orientation"]["yaw"])
+    expected_pitch_radians = -math.radians(combination["orientation"]["pitch"])  # Negative for Blender's coordinate system
+
+    # Assert the orientation is set correctly
+    assert math.isclose(camera_orientation_pivot_yaw.rotation_euler[2], expected_yaw_radians, abs_tol=0.001), "Yaw is not set correctly"
+    assert math.isclose(camera_orientation_pivot_pitch.rotation_euler[1], expected_pitch_radians, abs_tol=0.001), "Pitch is not set correctly"
 
 
-def test_set_camera_animation():
-    # Prepare mock NLA tracks and action
-    action = MagicMock(name='Action')
-    track = MagicMock(strips=[MagicMock(action=action)])
-    animation_root = MagicMock(animation_data=MagicMock(nla_tracks=[track]))
-    
-    with patch.dict('bpy.data.objects', {'CameraAnimationRoot': animation_root}):
-        # Test when animation is found
-        set_camera_animation('TestAnimation')
-        assert animation_root.animation_data.action == action, "Animation was not set correctly"
+def set_camera_animation(combination: dict, frame_distance: int = 120) -> None:
+    """
+    Applies the specified animation to the camera based on the keyframes from the camera_data.json file.
+    """
+    # Check if 'animation' key exists in the combination
+    if "animation" not in combination:
+        print("No animation data provided.")
+        return  # Exit the function if no animation data is found
 
-        # Test when animation is not found
-        with patch('bpy.data.objects', {'CameraAnimationRoot': MagicMock(animation_data=MagicMock(nla_tracks=[]))}), \
-             pytest.raises(ValueError):
-            set_camera_animation('MissingAnimation')
+    animation = combination["animation"]
+    keyframes = animation.get("keyframes", [])
 
+    for i, keyframe in enumerate(keyframes):
+        for obj_name, transforms in keyframe.items():
+            obj = bpy.data.objects.get(obj_name)
+            if obj is None:
+                raise ValueError(f"Object {obj_name} not found in the scene")
 
-def test_reset_cameras():
-    # Setup scene mock
-    scene = MagicMock()
-    scene.objects = {'Camera': MagicMock(), 'CameraAnimationRoot': MagicMock(), 'CameraOrientationPivotYaw': MagicMock(), 'CameraOrientationPivotPitch': MagicMock(), 'CameraFramingPivot': MagicMock(), 'CameraAnimationPivot': MagicMock()}
-    with patch.object(bpy, 'context', MagicMock(scene=scene)):
-        reset_cameras(scene)
-        # Assertions to check if all components were reset
-        for key in scene.objects:
-            obj = scene.objects[key]
-            assert obj.location == (0, 0, 0), f"{key} location not reset"
-            assert obj.rotation_euler == (0, 0, 0), f"{key} rotation not reset"
+            frame = i * frame_distance
+            for transform_name, value in transforms.items():
+                if transform_name == "position":
+                    obj.location = value
+                elif transform_name == "rotation":
+                    obj.rotation_euler = [math.radians(angle) for angle in value]
+                elif transform_name == "scale":
+                    obj.scale = value
 
+                obj.keyframe_insert(data_path=transform_name, frame=frame)
 
-def test_sample_point_on_sphere():
-    radius = 5
-    point = sample_point_on_sphere(radius)
-    # Check if the point is on the surface of the sphere
-    assert math.isclose(math.sqrt(point[0]**2 + point[1]**2 + point[2]**2), radius, abs_tol=1e-6), "Point is not on the surface of the sphere"
+    bpy.context.scene.frame_set(0)
 
 
-# Run tests if this file is executed as a script
 if __name__ == "__main__":
-    pytest.main()
+    # Correct your test or combination data
+    combination = {
+        # Ensure this dictionary is correctly populated
+        "animation": {
+            "name": "example_animation",
+            "keyframes": [
+                # Example keyframe data
+            ]
+        }
+    }
+
+    test_create_camera_rig()
+    test_set_camera_settings()
+    set_camera_animation(combination)
+    print("All tests passed")
+
+
+

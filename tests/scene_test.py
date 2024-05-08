@@ -56,4 +56,5 @@ def test_create_stage():
 if __name__ == "__main__":
     test_download_texture()
     test_create_stage()
+    print("All tests passed")
     
