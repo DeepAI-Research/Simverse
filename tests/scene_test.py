@@ -8,7 +8,7 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 simian_path = os.path.join(current_dir, "../")
 sys.path.append(simian_path)
 
-from simian.scene import download_texture, create_stage, apply_stage_material
+from simian.scene import download_texture, create_stage, apply_stage_material, initialize_scene
 import bpy
 
 # Setup test data
@@ -41,17 +41,19 @@ def test_download_texture():
 
 def test_create_stage():
     """Test creating a stage and applying materials."""
-    bpy.ops.wm.open_mainfile(filepath="../scenes/empty.blend")  # Make sure this path is correct
+    initialize_scene()
     stage = create_stage(test_data, (100, 100), 0.002)
-    apply_stage_material(stage, test_data)
-    
-    assert stage.scale == (100, 100, 1), "Stage scale is incorrect"
-    assert stage.location == (0, 0, 0.002), "Stage location is incorrect"
+    apply_stage_material(stage, test_data)    
+    epsilon = 1e-6  # Set a small tolerance value
+    assert all(abs(a - b) < epsilon for a, b in zip(stage.scale, (100.0, 100.0, 1.0))), "Stage scale is incorrect"
+    assert all(abs(a - b) < epsilon for a, b in zip(stage.location, (0, 0, 0.002))), "Stage location is incorrect"
     assert stage.name == "Stage", "Stage name is not set correctly"
-
     print("Stage created and material applied successfully.")
+
 
 
 # Run tests if this file is executed as a script
 if __name__ == "__main__":
-    pytest.main()
+    test_download_texture()
+    test_create_stage()
+    
