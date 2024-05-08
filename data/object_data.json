@@ -8,9 +8,7 @@
         "The frame is centered on <objects>.",
         "Featuring <objects>.",
         "There are \"<objects>\" in the scene.",
-        "The scene contains \"<objects>\"."
-    ],
-    "instructions": [
+        "The scene contains \"<objects>\".",
         "Put the objects \"<objects>\" into the scene.",
         "Add the objects \"<objects>\" to the scene.",
         "Focus on <objects>.",

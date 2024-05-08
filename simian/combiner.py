@@ -164,8 +164,6 @@ def generate_caption(combination):
     background_name = combination["background"]["name"]
     floor_material_name = combination["stage"]["material"]["name"]
 
-    data_type = random.choice(["descriptions", "instructions"])
-
     objects = combination["objects"]
 
     positions_taken = set()
@@ -250,7 +248,7 @@ def generate_caption(combination):
     )
 
     # Replace the placeholders in the camera text with the closest matching labels
-    orientation_text = random.choice(camera_data["orientation"][data_type])
+    orientation_text = random.choice(camera_data["orientation"]["descriptions"])
     orientation_text = orientation_text.replace(
         "<pitch>", random.choice(pitch_labels[closest_pitch_label])
     ).replace(
@@ -265,7 +263,7 @@ def generate_caption(combination):
     )
     caption_parts.append(orientation_text)
 
-    # framing_text = random.choice(camera_data["framing"][data_type])
+    # framing_text = random.choice(camera_data["framing"]["descriptions"])
     # framing_text = framing_text.replace("<objects>", object_names)
     # caption_parts.append(framing_text)
 
@@ -435,15 +433,13 @@ def generate_combinations(camera_data, count):
         caption = generate_caption(combination)
         combination["caption"] = caption
 
-        # remove description and instructions from framing, animation and orientation
+        # remove description from framing, animation and orientation
         framing = framing.copy()
 
         framing.pop("descriptions", None)
-        framing.pop("instructions", None)
 
         animation = animation.copy()
         animation.pop("descriptions", None)
-        animation.pop("instructions", None)
 
         combination["framing"] = framing
         combination["animation"] = animation
