@@ -1,9 +1,8 @@
 import os
 from typing import List, Optional
-import numpy as np
 from .constants import IMPORT_FUNCTIONS
 import bpy
-from mathutils import Matrix, Vector
+from mathutils import Vector
 
 
 def load_object(object_path: str) -> None:
@@ -22,20 +21,6 @@ def load_object(object_path: str) -> None:
     file_extension = object_path.split(".")[-1].lower()
     if file_extension is None:
         raise ValueError(f"Unsupported file type: {object_path}")
-
-    if file_extension == "usdz":
-        # install usdz io package
-        dirname = os.path.dirname(os.path.realpath(__file__))
-        usdz_package = os.path.join(dirname, "plugins/io_scene_usdz.zip")
-        bpy.ops.preferences.addon_install(filepath=usdz_package)
-        # enable it
-        addon_name = "io_scene_usdz"
-        bpy.ops.preferences.addon_enable(module=addon_name)
-        # import the usdz
-        from io_scene_usdz.import_usdz import import_usdz
-
-        import_usdz(bpy.context, filepath=object_path, materials=True, animations=True)
-        return None
 
     # load from existing import functions
     import_function = IMPORT_FUNCTIONS[file_extension]

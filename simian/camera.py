@@ -76,10 +76,6 @@ def set_camera_settings(combination: dict) -> None:
     Returns:
         None
     """
-    print("Setting camera settings")
-    print(bpy.context.scene.objects.keys())
-    # save the scene for debug right here
-    bpy.ops.wm.save_as_mainfile(filepath="./scene.blend")
     camera = bpy.context.scene.objects["Camera"]
     
     # get the camera on the camera object
