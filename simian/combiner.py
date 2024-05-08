@@ -373,8 +373,6 @@ def generate_combinations(camera_data, count):
 
     # Generate combinations on the fly up to the specified count
     for i in range(count):
-        print("camera_data['orientation']")
-        print(camera_data["orientation"])
         orientation_data = camera_data["orientation"]
 
         # roll a number between orientation['yaw_min'] and orientation['yaw_max']
