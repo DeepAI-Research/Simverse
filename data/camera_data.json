@@ -408,127 +408,228 @@
     },
     "framings": [
         {
-            "name": "close",
-            "position": [
-                2,
-                0,
-                0
-            ],
-            "fov": 20,
+            "name": "extreme_closeup",
+            "fov_min": 10,
+            "fov_max": 15,
+            "coverage_factor_min": 0.9,
+            "coverage_factor_max": 1.3,
             "descriptions": [
-                "Close-up framing that fills the frame with the objects.",
-                "Detailed close view of the objects with minimal background.",
-                "Objects occupy the frame closely, highlighting details.",
-                "Intimate close-up where the objects nearly touch the frame edges.",
-                "Tight framing that focuses intensely on the objects.",
-                "Close-range shot that minimizes background and maximizes object detail.",
-                "Objects prominently displayed in close proximity within the frame.",
-                "Near view that isolates the objects from their surroundings.",
-                "Objects are zoomed in close, filling the frame densely.",
-                "Detailed perspective of the objects at close quarters.",
-                "Zoom in close to make the objects fill the entire frame.",
-                "Move the camera close to minimize background and focus on the objects.",
-                "Frame the objects tightly to emphasize details and fill the view.",
-                "Adjust the camera to closely capture the objects, excluding most of the background.",
-                "Position the camera for a close shot, focusing on the objects.",
-                "Set up the camera to capture the objects in close detail, filling the frame.",
-                "Zoom in until the objects occupy the whole frame, focusing closely.",
-                "Ensure the camera is close enough to capture detailed features of the objects.",
-                "Frame the objects so they fill the view entirely, providing a close-up look.",
-                "Position the camera to tightly encompass the objects, enhancing their details."
+                "Extreme close-up shot",
+                "Extremely tight framing",
+                "Intensely intimate view",
+                "Minute details captured",
+                "Right up close",
+                "Heavily zoomed in",
+                "Details fill the frame",
+                "Extreme detail focus",
+                "Extremely near view",
+                "As close as possible",
+                "Extremely close framing",
+                "Intense close-up perspective",
+                "Extreme close-up of objects",
+                "Objects dominate the frame",
+                "Deeply intimate close-up",
+                "Extremely tight shot",
+                "Incredibly close view",
+                "Extreme zoom on details",
+                "Macro-level perspective",
+                "Microscopic framing",
+                "Up-close and personal",
+                "Extreme close focus",
+                "Highly detailed close-up",
+                "Extremely zoomed in",
+                "Intensely close shot",
+                "Extreme proximity",
+                "Ultra-tight framing",
+                "Magnified view",
+                "Ultra-close perspective",
+                "Extremely detailed shot"
+            ]
+        },
+        {
+            "name": "closeup",
+            "fov_min": 15,
+            "fov_max": 24,
+            "coverage_factor_min": 0.9,
+            "coverage_factor_max": 1.1,
+            "descriptions": [
+                "Close-up shot of the objects.",
+                "Close-up framing.",
+                "Close view of the objects.",
+                "Objects occupy the frame closely.",
+                "Intimate close-up.",
+                "Tight framing on the objects.",
+                "Close-up perspective.",
+                "Objects captured up close.",
+                "Detailed close-up shot.",
+                "Tight close-up.",
+                "Close-up view.",
+                "Intimate close-up.",
+                "Detailed close-up.",
+                "Close framing.",
+                "Zoomed in close on the details.",
+                "Intimately close view of the objects.",
+                "Fills the frame for an up-close perspective.",
+                "Tight shot that gets in close to the objects.",
+                "Close-up shot",
+                "Tight framing",
+                "Intimate view",
+                "Detailed perspective",
+                "Up close",
+                "Zoomed in",
+                "Fill the frame",
+                "Details highlighted",
+                "Close focus",
+                "Near view",
+                "In tight"
+            ]
+        },
+        {
+            "name": "medium_closeup",
+            "fov_min": 24,
+            "fov_max": 30,
+            "coverage_factor_min": 0.8,
+            "coverage_factor_max": 1.0,
+            "descriptions": [
+                "Medium close-up shot",
+                "Slightly tight framing",
+                "Fairly intimate view",
+                "Moderate detail focus",
+                "Closer than medium",
+                "Slightly zoomed in",
+                "Objects fill more frame",
+                "Emphasized details",
+                "Medium-close perspective",
+                "Moderately near view",
+                "Tighter than standard",
+                "Mildly close framing",
+                "Somewhat close shot",
+                "Moderate object focus",
+                "Slightly intimate view",
+                "Medium-tight shot",
+                "Moderately close view",
+                "Mild zoom on details",
+                "Semi-close perspective",
+                "In between medium and close",
+                "Somewhat zoomed in",
+                "Moderately detailed shot"
             ]
         },
         {
             "name": "medium",
-            "position": [
-                3.5,
-                0,
-                0
-            ],
-            "fov": 30,
+            "fov_min": 30,
+            "fov_max": 40,
+            "coverage_factor_min": 0.7,
+            "coverage_factor_max": 0.9,
             "descriptions": [
-                "Medium shot framing the objects at a comfortable distance.",
-                "Objects framed with moderate space around them for context.",
-                "Balanced view of the objects, neither too close nor too far.",
-                "Objects captured from a moderate distance, showing some background.",
-                "Medium framing that provides a clear view of the objects and their setting.",
-                "Halfway framing that balances focus on the objects and their surroundings.",
-                "Moderate distance shot that captures the objects clearly with some context.",
-                "Neutral shot of the objects, offering a natural perspective.",
-                "Standard view of the objects from a medium distance, not too zoomed in or out.",
-                "Mid-range framing that shows the objects with some surrounding elements.",
-                "Set the camera to capture the objects from a medium distance, showing some background.",
-                "Adjust the camera to frame the objects with a moderate amount of space around them.",
-                "Position the camera to balance the objects and their surroundings in the frame.",
-                "Frame the objects from a neutral distance, providing a balanced view.",
-                "Set up the camera to capture a medium shot of the objects, neither too close nor too far.",
-                "Place the camera at a moderate distance to capture the objects clearly with some context.",
-                "Ensure the camera frames the objects from a mid-range distance for a natural perspective.",
-                "Adjust the camera to a medium framing, capturing the objects with a bit of their environment.",
-                "Position the camera to take a standard view of the objects, showing them clearly with some background.",
-                "Set the camera to a neutral position, framing the objects at a comfortable distance with some surroundings."
+                "Medium shot",
+                "Medium framing",
+                "Medium shot framing the objects.",
+                "Medium shot.",
+                "Balanced medium.",
+                "Standard medium.",
+                "Standard medium framing on the objects.",
+                "Not too tight, not too loose - just right in the middle.",
+                "A moderate, neutral distance from the subjects.",
+                "Medium distance, balanced composition.",
+                "Standard view",
+                "Typical framing",
+                "Normal distance",
+                "Mid-range shot",
+                "Balanced perspective",
+                "Average framing",
+                "Neutral distance",
+                "Middle ground",
+                "Moderate zoom",
+                "Halfway in"
+            ]
+        },
+        {
+            "name": "medium_wide",
+            "fov_min": 40,
+            "fov_max": 55,
+            "coverage_factor_min": 0.7,
+            "coverage_factor_max": 0.9,
+            "descriptions": [
+                "Medium-wide shot",
+                "Medium wide shot",
+                "Medium wide angle",
+                "Medium wide framing",
+                "Medium wide shot of the objects.",
+                "Medium wide perspective.",
+                "Medium-wide framing on the objects.",
+                "Medium-wide shot of the scene.",
+                "Medium-wide.",
+                "Medium wide",
+                "Medium-wide angle",
+                "Not too close, not too far.",
+                "A bit wider than a typical medium shot.",
+                "Halfway between a medium and a wide.",
+                "Pulls back a little from medium framing.",
+                "Slightly expanded view compared to medium.",
+                "Slightly wide",
+                "Moderately broad",
+                "Mild widening",
+                "Somewhat expansive",
+                "Gently zoomed out"
             ]
         },
         {
             "name": "wide",
-            "position": [
-                4,
-                0,
-                0
-            ],
-            "fov": 45,
+            "fov_min": 55,
+            "fov_max": 70,
+            "coverage_factor_min": 0.6,
+            "coverage_factor_max": 0.8,
             "descriptions": [
-                "Wide shot capturing the objects within a broad setting.",
-                "Expansive view of the objects, including a vast background.",
-                "Long-distance framing that shows the objects in a wide context.",
-                "Broad perspective that captures the objects with plenty of surrounding space.",
-                "Wide framing that sets the objects against a large backdrop.",
-                "Vast shot of the objects, showing them within a large environmental context.",
-                "Extended view of the objects, framed within a sweeping landscape.",
-                "Wide angle shot that shows the objects and much of their surroundings.",
-                "Spacious framing that captures the objects and a wide expanse around them.",
-                "Long shot that places the objects within a vast setting, emphasizing space.",
-                "Set the camera to a wide angle to capture the objects and a broad background.",
-                "Zoom out to include a vast surrounding area around the objects in the frame.",
-                "Position the camera to take a wide shot, showing the objects within a large setting.",
-                "Adjust the camera to capture an expansive view of the objects and their environment.",
-                "Frame the objects with plenty of space around them to emphasize the wide setting.",
-                "Set up the camera to take a long shot, placing the objects within a vast landscape.",
-                "Ensure the camera captures a broad perspective, including the objects and their wide surroundings.",
-                "Position the camera for a wide framing that includes the objects and a significant portion of their surroundings.",
-                "Adjust the camera to take a spacious shot, capturing the objects and a wide expanse around them.",
-                "Frame the objects in a long shot that shows them within a sweeping environmental context."
+                "Wide shot.",
+                "Wide angle",
+                "Wide framing.",
+                "Wide shot of the objects.",
+                "Expansive view of the objects.",
+                "Expansive view.",
+                "Taking in the whole scene.",
+                "Expansive, broad view of the full setting and objects.",
+                "Wide perspective showing everything.",
+                "Zoomed out to capture the big picture.",
+                "All-encompassing wide angle on the full space.",
+                "Zoomed out",
+                "Broad view",
+                "Expansive framing",
+                "Full perspective",
+                "Sweeping vista",
+                "All-encompassing",
+                "Big picture",
+                "Comprehensive view",
+                "Wide-angle",
+                "Broad scope",
+                "Fully zoomed out"
             ]
         },
         {
-            "name": "far",
-            "position": [
-                5,
-                0,
-                0
-            ],
-            "fov": 60,
+            "name": "extreme_wide",
+            "fov_min": 70,
+            "fov_max": 90,
+            "coverage_factor_min": 0.4,
+            "coverage_factor_max": 0.6,
             "descriptions": [
-                "Far shot that captures the objects from a great distance.",
-                "Distant view of the objects, showing them within an extensive setting.",
-                "Extreme long shot that places the objects in a wide panoramic view.",
-                "Furthest zoom out, showing the objects small against a vast backdrop.",
-                "Longest range shot capturing the objects with a wide environmental context.",
-                "Objects appear small in a far shot, surrounded by a large landscape.",
-                "Farthest perspective that includes the objects and a broad surrounding area.",
-                "Extreme distance framing that shows the objects within a vast setting.",
-                "Objects framed from afar, emphasizing their placement in a large space.",
-                "Most zoomed-out view capturing the objects within a sweeping panorama.",
-                "Zoom out to the maximum to capture the objects from a far distance, including a wide setting.",
-                "Set the camera to capture a distant view of the objects, emphasizing their environment.",
-                "Position the camera for an extreme long shot, placing the objects within a panoramic view.",
-                "Adjust the camera to its furthest zoom, showing the objects small against a vast backdrop.",
-                "Frame the objects from the longest range, capturing them within a broad environmental context.",
-                "Set up the camera for a far shot, making the objects appear small within a large landscape.",
-                "Ensure the camera captures the objects from the farthest perspective, including a wide area around them.",
-                "Adjust the camera to capture an extreme distance framing, showing the objects within a vast setting.",
-                "Position the camera to frame the objects from afar, focusing on their placement in a large space.",
-                "Set the camera to the most zoomed-out setting, capturing the objects within a sweeping panoramic view."
+                "Extreme wide shot",
+                "Extreme wide angle",
+                "Extreme wide framing",
+                "Extremely broad framing",
+                "Extremely zoomed out",
+                "Captures entire scene",
+                "Panoramic view",
+                "Massively wide shot",
+                "Extremely expansive framing",
+                "Ultra-wide perspective",
+                "Extremely wide landscape",
+                "Extremely broad view",
+                "Ultra-zoomed out",
+                "Extremely wide angle",
+                "Captures entire setting",
+                "Extremely wide coverage",
+                "Ultra-expansive shot",
+                "Extremely wide perspective"
             ]
         }
     ],
@@ -836,6 +937,81 @@
             ]
         },
         {
+            "name": "dolly_in",
+            "descriptions": [
+                "The camera moves closer to the subject.",
+                "Dolly the camera toward the scene.",
+                "The camera advances toward the objects.",
+                "The camera pushes toward the subject.",
+                "Dolly in to focus more closely.",
+                "The camera travels in to capture details.",
+                "Dolly in to highlight the objects.",
+                "The camera moves in to concentrate on the objects.",
+                "The camera progresses closer to emphasize details.",
+                "The camera narrows the scene by moving in.",
+                "The camera approaches the objects.",
+                "Dolly in to bring the objects nearer.",
+                "The camera advances to fill the frame with objects."
+            ],
+            "keyframes": [
+                {
+                    "CameraAnimationPivot": {
+                        "position": [
+                            4,
+                            0,
+                            0
+                        ]
+                    }
+                },
+                {
+                    "CameraAnimationPivot": {
+                        "position": [
+                            0,
+                            0,
+                            0
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "name": "dolly_out",
+            "descriptions": [
+                "The camera pulls back from the scene.",
+                "Dolly out to widen the view.",
+                "The camera retreats from the objects.",
+                "The camera withdraws from the subject.",
+                "Pull the camera back.",
+                "Dolly out to de-emphasize the objects.",
+                "The camera moves out to show a wider scene.",
+                "The camera pulls back to reveal more context.",
+                "The camera pulls away, expanding the view.",
+                "Dolly out to reduce focus on the objects.",
+                "The camera retreats to show a broader perspective.",
+                "Dolly out to place the objects into a larger context."
+            ],
+            "keyframes": [
+                {
+                    "CameraAnimationPivot": {
+                        "position": [
+                            0,
+                            0,
+                            0
+                        ]
+                    }
+                },
+                {
+                    "CameraAnimationPivot": {
+                        "position": [
+                            4,
+                            0,
+                            0
+                        ]
+                    }
+                }
+            ]
+        },
+        {
             "name": "zoom_in",
             "descriptions": [
                 "The camera zooms in.",
@@ -862,21 +1038,13 @@
             ],
             "keyframes": [
                 {
-                    "CameraAnimationPivot": {
-                        "position": [
-                            4,
-                            0,
-                            0
-                        ]
+                    "Camera": {
+                        "lens_offset": 10
                     }
                 },
                 {
-                    "CameraAnimationPivot": {
-                        "position": [
-                            0,
-                            0,
-                            0
-                        ]
+                    "Camera": {
+                        "lens_offset": 0
                     }
                 }
             ]
@@ -917,21 +1085,13 @@
             ],
             "keyframes": [
                 {
-                    "CameraAnimationPivot": {
-                        "position": [
-                            0,
-                            0,
-                            0
-                        ]
+                    "Camera": {
+                        "lens_offset": 0
                     }
                 },
                 {
-                    "CameraAnimationPivot": {
-                        "position": [
-                            4,
-                            0,
-                            0
-                        ]
+                    "Camera": {
+                        "lens_offset": 10
                     }
                 }
             ]
