@@ -1,5 +1,5 @@
 {
-    "name_prefixes": [
+    "descriptions": [
         "The subject is <objects>.",
         "[subject: <objects>]",
         "The focus is on <objects>.",
@@ -7,16 +7,16 @@
         "The camera is pointed at <objects>.",
         "The frame is centered on <objects>.",
         "Featuring <objects>.",
+        "There are \"<objects>\" in the scene.",
+        "The scene contains \"<objects>\"."
+    ],
+    "instructions": [
+        "Put the objects \"<objects>\" into the scene.",
+        "Add the objects \"<objects>\" to the scene.",
+        
         "Focus on <objects>.",
         "<objects>"
-    ],
-    "name_suffixes": [
-        "the subject",
-        "the object",
-        "the focus",
-        "the actor",
-        "the actors",
-        "the model"
+        
     ],
     "relationships": {
         "to_the_left": [

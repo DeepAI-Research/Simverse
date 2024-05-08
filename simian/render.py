@@ -45,7 +45,7 @@ if current_dir.endswith("simian"):
 simian_path = os.path.join(current_dir)
 sys.path.append(simian_path)
 
-from simian.camera import reset_cameras, set_camera_settings
+from simian.camera import set_camera_settings
 from simian.object import apply_all_modifiers, apply_and_remove_armatures, delete_all_empties, delete_invisible_objects, get_meshes_in_hierarchy, join_objects_in_hierarchy, load_object, lock_all_objects, normalize_object_scale, optimize_meshes_in_hierarchy, remove_loose_meshes, remove_small_geometry, set_pivot_to_bottom, unlock_objects, unparent_keep_transform
 from simian.background import create_photosphere, set_background
 from simian.scene import apply_stage_material, create_stage
@@ -136,12 +136,10 @@ def render_scene(
         row = (grid_cell - 1) // 3
         col = (grid_cell - 1) % 3
         
-        obj.location = [(col - 1 + object_data['position_offset'][0]) * object_data['distance_modifier'],
-                        (row - 1 + object_data['position_offset'][1]) * object_data['distance_modifier'],
-                        object_data['position_offset'][2] * object_data['distance_modifier']]
-        
-        obj.rotation_euler = [obj.rotation_euler[i] + (object_data['rotation_offset'][i]) * math.pi / 180 for i in range(3)]
-        
+        obj.location = [(col - 1 + object_data['position_offset'][0]),
+                        (row - 1 + object_data['position_offset'][1]),
+                        object_data['position_offset'][2]]
+                
         obj.scale = [object_data['scale']['factor'] for _ in range(3)]
         normalize_object_scale(obj)
 

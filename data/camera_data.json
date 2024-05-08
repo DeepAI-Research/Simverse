@@ -1,254 +1,348 @@
 {
-    "orientations": [
-        {
-            "name": "front_level",
-            "descriptions": [
-                "The camera is positioned directly in front of the objects at their eye level.",
-                "From a frontal position, the camera captures objects straight on at their vertical midpoint.",
-                "A head-on perspective of the objects with the camera positioned horizontally.",
-                "Camera placed directly in front, level with the center of the objects.",
-                "Straight-ahead view of the objects, camera at the same height.",
-                "Frontal shot, camera and objects aligned horizontally.",
-                "Camera facing forward at eye level of the objects.",
-                "Level camera positioned in front, capturing objects head-on.",
-                "Front view, camera aligned parallel to the ground and objects.",
-                "Direct front shot of the objects, camera aligned with their center."
-            ],
-            "instructions": [
-                "Position the camera directly in front of the objects, aligning it with their eye level.",
-                "Set up the camera straight ahead of the objects, ensuring it is level and centered.",
-                "Place the camera horizontally in front of the objects, capturing them head-on.",
-                "Align the camera directly in front, level with the middle height of the objects.",
-                "Situate the camera to face the objects straight on, ensuring it is at their mid-height.",
-                "Adjust the camera to be perpendicular to the ground and centered on the objects.",
-                "Set the camera directly opposite the objects, making sure it is parallel to the horizon.",
-                "Position the camera in front of the objects at their vertical midpoint, facing forward.",
-                "Square the camera with the objects, ensuring it is level with their center.",
-                "Mount the camera in front, ensuring it captures the objects from a direct, level angle."
-            ],
-            "yaw": 0,
-            "pitch": 0,
-            "position": [
-                0,
-                0,
-                0.5
-            ]
-        },
-        {
-            "name": "front_angled_down_45",
-            "descriptions": [
-                "The camera is placed in front of the objects, angled downwards at a 45-degree angle.",
-                "From the front, the camera tilts 45 degrees towards the ground to capture the objects.",
-                "Camera faces the objects from the front, pitched down at a steep angle.",
-                "View of the objects from the front with the camera slanted significantly downwards.",
-                "Frontal perspective of the objects with the camera dipped halfway to the floor.",
-                "Camera angled forward and downward at a 45-degree pitch to focus on the objects.",
-                "Front shot of the objects with the camera tilted sharply towards the ground.",
-                "Direct front view with the camera angled at a 45-degree downward slope.",
-                "Head-on shot with the camera inclined 45 degrees below the horizon.",
-                "Frontal capture of the objects with the camera sloping steeply downward."
-            ],
-            "instructions": [
-                "Position the camera in front of the objects and tilt it downwards by 45 degrees.",
-                "Set the camera facing the objects from the front and angle it down at a 45-degree pitch.",
-                "Align the camera directly in front of the objects, then tilt it halfway to the floor.",
-                "Place the camera in front, then pitch it down sharply to capture the objects from above.",
-                "Adjust the camera to face the objects head-on, then dip it 45 degrees below horizontal.",
-                "Orient the camera in front of the objects, pitching it steeply downward for a focused view.",
-                "Mount the camera forward, angling it significantly down to frame the objects from above.",
-                "Set up the camera directly opposite the objects, tilting it at a 45-degree angle towards the ground.",
-                "Position the camera to face the objects directly, then lower its angle sharply to capture them.",
-                "Place the camera in front of the objects and adjust it to a steep downward angle for a direct view."
-            ],
-            "yaw": 0,
-            "pitch": 45,
-            "position": [
-                0,
-                0,
-                0.5
-            ]
-        },
-        {
-            "name": "rear_level",
-            "descriptions": [
-                "The camera is positioned directly behind the objects at their eye level.",
-                "View from behind the objects, camera aligned horizontally and centered.",
-                "Rear view, capturing objects from directly opposite their front.",
-                "Back perspective with the camera level with the objects' mid-height.",
-                "Directly behind the objects, the camera is set perpendicular to the ground.",
-                "180-degree rear shot, focusing squarely on the back of the objects.",
-                "Eye-level camera setup from the rear, capturing the objects' back.",
-                "Rearward facing camera aligned centrally with the height of the objects."
-            ],
-            "instructions": [
-                "Place the camera directly behind the objects, aligning it with their eye level.",
-                "Set up the camera at the objects' rear, ensuring it is horizontal and centered.",
-                "Position the camera to capture a direct rear view at the objects' mid-height.",
-                "Align the camera horizontally behind the objects, focusing on their back.",
-                "Adjust the camera to be perpendicular to the ground and centered on the objects from the rear.",
-                "Rotate the camera to face the objects' back side directly from behind.",
-                "Set the camera at the objects' eye level from behind, aiming straight forward.",
-                "Position the camera centrally at the rear of the objects, aligned with their middle."
-            ],
-            "yaw": 180,
-            "pitch": 0,
-            "position": [
-                0,
-                0,
-                0.5
-            ]
-        },
-        {
-            "name": "rear_angled_down_45",
-            "descriptions": [
-                "The camera is placed behind the objects, angled downwards at a 45-degree angle.",
-                "Rear view with the camera tilted 45 degrees towards the ground.",
-                "Behind the objects, the camera dips halfway to the floor.",
-                "45-degree downward angle from directly behind the objects.",
-                "Rearward facing shot, camera pitched down steeply to capture the objects.",
-                "Camera angled sharply down from behind, focusing on the objects.",
-                "Rear shot with the camera tilted halfway between horizontal and the ground.",
-                "Behind the objects with the camera slanted at a significant downward angle."
-            ],
-            "instructions": [
-                "Place the camera behind the objects and tilt it downwards by 45 degrees.",
-                "Set the camera at the objects' rear, tilting it down to a 45-degree angle towards the floor.",
-                "Adjust the camera behind the objects, dipping it halfway to the ground.",
-                "Position the camera to capture a 45-degree downward view from behind the objects.",
-                "Angle the camera sharply downward from the rear to focus on the objects.",
-                "Tilt the camera from behind the objects at a steep angle to capture them from above.",
-                "Align the camera behind the objects, pitching it 45 degrees towards the ground.",
-                "Set up the camera at a sharp downward angle from the objects' rear to emphasize their lower parts."
-            ],
-            "yaw": 180,
-            "pitch": 45,
-            "position": [
-                0,
-                0,
-                0.5
-            ]
-        },
-        {
-            "name": "left_level",
-            "descriptions": [
-                "The camera is positioned to the left side of the objects, level with them.",
-                "Left side view, camera aligned horizontally and at the same height as the objects.",
-                "From the left, the camera captures the objects at their vertical center.",
-                "Side perspective from the left with the camera perfectly horizontal.",
-                "Direct left view of the objects, camera aligned with their midline.",
-                "Camera placed on the left, facing the objects squarely from the side.",
-                "Level with the objects' center, the camera captures from the left side.",
-                "From 90 degrees left, the camera is aligned perpendicular to the objects."
-            ],
-            "instructions": [
-                "Place the camera on the left side of the objects, making sure it is level with them.",
-                "Position the camera at the same height as the objects, from their left side.",
-                "Align the camera to the left of the objects, capturing them from the side at mid-height.",
-                "Set the camera perpendicular to the objects on their left, ensuring it is level.",
-                "Mount the camera at the objects' left, aligned with their vertical midpoint.",
-                "Locate the camera on the left, facing the objects directly from the side.",
-                "Set up the camera on the left side, level with the center of the objects.",
-                "Position the camera 90 degrees to the left of the objects, perpendicular and at their mid-height."
-            ],
-            "yaw": 90,
-            "pitch": 0,
-            "position": [
-                0,
-                0,
-                0.5
-            ]
-        },
-        {
-            "name": "left_angled_down_45",
-            "descriptions": [
-                "The camera is positioned 45 degrees left of the objects, angled downwards.",
-                "Left side view tilted 45 degrees toward the ground.",
-                "From the left, the camera dips 45 degrees to capture the objects from above.",
-                "45-degree downward angle from the left side of the objects.",
-                "From the left, the camera is pitched down to focus on the lower parts of the objects.",
-                "Camera placed to the left, tilting down halfway to the floor.",
-                "Leftward angle with the camera slanted at a sharp downward angle.",
-                "View from 45 degrees left of the objects, camera angled steeply downward."
-            ],
-            "instructions": [
-                "Place the camera 45 degrees to the left of the objects and tilt it downwards by 45 degrees.",
-                "Position the camera to the left of the objects, tilting it down to a 45-degree angle.",
-                "Adjust the camera to the left of the objects, dipping it 45 degrees toward the ground.",
-                "Set the camera 45 degrees left of the objects, angled sharply downward.",
-                "Align the camera on the left, pitching it down to capture a lower perspective.",
-                "Mount the camera to the left of the objects, tilting it halfway to the floor.",
-                "Locate the camera to the objects' left, tilting it sharply down to emphasize lower details.",
-                "Position the camera 45 degrees left and down from the objects, focusing from a high angle."
-            ],
-            "yaw": 90,
-            "pitch": 45,
-            "position": [
-                0,
-                0,
-                0.5
-            ]
-        },
-        {
-            "name": "right_level",
-            "descriptions": [
-                "The camera is positioned to the right side of the objects, level with them.",
-                "Right side view, camera aligned horizontally and at the same height as the objects.",
-                "From the right, the camera captures the objects at their vertical center.",
-                "Side perspective from the right with the camera perfectly horizontal.",
-                "Direct right view of the objects, camera aligned with their midline.",
-                "Camera placed on the right, facing the objects squarely from the side.",
-                "Level with the objects' center, the camera captures from the right side.",
-                "From 90 degrees right, the camera is aligned perpendicular to the objects."
-            ],
-            "instructions": [
-                "Place the camera on the right side of the objects, making sure it is level with them.",
-                "Position the camera at the same height as the objects, from their right side.",
-                "Align the camera to the right of the objects, capturing them from the side at mid-height.",
-                "Set the camera perpendicular to the objects on their right, ensuring it is level.",
-                "Mount the camera at the objects' right, aligned with their vertical midpoint.",
-                "Locate the camera on the right, facing the objects directly from the side.",
-                "Set up the camera on the right side, level with the center of the objects.",
-                "Position the camera 90 degrees to the right of the objects, perpendicular and at their mid-height."
-            ],
-            "yaw": -90,
-            "pitch": 0,
-            "position": [
-                0,
-                0,
-                0.5
-            ]
-        },
-        {
-            "name": "right_angled_down_45",
-            "descriptions": [
-                "The camera is positioned 45 degrees right of the objects, angled downwards.",
-                "Right side view tilted 45 degrees toward the ground.",
-                "From the right, the camera dips 45 degrees to capture the objects from above.",
-                "45-degree downward angle from the right side of the objects.",
-                "From the right, the camera is pitched down to focus on the lower parts of the objects.",
-                "Camera placed to the right, tilting down halfway to the floor.",
-                "Rightward angle with the camera slanted at a sharp downward angle.",
-                "View from 45 degrees right of the objects, camera angled steeply downward."
-            ],
-            "instructions": [
-                "Place the camera 45 degrees to the right of the objects and tilt it downwards by 45 degrees.",
-                "Position the camera to the right of the objects, tilting it down to a 45-degree angle.",
-                "Adjust the camera to the right of the objects, dipping it 45 degrees toward the ground.",
-                "Set the camera 45 degrees right of the objects, angled sharply downward.",
-                "Align the camera on the right, pitching it down to capture a lower perspective.",
-                "Mount the camera to the right of the objects, tilting it halfway to the floor.",
-                "Locate the camera to the objects' right, tilting it sharply down to emphasize lower details.",
-                "Position the camera 45 degrees right and down from the objects, focusing from a high angle."
-            ],
-            "yaw": -90,
-            "pitch": 45,
-            "position": [
-                0,
-                0,
-                0.5
-            ]
-        }
-    ],
+    "orientation": {
+        "yaw_max": 360,
+        "yaw_min": 0,
+        "pitch_max": 15,
+        "pitch_min": -90,
+        "labels": {
+            "yaw": {
+                "0": [
+                    "facing forward",
+                    "directly ahead",
+                    "straight ahead",
+                    "head on",
+                    "<degrees> degrees",
+                    "dead ahead",
+                    "right in front",
+                    "pointed forward",
+                    "aligned forward",
+                    "squarely ahead"
+                ],
+                "15": [
+                    "slightly left of front",
+                    "front left quarter",
+                    "slight left front",
+                    "on the left side",
+                    "<degrees> degrees to the left of front",
+                    "<degrees> degrees left of front",
+                    "<degrees> degrees to the left",
+                    "just off front to the left",
+                    "almost forward but left",
+                    "slightly turned left"
+                ],
+                "30": [
+                    "front left",
+                    "left forward",
+                    "leftward front",
+                    "<degrees> degrees to the left",
+                    "<degrees> degrees left",
+                    "<degrees> degrees front left",
+                    "a bit to the left front",
+                    "leaning left forward",
+                    "slightly forward left",
+                    "angled left forward"
+                ],
+                "45": [
+                    "front left side",
+                    "left forward side",
+                    "oblique left",
+                    "<degrees> degrees to the left",
+                    "slightly to the front-left",
+                    "a bit to the left of forward",
+                    "not quite perpendicular to the left",
+                    "just off the left forward",
+                    "leaning towards the left front"
+                ],
+                "60": [
+                    "left front quarter",
+                    "left forward quarter",
+                    "<degrees> degrees to the left",
+                    "a sharp left forward",
+                    "leaning strongly to the left",
+                    "angled forward on the left",
+                    "deep into the left quadrant",
+                    "majorly to the left front"
+                ],
+                "75": [
+                    "far left front",
+                    "left side forward",
+                    "<degrees> degrees to the left",
+                    "nearing perpendicular left",
+                    "heavily biased to the left front",
+                    "sharply forward left",
+                    "greatly to the left front",
+                    "deep left but forward"
+                ],
+                "90": [
+                    "left side",
+                    "directly left",
+                    "perpendicular left",
+                    "<degrees> degrees to the left",
+                    "direct left",
+                    "straight to the left",
+                    "clearly to the left",
+                    "flat left",
+                    "horizontal left"
+                ],
+                "105": [
+                    "back left quarter",
+                    "left rear quarter",
+                    "<degrees> degrees to the left",
+                    "slightly back on the left",
+                    "a bit behind to the left",
+                    "just off left but backwards",
+                    "leaning back on the left",
+                    "rearward to the left"
+                ],
+                "120": [
+                    "rear left",
+                    "left backward",
+                    "<degrees> degrees to the left",
+                    "back towards the left",
+                    "left and slightly behind",
+                    "left rearward",
+                    "angled back on the left",
+                    "deep into the rear-left quadrant"
+                ],
+                "135": [
+                    "back left side",
+                    "left rear side",
+                    "oblique rear left",
+                    "<degrees> degrees to the left",
+                    "strongly to the rear-left",
+                    "deep left rear",
+                    "sharply back left",
+                    "heavily to the back left",
+                    "far back to the left"
+                ],
+                "150": [
+                    "left rear quarter",
+                    "left back quarter",
+                    "<degrees> degrees to the left",
+                    "sharp left back",
+                    "deep into left rear quadrant",
+                    "majorly to the left back",
+                    "back and deep left",
+                    "left and far behind"
+                ],
+                "165": [
+                    "far back left",
+                    "left side back",
+                    "<degrees> degrees to the left",
+                    "nearing directly behind on the left",
+                    "almost back left",
+                    "strong left back",
+                    "heavy left rear",
+                    "deeply back on the left"
+                ],
+                "180": [
+                    "back",
+                    "directly back",
+                    "rear",
+                    "<degrees> degrees",
+                    "directly behind",
+                    "straight back",
+                    "clear back",
+                    "flat back",
+                    "horizontal rear"
+                ],
+                "195": [
+                    "far back right",
+                    "right side back",
+                    "<degrees> degrees to the right",
+                    "nearing directly behind on the right",
+                    "almost back right",
+                    "strong right back",
+                    "heavy right rear",
+                    "deeply back on the right"
+                ],
+                "210": [
+                    "right rear quarter",
+                    "right back quarter",
+                    "<degrees> degrees to the right",
+                    "sharp right back",
+                    "deep into right rear quadrant",
+                    "majorly to the right back",
+                    "back and deep right",
+                    "right and far behind"
+                ],
+                "225": [
+                    "back right side",
+                    "right rear side",
+                    "oblique rear right",
+                    "<degrees> degrees to the right",
+                    "strongly to the rear-right",
+                    "deep right rear",
+                    "sharply back right",
+                    "heavily to the back right",
+                    "far back to the right"
+                ],
+                "240": [
+                    "rear right",
+                    "right backward",
+                    "<degrees> degrees to the right",
+                    "back towards the right",
+                    "right and slightly behind",
+                    "right rearward",
+                    "angled back on the right",
+                    "deep into the rear-right quadrant"
+                ],
+                "255": [
+                    "back right quarter",
+                    "right rear quarter",
+                    "<degrees> degrees to the right",
+                    "slightly back on the right",
+                    "a bit behind to the right",
+                    "just off right but backwards",
+                    "leaning back on the right",
+                    "rearward to the right"
+                ],
+                "270": [
+                    "right side",
+                    "directly right",
+                    "perpendicular right",
+                    "<degrees> degrees to the right",
+                    "direct right",
+                    "straight to the right",
+                    "clearly to the right",
+                    "flat right",
+                    "horizontal right"
+                ],
+                "285": [
+                    "far right front",
+                    "right side forward",
+                    "<degrees> degrees to the right",
+                    "nearing perpendicular right",
+                    "heavily biased to the right front",
+                    "sharply forward right",
+                    "greatly to the right front",
+                    "deep right but forward"
+                ],
+                "300": [
+                    "right front quarter",
+                    "right forward quarter",
+                    "<degrees> degrees to the right",
+                    "a sharp right forward",
+                    "leaning strongly to the right",
+                    "angled forward on the right",
+                    "deep into the right quadrant",
+                    "majorly to the right front"
+                ],
+                "315": [
+                    "front right side",
+                    "right forward side",
+                    "oblique right",
+                    "<degrees> degrees to the right",
+                    "slightly to the front-right",
+                    "a bit to the right of forward",
+                    "not quite perpendicular to the right",
+                    "just off the right forward",
+                    "leaning towards the right front"
+                ],
+                "330": [
+                    "front right",
+                    "right forward",
+                    "<degrees> degrees to the right",
+                    "slightly to the right of forward",
+                    "slight bias to the right",
+                    "marginally front right"
+                ],
+                "345": [
+                    "slightly right of front",
+                    "front right quarter",
+                    "slight right front",
+                    "on the right side",
+                    "<degrees> degrees to the right of front",
+                    "<degrees> degrees right of front",
+                    "<degrees> degrees to the right",
+                    "just shy of directly ahead on the right",
+                    "almost facing front-right",
+                    "nearly front but to the right",
+                    "front-right leaning",
+                    "ahead but veered right"
+                ]
+            },
+            "pitch": {
+                "-15": [
+                    "tilted up slightly",
+                    "slightly upward",
+                    "mildly upward",
+                    "<degrees> degrees upward",
+                    "<degrees> forward"
+                ],
+                "0": [
+                    "level with the ground",
+                    "horizontally level",
+                    "flat",
+                    "even",
+                    "<degrees> degrees"
+                ],
+                "15": [
+                    "tilted down slightly",
+                    "slightly downward",
+                    "mildly downward",
+                    "<degrees> degrees downward",
+                    "<degrees> forward"
+                ],
+                "30": [
+                    "tilted down",
+                    "downward tilt",
+                    "angled down",
+                    "<degrees> degrees downward",
+                    "<degrees> forward"
+                ],
+                "45": [
+                    "tilted down sharply",
+                    "sharply downward",
+                    "steeply downward",
+                    "<degrees> degrees downward",
+                    "<degrees> forward"
+                ],
+                "60": [
+                    "tilted down steeply",
+                    "steeply angled down",
+                    "sharply angled downward",
+                    "<degrees> degrees downward",
+                    "<degrees> forward"
+                ],
+                "90": [
+                    "pointing straight down",
+                    "directly downward",
+                    "straight down",
+                    "<degrees> degrees downward",
+                    "<degrees> forward"
+                ]
+            }
+        },        
+        "descriptions": [
+            "The camera is <yaw>, <pitch>.",
+            "The camera is <pitch>, <yaw>.",
+            "<pitch>, <yaw>.",
+            "Yaw: <yaw>, Pitch: <pitch>.",
+            "Pitch: <pitch>, Yaw: <yaw>.",
+            "Tilt: <pitch>, Rotation: <yaw>.",
+            "The lens is oriented <yaw>, with a <pitch> tilt.",
+            "Camera facing <yaw> and angled <pitch>.",
+            "The view is set <pitch>, looking <yaw>.",
+            "Orientation: <yaw>, Angle: <pitch>.",
+            "The shot is angled <pitch> while pointing <yaw>.",
+            "Direction <yaw>, elevation <pitch>."
+        ],
+        "instructions": [
+            "Adjust the camera <yaw> and <pitch>.",
+            "Set the camera to <pitch> and <yaw>.",
+            "Position the camera at <pitch> and <yaw>.",
+            "Yaw: <yaw>, Pitch: <pitch>.",
+            "Pitch: <pitch>, Yaw: <yaw>.",
+            "Tilt: <pitch>, Rotation: <yaw>.",
+            "Orient the camera <yaw> with a <pitch> tilt.",
+            "Direct the camera <yaw>, set tilt to <pitch>.",
+            "Angle the lens <pitch> and rotate it <yaw>.",
+            "Configure the camera to face <yaw> with a <pitch> angle.",
+            "Align the camera to <yaw>, and adjust the pitch to <pitch>.",
+            "Rotate the camera to <yaw> and tilt it <pitch>."
+        ]
+    },
     "framings": [
         {
             "name": "close",

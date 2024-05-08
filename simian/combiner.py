@@ -117,8 +117,7 @@ def generate_caption(combination):
     background_name = combination["background"]["name"]
     floor_material_name = combination["stage"]["material"]["name"]
 
-    camera_data = random.choice(["descriptions", "instructions"])
-    camera_text = random.choice(combination["orientation"][camera_data])
+    data_type = random.choice(["descriptions", "instructions"])
 
     objects = combination["objects"]
     
@@ -131,53 +130,49 @@ def generate_caption(combination):
         else:
             object['placement'] = random.choice([i for i in range(1, 9) if i not in positions_taken])
         object_id = object["uid"]
-        
-        position_offset = [random.uniform(-0.3, 0.3), random.uniform(-0.1, 0.1), 0]
-        rotation_offset = [random.uniform(-3, 3), random.uniform(-3, 3), 0]
 
-        object["position_offset"] = position_offset
-        object["rotation_offset"] = rotation_offset
-        
         object_scales = object_data["scales"]
         
         keys = object_scales.keys()
         # choose a key randomly
         scale_key = random.choice(list(keys))
-        object["distance_modifier"] = random.uniform(1.6, 2.2)
+
         object["scale"] = {
             "factor": object_scales[scale_key]["factor"] * random.uniform(0.9, 1.0),
             "name": scale_key,
             "name_synonym": object_scales[scale_key]["names"][random.randint(0, len(object_scales[scale_key]["names"]) - 1)]
         }
+
         if object_id in captions_data:
             description = captions_data[object_id]
             object['description'] = description
 
 
-    object_name_prefixes = object_data["name_prefixes"]
-    object_name_suffixes = object_data["name_suffixes"]
+    object_descriptions = object_data["descriptions"]
+    object_instructions = object_data["instructions"]
     
-    random_object_name_prefix = random.choice(object_name_prefixes)
-    random_object_name_suffix = random.choice(object_name_suffixes)
+    random_object_name_prefix = random.choice(object_descriptions)
+    random_object_name_suffix = random.choice(object_instructions)
 
     # join all of the names of the objects together
     object_names = ', '.join([obj['name'] for obj in combination['objects']])
-    object_descriptions = ', '.join(obj['description'] if not None else "" for obj in combination['objects'])
     object_name_descriptions = ', '.join([obj['name'] + ", " + obj['description'] if obj['description'] is not None else obj['name'] for obj in combination['objects']])
 
-    if "<objects>" not in camera_text:
-        # at least one <objects> gets added to the camera text
-        camera_text = camera_text.strip() + " " + random_object_name_prefix
-    # replace the first <objects> with the object names
-    camera_text = camera_text.replace("<objects>", object_name_descriptions, 1)
-    # replace the rest of the <objects> with the object name suffix
-    camera_text = camera_text.replace("<objects>", random_object_name_suffix)
-   
-    framing_data = random.choice(["descriptions", "instructions"])
-    framing_text = random.choice(combination["framing"][framing_data])
+    pitch_labels = camera_data["orientation"]["labels"]["pitch"]
+    yaw_labels = camera_data["orientation"]["labels"]["yaw"]
+
+    closest_pitch_label = min(pitch_labels.keys(), key=lambda x: abs(int(x) - int(combination["orientation"]["pitch"])))
+    closest_yaw_label = min(yaw_labels.keys(), key=lambda x: abs(int(x) - int(combination["orientation"]["yaw"])))
+
+    # Replace the placeholders in the camera text with the closest matching labels
+    orientation_text = random.choice(combination["orientation"][data_type])
+    orientation_text = orientation_text.replace("<pitch>", random.choice(pitch_labels[closest_pitch_label]))
+    orientation_text = orientation_text.replace("<yaw>", random.choice(yaw_labels[closest_yaw_label]))
+        
+    framing_text = random.choice(combination["framing"][data_type])
     framing_text = framing_text.replace("<objects>", object_names)
 
-    caption_parts = [camera_text, framing_text]
+    caption_parts = [orientation_text, framing_text]
     
     stage_data = read_json_file('data/stage_data.json')
     
@@ -192,11 +187,12 @@ def generate_caption(combination):
     floor_material_name = ''.join([i for i in floor_material_name if not i.isdigit()]).strip()
     background_name = ''.join([i for i in background_name if not i.isdigit()]).strip()
 
-    if random.random() < 0.3:
-        caption_parts.append(f"The {background_prefix} is {background_name}.")
+    # TODO: Omit the background for any angle > 30 degrees
+    # omit the floor for any angle < 15 degrees (i.e. 0 to tilted upward)
+    # mad libs the background and floor from data
 
-    if random.random() < 0.2:
-        caption_parts.append(f"The {floor_prefix} is {floor_material_name}.")
+    caption_parts.append(f"The {background_prefix} is {background_name}.")
+    caption_parts.append(f"The {floor_prefix} is {floor_material_name}.")
     
     to_the_left = object_data["relationships"]["to_the_left"]
     to_the_right = object_data["relationships"]["to_the_right"]
@@ -275,11 +271,6 @@ def generate_combinations(camera_data, count):
         background['from'] = chosen_background
         
         chosen_texture = random.choices(texture_names, weights=texture_weights)[0]
-        
-        framing["position_offset"] = [random.uniform(-0.1, 0.1), random.uniform(-0.1, 0.1), random.uniform(-0.1, 0.1)]
-        framing["rotation_offset"] = [random.uniform(-1, 1), random.uniform(-1, 1), random.uniform(-1, 1)]
-        orientation["position_offset"] = [random.uniform(-0.1, 0.1), random.uniform(-.1, 0.1), 0]
-        orientation["rotation_offset"] = [random.uniform(-1, 1), random.uniform(-1, 1), 0]
         
         stage = {
             'material': texture_data[chosen_texture],
