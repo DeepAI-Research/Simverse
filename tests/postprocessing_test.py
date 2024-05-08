@@ -1,5 +1,6 @@
 import pytest
 from simian.object import setup_compositor_for_black_and_white, setup_compositor_for_cel_shading, setup_compositor_for_depth, enable_effect
+from simian.scene import initialize_scene
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -11,7 +12,7 @@ import bpy
 
 
 def test_setup_compositor_for_black_and_white():
-    bpy.ops.wm.open_mainfile(filepath="../scenes/empty.blend")
+    initialize_scene()
     context = bpy.context  # Using Blender's context
     setup_compositor_for_black_and_white(context)
     tree = context.scene.node_tree
@@ -30,7 +31,7 @@ def test_setup_compositor_for_black_and_white():
 
 
 def test_setup_compositor_for_cel_shading():
-    bpy.ops.wm.open_mainfile(filepath="../scenes/empty.blend")
+    initialize_scene()
     context = bpy.context
     setup_compositor_for_cel_shading(context)
     tree = context.scene.node_tree
@@ -47,7 +48,7 @@ def test_setup_compositor_for_cel_shading():
 
 
 def test_setup_compositor_for_depth():
-    bpy.ops.wm.open_mainfile(filepath="../scenes/empty.blend")
+    initialize_scene()
     context = bpy.context
     setup_compositor_for_depth(context)
     tree = context.scene.node_tree
@@ -64,7 +65,7 @@ def test_setup_compositor_for_depth():
 
 
 def test_enable_effect():
-    bpy.ops.wm.open_mainfile(filepath="../scenes/empty.blend")
+    initialize_scene()
     context = bpy.context
 
     # List of effects to test

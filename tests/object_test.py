@@ -1,9 +1,5 @@
-import subprocess
 import sys
 import os
-import pytest
-from simian.camera import create_camera_rig
-from simian.scene import initialize_scene
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -11,9 +7,10 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 simian_path = os.path.join(current_dir, "../")
 sys.path.append(simian_path)
 
+from simian.camera import create_camera_rig
+from simian.scene import initialize_scene
 import pytest
 from simian.object import delete_all_empties, get_hierarchy_bbox, join_objects_in_hierarchy, lock_all_objects, normalize_object_scale, optimize_meshes_in_hierarchy, remove_loose_meshes, get_meshes_in_hierarchy, set_pivot_to_bottom, unlock_objects, unparent_keep_transform
-import numpy as np
 import bpy
 
 
@@ -96,7 +93,7 @@ def test_remove_small_geometry():
 
 def test_normalize_object_scale():
     # Load an empty scene
-    bpy.ops.wm.open_mainfile(filepath="../scenes/empty.blend")
+    initialize_scene()
     
     # Create a cube with known dimensions
     bpy.ops.mesh.primitive_cube_add(size=2)  # Creates a cube with edge length 2
@@ -123,4 +120,6 @@ def test_normalize_object_scale():
  
 # Run tests if this file is executed as a script
 if __name__ == "__main__":
-    pytest.main()
+    test_hierarchy_bbox()
+    test_remove_small_geometry()
+    test_normalize_object_scale()
