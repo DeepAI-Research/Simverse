@@ -253,9 +253,15 @@ def generate_caption(combination):
     orientation_text = random.choice(camera_data["orientation"][data_type])
     orientation_text = orientation_text.replace(
         "<pitch>", random.choice(pitch_labels[closest_pitch_label])
+    ).replace(
+        "<degrees>",
+        str(combination["orientation"]["pitch"])
     )
     orientation_text = orientation_text.replace(
         "<yaw>", random.choice(yaw_labels[closest_yaw_label])
+    ).replace(
+        "<degrees>",
+        str(combination["orientation"]["yaw"])
     )
     caption_parts.append(orientation_text)
 
