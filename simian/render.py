@@ -6,9 +6,6 @@ import sys
 import json
 import os
 import ssl
-import pandas as pd
-import objaverse
-import bpy
 
 ssl._create_default_https_context = ssl._create_unverified_context
 
@@ -36,6 +33,10 @@ def check_imports() -> None:
 
 
 check_imports()
+
+import pandas as pd
+import objaverse
+import bpy
 
 # Get the directory of the currently executing script
 current_dir = os.path.dirname(os.path.abspath(__file__))
