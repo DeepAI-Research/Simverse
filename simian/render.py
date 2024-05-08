@@ -136,9 +136,7 @@ def render_scene(
         row = (grid_cell - 1) // 3
         col = (grid_cell - 1) % 3
         
-        obj.location = [(col - 1 + object_data['position_offset'][0]),
-                        (row - 1 + object_data['position_offset'][1]),
-                        object_data['position_offset'][2]]
+        obj.location = [col - 1, row - 1, 0]
                 
         obj.scale = [object_data['scale']['factor'] for _ in range(3)]
         normalize_object_scale(obj)
