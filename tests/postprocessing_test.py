@@ -1,10 +1,3 @@
-from simian.object import (
-    setup_compositor_for_black_and_white,
-    setup_compositor_for_cel_shading,
-    setup_compositor_for_depth,
-    enable_effect,
-)
-from simian.scene import initialize_scene
 import sys
 import os
 
@@ -15,7 +8,13 @@ simian_path = os.path.join(current_dir, "../")
 sys.path.append(simian_path)
 
 import bpy
-
+from simian.object import (
+    setup_compositor_for_black_and_white,
+    setup_compositor_for_cel_shading,
+    setup_compositor_for_depth,
+    enable_effect,
+)
+from simian.scene import initialize_scene
 
 def test_setup_compositor_for_black_and_white():
     initialize_scene()

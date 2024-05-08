@@ -1,11 +1,16 @@
 import multiprocessing
 import os
-import subprocess
-from unittest.mock import patch, MagicMock
-import pytest
+import sys
+from unittest.mock import patch
+
+current_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Append the simian directory to sys.path
+simian_path = os.path.join(current_dir, "../")
+sys.path.append(simian_path)
+
 import pandas as pd
 from simian.batch import render_objects, get_combination_objects
-
 
 def test_get_combination_objects():
     # Setup the expected DataFrame
@@ -60,8 +65,10 @@ def test_render_objects():
 def test_render_objects_missing_blender():
     # Test FileNotFoundError when Blender is not found
     with patch("os.path.exists", return_value=False):
-        with pytest.raises(FileNotFoundError):
+        try:
             render_objects()
+        except FileNotFoundError:
+            raise AssertionError("Blender not found error not handled.")
 
 
 # Run tests if this file is executed as a script

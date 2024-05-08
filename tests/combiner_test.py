@@ -1,9 +1,15 @@
 import json
+import sys
+import os
 from unittest.mock import patch, mock_open
-import pytest
-import random
-from simian.combiner import read_json_file, generate_caption, generate_combinations
 
+current_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Append the simian directory to sys.path
+simian_path = os.path.join(current_dir, "../")
+sys.path.append(simian_path)
+
+from simian.combiner import read_json_file, generate_caption, generate_combinations
 
 def test_read_json_file():
     # Mock the open function and json.load

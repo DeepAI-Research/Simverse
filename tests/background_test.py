@@ -1,6 +1,13 @@
 import os
+import sys
+
+current_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Append the simian directory to sys.path
+simian_path = os.path.join(current_dir, "../")
+sys.path.append(simian_path)
+
 from unittest.mock import patch, MagicMock
-import pytest
 from simian.background import (
     get_background_path,
     get_background,

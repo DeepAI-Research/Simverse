@@ -1,6 +1,5 @@
 import os
 import sys
-import pytest
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -14,7 +13,6 @@ from simian.scene import (
     apply_stage_material,
     initialize_scene,
 )
-import bpy
 
 # Setup test data
 test_data = {

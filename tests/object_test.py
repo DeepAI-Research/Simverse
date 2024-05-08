@@ -9,7 +9,6 @@ sys.path.append(simian_path)
 
 from simian.camera import create_camera_rig
 from simian.scene import initialize_scene
-import pytest
 from simian.object import (
     delete_all_empties,
     get_hierarchy_bbox,

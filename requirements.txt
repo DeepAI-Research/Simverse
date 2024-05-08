@@ -9,6 +9,5 @@ mkdocstrings
 mkdocs
 mkdocs-material
 mkdocstrings-python
-pytest
 numpy
 black
