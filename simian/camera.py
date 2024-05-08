@@ -66,20 +66,15 @@ def set_camera_settings(combination: dict) -> None:
     Returns:
         None
     """
-
-    # Assuming combination has keys like 'fov', 'animation'
     camera = bpy.context.scene.objects["Camera"]
-    orientation = combination["orientation"]
+    
+    # camera.fov = combination["framing"]["fov"]
     
     orientation_data = combination["orientation"]
 
-    # Randomly generate pitch and yaw angles
-    random_pitch = random.uniform(orientation_data["pitch_min"], orientation_data["pitch_max"])
-    random_yaw = random.uniform(orientation_data["yaw_min"], orientation_data["yaw_max"])
-
     orientation = {
-        "pitch": random_pitch,
-        "yaw": random_yaw
+        "pitch": orientation_data["pitch"],
+        "yaw": orientation_data["yaw"]
     }
 
     # Rotate CameraOrientationPivotYaw by the Y

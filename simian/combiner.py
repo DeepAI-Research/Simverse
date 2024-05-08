@@ -147,17 +147,33 @@ def generate_caption(combination):
             description = captions_data[object_id]
             object['description'] = description
 
+    caption_parts = []
 
-    object_descriptions = object_data["descriptions"]
-    object_instructions = object_data["instructions"]
-    
-    random_object_name_prefix = random.choice(object_descriptions)
-    random_object_name_suffix = random.choice(object_instructions)
-
-    # join all of the names of the objects together
-    object_names = ', '.join([obj['name'] for obj in combination['objects']])
     object_name_descriptions = ', '.join([obj['name'] + ", " + obj['description'] if obj['description'] is not None else obj['name'] for obj in combination['objects']])
 
+    object_descriptions = []
+
+    # for each object in the scene
+    for obj in combination['objects']:
+        # get the object name and description
+        object_name = obj['name']
+        object_description = obj['description']
+        
+        # get the relationship between the object name and description
+        object_name_description_relationship = random.choice(object_data["name_description_relationship"])
+        object_name_description_relationship = object_name_description_relationship.replace("<name>", object_name)
+        object_name_description_relationship = object_name_description_relationship.replace("<description>", object_description)
+        object_descriptions.append(object_name_description_relationship)
+    
+    print("object_descriptions")
+    print(object_descriptions)
+    
+    # randomize order of object_descriptions
+    random.shuffle(object_descriptions)
+    # join the object descriptions
+    object_descriptions = ' '.join(object_descriptions)
+    caption_parts.append(object_descriptions)
+    
     pitch_labels = camera_data["orientation"]["labels"]["pitch"]
     yaw_labels = camera_data["orientation"]["labels"]["yaw"]
 
@@ -165,23 +181,19 @@ def generate_caption(combination):
     closest_yaw_label = min(yaw_labels.keys(), key=lambda x: abs(int(x) - int(combination["orientation"]["yaw"])))
 
     # Replace the placeholders in the camera text with the closest matching labels
-    orientation_text = random.choice(combination["orientation"][data_type])
+    orientation_text = random.choice(camera_data["orientation"][data_type])
     orientation_text = orientation_text.replace("<pitch>", random.choice(pitch_labels[closest_pitch_label]))
     orientation_text = orientation_text.replace("<yaw>", random.choice(yaw_labels[closest_yaw_label]))
+    caption_parts.append(orientation_text)
         
-    framing_text = random.choice(combination["framing"][data_type])
-    framing_text = framing_text.replace("<objects>", object_names)
-
-    caption_parts = [orientation_text, framing_text]
+    # framing_text = random.choice(camera_data["framing"][data_type])
+    # framing_text = framing_text.replace("<objects>", object_names)
+    # caption_parts.append(framing_text)
     
     stage_data = read_json_file('data/stage_data.json')
     
-    floor_material_names = stage_data["material_names"]
-    
-    background_names = stage_data["background_names"]
-    
-    background_prefix = random.choice(background_names)
-    floor_prefix = random.choice(floor_material_names)
+    background_prefix = random.choice(stage_data["background_names"])
+    floor_prefix = random.choice(stage_data["material_names"])
     
     # remove all numbers and trim
     floor_material_name = ''.join([i for i in floor_material_name if not i.isdigit()]).strip()
@@ -247,7 +259,19 @@ def generate_combinations(camera_data, count):
     
     # Generate combinations on the fly up to the specified count
     for i in range(count):
-        orientation = random.choice(camera_data['orientations'])
+        print("camera_data['orientation']")
+        print(camera_data['orientation'])
+        orientation_data = camera_data['orientation']
+        
+        # roll a number between orientation['yaw_min'] and orientation['yaw_max']
+        yaw = random.randint(orientation_data['yaw_min'], orientation_data['yaw_max'])
+        pitch = random.randint(orientation_data['pitch_min'], orientation_data['pitch_max'])
+        
+        orientation = {
+            'yaw': yaw,
+            'pitch': pitch,
+        }
+        
         framing = random.choice(camera_data['framings'])
         animation = random.choice(camera_data['animations'])
         
@@ -296,16 +320,11 @@ def generate_combinations(camera_data, count):
         
         framing.pop("descriptions", None)
         framing.pop("instructions", None)
-        
-        orientation = orientation.copy()
-        orientation.pop("descriptions", None)    
-        orientation.pop("instructions", None)
-        
+    
         animation = animation.copy()
         animation.pop("descriptions", None)
         animation.pop("instructions", None)
         
-        combination["orientation"] = orientation
         combination["framing"] = framing
         combination["animation"] = animation
         
