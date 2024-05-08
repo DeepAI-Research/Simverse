@@ -68,7 +68,7 @@ def set_camera_settings(combination: dict) -> None:
     """
     camera = bpy.context.scene.objects["Camera"]
     
-    # camera.fov = combination["framing"]["fov"]
+    camera.lens = combination["framing"]["fov"]
     
     orientation_data = combination["orientation"]
 

@@ -165,9 +165,6 @@ def generate_caption(combination):
         object_name_description_relationship = object_name_description_relationship.replace("<description>", object_description)
         object_descriptions.append(object_name_description_relationship)
     
-    print("object_descriptions")
-    print(object_descriptions)
-    
     # randomize order of object_descriptions
     random.shuffle(object_descriptions)
     # join the object descriptions
