@@ -115,7 +115,7 @@ def render_scene(
     print(f"Rendering scene with combination {combination_index}")
 
     os.makedirs(output_dir, exist_ok=True)
-    
+
     initialize_scene()
     create_camera_rig()
 
@@ -193,6 +193,7 @@ def render_scene(
         filepath=os.path.join(output_dir, f"{combination_index}.blend")
     )
     print(f"Rendered video saved to {render_path}")
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

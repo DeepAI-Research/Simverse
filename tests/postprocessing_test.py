@@ -1,6 +1,12 @@
-import pytest
-from simian.object import setup_compositor_for_black_and_white, setup_compositor_for_cel_shading, setup_compositor_for_depth, enable_effect
+from simian.object import (
+    setup_compositor_for_black_and_white,
+    setup_compositor_for_cel_shading,
+    setup_compositor_for_depth,
+    enable_effect,
+)
 from simian.scene import initialize_scene
+import sys
+import os
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -23,9 +29,11 @@ def test_setup_compositor_for_black_and_white():
     assert "CompositorNodeComposite" in [node.bl_idname for node in tree.nodes]
 
     # Assert connections between nodes
-    hue_sat = next(node for node in tree.nodes if node.bl_idname == 'CompositorNodeHueSat')
-    assert hue_sat.inputs['Saturation'].default_value == 0
-    assert hue_sat.inputs['Value'].default_value == 2.0
+    hue_sat = next(
+        node for node in tree.nodes if node.bl_idname == "CompositorNodeHueSat"
+    )
+    assert hue_sat.inputs["Saturation"].default_value == 0
+    assert hue_sat.inputs["Value"].default_value == 2.0
 
     print("test_setup_compositor_for_black_and_white passed")
 
@@ -39,8 +47,12 @@ def test_setup_compositor_for_cel_shading():
     # Check if the correct nodes exist
     assert "CompositorNodeRLayers" in [node.bl_idname for node in tree.nodes]
     assert "CompositorNodeNormal" in [node.bl_idname for node in tree.nodes]
-    assert "CompositorNodeValToRGB" in [node.bl_idname for node in tree.nodes]  # Assuming multiple color ramps
-    assert "CompositorNodeMixRGB" in [node.bl_idname for node in tree.nodes]  # Assuming multiple mixes
+    assert "CompositorNodeValToRGB" in [
+        node.bl_idname for node in tree.nodes
+    ]  # Assuming multiple color ramps
+    assert "CompositorNodeMixRGB" in [
+        node.bl_idname for node in tree.nodes
+    ]  # Assuming multiple mixes
     assert "CompositorNodeAlphaOver" in [node.bl_idname for node in tree.nodes]
     assert "CompositorNodeComposite" in [node.bl_idname for node in tree.nodes]
 
@@ -107,10 +119,14 @@ def test_enable_effect():
             assert "CompositorNodeNormalize" in [node.bl_idname for node in nodes]
             assert "CompositorNodeComposite" in [node.bl_idname for node in nodes]
             assert context.view_layer.use_pass_z == True
-        
+
         print(f"Test passed for enabling {effect} effect.")
 
 
 # Run tests if this file is executed as a script
 if __name__ == "__main__":
-    pytest.main()
+    test_setup_compositor_for_black_and_white()
+    test_setup_compositor_for_cel_shading()
+    test_setup_compositor_for_depth()
+    test_enable_effect()
+    print("All tests passed.")

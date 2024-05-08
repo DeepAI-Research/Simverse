@@ -43,10 +43,10 @@ def create_camera_rig() -> bpy.types.Object:
 
     camera = bpy.data.cameras.new("Camera")
     camera_object = bpy.data.objects.new("Camera", camera)
-    
+
     # rotate the Camera 90º,
     camera_object.delta_rotation_euler = [1.5708, 0, 1.5708]
-    
+
     camera_object.parent = camera_animation_pivot
     bpy.context.scene.collection.objects.link(camera_object)
 
@@ -77,7 +77,7 @@ def set_camera_settings(combination: dict) -> None:
         None
     """
     camera = bpy.context.scene.objects["Camera"]
-    
+
     # get the camera on the camera object
     camera = camera.data
 
