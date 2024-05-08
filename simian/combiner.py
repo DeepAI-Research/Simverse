@@ -128,8 +128,8 @@ print(f"Total number of objects: {total_length}")
 for background in backgrounds:
     # get the current path of this file
     current_path = os.path.dirname(os.path.realpath(__file__))
-    background_path = os.path.join(args.simdata_path, background + ".json")
-    background_full_path = os.path.join(current_path, "../", background_path)
+    hdri_path = os.path.join(args.simdata_path, background + ".json")
+    background_full_path = os.path.join(current_path, "../", hdri_path)
     print(f"Loading {background_full_path}")
     if os.path.exists(background_full_path):
         background_data = read_json_file(background_full_path)
@@ -137,7 +137,7 @@ for background in backgrounds:
         print(f"Loaded {len(background_data)} from {background}")
         background_dict[background] = background_data
     else:
-        print(f"Dataset file {background_path} not found")
+        print(f"Dataset file {hdri_path} not found")
 
 total_length = 0
 for background in background_dict:
@@ -251,16 +251,10 @@ def generate_caption(combination):
     orientation_text = random.choice(camera_data["orientation"]["descriptions"])
     orientation_text = orientation_text.replace(
         "<pitch>", random.choice(pitch_labels[closest_pitch_label])
-    ).replace(
-        "<degrees>",
-        str(combination["orientation"]["pitch"])
-    )
+    ).replace("<degrees>", str(combination["orientation"]["pitch"]))
     orientation_text = orientation_text.replace(
         "<yaw>", random.choice(yaw_labels[closest_yaw_label])
-    ).replace(
-        "<degrees>",
-        str(combination["orientation"]["yaw"])
-    )
+    ).replace("<degrees>", str(combination["orientation"]["yaw"]))
     caption_parts.append(orientation_text)
 
     # framing_text = random.choice(camera_data["framing"]["descriptions"])

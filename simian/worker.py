@@ -76,7 +76,7 @@ def render_object(
     width: int,
     height: int,
     output_dir: str,
-    background_path: str,
+    hdri_path: str,
 ) -> None:
     """
     Renders a 3D object based on the provided combination index and settings.
@@ -86,14 +86,14 @@ def render_object(
     - width (int): The width of the rendered output.
     - height (int): The height of the rendered output.
     - output_dir (str): The directory where the rendered video will be saved.
-    - background_path (str): The path to the background HDRs.
+    - hdri_path (str): The path to the background HDRs.
 
     Returns:
     - None
     """
     args = f"--width {width} --height {height} --combination_index {combination_index}"
     args += f" --output_dir {output_dir}"
-    args += f" --background_path {background_path}"
+    args += f" --hdri_path {hdri_path}"
 
     command = f"{application_path} --background --python simian/render.py -- {args}"
     subprocess.run(["bash", "-c", command], timeout=10000, check=False)

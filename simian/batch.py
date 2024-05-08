@@ -93,8 +93,8 @@ def render_objects(
         target_directory = os.path.join(scripts_dir, "../", "renders")
         os.makedirs(target_directory, exist_ok=True)
         args += f" --output_dir {target_directory}"
-        background_path = os.path.join(scripts_dir, "../", "backgrounds")
-        args += f" --background_path {background_path}"
+        hdri_path = os.path.join(scripts_dir, "../", "backgrounds")
+        args += f" --hdri_path {hdri_path}"
 
         # Check if Blender application exists at the specified path.
         if not os.path.exists(application_path):

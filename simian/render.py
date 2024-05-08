@@ -116,7 +116,7 @@ def render_scene(
     print(f"Rendering scene with combination {combination_index}")
 
     os.makedirs(output_dir, exist_ok=True)
-    
+
     initialize_scene()
     create_camera_rig()
 
@@ -166,9 +166,9 @@ def render_scene(
     unlock_objects(initial_objects)
 
     set_camera_settings(combination)
-    set_background(args.background_path, combination)
+    set_background(args.hdri_path, combination)
 
-    create_photosphere(args.background_path, combination).scale = (10, 10, 10)
+    create_photosphere(args.hdri_path, combination).scale = (10, 10, 10)
 
     stage = create_stage(combination)
     apply_stage_material(stage, combination)
@@ -195,12 +195,14 @@ def render_scene(
     )
     print(f"Rendered video saved to {render_path}")
 
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--output_dir",
         type=str,
-        required=True,
+        default="renders",
+        required=False,
         help="Path to the directory where the rendered video will be saved.",
     )
     parser.add_argument(
@@ -208,40 +210,48 @@ if __name__ == "__main__":
         type=str,
         default="combinations.json",
         help="Path to the JSON file containing camera combinations.",
-    )
-    parser.add_argument(
-        "--background_path",
-        type=str,
-        default="backgrounds",
-        help="Path to the directory where the background HDRs will be saved.",
+        required=False,
     )
     parser.add_argument(
         "--combination_index",
         type=int,
         default=0,
         help="Index of the camera combination to use from the JSON file.",
+        required=False,
     )
     parser.add_argument(
         "--start_frame",
         type=int,
         default=1,
         help="Start frame of the animation.",
+        required=False,
     )
     parser.add_argument(
         "--end_frame",
         type=int,
         default=25,
         help="End frame of the animation.",
+        required=False,
     )
-    parser.add_argument("--width", type=int, default=1920, help="Render output width.")
     parser.add_argument(
-        "--height", type=int, default=1080, help="Render output height."
+        "--width", type=int, default=1920, help="Render output width.", required=False
+    )
+    parser.add_argument(
+        "--height", type=int, default=1080, help="Render output height.", required=False
+    )
+    parser.add_argument(
+        "--hdri_path",
+        type=str,
+        default="backgrounds",
+        help="Path to the directory where the background HDRs will be saved.",
+        required=False,
     )
 
-    argv = sys.argv[sys.argv.index("--") + 1 :]
-    args = parser.parse_args(argv)
+    if " -- " in sys.argv:
+        argv = sys.argv[sys.argv.index(" -- ") + 1 :]
+    else:
+        argv = []
 
-    # Now parse the arguments from the correct starting point
     args = parser.parse_args(argv)
 
     context = bpy.context
