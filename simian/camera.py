@@ -157,7 +157,12 @@ def position_camera(combination: dict) -> None:
         None
     """
     camera = bpy.context.scene.objects["Camera"]
-    focus_object = bpy.context.selected_objects[0]  # Assume the focus object is the first selected object
+    
+    # Check if there are any selected objects
+    if not bpy.context.selected_objects:
+        raise ValueError("No objects selected. Please select a focus object.")
+    
+    focus_object = bpy.context.selected_objects[0]
 
     # Get the bounding box of the focus object in screen space
     bpy.context.view_layer.update()
@@ -168,12 +173,23 @@ def position_camera(combination: dict) -> None:
     # Calculate the height of the bounding box
     bbox_height = bbox_max.z - bbox_min.z
 
+    # Check if the focus object's height is above a minimum threshold
+    min_height_threshold = 0.001
+    if bbox_height < min_height_threshold:
+        # Position the camera based on a predefined distance
+        predefined_distance = 5.0
+        camera.location.y = -predefined_distance
+        return
+
     # Calculate the desired object height based on the coverage factor
     coverage_factor = combination["coverage_factor"]
     desired_height = bbox_height * coverage_factor
 
     # Move the camera backwards until the object's height matches the desired height
-    while True:
+    step_size = max(bbox_height, 1.0)  # Dynamic step size based on the focus object's height
+    max_iterations = 1000  # Maximum number of iterations to prevent infinite loop
+    iteration = 0
+    while iteration < max_iterations:
         bpy.context.view_layer.update()
         bbox = [focus_object.matrix_world @ Vector(corner) for corner in focus_object.bound_box]
         bbox_min = min(bbox, key=lambda v: v.z)
@@ -183,4 +199,9 @@ def position_camera(combination: dict) -> None:
         if current_height <= desired_height:
             break
 
-        camera.location.y -= 0.1  # Move the camera backwards by a small step
+        camera.location.x += step_size
+        step_size *= 0.5  # Decrease the step size as we get closer to the desired position
+        iteration += 1
+    
+    if iteration == max_iterations:
+        print("Warning: Maximum iterations reached while positioning the camera. The resulting coverage factor may not be exactly as desired.")

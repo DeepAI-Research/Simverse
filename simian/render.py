@@ -197,7 +197,7 @@ if __name__ == "__main__":
         type=int,
         default=0,
         help="Index of the camera combination to use from the JSON file.",
-        required=False,
+        required=True,
     )
     parser.add_argument(
         "--start_frame",
@@ -226,9 +226,11 @@ if __name__ == "__main__":
         help="Path to the directory where the background HDRs will be saved.",
         required=False,
     )
+    
+    print("sys.argv", sys.argv)
 
-    if " -- " in sys.argv:
-        argv = sys.argv[sys.argv.index(" -- ") + 1 :]
+    if "--" in sys.argv:
+        argv = sys.argv[sys.argv.index("--") + 1 :]
     else:
         argv = []
 
