@@ -1,36 +1,16 @@
-import platform
 import subprocess
 import sys
 import os
 import ssl
 
 from celery import Celery
-import pandas as pd
+
+# Append Simian to sys.path before importing from package
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../"))
+
+from simian.utils import check_imports
 
 ssl._create_default_https_context = ssl._create_unverified_context
-
-
-def check_imports() -> None:
-    """
-    Checks and installs required Python packages specified in the requirements.txt file.
-
-    Args:
-        None
-
-    Returns:
-        None
-    """
-    with open("requirements.txt", "r") as f:
-        requirements = f.readlines()
-    for requirement in requirements:
-        try:
-            __import__(requirement)
-        except ImportError:
-            print(f"Installing {requirement}")
-            subprocess.run(
-                ["bash", "-c", f"{sys.executable} -m pip install {requirement}"]
-            )
-
 
 check_imports()
 
@@ -45,30 +25,8 @@ if current_dir.endswith("simian"):
 simian_path = os.path.join(current_dir)
 sys.path.append(simian_path)
 
-# if we are on macOS, then application_path is /Applications/Blender.app/Contents/MacOS/Blender
-if platform.system() == "Darwin":
-    application_path = "/Applications/Blender.app/Contents/MacOS/Blender"
-else:
-    application_path = "./blender/blender"
-
-
-def get_combination_objects() -> pd.DataFrame:
-    """
-    Returns a DataFrame of example objects to use for debugging.
-
-    Args:
-    - None
-
-    Returns:
-    - pd.DataFrame: DataFrame of example objects.
-    """
-    combinations = pd.read_json("combinations.json", orient="records")
-    return combinations
-
-
 redis_url = os.environ.get("REDIS_URL", "redis://localhost:6379")
 app = Celery("tasks", broker=redis_url)
-
 
 @app.task(name="render_object", acks_late=True, reject_on_worker_lost=True)
 def render_object(

@@ -2,19 +2,14 @@ import os
 import subprocess
 import sys
 
-# TODO: Run all tests in /tests
-# If all tests run and the output exits with code 0, then the tests have passed
-# If there is an error, then the tests have failed
-# First, find all files in /tests that end with _test.py
 files = os.listdir("tests")
 test_files = [file for file in files if file.endswith("_test.py")]
 
-# Check if we are on Darwin (macOS)
-os_type = os.uname().sysname.lower()
-if os_type == "darwin":
-    blender_command = "/Applications/Blender.app/Contents/MacOS/Blender"
-else:
-    blender_command = "./blender/blender"
+# Append Simian to sys.path before importing from package
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../"))
+
+from simian.utils import get_blender_path
+blender_command = get_blender_path()
 
 # Flag to track if any test has failed
 test_failed = False

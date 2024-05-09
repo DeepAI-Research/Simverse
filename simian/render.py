@@ -1,6 +1,5 @@
 import argparse
 import platform
-import subprocess
 import sys
 import json
 import os
@@ -8,28 +7,10 @@ import ssl
 
 ssl._create_default_https_context = ssl._create_unverified_context
 
+# Append Simian to sys.path before importing from package
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../"))
 
-def check_imports() -> None:
-    """
-    Checks and installs required dependencies specified in the requirements.txt file.
-
-    Args:
-        None
-
-    Returns:
-        None
-    """
-    with open("requirements.txt", "r") as f:
-        requirements = f.readlines()
-    for requirement in requirements:
-        try:
-            __import__(requirement)
-        except ImportError:
-            print(f"Installing {requirement}")
-            subprocess.run(
-                ["bash", "-c", f"{sys.executable} -m pip install {requirement}"]
-            )
-
+from simian.utils import check_imports
 
 check_imports()
 
@@ -256,19 +237,6 @@ if __name__ == "__main__":
     context = bpy.context
     scene = context.scene
     render = scene.render
-
-    os_system = platform.system()
-
-    # if we are on mac, device type is METAL
-    # if we are on windows or linux, device type is CUDA
-    if os_system == "Darwin":
-        bpy.context.preferences.addons[
-            "cycles"
-        ].preferences.compute_device_type = "METAL"
-    else:
-        bpy.context.preferences.addons[
-            "cycles"
-        ].preferences.compute_device_type = "CUDA"
 
     combinations = pd.read_json("combinations.json", orient="records")
     combinations = combinations.iloc[args.combination_index]
