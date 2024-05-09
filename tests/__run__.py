@@ -14,7 +14,7 @@ os_type = os.uname().sysname.lower()
 if os_type == "darwin":
     blender_command = "/Applications/Blender.app/Contents/MacOS/Blender"
 else:
-    blender_command = "blender"
+    blender_command = "./blender/blender"
 
 # Flag to track if any test has failed
 test_failed = False
