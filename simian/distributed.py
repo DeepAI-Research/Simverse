@@ -62,15 +62,19 @@ def render_object(
     output_dir="./renders",
     background_path="./backgrounds",
 ):
-    args = f"--width {width} --height {height} --combination_index {combination_index}"
-    args += f" --output_dir {output_dir}"
-    args += f" --background_path {background_path}"
+    """
+    Renders an object using Blender.
+    """
+    args = f"--width {width} --height {height} --combination_index {combination_index} --output_dir {output_dir} --background_path {background_path}"
 
     command = f"{application_path} --background --python simian/render.py -- {args}"
     subprocess.run(["bash", "-c", command], timeout=10000, check=False)
 
 
 def render_objects(start_index, end_index, width, height, output_dir, background_path):
+    """
+    Renders objects in parallel using Celery.
+    """
     print(f"Rendering objects from {start_index} to {end_index}")
     for i in range(start_index, end_index):
         print(f"Rendering object {i}")

@@ -1,5 +1,4 @@
 import argparse
-import math
 import platform
 import subprocess
 import sys

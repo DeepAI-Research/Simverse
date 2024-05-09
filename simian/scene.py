@@ -5,6 +5,7 @@ import bmesh
 import os
 import requests
 
+
 def initialize_scene() -> None:
     # start bpy from scratch
     bpy.ops.wm.read_factory_settings(use_empty=True)
@@ -13,6 +14,7 @@ def initialize_scene() -> None:
     bpy.ops.object.select_all(action='SELECT')
     
     bpy.ops.object.delete()
+
 
 def download_texture(url: str, material_name: str, texture_name: str) -> str:
     """
