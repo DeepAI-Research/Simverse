@@ -163,45 +163,44 @@ def position_camera(combination: dict) -> None:
         raise ValueError("No objects selected. Please select a focus object.")
     
     focus_object = bpy.context.selected_objects[0]
-
-    # Get the bounding box of the focus object in screen space
+    print(f"Focus object: {focus_object.name}")
+    
+    # Get the bounding box of the focus object in world space
     bpy.context.view_layer.update()
     bbox = [focus_object.matrix_world @ Vector(corner) for corner in focus_object.bound_box]
     bbox_min = min(bbox, key=lambda v: v.z)
     bbox_max = max(bbox, key=lambda v: v.z)
-
+    
     # Calculate the height of the bounding box
     bbox_height = bbox_max.z - bbox_min.z
-
-    # Check if the focus object's height is above a minimum threshold
-    min_height_threshold = 0.001
-    if bbox_height < min_height_threshold:
-        # Position the camera based on a predefined distance
-        predefined_distance = 5.0
-        camera.location.y = -predefined_distance
-        return
-
+    
     # Calculate the desired object height based on the coverage factor
     coverage_factor = combination["coverage_factor"]
     desired_height = bbox_height * coverage_factor
-
-    # Move the camera backwards until the object's height matches the desired height
-    step_size = max(bbox_height, 1.0)  # Dynamic step size based on the focus object's height
-    max_iterations = 1000  # Maximum number of iterations to prevent infinite loop
-    iteration = 0
-    while iteration < max_iterations:
-        bpy.context.view_layer.update()
-        bbox = [focus_object.matrix_world @ Vector(corner) for corner in focus_object.bound_box]
-        bbox_min = min(bbox, key=lambda v: v.z)
-        bbox_max = max(bbox, key=lambda v: v.z)
-        current_height = bbox_max.z - bbox_min.z
-
-        if current_height <= desired_height:
-            break
-
-        camera.location.x += step_size
-        step_size *= 0.5  # Decrease the step size as we get closer to the desired position
-        iteration += 1
     
-    if iteration == max_iterations:
-        print("Warning: Maximum iterations reached while positioning the camera. The resulting coverage factor may not be exactly as desired.")
+    # Calculate the vertical FOV based on the lens focal length
+    focal_length = combination["framing"]["fov"]
+    
+    # check if there is an animation keyframe for the lens offset
+    animation = combination["animation"]
+    keyframes = animation["keyframes"]
+    if keyframes and "Camera" in keyframes[0] and "lens_offset" in keyframes[0]["Camera"]:
+        focal_length -= keyframes[0]["Camera"]["lens_offset"]
+        
+    # if the animation position starts offset from 0, calculate the distance based on the offset
+    distance_offset = 0
+    if keyframes and "Camera" in keyframes[0] and "position" in keyframes[0]["Camera"]:
+        distance_offset = keyframes[0]["Camera"]["position"][0]
+    
+    sensor_height = camera.data.sensor_height
+    vertical_fov = 2 * math.atan(sensor_height / (2 * focal_length))
+    
+    # Calculate the required distance using tangent
+    distance = (desired_height / 2 + distance_offset) / math.tan(vertical_fov / 2)
+    
+    # Set the position of the CameraAnimationRoot object to slightly above the focus object center, quasi-rule of thirds
+    # bbox_height / 2 is the center of the bounding box, bbox_height / 1.66 is more aesthetically pleasing
+    bpy.data.objects["CameraAnimationRoot"].location = focus_object.location + Vector((0, 0, bbox_height / 1.66))
+    
+    # Position the camera at the calculated distance along its local x-axis
+    camera.location.x = distance

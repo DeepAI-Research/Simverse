@@ -37,7 +37,7 @@ def test_render_objects():
     start_index = 0
     end_index = 1
     start_frame = 1
-    end_frame = 25
+    end_frame = 65
 
     # Call the function
     try:

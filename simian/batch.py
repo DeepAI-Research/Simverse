@@ -22,7 +22,7 @@ def render_objects(
     start_index: int = 0,
     end_index: int = 9,
     start_frame: int = 1,
-    end_frame: int = 25,
+    end_frame: int = 65,
 ) -> None:
     """
     Automates the rendering of objects using Blender based on predefined combinations.

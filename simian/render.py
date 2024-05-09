@@ -71,7 +71,7 @@ def render_scene(
     context: bpy.types.Context,
     combination_file,
     start_frame: int = 1,
-    end_frame: int = 25,
+    end_frame: int = 65,
     combination_index=0,
     height=1080,
     width=1920,
@@ -84,7 +84,7 @@ def render_scene(
         - context (bpy.types.Context): Blender context.
         - combination_file (str): Path to the JSON file containing camera combinations.
         - start_frame (int): Start frame of the animation. Defaults to 1.
-        - end_frame (int): End frame of the animation. Defaults to 25.
+        - end_frame (int): End frame of the animation. Defaults to 65.
         - combination_index (int): Index of the camera combination to use from the JSON file. Defaults to 0.
         - height (int): Render output height. Defaults to 1080.
         - width (int): Render output width. Defaults to 1920.
@@ -118,13 +118,13 @@ def render_scene(
 
         apply_and_remove_armatures()
         apply_all_modifiers(obj)
-        optimize_meshes_in_hierarchy(obj)
+        # optimize_meshes_in_hierarchy(obj)
 
         join_objects_in_hierarchy(obj)
 
-        optimize_meshes_in_hierarchy(obj)
+        # optimize_meshes_in_hierarchy(obj)
 
-        remove_loose_meshes(obj)
+        # remove_loose_meshes(obj)
 
         meshes = get_meshes_in_hierarchy(obj)
         obj = meshes[0]
@@ -209,7 +209,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--end_frame",
         type=int,
-        default=25,
+        default=65,
         help="End frame of the animation.",
         required=False,
     )
