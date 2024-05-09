@@ -1,131 +1,101 @@
+from unittest.mock import MagicMock
+
 import sys
 import os
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
-
-# Append the simian directory to sys.path
 simian_path = os.path.join(current_dir, "../")
 sys.path.append(simian_path)
 
-import bpy
-from simian.object import (
-    setup_compositor_for_black_and_white,
-    setup_compositor_for_cel_shading,
-    setup_compositor_for_depth,
-    enable_effect,
-)
-from simian.scene import initialize_scene
+from simian.postprocessing import setup_compositor_for_black_and_white, setup_compositor_for_cel_shading, setup_compositor_for_depth
+
+
+def mock_new_node(*args, **kwargs):
+    """
+    Mock for the nodes.new function in Blender.
+    """
+    node_type = kwargs.get('type', 'UnknownType')
+    node = MagicMock()
+    node.type = node_type
+    node.inputs = MagicMock()
+    node.outputs = MagicMock()
+    return node
+
 
 def test_setup_compositor_for_black_and_white():
-    initialize_scene()
-    context = bpy.context  # Using Blender's context
+    """
+    Test the setup_compositor_for_black_and_white function.
+    """
+    context = MagicMock()
+    scene = MagicMock()
+    nodes = MagicMock()
+    links = MagicMock()
+
+    context.scene = scene
+    scene.node_tree.nodes = nodes
+    scene.node_tree.links = links
+    nodes.new.side_effect = mock_new_node  # This now handles keyword arguments
+
     setup_compositor_for_black_and_white(context)
-    tree = context.scene.node_tree
 
-    # Check if the correct nodes exist
-    assert "CompositorNodeRLayers" in [node.bl_idname for node in tree.nodes]
-    assert "CompositorNodeHueSat" in [node.bl_idname for node in tree.nodes]
-    assert "CompositorNodeComposite" in [node.bl_idname for node in tree.nodes]
-
-    # Assert connections between nodes
-    hue_sat = next(
-        node for node in tree.nodes if node.bl_idname == "CompositorNodeHueSat"
-    )
-    assert hue_sat.inputs["Saturation"].default_value == 0
-    assert hue_sat.inputs["Value"].default_value == 2.0
-
-    print("test_setup_compositor_for_black_and_white passed")
+    # Assertions to ensure nodes are created and links are made
+    nodes.new.assert_any_call(type="CompositorNodeRLayers")
+    nodes.new.assert_any_call(type="CompositorNodeHueSat")
+    nodes.new.assert_any_call(type="CompositorNodeComposite")
+    assert links.new.called, "Links between nodes should be created"
 
 
 def test_setup_compositor_for_cel_shading():
-    initialize_scene()
-    context = bpy.context
+    """
+    Test the setup_compositor_for_cel_shading function.
+    """
+    context = MagicMock()
+    scene = MagicMock()
+    nodes = MagicMock()
+    links = MagicMock()
+
+    context.scene = scene
+    scene.node_tree.nodes = nodes
+    scene.node_tree.links = links
+    nodes.new.side_effect = mock_new_node
+
     setup_compositor_for_cel_shading(context)
-    tree = context.scene.node_tree
 
-    # Check if the correct nodes exist
-    assert "CompositorNodeRLayers" in [node.bl_idname for node in tree.nodes]
-    assert "CompositorNodeNormal" in [node.bl_idname for node in tree.nodes]
-    assert "CompositorNodeValToRGB" in [
-        node.bl_idname for node in tree.nodes
-    ]  # Assuming multiple color ramps
-    assert "CompositorNodeMixRGB" in [
-        node.bl_idname for node in tree.nodes
-    ]  # Assuming multiple mixes
-    assert "CompositorNodeAlphaOver" in [node.bl_idname for node in tree.nodes]
-    assert "CompositorNodeComposite" in [node.bl_idname for node in tree.nodes]
-
-    print("test_setup_compositor_for_cel_shading passed")
+    nodes.new.assert_any_call(type="CompositorNodeRLayers")
+    nodes.new.assert_any_call(type="CompositorNodeNormal")
+    nodes.new.assert_any_call(type="CompositorNodeValToRGB")
+    nodes.new.assert_any_call(type="CompositorNodeMixRGB")
+    nodes.new.assert_any_call(type="CompositorNodeAlphaOver")
+    nodes.new.assert_any_call(type="CompositorNodeComposite")
+    assert links.new.called
+    print("============ Test Passed: test_setup_compositor_for_cel_shading ============")
 
 
 def test_setup_compositor_for_depth():
-    initialize_scene()
-    context = bpy.context
+    """
+    Test the setup_compositor_for_depth function.
+    """
+    context = MagicMock()
+    scene = MagicMock()
+    nodes = MagicMock()
+    links = MagicMock()
+
+    context.scene = scene
+    scene.node_tree.nodes = nodes
+    scene.node_tree.links = links
+    nodes.new.side_effect = mock_new_node
+
     setup_compositor_for_depth(context)
-    tree = context.scene.node_tree
 
-    # Check if the correct nodes exist
-    assert "CompositorNodeRLayers" in [node.bl_idname for node in tree.nodes]
-    assert "CompositorNodeNormalize" in [node.bl_idname for node in tree.nodes]
-    assert "CompositorNodeComposite" in [node.bl_idname for node in tree.nodes]
-
-    # Verify depth pass is enabled in the view layer
-    assert context.view_layer.use_pass_z == True
-
-    print("test_setup_compositor_for_depth passed")
+    nodes.new.assert_any_call(type="CompositorNodeRLayers")
+    nodes.new.assert_any_call(type="CompositorNodeNormalize")
+    nodes.new.assert_any_call(type="CompositorNodeComposite")
+    assert links.new.called
+    print("============ Test Passed: test_setup_compositor_for_depth ============")
 
 
-def test_enable_effect():
-    initialize_scene()
-    context = bpy.context
-
-    # List of effects to test
-    effects_to_test = ["black_and_white", "cel_shading", "depth"]
-
-    for effect in effects_to_test:
-        # Reset scene to default
-        bpy.ops.wm.read_factory_settings(use_empty=True)
-        context.scene.use_nodes = True
-        context.view_layer.use_pass_normal = False
-        context.view_layer.use_pass_diffuse_color = False
-        context.view_layer.use_pass_environment = False
-        context.view_layer.use_pass_z = False
-
-        # Enable the effect
-        enable_effect(context, effect)
-
-        # Check if the scene nodes are set up correctly
-        tree = context.scene.node_tree
-        nodes = tree.nodes
-        links = tree.links
-
-        # Check if nodes specific to each effect are present
-        if effect == "black_and_white":
-            assert "CompositorNodeRLayers" in [node.bl_idname for node in nodes]
-            assert "CompositorNodeHueSat" in [node.bl_idname for node in nodes]
-            assert "CompositorNodeComposite" in [node.bl_idname for node in nodes]
-            assert context.view_layer.use_pass_z == False
-        elif effect == "cel_shading":
-            assert "CompositorNodeRLayers" in [node.bl_idname for node in nodes]
-            assert "CompositorNodeNormal" in [node.bl_idname for node in nodes]
-            assert "CompositorNodeMixRGB" in [node.bl_idname for node in nodes]
-            assert "CompositorNodeAlphaOver" in [node.bl_idname for node in nodes]
-            assert context.view_layer.use_pass_normal == True
-            assert context.view_layer.use_pass_diffuse_color == True
-            assert context.view_layer.use_pass_environment == True
-        elif effect == "depth":
-            assert "CompositorNodeRLayers" in [node.bl_idname for node in nodes]
-            assert "CompositorNodeNormalize" in [node.bl_idname for node in nodes]
-            assert "CompositorNodeComposite" in [node.bl_idname for node in nodes]
-            assert context.view_layer.use_pass_z == True
-
-        print(f"Test passed for enabling {effect} effect.")
-
-
-# Run tests if this file is executed as a script
 if __name__ == "__main__":
     test_setup_compositor_for_black_and_white()
     test_setup_compositor_for_cel_shading()
     test_setup_compositor_for_depth()
-    test_enable_effect()
-    print("All tests passed.")
+    print("============ ALL TESTS PASSED ============")

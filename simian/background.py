@@ -2,14 +2,14 @@ import os
 from typing import Dict
 import requests
 import bpy
+ 
 
-
-def get_background_path(background_path: str, combination: Dict) -> str:
+def get_background_path(hdri_path: str, combination: Dict) -> str:
     """
     Get the local file path for the background HDR image.
 
     Args:
-        background_path (str): The base directory for storing background images.
+        hdri_path (str): The base directory for storing background images.
         combination (Dict): The combination dictionary containing background
     Returns:
         str: The local file path for the background HDR image.
@@ -17,12 +17,12 @@ def get_background_path(background_path: str, combination: Dict) -> str:
     background = combination["background"]
     background_id = background["id"]
     background_from = background["from"]
-    background_path = f"{background_path}/{background_from}/{background_id}.hdr"
+    hdri_path = f"{hdri_path}/{background_from}/{background_id}.hdr"
 
-    return background_path
+    return hdri_path
 
 
-def get_background(background_path: str, combination: Dict) -> None:
+def get_background(hdri_path: str, combination: Dict) -> None:
     """
     Download the background HDR image if it doesn't exist locally.
 
@@ -31,30 +31,30 @@ def get_background(background_path: str, combination: Dict) -> None:
     saves it to the local file path.
 
     Args:
-        background_path (str): The base directory for storing background images.
+        hdri_path (str): The base directory for storing background images.
         combination (Dict): The combination dictionary containing background information.
 
     Returns:
         None
     """
-    background_path = get_background_path(background_path, combination)
+    hdri_path = get_background_path(hdri_path, combination)
 
     background = combination["background"]
     background_url = background["url"]
 
     # make sure each folder in the path exists
-    os.makedirs(os.path.dirname(background_path), exist_ok=True)
+    os.makedirs(os.path.dirname(hdri_path), exist_ok=True)
 
-    if not os.path.exists(background_path):
-        print(f"Downloading {background_url} to {background_path}")
+    if not os.path.exists(hdri_path):
+        print(f"Downloading {background_url} to {hdri_path}")
         response = requests.get(background_url)
-        with open(background_path, "wb") as file:
+        with open(hdri_path, "wb") as file:
             file.write(response.content)
     else:
-        print(f"Background {background_path} already exists")
+        print(f"Background {hdri_path} already exists")
 
 
-def set_background(background_path: str, combination: Dict) -> None:
+def set_background(hdri_path: str, combination: Dict) -> None:
     """
     Set the background HDR image of the scene.
 
@@ -64,14 +64,14 @@ def set_background(background_path: str, combination: Dict) -> None:
     the HDR image, connects the nodes, and enables the world background in the render settings.
 
     Args:
-        background_path (str): The base directory for storing background images.
+        hdri_path (str): The base directory for storing background images.
         combination (Dict): The combination dictionary containing background information.
 
     Returns:
         None
     """
-    get_background(background_path, combination)
-    background_path = get_background_path(background_path, combination)
+    get_background(hdri_path, combination)
+    hdri_path = get_background_path(hdri_path, combination)
 
     # Check if the scene has a world, and create one if it doesn't
     if bpy.context.scene.world is None:
@@ -89,7 +89,7 @@ def set_background(background_path: str, combination: Dict) -> None:
     env_tex_node.location = (-300, 0)
 
     # Load the HDR image
-    env_tex_node.image = bpy.data.images.load(background_path)
+    env_tex_node.image = bpy.data.images.load(hdri_path)
 
     # Create the Background node
     background_node = tree.nodes.new(type="ShaderNodeBackground")
@@ -108,10 +108,10 @@ def set_background(background_path: str, combination: Dict) -> None:
     # Enable the world background in the render settings
     bpy.context.scene.render.film_transparent = False
 
-    print(f"Set background to {background_path}")
+    print(f"Set background to {hdri_path}")
 
 
-def create_photosphere(background_path: str, combination: Dict) -> bpy.types.Object:
+def create_photosphere(hdri_path: str, combination: Dict) -> bpy.types.Object:
     """
     Create a photosphere object in the scene.
 
@@ -121,7 +121,7 @@ def create_photosphere(background_path: str, combination: Dict) -> bpy.types.Obj
     using the environment texture as emission.
 
     Args:
-        background_path (str): The base directory for storing background images.
+        hdri_path (str): The base directory for storing background images.
         combination (Dict): The combination dictionary containing background information.
 
     Returns:
@@ -141,12 +141,12 @@ def create_photosphere(background_path: str, combination: Dict) -> bpy.types.Obj
     sphere = bpy.context.object
     sphere.name = "Photosphere"
     sphere.data.name = "PhotosphereMesh"
-    create_photosphere_material(background_path, combination, sphere)
+    create_photosphere_material(hdri_path, combination, sphere)
     return sphere
 
 
 def create_photosphere_material(
-    background_path: str, combination: Dict, sphere: bpy.types.Object
+    hdri_path: str, combination: Dict, sphere: bpy.types.Object
 ) -> None:
     """
     Create a material for the photosphere object using the environment texture as emission.
@@ -156,7 +156,7 @@ def create_photosphere_material(
     to the photosphere object.
 
     Args:
-        background_path (str): The base directory for storing background images.
+        hdri_path (str): The base directory for storing background images.
         combination (Dict): The combination dictionary containing background information.
         sphere (bpy.types.Object): The photosphere object to assign the material to.
 
@@ -173,7 +173,7 @@ def create_photosphere_material(
     emission = nodes.new(type="ShaderNodeEmission")
     env_tex = nodes.new(type="ShaderNodeTexEnvironment")
     env_tex.image = bpy.data.images.load(
-        get_background_path(background_path, combination)
+        get_background_path(hdri_path, combination)
     )
     mat.node_tree.links.new(env_tex.outputs["Color"], emission.inputs["Color"])
     output = nodes.new(type="ShaderNodeOutputMaterial")

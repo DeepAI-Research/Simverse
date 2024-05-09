@@ -1,74 +1,71 @@
-import json
-import sys
 import os
+import sys
+import json
 from unittest.mock import patch, mock_open
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
-
-# Append the simian directory to sys.path
-simian_path = os.path.join(current_dir, "../")
-sys.path.append(simian_path)
+combiner_path = os.path.join(current_dir, "../")
+sys.path.append(combiner_path)
 
 from simian.combiner import read_json_file, generate_caption, generate_combinations
 
 def test_read_json_file():
-    # Mock the open function and json.load
-    test_data = {"key": "value"}
-    with patch(
-        "builtins.open", mock_open(read_data=json.dumps(test_data))
-    ) as mock_file, patch("json.load", return_value=test_data) as mock_json_load:
+    """
+    Test the read_json_file function.
+    """
+    mock_data = '{"name": "example", "type": "test"}'
+    with patch("builtins.open", mock_open(read_data=mock_data)) as mocked_file:
         result = read_json_file("dummy_path.json")
-        mock_file.assert_called_once_with("dummy_path.json", "r")
-        mock_json_load.assert_called()
-        assert (
-            result == test_data
-        ), "The read_json_file function did not return the expected data"
+        mocked_file.assert_called_once_with("dummy_path.json", "r")
+        assert result == json.loads(mock_data)
+        print("============ Test Passed: test_read_json_file ============")
 
 
 def test_generate_caption():
-    # Setup test data for generating a caption
+    """
+    Test the generate_caption function.
+    """
+    # Provide a sample input for generate_caption, including the 'uid' key
     combination = {
+        
         "objects": [
-            {"name": "Object1", "description": "A cool object"},
-            {"name": "Object2", "description": "Another cool object"},
+            {
+                "name": "Cube",
+                "description": "A simple geometric shape",
+                "uid": "12345"  # Unique identifier for the object
+            }
         ],
         "background": {"name": "Beach"},
         "stage": {"material": {"name": "Sand"}},
-        "orientation": {"descriptions": ["Object1 in front of Object2"]},
-        "framing": {"descriptions": ["Close up of Object1 and Object2"]},
+        "orientation": {"pitch": 15, "yaw": 30}
     }
-    with patch(
-        "random.choice", side_effect=lambda x: x[0]
-    ):  # Always choose the first element
-        caption = generate_caption(combination)
-        assert (
-            "Object1" in caption and "Object2" in caption and "Beach" in caption
-        ), "Caption does not include all elements"
+    caption = generate_caption(combination)
+    assert "Cube" in caption, "Caption does not include object name."
+    assert "Beach" in caption, "Caption does not include background name."
+    assert "Sand" in caption, "Caption does not include material name."
+    print("============ Test Passed: test_generate_caption ============")
 
 
 def test_generate_combinations():
-    # Mock dependencies and inputs
+    """
+    Test the generate_combinations function.
+    """
+    # Prepare mock data for camera_data and a small count
     camera_data = {
-        "orientations": ["Orientation1"],
-        "framings": ["Framing1"],
-        "animations": ["Animation1"],
+        "orientation": {"yaw_min": 0, "yaw_max": 180, "pitch_min": -90, "pitch_max": 90},
+        "framings": [{"name": "wide"}],
+        "animations": [{"name": "zoom_in"}]
     }
-    with patch(
-        "combiner.read_json_file", return_value={"models": {}, "backgrounds": {}}
-    ), patch("random.choice", side_effect=lambda x: x[0]), patch(
-        "random.choices", side_effect=lambda x, weights: [x[0]]
-    ), patch(
-        "random.randint", return_value=1
-    ):  # Return 1 for number of objects
-        combinations = generate_combinations(camera_data, 1)
-        assert len(combinations) == 1, "Should generate exactly one combination"
-        assert (
-            combinations[0]["index"] == 0
-        ), "Index of the generated combination should be 0"
+    combinations = generate_combinations(camera_data, 2)
+    assert len(combinations) == 2, "generate_combinations did not create the correct number of combinations."
+    for combination in combinations:
+        assert combination['orientation']['yaw'] <= 180, "Yaw is out of the specified range."
+        assert combination['orientation']['pitch'] <= 90, "Pitch is out of the specified range."
+        print("============ Test Passed: test_generate_combinations ============")
 
 
-# Run tests if this file is executed as a script
 if __name__ == "__main__":
     test_read_json_file()
     test_generate_caption()
     test_generate_combinations()
+    print("============ ALL TESTS PASSED ============")

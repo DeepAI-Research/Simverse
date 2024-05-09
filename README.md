@@ -49,14 +49,14 @@ You can generate individually:
 blender --background --python simian/render.py
 
 ## Kitchen sink
-blender --background --python simian/render.py -- --width 1920 --height 1080 --combination_index 0 --output_dir ./renders --background_path ./backgrounds --start_frame 1 --end_frame 25
+blender --background --python simian/render.py -- --width 1920 --height 1080 --combination_index 0 --output_dir ./renders --hdri_path ./backgrounds --start_frame 1 --end_frame 25
 ```
 
 Configure the flags as needed:
 - `--width` and `--height` are the resolution of the video.
 - `--combination_index` is the index of the combination to render.
 - `--output_dir` is the directory to save the rendered video.
-- `--background_path` is the directory containing the background images.
+- `--hdri_path` is the directory containing the background images.
 - `--start_frame` and `--end_frame` are the start and end frames of the video.
 
 Or generate all or part of the combination set using the `batch.py` script:
