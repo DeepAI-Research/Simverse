@@ -1,5 +1,6 @@
 import math
 import bpy
+from mathutils import Vector
 
 
 def create_camera_rig() -> bpy.types.Object:
@@ -42,7 +43,7 @@ def create_camera_rig() -> bpy.types.Object:
     camera = bpy.data.cameras.new("Camera")
     camera_object = bpy.data.objects.new("Camera", camera)
 
-    # rotate the Camera 90º,
+    # Rotate the Camera 90º
     camera_object.delta_rotation_euler = [1.5708, 0, 1.5708]
 
     camera_object.parent = camera_animation_pivot
@@ -75,41 +76,35 @@ def set_camera_settings(combination: dict) -> None:
         None
     """
     camera = bpy.context.scene.objects["Camera"]
+    camera_data = camera.data
 
-    # get the camera on the camera object
-    camera = camera.data
+    # Get the initial lens value from the combination
+    initial_lens = combination["framing"]["fov"]
 
-    camera.lens = combination["framing"]["fov"]
+    # Get the first keyframe's lens_offset value, if available
+    animation = combination["animation"]
+    keyframes = animation["keyframes"]
+    if keyframes and "Camera" in keyframes[0] and "lens_offset" in keyframes[0]["Camera"]:
+        lens_offset = keyframes[0]["Camera"]["lens_offset"]
+        camera_data.lens = initial_lens + lens_offset
+    else:
+        camera_data.lens = initial_lens
 
     orientation_data = combination["orientation"]
-
     orientation = {"pitch": orientation_data["pitch"], "yaw": orientation_data["yaw"]}
 
     # Rotate CameraOrientationPivotYaw by the Y
     camera_orientation_pivot_yaw = bpy.data.objects.get("CameraOrientationPivotYaw")
-
-    # Convert from degrees to radians. orientation['pitch'] is in degrees, but Blender uses radians
     camera_orientation_pivot_yaw.rotation_euler[2] = orientation["yaw"] * math.pi / 180
 
     # Rotate CameraOrientationPivotPitch by the X
     camera_orientation_pivot_pitch = bpy.data.objects.get("CameraOrientationPivotPitch")
-
-    # Apply the pitch rotation adjustment. Negative sign used to invert the rotation for upward pitch in Blender's coordinate system.
     camera_orientation_pivot_pitch.rotation_euler[1] = (
         orientation["pitch"] * -math.pi / 180
     )
-    framing = combination["framing"]
 
-    # Set the root of the whole rig to the orientation position
-    camera_animation_root = bpy.data.objects.get("CameraAnimationRoot")
-
-    # TODO: Get the center of the bounding box of the focus object and set the camera to that position
-    camera_animation_root.location = [0, 0, 0.5]
-
-    # Set the CameraFramingPivot X to the framing
-    camera_framing_pivot = bpy.data.objects.get("CameraFramingPivot")
-    camera_framing_pivot.location = framing["position"]
     set_camera_animation(combination)
+    position_camera(combination)
 
 
 def set_camera_animation(combination: dict, frame_distance: int = 120) -> None:
@@ -117,29 +112,21 @@ def set_camera_animation(combination: dict, frame_distance: int = 120) -> None:
     Applies the specified animation to the camera based on the keyframes from the camera_data.json file.
 
     Args:
-        animation_name (str): The name of the animation to apply to the camera.
-        camera_data (dict): The dictionary containing the camera data from the JSON file.
-
-    Raises:
-        ValueError: If the animation is not found in the camera data.
+        combination (dict): The combination dictionary containing animation data.
+        frame_distance (int): The distance between frames for keyframe placement.
 
     Returns:
         None
     """
-    # Find the animation in the camera data
     animation = combination["animation"]
-
-    # Get the keyframes from the animation
     keyframes = animation["keyframes"]
 
-    # Iterate over the keyframes and apply the transformations to the corresponding objects
     for i, keyframe in enumerate(keyframes):
         for obj_name, transforms in keyframe.items():
             obj = bpy.data.objects.get(obj_name)
             if obj is None:
                 raise ValueError(f"Object {obj_name} not found in the scene")
 
-            # Set the keyframe for each transformation
             frame = i * frame_distance
             for transform_name, value in transforms.items():
                 if transform_name == "position":
@@ -151,6 +138,49 @@ def set_camera_animation(combination: dict, frame_distance: int = 120) -> None:
                 elif transform_name == "scale":
                     obj.scale = value
                     obj.keyframe_insert(data_path="scale", frame=frame)
+                elif transform_name == "lens_offset" and obj_name == "Camera":
+                    camera_data = bpy.data.objects["Camera"].data
+                    camera_data.lens = combination["framing"]["fov"] + value
+                    camera_data.keyframe_insert(data_path="lens", frame=frame)
 
-    # Set the current frame to the start of the animation
     bpy.context.scene.frame_set(0)
+
+
+def position_camera(combination: dict) -> None:
+    """
+    Positions the camera based on the coverage factor and lens values.
+
+    Args:
+        combination (dict): The combination dictionary containing coverage factor and lens values.
+
+    Returns:
+        None
+    """
+    camera = bpy.context.scene.objects["Camera"]
+    focus_object = bpy.context.selected_objects[0]  # Assume the focus object is the first selected object
+
+    # Get the bounding box of the focus object in screen space
+    bpy.context.view_layer.update()
+    bbox = [focus_object.matrix_world @ Vector(corner) for corner in focus_object.bound_box]
+    bbox_min = min(bbox, key=lambda v: v.z)
+    bbox_max = max(bbox, key=lambda v: v.z)
+
+    # Calculate the height of the bounding box
+    bbox_height = bbox_max.z - bbox_min.z
+
+    # Calculate the desired object height based on the coverage factor
+    coverage_factor = combination["coverage_factor"]
+    desired_height = bbox_height * coverage_factor
+
+    # Move the camera backwards until the object's height matches the desired height
+    while True:
+        bpy.context.view_layer.update()
+        bbox = [focus_object.matrix_world @ Vector(corner) for corner in focus_object.bound_box]
+        bbox_min = min(bbox, key=lambda v: v.z)
+        bbox_max = max(bbox, key=lambda v: v.z)
+        current_height = bbox_max.z - bbox_min.z
+
+        if current_height <= desired_height:
+            break
+
+        camera.location.y -= 0.1  # Move the camera backwards by a small step

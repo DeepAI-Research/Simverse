@@ -7,7 +7,7 @@ simian_path = os.path.join(current_dir, "../")
 sys.path.append(simian_path)
 
 import bpy
-from simian.camera import create_camera_rig, set_camera_settings, set_camera_animation
+from simian.camera import create_camera_rig, set_camera_settings, set_camera_animation, position_camera
 
 def test_create_camera_rig():
     """
@@ -51,11 +51,12 @@ def test_set_camera_settings():
 
     combination = {
         "orientation": {"yaw": 327, "pitch": 14},
-        "framing": {"position": [2, 0, 0], "fov": 20},
+        "framing": {"fov": 20},
+        "coverage_factor": 1.0,
         "animation": {
             "name": "tilt_left",
             "keyframes": [
-                {"CameraAnimationRoot": {"rotation": [0, 0, 45]}},
+                {"CameraAnimationRoot": {"rotation": [0, 0, 45]}, "Camera": {"lens_offset": 5}},
                 {"CameraAnimationRoot": {"rotation": [0, 0, 0]}}
             ]
         }
@@ -72,7 +73,7 @@ def test_set_camera_settings():
     camera_orientation_pivot_pitch = bpy.data.objects['CameraOrientationPivotPitch']
 
     # Assert the field of view is set correctly
-    assert camera.lens == combination["framing"]["fov"], "FOV is not set correctly"
+    assert camera.lens == combination["framing"]["fov"] + combination["animation"]["keyframes"][0]["Camera"]["lens_offset"], "FOV is not set correctly"
 
     # Convert degrees to radians for comparison
     expected_yaw_radians = math.radians(combination["orientation"]["yaw"])
@@ -86,11 +87,12 @@ def test_set_camera_settings():
 
 def test_set_camera_animation():
     combination = {
+        "framing": {"fov": 20},
         "animation": {
             "keyframes": [
-                {"Camera": {"position": (0, 0, 5), "rotation": (0, 0, 0)}},
-                {"Camera": {"position": (5, 0, 0), "rotation": (0, 0, 90)}},
-                {"Camera": {"position": (0, 5, 0), "rotation": (0, 0, 180)}}
+                {"Camera": {"position": (0, 0, 5), "rotation": (0, 0, 0), "lens_offset": 5}},
+                {"Camera": {"position": (5, 0, 0), "rotation": (0, 0, 90), "lens_offset": 10}},
+                {"Camera": {"position": (0, 5, 0), "rotation": (0, 0, 180), "lens_offset": 15}}
             ]
         }
     }
@@ -100,24 +102,48 @@ def test_set_camera_animation():
     assert camera is not None, "Camera object not found"
 
     frame_data = [
-        (0, (0, 0, 5), (0, 0, 0)),
-        (1, (5, 0, 0), (0, 0, 1.5708)),  # Approximately 90 degrees in radians
-        (2, (0, 5, 0), (0, 0, 3.14159))  # Approximately 180 degrees in radians
+        (0, (0, 0, 5), (0, 0, 0), 25),
+        (120, (5, 0, 0), (0, 0, 1.5708), 30),  # Approximately 90 degrees in radians
+        (240, (0, 5, 0), (0, 0, 3.14159), 35)  # Approximately 180 degrees in radians
     ]
 
-    for frame, expected_pos, expected_rot in frame_data:
+    for frame, expected_pos, expected_rot, expected_lens in frame_data:
         bpy.context.scene.frame_set(frame)
         assert camera.location == expected_pos, f"Camera position at frame {frame} is incorrect"
         assert camera.rotation_euler == expected_rot, f"Camera rotation at frame {frame} is incorrect"
+        assert camera.data.lens == expected_lens, f"Camera lens value at frame {frame} is incorrect"
 
     print("============ Test Passed: test_set_camera_animation ============")
 
+
+def test_position_camera():
+    combination = {
+        "coverage_factor": 1.0,
+        "framing": {"fov": 20}
+    }
+
+    # Create a dummy object to represent the focus object
+    bpy.ops.mesh.primitive_cube_add(size=2)
+    focus_object = bpy.context.active_object
+
+    position_camera(combination)
+
+    camera = bpy.data.objects.get("Camera")
+    assert camera is not None, "Camera object not found"
+
+    # Check if the camera is positioned correctly based on the coverage factor
+    bpy.context.view_layer.update()
+    bbox = [focus_object.matrix_world @ Vector(corner) for corner in focus_object.bound_box]
+    bbox_height = max(bbox, key=lambda v: v.z).z - min(bbox, key=lambda v: v.z).z
+    desired_height = bbox_height * combination["coverage_factor"]
+    assert camera.location.y <= -desired_height, "Camera is not positioned correctly based on coverage factor"
+
+    print("============ Test Passed: test_position_camera ============")
 
 
 if __name__ == "__main__":
     test_create_camera_rig()
     test_set_camera_settings()
-    set_camera_animation()
+    test_set_camera_animation()
+    test_position_camera()
     print("============ ALL TESTS PASSED ============")
-
-
