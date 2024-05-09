@@ -417,6 +417,8 @@ def generate_combinations(camera_data, count):
             "uv_scale": [random.uniform(0.8, 1.2), random.uniform(0.8, 1.2)],
             "uv_rotation": random.uniform(0, 360),
         }
+        
+        framing["fov"] = fov
 
         combination = {
             "index": i,
@@ -424,7 +426,6 @@ def generate_combinations(camera_data, count):
             "background": background,
             "orientation": orientation,
             "framing": framing,
-            "fov": fov,
             "coverage_factor": coverage_factor,
             "animation": animation,
             "stage": stage,
