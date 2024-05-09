@@ -1,24 +1,21 @@
 import os
 import sys
 import math
-from unittest.mock import patch, MagicMock
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
-# Append the simian directory to sys.path
 simian_path = os.path.join(current_dir, "../")
 sys.path.append(simian_path)
 
 import bpy
 from simian.camera import create_camera_rig, set_camera_settings, set_camera_animation
 
-
-import math
-
-EPSILON = 1e-6  # Small value to account for floating-point inaccuracies
-
 def test_create_camera_rig():
-    # Call the function
-    rig = create_camera_rig()
+    """
+    Test the create_camera_rig function.
+    """
+
+    EPSILON = 1e-6  # Small value to account for floating-point inaccuracies
+    rig = create_camera_rig() # call the function
 
     # Check if all the expected objects are created
     assert isinstance(rig["camera_animation_root"], bpy.types.Object)
@@ -44,10 +41,14 @@ def test_create_camera_rig():
     assert math.isclose(camera_rotation[0], expected_x_rotation, abs_tol=EPSILON)
     assert math.isclose(camera_rotation[1], expected_y_rotation, abs_tol=EPSILON)
     assert math.isclose(camera_rotation[2], expected_z_rotation, abs_tol=EPSILON)
+    print("============ Test Passed: test_create_camera_rig ============")
     
 
 def test_set_camera_settings():
-    # Define the combination data with 'animation' included
+    """
+    Test the set_camera_settings function.
+    """
+
     combination = {
         "orientation": {"yaw": 327, "pitch": 14},
         "framing": {"position": [2, 0, 0], "fov": 20},
@@ -80,56 +81,43 @@ def test_set_camera_settings():
     # Assert the orientation is set correctly
     assert math.isclose(camera_orientation_pivot_yaw.rotation_euler[2], expected_yaw_radians, abs_tol=0.001), "Yaw is not set correctly"
     assert math.isclose(camera_orientation_pivot_pitch.rotation_euler[1], expected_pitch_radians, abs_tol=0.001), "Pitch is not set correctly"
+    print("============ Test Passed: test_set_camera_settings ============")
 
 
-def set_camera_animation(combination: dict, frame_distance: int = 120) -> None:
-    """
-    Applies the specified animation to the camera based on the keyframes from the camera_data.json file.
-    """
-    # Check if 'animation' key exists in the combination
-    if "animation" not in combination:
-        print("No animation data provided.")
-        return  # Exit the function if no animation data is found
-
-    animation = combination["animation"]
-    keyframes = animation.get("keyframes", [])
-
-    for i, keyframe in enumerate(keyframes):
-        for obj_name, transforms in keyframe.items():
-            obj = bpy.data.objects.get(obj_name)
-            if obj is None:
-                raise ValueError(f"Object {obj_name} not found in the scene")
-
-            frame = i * frame_distance
-            for transform_name, value in transforms.items():
-                if transform_name == "position":
-                    obj.location = value
-                elif transform_name == "rotation":
-                    obj.rotation_euler = [math.radians(angle) for angle in value]
-                elif transform_name == "scale":
-                    obj.scale = value
-
-                obj.keyframe_insert(data_path=transform_name, frame=frame)
-
-    bpy.context.scene.frame_set(0)
-
-
-if __name__ == "__main__":
-    # Correct your test or combination data
+def test_set_camera_animation():
     combination = {
-        # Ensure this dictionary is correctly populated
         "animation": {
-            "name": "example_animation",
             "keyframes": [
-                # Example keyframe data
+                {"Camera": {"position": (0, 0, 5), "rotation": (0, 0, 0)}},
+                {"Camera": {"position": (5, 0, 0), "rotation": (0, 0, 90)}},
+                {"Camera": {"position": (0, 5, 0), "rotation": (0, 0, 180)}}
             ]
         }
     }
+    set_camera_animation(combination)
 
+    camera = bpy.data.objects.get("Camera")
+    assert camera is not None, "Camera object not found"
+
+    frame_data = [
+        (0, (0, 0, 5), (0, 0, 0)),
+        (1, (5, 0, 0), (0, 0, 1.5708)),  # Approximately 90 degrees in radians
+        (2, (0, 5, 0), (0, 0, 3.14159))  # Approximately 180 degrees in radians
+    ]
+
+    for frame, expected_pos, expected_rot in frame_data:
+        bpy.context.scene.frame_set(frame)
+        assert camera.location == expected_pos, f"Camera position at frame {frame} is incorrect"
+        assert camera.rotation_euler == expected_rot, f"Camera rotation at frame {frame} is incorrect"
+
+    print("============ Test Passed: test_set_camera_animation ============")
+
+
+
+if __name__ == "__main__":
     test_create_camera_rig()
     test_set_camera_settings()
-    set_camera_animation(combination)
-    print("All tests passed")
-
+    set_camera_animation()
+    print("============ ALL TESTS PASSED ============")
 
 

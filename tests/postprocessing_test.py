@@ -1,19 +1,19 @@
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import sys
 import os
-import pytest
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
-
-# Append the simian directory to sys.path
 simian_path = os.path.join(current_dir, "../")
 sys.path.append(simian_path)
 
-# Assuming setup_compositor_for_black_and_white, setup_compositor_for_cel_shading, and setup_compositor_for_depth are imported
 from simian.postprocessing import setup_compositor_for_black_and_white, setup_compositor_for_cel_shading, setup_compositor_for_depth
 
+
 def mock_new_node(*args, **kwargs):
+    """
+    Mock for the nodes.new function in Blender.
+    """
     node_type = kwargs.get('type', 'UnknownType')
     node = MagicMock()
     node.type = node_type
@@ -21,7 +21,11 @@ def mock_new_node(*args, **kwargs):
     node.outputs = MagicMock()
     return node
 
+
 def test_setup_compositor_for_black_and_white():
+    """
+    Test the setup_compositor_for_black_and_white function.
+    """
     context = MagicMock()
     scene = MagicMock()
     nodes = MagicMock()
@@ -40,7 +44,11 @@ def test_setup_compositor_for_black_and_white():
     nodes.new.assert_any_call(type="CompositorNodeComposite")
     assert links.new.called, "Links between nodes should be created"
 
+
 def test_setup_compositor_for_cel_shading():
+    """
+    Test the setup_compositor_for_cel_shading function.
+    """
     context = MagicMock()
     scene = MagicMock()
     nodes = MagicMock()
@@ -59,9 +67,14 @@ def test_setup_compositor_for_cel_shading():
     nodes.new.assert_any_call(type="CompositorNodeMixRGB")
     nodes.new.assert_any_call(type="CompositorNodeAlphaOver")
     nodes.new.assert_any_call(type="CompositorNodeComposite")
-    assert links.new.called, "Links between nodes should be created"
+    assert links.new.called
+    print("============ Test Passed: test_setup_compositor_for_cel_shading ============")
+
 
 def test_setup_compositor_for_depth():
+    """
+    Test the setup_compositor_for_depth function.
+    """
     context = MagicMock()
     scene = MagicMock()
     nodes = MagicMock()
@@ -77,10 +90,12 @@ def test_setup_compositor_for_depth():
     nodes.new.assert_any_call(type="CompositorNodeRLayers")
     nodes.new.assert_any_call(type="CompositorNodeNormalize")
     nodes.new.assert_any_call(type="CompositorNodeComposite")
-    assert links.new.called, "Links between nodes should be created"
+    assert links.new.called
+    print("============ Test Passed: test_setup_compositor_for_depth ============")
+
 
 if __name__ == "__main__":
     test_setup_compositor_for_black_and_white()
     test_setup_compositor_for_cel_shading()
     test_setup_compositor_for_depth()
-    print("All tests passed")
+    print("============ ALL TESTS PASSED ============")

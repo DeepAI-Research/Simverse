@@ -1,8 +1,7 @@
 import os
 import sys
-import requests
+
 current_dir = os.path.dirname(os.path.abspath(__file__))
-# Append the simian directory to sys.path
 simian_path = os.path.join(current_dir, "../")
 sys.path.append(simian_path)
 
@@ -15,22 +14,28 @@ from simian.background import (
     create_photosphere_material,
 )
 
-current_dir = os.path.dirname(os.path.abspath(__file__))
-# Append the simian directory to sys.path
-simian_path = os.path.join(current_dir, "../")
-sys.path.append(simian_path)
-
 import bpy
 from simian.background import set_background
 
+
 def test_get_background_path():
+    """
+    Test the get_background_path function.
+    """
     combination = {"background": {"id": "123", "from": "test_dataset"}}
     background_path = "/fake/path"
     expected_result = f"/fake/path/test_dataset/123.hdr"
     result = get_background_path(background_path, combination)
-    assert result == expected_result, "Background path is not correct."
+
+    print("test_get_background_path result: ", result)
+    assert result == expected_result
+    print("============ Test Passed: get_background_path ============")
+
 
 def test_get_background():
+    """
+    Test the get_background function.
+    """
     combination = {
         "background": {
             "url": "http://example.com/image.hdr",
@@ -40,19 +45,24 @@ def test_get_background():
     }
     background_path = "/fake/path"
 
-    # Mock os.makedirs and os.path.exists
     with patch("os.makedirs"), patch("os.path.exists", return_value=False), patch(
         "requests.get"
     ) as mock_get, patch("builtins.open", new_callable=MagicMock):
         mock_response = MagicMock()
         mock_response.content = b"fake data"
         mock_get.return_value = mock_response
+
         get_background(background_path, combination)
+        print("get_background called")
+
         mock_get.assert_called_with("http://example.com/image.hdr")
+        print("============ Test Passed: test_get_background ============")
 
 
 def test_set_background():
-    # Setting up test data
+    """
+    Test the set_background function.
+    """
     combination = {
         "background": {
             "id": "123",
@@ -81,11 +91,14 @@ def test_set_background():
                 with open(os.path.join(background_base_path, "test_dataset/123.hdr"), "wb") as file:
                     file.write(mock_response.content)
 
-                # Verify
                 mock_get.assert_called_with("http://example.com/image.hdr")
-                print("Test Passed: Background set correctly.")
+                print("============ Test Passed: test_set_background ============")
 
-def create_photosphere():
+
+def create_test_photosphere():
+    """
+    Create a UV sphere in Blender with specific parameters.
+    """
     # Create a UV sphere in Blender with specific parameters
     bpy.ops.mesh.primitive_uv_sphere_add(segments=64, ring_count=32, radius=1.0, location=(0, 0, 3))
     sphere = bpy.context.object
@@ -99,20 +112,25 @@ def create_photosphere():
 
     # Rename the sphere for identification
     sphere.name = "Photosphere"
+    print("Sphere created successfully")
     return sphere
+
 
 def test_create_photosphere():
     epsilon = 0.001  # Small threshold for floating-point comparisons
-    sphere = create_photosphere()
+    sphere = create_test_photosphere()
 
     # Check each component of the sphere's location to see if it matches the expected values
     assert abs(sphere.location.x - 0.0) < epsilon, "X coordinate is incorrect"
     assert abs(sphere.location.y - 0.0) < epsilon, "Y coordinate is incorrect"
     assert abs(sphere.location.z - 3.0) < epsilon, "Z coordinate is incorrect"
-    print("Test Passed: Sphere is correctly positioned at (0, 0, 3)")
+    print("============ Test Passed: test_create_photosphere ============")
 
 
 def test_create_photosphere_material():
+    """
+    Test the create_photosphere_material function.
+    """
     # Create a UV sphere in Blender with specific parameters
     bpy.ops.mesh.primitive_uv_sphere_add(segments=64, ring_count=32, radius=1.0, location=(0, 0, 3))
     sphere = bpy.context.object
@@ -150,6 +168,7 @@ def test_create_photosphere_material():
 
                 # Verify that the material was created
                 assert sphere.data.materials[0].name == "PhotosphereMaterial", "Material not created successfully"
+                print("============ Test Passed: test_create_photosphere_material ============")
 
 # Run tests if this file is executed as a script
 if __name__ == "__main__":
@@ -158,4 +177,4 @@ if __name__ == "__main__":
     test_set_background()
     test_create_photosphere()
     test_create_photosphere_material()
-    print("All tests passed")
+    print("============ ALL TESTS PASSED ============")

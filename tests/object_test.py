@@ -1,24 +1,20 @@
-import subprocess
 import sys
 import os
-import pytest
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
-
-# Append the simian directory to sys.path
 simian_path = os.path.join(current_dir, "../")
 sys.path.append(simian_path)
 
-import pytest
 from simian.camera import create_camera_rig
 from simian.scene import initialize_scene
 from simian.object import delete_all_empties, get_hierarchy_bbox, join_objects_in_hierarchy, lock_all_objects, normalize_object_scale, optimize_meshes_in_hierarchy, remove_loose_meshes, get_meshes_in_hierarchy, set_pivot_to_bottom, unlock_objects, unparent_keep_transform
-import numpy as np
 import bpy
 
 
-# Test function for the hierarchy bounding box
 def test_hierarchy_bbox():
+    """
+    Test the get_hierarchy_bbox function.
+    """
     # Load an empty scene
     initialize_scene()
         
@@ -48,9 +44,13 @@ def test_hierarchy_bbox():
     
     # Assert to check if the calculated width matches the expected width
     assert abs(calculated_width - expected_width) < 0.001, "Bounding box width is incorrect"
+    print("============ Test Passed: test_hierarchy_bbox ============")
 
 
 def test_remove_small_geometry():
+    """
+    Test the remove_small_geometry function.
+    """
     current_dir = os.path.dirname(__file__)
 
     # Load an empty scene
@@ -93,8 +93,13 @@ def test_remove_small_geometry():
     # Assert that the resulting object has fewer vertices than the initial count
     assert len(obj.data.vertices) > 0
     assert len(meshes) == 1
+    print("============ Test Passed: test_remove_small_geometry ============")
+
 
 def test_normalize_object_scale():
+    """
+    Test the normalize_object_scale function.
+    """
     # Load an empty scene
     initialize_scene()    
     # Create a cube with known dimensions
@@ -118,6 +123,7 @@ def test_normalize_object_scale():
     # Assert that the maximum dimension is within a small epsilon of expected_dimension
     epsilon = 0.001  # Small threshold to account for floating point arithmetic errors
     assert abs(max_dimension_after_scaling - expected_dimension) < epsilon, f"Expected max dimension to be close to {expected_dimension}, but got {max_dimension_after_scaling}"
+    print("============ Test Passed: test_normalize_object_scale ============")
 
  
 # Run tests if this file is executed as a script
@@ -125,5 +131,5 @@ if __name__ == "__main__":
     test_hierarchy_bbox()
     test_remove_small_geometry()
     test_normalize_object_scale()
-    print("All tests passed")
+    print("============ ALL TESTS PASSED ============")
 
