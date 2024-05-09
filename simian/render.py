@@ -1,7 +1,5 @@
 import argparse
-import math
 import platform
-import subprocess
 import sys
 import json
 import os
@@ -9,28 +7,10 @@ import ssl
 
 ssl._create_default_https_context = ssl._create_unverified_context
 
+# Append Simian to sys.path before importing from package
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../"))
 
-def check_imports() -> None:
-    """
-    Checks and installs required dependencies specified in the requirements.txt file.
-
-    Args:
-        None
-
-    Returns:
-        None
-    """
-    with open("requirements.txt", "r") as f:
-        requirements = f.readlines()
-    for requirement in requirements:
-        try:
-            __import__(requirement)
-        except ImportError:
-            print(f"Installing {requirement}")
-            subprocess.run(
-                ["bash", "-c", f"{sys.executable} -m pip install {requirement}"]
-            )
-
+from simian.utils import check_imports
 
 check_imports()
 
