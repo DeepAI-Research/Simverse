@@ -89,6 +89,12 @@ If you want to use a custom or hosted Redis instance (recommended), you can add 
 EXPORT REDIS_URL=<my_redis_url>
 ```
 
+To run tests look into the test folder and run whichever test file you want
+
+```bash
+/Applications/Blender.app/Contents/MacOS/Blender --background --python object_test.py
+```
+
 ## 📁 Datasets
 
 We are currently using the following datasets:

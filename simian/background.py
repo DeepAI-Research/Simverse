@@ -2,7 +2,7 @@ import os
 from typing import Dict
 import requests
 import bpy
-
+ 
 
 def get_background_path(hdri_path: str, combination: Dict) -> str:
     """

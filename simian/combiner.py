@@ -5,8 +5,10 @@ import argparse
 import re
 
 
-# Function to read data from a JSON file
 def read_json_file(file_path):
+    """
+    Read a JSON file and return the data as a dictionary.
+    """
     with open(file_path, "r") as file:
         return json.load(file)
 
@@ -86,6 +88,9 @@ background_dict = {}
 
 
 def read_json_file(file_path):
+    """
+    Read a JSON file and return the data as a dictionary.
+    """
     with open(file_path, "r") as file:
         return json.load(file)
 
@@ -112,9 +117,7 @@ for dataset in models:
                     category_map[category] = set()
                 category_map[category].add(object_id)
 
-        print(
-            f"Loaded {local_count} unique entries out of {len(dataset_data)} from {dataset}"
-        )
+        print(f"Loaded {local_count} unique entries out of {len(dataset_data)} from {dataset}")
         dataset_dict[dataset] = dataset_data
     else:
         print(f"Dataset file {dataset_path} not found")
@@ -125,6 +128,7 @@ for dataset in dataset_dict:
     total_length += len(dataset_dict[dataset])
 print(f"Total number of objects: {total_length}")
 
+
 for background in backgrounds:
     # get the current path of this file
     current_path = os.path.dirname(os.path.realpath(__file__))
@@ -133,7 +137,6 @@ for background in backgrounds:
     print(f"Loading {background_full_path}")
     if os.path.exists(background_full_path):
         background_data = read_json_file(background_full_path)
-
         print(f"Loaded {len(background_data)} from {background}")
         background_dict[background] = background_data
     else:

@@ -89,12 +89,15 @@ def render_objects(
     # Loop over each combination index to set up and run the rendering process.
     for i in range(start_index, end_index):
         args = f"--width {width} --height {height} --combination_index {i} --start_frame {start_frame} --end_frame {end_frame}"
+        
         scripts_dir = os.path.dirname(os.path.realpath(__file__))
+        
         target_directory = os.path.join(scripts_dir, "../", "renders")
         os.makedirs(target_directory, exist_ok=True)
+        
         args += f" --output_dir {target_directory}"
-        hdri_path = os.path.join(scripts_dir, "../", "backgrounds")
-        args += f" --hdri_path {hdri_path}"
+        
+        args += f" --hdri_path {os.path.join(scripts_dir, "../", "backgrounds")}"
 
         # Check if Blender application exists at the specified path.
         if not os.path.exists(application_path):
@@ -102,7 +105,7 @@ def render_objects(
 
         # Construct and print the Blender command line.
         command = f"{application_path} --background --python simian/render.py -- {args}"
-        print(command)
+        print("This is the command: ", command)
 
         # Execute the rendering command with a timeout.
         subprocess.run(["bash", "-c", command], timeout=render_timeout, check=False)

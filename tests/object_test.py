@@ -1,23 +1,20 @@
-print("starting object_test.py")
-import subprocess
 import sys
 import os
-import pytest
-from simian.camera import create_camera_rig
-from simian.scene import initialize_scene
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
-
-# Append the simian directory to sys.path
 simian_path = os.path.join(current_dir, "../")
 sys.path.append(simian_path)
 
+from simian.camera import create_camera_rig
+from simian.scene import initialize_scene
 from simian.object import delete_all_empties, get_hierarchy_bbox, join_objects_in_hierarchy, lock_all_objects, normalize_object_scale, optimize_meshes_in_hierarchy, remove_loose_meshes, get_meshes_in_hierarchy, set_pivot_to_bottom, unlock_objects, unparent_keep_transform
-import numpy as np
 import bpy
 
-# Test function for the hierarchy bounding box
+
 def test_hierarchy_bbox():
+    """
+    Test the get_hierarchy_bbox function.
+    """
     # Load an empty scene
     initialize_scene()
         
@@ -47,11 +44,13 @@ def test_hierarchy_bbox():
     
     # Assert to check if the calculated width matches the expected width
     assert abs(calculated_width - expected_width) < 0.001, "Bounding box width is incorrect"
+    print("============ Test Passed: test_hierarchy_bbox ============")
 
-# Run the test
-test_hierarchy_bbox()
 
 def test_remove_small_geometry():
+    """
+    Test the remove_small_geometry function.
+    """
     current_dir = os.path.dirname(__file__)
 
     # Load an empty scene
@@ -94,37 +93,43 @@ def test_remove_small_geometry():
     # Assert that the resulting object has fewer vertices than the initial count
     assert len(obj.data.vertices) > 0
     assert len(meshes) == 1
+    print("============ Test Passed: test_remove_small_geometry ============")
 
-# def test_normalize_object_scale():
-#     initialize_scene()
-#     context = bpy.context
+
+def test_normalize_object_scale():
+    """
+    Test the normalize_object_scale function.
+    """
+    # Load an empty scene
+    initialize_scene()    
+    # Create a cube with known dimensions
+    bpy.ops.mesh.primitive_cube_add(size=2)  # Creates a cube with edge length 2
+    cube = bpy.context.active_object
     
-#     models = ["examples/animated_model.glb", "examples/animated.glb", "examples/dangling_parts.glb", "examples/separate_faces.glb"]
-#     for model_path in models:
-#         # Reset the scene
-#         bpy.ops.wm.read_factory_settings(use_empty=True)
-        
-#         # Load the model
-#         object.load_object(model_path, context)
-#         obj = bpy.data.objects[0]
-        
-#         # Call normalize_object_scale with a scale_factor of 1.0
-#         object.normalize_object_scale(context, obj, scale_factor=1.0)
-        
-#         # Get the world coordinates of each vertex in the mesh
-#         mesh = obj.data
-#         world_coords = [obj.matrix_world @ v.co for v in mesh.vertices]
-        
-#         # Calculate the bounding box of the world coordinates
-#         Convert world coordinates to numpy array
-          # world_coords = np.array([obj.matrix_world @ v.co for v in mesh.vertices])
+    # Calculate expected scale factor to normalize the cube to unit length (scale_factor / max_dimension)
+    scale_factor = 1.0
+    expected_dimension = 1.0  # Since we want the largest dimension to be scaled to 1.0
+    
+    # Normalize the cube's scale
+    normalize_object_scale(cube, scale_factor)
+    
+    # Force a scene update to ensure that all transforms are applied
+    bpy.context.view_layer.update()
+    
+    # Recalculate actual dimensions after scaling
+    actual_dimensions = [cube.dimensions[i] for i in range(3)]
+    max_dimension_after_scaling = max(actual_dimensions)
+    
+    # Assert that the maximum dimension is within a small epsilon of expected_dimension
+    epsilon = 0.001  # Small threshold to account for floating point arithmetic errors
+    assert abs(max_dimension_after_scaling - expected_dimension) < epsilon, f"Expected max dimension to be close to {expected_dimension}, but got {max_dimension_after_scaling}"
+    print("============ Test Passed: test_normalize_object_scale ============")
 
-          # # Calculate the bounding box of the world coordinates
-          # bbox_min = np.min(world_coords, axis=0)
-          # bbox_max = np.max(world_coords, axis=0)
-#         # Assert that all world coordinates are within the unit bounding box
-#         assert all(bbox_min[i] >= -0.5 and bbox_max[i] <= 0.5 for i in range(3))
-        
+ 
+# Run tests if this file is executed as a script
 if __name__ == "__main__":
-    # pytest.main(["-s", __file__])
+    test_hierarchy_bbox()
     test_remove_small_geometry()
+    test_normalize_object_scale()
+    print("============ ALL TESTS PASSED ============")
+
