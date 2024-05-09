@@ -193,6 +193,8 @@ def normalize_object_scale(
     max_dimension = max(bbox_dimensions)
     scale = scale_factor / max_dimension
     obj.scale = (scale, scale, scale)
+    # apply scale so object is 1,1,1
+    bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
     return obj
 
 
