@@ -371,9 +371,7 @@ def generate_combinations(camera_data, count):
 
         # roll a number between orientation['yaw_min'] and orientation['yaw_max']
         yaw = random.randint(orientation_data["yaw_min"], orientation_data["yaw_max"])
-        pitch = random.randint(
-            orientation_data["pitch_min"], orientation_data["pitch_max"]
-        )
+        pitch = random.randint(orientation_data["pitch_min"], orientation_data["pitch_max"])
 
         orientation = {
             "yaw": yaw,
@@ -381,6 +379,13 @@ def generate_combinations(camera_data, count):
         }
 
         framing = random.choice(camera_data["framings"])
+        
+        # Randomly roll an FOV value between FOV_min and FOV_max
+        fov = random.uniform(framing["fov_min"], framing["fov_max"])
+        
+        # Derive a coverage_factor between coverage_factor_min and coverage_factor_max
+        coverage_factor = random.uniform(framing["coverage_factor_min"], framing["coverage_factor_max"])
+
         animation = random.choice(camera_data["animations"])
 
         chosen_dataset = random.choices(dataset_names, weights=dataset_weights)[0]
@@ -394,9 +399,7 @@ def generate_combinations(camera_data, count):
             object["from"] = chosen_dataset
             objects.append(object)
 
-        chosen_background = random.choices(
-            background_names, weights=background_weights
-        )[0]
+        chosen_background = random.choices(background_names, weights=background_weights)[0]
         # get the keys from the chosen background
         background_keys = list(background_dict[chosen_background].keys())
         background_id = random.choice(background_keys)
@@ -418,6 +421,8 @@ def generate_combinations(camera_data, count):
             "background": background,
             "orientation": orientation,
             "framing": framing,
+            "fov": fov,
+            "coverage_factor": coverage_factor,
             "animation": animation,
             "stage": stage,
         }
@@ -427,7 +432,6 @@ def generate_combinations(camera_data, count):
 
         # remove description from framing, animation and orientation
         framing = framing.copy()
-
         framing.pop("descriptions", None)
 
         animation = animation.copy()
