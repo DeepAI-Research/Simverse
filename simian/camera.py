@@ -104,7 +104,6 @@ def set_camera_settings(combination: dict) -> None:
     )
 
     set_camera_animation(combination)
-    position_camera(combination)
 
 
 def set_camera_animation(combination: dict, frame_distance: int = 120) -> None:
@@ -146,7 +145,7 @@ def set_camera_animation(combination: dict, frame_distance: int = 120) -> None:
     bpy.context.scene.frame_set(0)
 
 
-def position_camera(combination: dict) -> None:
+def frame_object(combination: dict, obj: bpy.types.Object) -> None:
     """
     Positions the camera based on the coverage factor and lens values.
 
@@ -158,15 +157,12 @@ def position_camera(combination: dict) -> None:
     """
     camera = bpy.context.scene.objects["Camera"]
     
-    # Check if there are any selected objects
-    if not bpy.context.selected_objects:
-        raise ValueError("No objects selected. Please select a focus object.")
-    
-    focus_object = bpy.context.selected_objects[0]
-
     # Get the bounding box of the focus object in screen space
     bpy.context.view_layer.update()
-    bbox = [focus_object.matrix_world @ Vector(corner) for corner in focus_object.bound_box]
+    
+    print("Focusing on object: ", obj.name)
+    
+    bbox = [obj.matrix_world @ Vector(corner) for corner in obj.bound_box]
     bbox_min = min(bbox, key=lambda v: v.z)
     bbox_max = max(bbox, key=lambda v: v.z)
 
@@ -177,13 +173,15 @@ def position_camera(combination: dict) -> None:
     min_height_threshold = 0.001
     if bbox_height < min_height_threshold:
         # Position the camera based on a predefined distance
-        predefined_distance = 5.0
-        camera.location.y = -predefined_distance
-        return
+        predefined_distance = 1
+        camera.location.x = predefined_distance
 
     # Calculate the desired object height based on the coverage factor
     coverage_factor = combination["coverage_factor"]
     desired_height = bbox_height * coverage_factor
+    
+    # set the postion of the CameraAnimationRoot object to the center of the bounding box
+    bpy.data.objects["CameraAnimationRoot"].location = obj.location + Vector((0, 0, bbox_height / 2))
 
     # Move the camera backwards until the object's height matches the desired height
     step_size = max(bbox_height, 1.0)  # Dynamic step size based on the focus object's height
@@ -191,12 +189,14 @@ def position_camera(combination: dict) -> None:
     iteration = 0
     while iteration < max_iterations:
         bpy.context.view_layer.update()
-        bbox = [focus_object.matrix_world @ Vector(corner) for corner in focus_object.bound_box]
+        print(f"Camera location: {camera.location}")
+        bbox = [obj.matrix_world @ Vector(corner) for corner in obj.bound_box]
         bbox_min = min(bbox, key=lambda v: v.z)
         bbox_max = max(bbox, key=lambda v: v.z)
         current_height = bbox_max.z - bbox_min.z
 
         if current_height <= desired_height:
+            print(f"Desired height reached: {current_height} of {desired_height}")
             break
 
         camera.location.x += step_size

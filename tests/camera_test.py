@@ -7,7 +7,7 @@ simian_path = os.path.join(current_dir, "../")
 sys.path.append(simian_path)
 
 import bpy
-from simian.camera import create_camera_rig, set_camera_settings, set_camera_animation, position_camera
+from simian.camera import create_camera_rig, set_camera_settings, set_camera_animation, frame_object
 
 def test_create_camera_rig():
     """
@@ -116,7 +116,7 @@ def test_set_camera_animation():
     print("============ Test Passed: test_set_camera_animation ============")
 
 
-def test_position_camera():
+def test_frame_object():
     combination = {
         "coverage_factor": 1.0,
         "framing": {"fov": 20}
@@ -126,7 +126,7 @@ def test_position_camera():
     bpy.ops.mesh.primitive_cube_add(size=2)
     focus_object = bpy.context.active_object
 
-    position_camera(combination)
+    frame_object(combination)
 
     camera = bpy.data.objects.get("Camera")
     assert camera is not None, "Camera object not found"
@@ -138,12 +138,12 @@ def test_position_camera():
     desired_height = bbox_height * combination["coverage_factor"]
     assert camera.location.y <= -desired_height, "Camera is not positioned correctly based on coverage factor"
 
-    print("============ Test Passed: test_position_camera ============")
+    print("============ Test Passed: test_frame_object ============")
 
 
 if __name__ == "__main__":
     test_create_camera_rig()
     test_set_camera_settings()
     test_set_camera_animation()
-    test_position_camera()
+    test_frame_object()
     print("============ ALL TESTS PASSED ============")

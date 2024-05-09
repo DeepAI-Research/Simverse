@@ -185,6 +185,8 @@ def normalize_object_scale(
     Returns:
         bpy.types.Object: The scaled object.
     """
+    # update view layer
+    bpy.context.view_layer.update()
     # Get the bounding box of the object and its children
     bbox_min, bbox_max = get_hierarchy_bbox(obj)
 
@@ -193,6 +195,13 @@ def normalize_object_scale(
     max_dimension = max(bbox_dimensions)
     scale = scale_factor / max_dimension
     obj.scale = (scale, scale, scale)
+    # deselect all objects
+    bpy.ops.object.select_all(action="DESELECT")
+    # select the obj to apply the scale
+    bpy.context.view_layer.objects.active = obj
+    # select the obj to apply the scale
+    obj.select_set(True)
+    bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
     return obj
 
 
@@ -518,6 +527,9 @@ def unparent_keep_transform(obj: bpy.types.Object) -> None:
     Returns:
         None
     """
+    # select the obj to apply the scale
+    
+    
     # clear the parent object, but keep the transform
     bpy.ops.object.parent_clear(type="CLEAR_KEEP_TRANSFORM")
 

@@ -29,7 +29,7 @@ if current_dir.endswith("simian"):
 simian_path = os.path.join(current_dir)
 sys.path.append(simian_path)
 
-from simian.camera import create_camera_rig, set_camera_settings
+from simian.camera import create_camera_rig, frame_object, set_camera_settings
 from simian.object import (
     apply_all_modifiers,
     apply_and_remove_armatures,
@@ -108,7 +108,7 @@ def render_scene(
     initial_objects = lock_all_objects()
 
     combination = read_combination(combination_file, combination_index)
-
+    first_obj = None
     # Load and place each object in the 3x3 grid
     for object_data in combination["objects"]:
         object_file = objaverse.load_objects([object_data["uid"]])[object_data["uid"]]
@@ -122,30 +122,34 @@ def render_scene(
 
         join_objects_in_hierarchy(obj)
 
-        optimize_meshes_in_hierarchy(obj)
-
-        remove_loose_meshes(obj)
-
+        # remove_loose_meshes(obj)
+        
         meshes = get_meshes_in_hierarchy(obj)
-        obj = meshes[0]
+        new_obj = meshes[0]
+        
+        # print new_obj name
+        print(new_obj.name)
 
-        unparent_keep_transform(obj)
-        set_pivot_to_bottom(obj)
+        bpy.ops.object.parent_clear(type="CLEAR_KEEP_TRANSFORM")
+        set_pivot_to_bottom(new_obj)
+        normalize_object_scale(new_obj)
 
         # Calculate the grid cell position
         grid_cell = object_data["placement"]
         row = (grid_cell - 1) // 3
         col = (grid_cell - 1) % 3
 
-        obj.location = [col - 1, row - 1, 0]
-
-        obj.scale = [object_data["scale"]["factor"] for _ in range(3)]
-        normalize_object_scale(obj)
+        new_obj.location = [col - 1, row - 1, 0]
+        
+        # new_obj.scale = [object_data["scale"]["factor"] for _ in range(3)]
+        if first_obj is None:
+            first_obj = new_obj
 
     # Unlock and unhide the initial objects
     unlock_objects(initial_objects)
 
     set_camera_settings(combination)
+    frame_object(combination, obj)
     set_background(args.hdri_path, combination)
 
     create_photosphere(args.hdri_path, combination).scale = (10, 10, 10)
@@ -209,7 +213,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--end_frame",
         type=int,
-        default=25,
+        default=65,
         help="End frame of the animation.",
         required=False,
     )
