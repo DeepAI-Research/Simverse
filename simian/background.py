@@ -4,7 +4,7 @@ import requests
 import bpy
  
 
-def get_background_path(hdri_path: str, combination: Dict) -> str:
+def get_hdri_path(hdri_path: str, combination: Dict) -> str:
     """
     Get the local file path for the background HDR image.
 
@@ -37,7 +37,7 @@ def get_background(hdri_path: str, combination: Dict) -> None:
     Returns:
         None
     """
-    hdri_path = get_background_path(hdri_path, combination)
+    hdri_path = get_hdri_path(hdri_path, combination)
 
     background = combination["background"]
     background_url = background["url"]
@@ -71,7 +71,7 @@ def set_background(hdri_path: str, combination: Dict) -> None:
         None
     """
     get_background(hdri_path, combination)
-    hdri_path = get_background_path(hdri_path, combination)
+    hdri_path = get_hdri_path(hdri_path, combination)
 
     # Check if the scene has a world, and create one if it doesn't
     if bpy.context.scene.world is None:
@@ -173,7 +173,7 @@ def create_photosphere_material(
     emission = nodes.new(type="ShaderNodeEmission")
     env_tex = nodes.new(type="ShaderNodeTexEnvironment")
     env_tex.image = bpy.data.images.load(
-        get_background_path(hdri_path, combination)
+        get_hdri_path(hdri_path, combination)
     )
     mat.node_tree.links.new(env_tex.outputs["Color"], emission.inputs["Color"])
     output = nodes.new(type="ShaderNodeOutputMaterial")
