@@ -2,30 +2,14 @@ import multiprocessing
 import os
 import platform
 import subprocess
+import sys
 from typing import Literal, Optional
 import fire
-import pandas as pd
 
+# Append Simian to sys.path before importing from package
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../"))
 
-# Set the Blender application path based on the operating system.
-if platform.system() == "Darwin":
-    application_path = "/Applications/Blender.app/Contents/MacOS/Blender"
-else:
-    application_path = "./blender/blender"
-
-
-def get_combination_objects() -> pd.DataFrame:
-    """
-    Fetches a DataFrame of example objects from a JSON file.
-
-    This function is used primarily for debugging purposes, where combinations
-    of objects are read from a JSON file and returned as a pandas DataFrame.
-
-    Returns:
-        pd.DataFrame: DataFrame containing example object combinations.
-    """
-    combinations = pd.read_json("combinations.json", orient="records")
-    return combinations
+from simian.utils import get_blender_path
 
 
 def render_objects(
@@ -95,11 +79,9 @@ def render_objects(
         args += f" --output_dir {target_directory}"
         hdri_path = os.path.join(scripts_dir, "../", "backgrounds")
         args += f" --hdri_path {hdri_path}"
-
-        # Check if Blender application exists at the specified path.
-        if not os.path.exists(application_path):
-            raise FileNotFoundError(f"Blender not found at {application_path}.")
-
+        
+        application_path = get_blender_path()
+        
         # Construct and print the Blender command line.
         command = f"{application_path} --background --python simian/render.py -- {args}"
         print(command)
