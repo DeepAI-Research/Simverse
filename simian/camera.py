@@ -104,7 +104,6 @@ def set_camera_settings(combination: dict) -> None:
     )
 
     set_camera_animation(combination)
-    position_camera(combination)
 
 
 def set_camera_animation(combination: dict, frame_distance: int = 120) -> None:
@@ -146,7 +145,7 @@ def set_camera_animation(combination: dict, frame_distance: int = 120) -> None:
     bpy.context.scene.frame_set(0)
 
 
-def position_camera(combination: dict) -> None:
+def position_camera(combination: dict, focus_object: bpy.types.Object) -> None:
     """
     Positions the camera based on the coverage factor and lens values.
 
@@ -157,12 +156,7 @@ def position_camera(combination: dict) -> None:
         None
     """
     camera = bpy.context.scene.objects["Camera"]
-    
-    # Check if there are any selected objects
-    if not bpy.context.selected_objects:
-        raise ValueError("No objects selected. Please select a focus object.")
-    
-    focus_object = bpy.context.selected_objects[0]
+
     print(f"Focus object: {focus_object.name}")
     
     # Get the bounding box of the focus object in world space
@@ -180,6 +174,8 @@ def position_camera(combination: dict) -> None:
     
     # Calculate the vertical FOV based on the lens focal length
     focal_length = combination["framing"]["fov"]
+    
+    print("combination", combination)
     
     # check if there is an animation keyframe for the lens offset
     animation = combination["animation"]

@@ -22,7 +22,7 @@ if current_dir.endswith("simian"):
 simian_path = os.path.join(current_dir)
 sys.path.append(simian_path)
 
-from simian.camera import create_camera_rig, set_camera_settings
+from simian.camera import create_camera_rig, position_camera, set_camera_settings
 from simian.object import (
     apply_all_modifiers,
     apply_and_remove_armatures,
@@ -106,6 +106,8 @@ def render_scene(
     combination = read_combination(combination_file, combination_index)
 
     all_objects = []
+    
+    focus_object = None
 
     for object_data in combination["objects"]:
         object_file = objaverse.load_objects([object_data["uid"]])[object_data["uid"]]
@@ -125,6 +127,9 @@ def render_scene(
 
         meshes = get_meshes_in_hierarchy(obj)
         obj = meshes[0]
+        
+        if(focus_object is None):
+            focus_object = obj
 
         unparent_keep_transform(obj)
         set_pivot_to_bottom(obj)
@@ -147,6 +152,8 @@ def render_scene(
     unlock_objects(initial_objects)
 
     set_camera_settings(combination)
+    
+    position_camera(combination, focus_object)
     set_background(args.hdri_path, combination)
 
     create_photosphere(args.hdri_path, combination).scale = (10, 10, 10)

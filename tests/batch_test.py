@@ -7,8 +7,8 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 simian_path = os.path.join(current_dir, "../")
 sys.path.append(simian_path)
 
-from simian.batch import render_objects, get_combination_objects
-
+from simian.batch import render_objects
+from simian.utils import get_combination_objects
 
 def test_get_combination_objects():
     """
