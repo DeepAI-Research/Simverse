@@ -889,7 +889,7 @@
                     "CameraFramingPivot": {
                         "rotation": [
                             0,
-                            90,
+                            -45,
                             0
                         ]
                     }
@@ -920,7 +920,7 @@
                     "CameraFramingPivot": {
                         "rotation": [
                             0,
-                            90,
+                            -45,
                             0
                         ]
                     }
