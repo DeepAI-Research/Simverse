@@ -157,4 +157,9 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
 
 ## Sponsors
+
+Raccoon Research is sponsored by the following organizations:
+
 <center><img src="docs/assets/DeepAI.png" width="200" alt="DeepAI" style="margin-left: auto; margin-right: auto;" /></center>
+
+Interested in working with us? Join our (Discord)[https://discord.gg/JMfbmHdPNB] or post a Github issue to get in touch.
