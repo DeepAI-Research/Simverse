@@ -19,7 +19,7 @@ This project is in open development phase and is not ready for public use. Many 
 
 ### ⚠️ IMPORTANT: Simian requires Python 3.10 or lower to run.
 
-1. Install Python 3.10. If you're on Linux, set it up with this (gist)[https://gist.github.com/lalalune/986704a935d202ab2350ca90b2fc9755]
+1. Install Python 3.10. If you're on Linux, set it up with this <a href="https://gist.github.com/lalalune/986704a935d202ab2350ca90b2fc9755">gist</a>.
 
 
 2. Download the datasets:
