@@ -1,4 +1,4 @@
-import bpy 
+import bpy
 import random
 
 
@@ -16,11 +16,17 @@ def find_largest_length(objects):
     for obj in objects:
         # Ensure the object's current transformations are applied
         bpy.context.view_layer.update()
-        
+
         # The bounding box returns a list of 8 vertices [(x, y, z), ..., (x, y, z)]
         bbox_corners = obj.bound_box
-        width = max(bbox_corners, key=lambda v: v[0])[0] - min(bbox_corners, key=lambda v: v[0])[0]
-        height = max(bbox_corners, key=lambda v: v[1])[1] - min(bbox_corners, key=lambda v: v[1])[1]
+        width = (
+            max(bbox_corners, key=lambda v: v[0])[0]
+            - min(bbox_corners, key=lambda v: v[0])[0]
+        )
+        height = (
+            max(bbox_corners, key=lambda v: v[1])[1]
+            - min(bbox_corners, key=lambda v: v[1])[1]
+        )
 
         print(f"Object: {obj.name} - Width: {width}, Height: {height}")
 
@@ -62,7 +68,7 @@ def place_objects_on_grid(objects, largest_length):
     for obj in objects:
         if obj:
             # Calculate grid cell row and column based on placement
-            placement = obj.get('placement')
+            placement = obj.get("placement")
             if placement is not None:
                 cell_row = placement % 3
                 cell_col = placement // 3
@@ -107,7 +113,6 @@ def place_objects_on_grid(objects, largest_length):
                 cell_center_x = (cell_col + 0.5) * cell_size - (1.5 * cell_size)
                 cell_center_y = (cell_row + 0.5) * cell_size - 1.5 * cell_size
 
-
                 """
                 0 1 2
                 3 4 5
@@ -120,18 +125,21 @@ def place_objects_on_grid(objects, largest_length):
                 """
 
                 # THIS IS FOR X:
-                distance_from_boundary_to_obj_x = abs(abs(obj.dimensions[0]/2) - abs(cell_size/2))
+                distance_from_boundary_to_obj_x = abs(
+                    abs(obj.dimensions[0] / 2) - abs(cell_size / 2)
+                )
                 if placement in [0, 1, 2]:
                     cell_center_x += distance_from_boundary_to_obj_x
                 elif placement in [6, 7, 8]:
                     cell_center_x -= distance_from_boundary_to_obj_x
 
-
                 # THIS IS FOR Y:
-                distance_from_boundary_to_obj_y = abs(abs(obj.dimensions[1]/2) - abs(cell_size/2))
+                distance_from_boundary_to_obj_y = abs(
+                    abs(obj.dimensions[1] / 2) - abs(cell_size / 2)
+                )
                 if placement in [2, 5, 8]:
                     cell_center_y -= distance_from_boundary_to_obj_y
                 elif placement in [0, 3, 6]:
-                    cell_center_y += distance_from_boundary_to_obj_y                
+                    cell_center_y += distance_from_boundary_to_obj_y
 
                 obj.location = (cell_center_x, cell_center_y, 0)  # Set object location

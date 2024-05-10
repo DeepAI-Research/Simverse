@@ -117,7 +117,9 @@ for dataset in models:
                     category_map[category] = set()
                 category_map[category].add(object_id)
 
-        print(f"Loaded {local_count} unique entries out of {len(dataset_data)} from {dataset}")
+        print(
+            f"Loaded {local_count} unique entries out of {len(dataset_data)} from {dataset}"
+        )
         dataset_dict[dataset] = dataset_data
     else:
         print(f"Dataset file {dataset_path} not found")
@@ -374,29 +376,33 @@ def generate_combinations(camera_data, count):
 
         # roll a number between orientation['yaw_min'] and orientation['yaw_max']
         yaw = random.randint(orientation_data["yaw_min"], orientation_data["yaw_max"])
-        pitch = random.randint(orientation_data["pitch_min"], orientation_data["pitch_max"])
+        pitch = random.randint(
+            orientation_data["pitch_min"], orientation_data["pitch_max"]
+        )
 
         orientation = {
             "yaw": yaw,
             "pitch": pitch,
         }
-        
+
         # get the min_fov and max_fov across all framings
         fov_min = min([f["fov_min"] for f in camera_data["framings"]])
         fov_max = max([f["fov_max"] for f in camera_data["framings"]])
-        
+
         # Randomly roll an FOV value between FOV_min and FOV_max
         fov = random.uniform(fov_min, fov_max)
-        
+
         # find the corresponding framing
         framing = None
         for f in camera_data["framings"]:
             if fov >= f["fov_min"] and fov <= f["fov_max"]:
                 framing = f
                 break
-        
+
         # Derive a coverage_factor between coverage_factor_min and coverage_factor_max
-        coverage_factor = random.uniform(framing["coverage_factor_min"], framing["coverage_factor_max"])
+        coverage_factor = random.uniform(
+            framing["coverage_factor_min"], framing["coverage_factor_max"]
+        )
 
         animation = random.choice(camera_data["animations"])
 
@@ -411,7 +417,9 @@ def generate_combinations(camera_data, count):
             object["from"] = chosen_dataset
             objects.append(object)
 
-        chosen_background = random.choices(background_names, weights=background_weights)[0]
+        chosen_background = random.choices(
+            background_names, weights=background_weights
+        )[0]
         # get the keys from the chosen background
         background_keys = list(background_dict[chosen_background].keys())
         background_id = random.choice(background_keys)
@@ -426,7 +434,7 @@ def generate_combinations(camera_data, count):
             "uv_scale": [random.uniform(0.8, 1.2), random.uniform(0.8, 1.2)],
             "uv_rotation": random.uniform(0, 360),
         }
-        
+
         framing["fov"] = fov
         framing["coverage_factor"] = coverage_factor
 

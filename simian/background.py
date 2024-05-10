@@ -2,7 +2,7 @@ import os
 from typing import Dict
 import requests
 import bpy
- 
+
 
 def get_hdri_path(hdri_path: str, combination: Dict) -> str:
     """
@@ -111,7 +111,9 @@ def set_background(hdri_path: str, combination: Dict) -> None:
     print(f"Set background to {hdri_path}")
 
 
-def create_photosphere(hdri_path: str, combination: Dict, scale: float = 10) -> bpy.types.Object:
+def create_photosphere(
+    hdri_path: str, combination: Dict, scale: float = 10
+) -> bpy.types.Object:
     """
     Create a photosphere object in the scene.
 
@@ -130,7 +132,7 @@ def create_photosphere(hdri_path: str, combination: Dict, scale: float = 10) -> 
     bpy.ops.mesh.primitive_uv_sphere_add(
         segments=64, ring_count=32, radius=scale, location=(0, 0, 3)
     )
-    
+
     bpy.ops.object.shade_smooth()
 
     # invert the UV sphere normals
@@ -173,9 +175,7 @@ def create_photosphere_material(
     # Create and connect the nodes
     emission = nodes.new(type="ShaderNodeEmission")
     env_tex = nodes.new(type="ShaderNodeTexEnvironment")
-    env_tex.image = bpy.data.images.load(
-        get_hdri_path(hdri_path, combination)
-    )
+    env_tex.image = bpy.data.images.load(get_hdri_path(hdri_path, combination))
     mat.node_tree.links.new(env_tex.outputs["Color"], emission.inputs["Color"])
     output = nodes.new(type="ShaderNodeOutputMaterial")
     mat.node_tree.links.new(emission.outputs["Emission"], output.inputs["Surface"])

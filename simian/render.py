@@ -48,6 +48,7 @@ from simian.background import create_photosphere, set_background
 from simian.scene import apply_stage_material, create_stage, initialize_scene
 from simian.position import create_grid, find_largest_length, place_objects_on_grid
 
+
 def read_combination(combination_file: str, index: int = 0) -> dict:
     """
     Reads a specified camera combination from a JSON file.
@@ -93,7 +94,7 @@ def render_scene(
     print(f"Rendering scene with combination {combination_index}")
 
     os.makedirs(output_dir, exist_ok=True)
-    
+
     initialize_scene()
     create_camera_rig()
 
@@ -107,7 +108,7 @@ def render_scene(
     combination = read_combination(combination_file, combination_index)
 
     all_objects = []
-    
+
     focus_object = None
 
     for object_data in combination["objects"]:
@@ -128,20 +129,20 @@ def render_scene(
 
         meshes = get_meshes_in_hierarchy(obj)
         obj = meshes[0]
-        
-        if(focus_object is None):
+
+        if focus_object is None:
             focus_object = obj
 
         unparent_keep_transform(obj)
         set_pivot_to_bottom(obj)
-        
+
         obj.scale = [object_data["scale"]["factor"] for _ in range(3)]
         normalize_object_scale(obj)
 
-        obj.name = object_data['uid']  # Set the Blender object's name to the UID
-        
+        obj.name = object_data["uid"]  # Set the Blender object's name to the UID
+
         all_objects.append(obj)
-    
+
     # In the render_scene function, after creating all_objects
     for obj, obj_data in zip(all_objects, combination["objects"]):
         obj["placement"] = obj_data["placement"]
@@ -153,7 +154,7 @@ def render_scene(
     unlock_objects(initial_objects)
 
     set_camera_settings(combination)
-    
+
     position_camera(combination, focus_object)
 
     set_background(args.hdri_path, combination)
@@ -228,7 +229,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--height", type=int, default=1080, help="Render output height."
     )
-    
+
     print("sys.argv", sys.argv)
 
     if "--" in sys.argv:
