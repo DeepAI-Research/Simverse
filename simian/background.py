@@ -2,7 +2,7 @@ import os
 from typing import Dict
 import requests
 import bpy
- 
+
 
 def get_background_path(hdri_path: str, combination: Dict) -> str:
     """
@@ -172,9 +172,7 @@ def create_photosphere_material(
     # Create and connect the nodes
     emission = nodes.new(type="ShaderNodeEmission")
     env_tex = nodes.new(type="ShaderNodeTexEnvironment")
-    env_tex.image = bpy.data.images.load(
-        get_background_path(hdri_path, combination)
-    )
+    env_tex.image = bpy.data.images.load(get_background_path(hdri_path, combination))
     mat.node_tree.links.new(env_tex.outputs["Color"], emission.inputs["Color"])
     output = nodes.new(type="ShaderNodeOutputMaterial")
     mat.node_tree.links.new(emission.outputs["Emission"], output.inputs["Surface"])
