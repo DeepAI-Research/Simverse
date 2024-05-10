@@ -3,6 +3,7 @@ import os
 import random
 import argparse
 import re
+from transform import determine_relationships, degrees_to_radians, adjust_positions
 
 
 def read_json_file(file_path):
@@ -117,9 +118,7 @@ for dataset in models:
                     category_map[category] = set()
                 category_map[category].add(object_id)
 
-        print(
-            f"Loaded {local_count} unique entries out of {len(dataset_data)} from {dataset}"
-        )
+        print(f"Loaded {local_count} unique entries out of {len(dataset_data)} from {dataset}")
         dataset_dict[dataset] = dataset_data
     else:
         print(f"Dataset file {dataset_path} not found")
@@ -163,8 +162,11 @@ texture_names = list(texture_data.keys())
 texture_weights = [len(texture_data[name]["maps"]) for name in texture_names]
 
 
+# ============================================================================== BELOW NEEDS FIXING:
+
+
 def generate_caption(combination):
-    object_names = [obj["name"] for obj in combination["objects"]]
+    # object_names = [obj["name"] for obj in combination["objects"]]
 
     background_name = combination["background"]["name"]
     floor_material_name = combination["stage"]["material"]["name"]
@@ -179,8 +181,10 @@ def generate_caption(combination):
             positions_taken.add(5)
         else:
             object["placement"] = random.choice(
-                [i for i in range(1, 9) if i not in positions_taken]
+                [i for i in range(0, 9) if i not in positions_taken]
             )
+            positions_taken.add(object["placement"])
+
         object_id = object["uid"]
 
         object_scales = object_data["scales"]
@@ -203,7 +207,7 @@ def generate_caption(combination):
 
     caption_parts = []
 
-    object_name_descriptions = ", ".join(
+    ", ".join(
         [
             obj["name"] + ", " + obj["description"]
             if obj["description"] is not None
@@ -262,10 +266,6 @@ def generate_caption(combination):
     ).replace("<degrees>", str(combination["orientation"]["yaw"]))
     caption_parts.append(orientation_text)
 
-    # framing_text = random.choice(camera_data["framing"]["descriptions"])
-    # framing_text = framing_text.replace("<objects>", object_names)
-    # caption_parts.append(framing_text)
-
     stage_data = read_json_file("data/stage_data.json")
 
     background_prefix = random.choice(stage_data["background_names"])
@@ -277,86 +277,21 @@ def generate_caption(combination):
     ).strip()
     background_name = "".join([i for i in background_name if not i.isdigit()]).strip()
 
-    # TODO: Omit the background for any angle > 30 degrees
-    # omit the floor for any angle < 15 degrees (i.e. 0 to tilted upward)
-    # mad libs the background and floor from data
-
     caption_parts.append(f"The {background_prefix} is {background_name}.")
     caption_parts.append(f"The {floor_prefix} is {floor_material_name}.")
 
-    to_the_left = object_data["relationships"]["to_the_left"]
-    to_the_right = object_data["relationships"]["to_the_right"]
-    in_front_of = object_data["relationships"]["in_front_of"]
-    behind = object_data["relationships"]["behind"]
+    THRESHOLD_RELATIONSHIPS = len(combination["objects"])
 
-    relationships = []
-    for i, obj1 in enumerate(combination["objects"]):
-        for j, obj2 in enumerate(combination["objects"]):
-            if i != j:
-                row_diff = (obj1["placement"] - 1) // 3 - (obj2["placement"] - 1) // 3
-                col_diff = (obj1["placement"] - 1) % 3 - (obj2["placement"] - 1) % 3
+    adjust_positions(combination["objects"], combination["orientation"]["yaw"])
+    relationships = determine_relationships(combination["objects"], object_data)
+    
+    selected_relationships = []  # Initialize it as an empty list
 
-                if row_diff == 0 and col_diff == -1:
-                    relationships.append(
-                        f"{obj1['name']} {random.choice(to_the_left)} {obj2['name']}."
-                    )
-                    relationships.append(
-                        f"{obj2['name']} {random.choice(to_the_right)} {obj1['name']}."
-                    )
-                elif row_diff == 0 and col_diff == 1:
-                    relationships.append(
-                        f"{obj1['name']} {random.choice(to_the_right)} {obj2['name']}."
-                    )
-                    relationships.append(
-                        f"{obj2['name']} {random.choice(to_the_left)} {obj1['name']}."
-                    )
-                elif row_diff == -1 and col_diff == 0:
-                    relationships.append(
-                        f"{obj1['name']} {random.choice(in_front_of)} {obj2['name']}."
-                    )
-                    relationships.append(
-                        f"{obj2['name']} {random.choice(behind)} {obj1['name']}."
-                    )
-                elif row_diff == 1 and col_diff == 0:
-                    relationships.append(
-                        f"{obj1['name']} {random.choice(behind)} {obj2['name']}."
-                    )
-                    relationships.append(
-                        f"{obj2['name']} {random.choice(in_front_of)} {obj1['name']}."
-                    )
-                elif row_diff == -1 and col_diff == -1:
-                    relationships.append(
-                        f"{obj1['name']} {random.choice(to_the_left)} and {random.choice(in_front_of)} {obj2['name']}."
-                    )
-                    relationships.append(
-                        f"{obj2['name']} {random.choice(to_the_right)} and {random.choice(behind)} {obj1['name']}."
-                    )
-                elif row_diff == -1 and col_diff == 1:
-                    relationships.append(
-                        f"{obj1['name']} {random.choice(to_the_right)} and {random.choice(in_front_of)} {obj2['name']}."
-                    )
-                    relationships.append(
-                        f"{obj2['name']} {random.choice(to_the_left)} and {random.choice(behind)} {obj1['name']}."
-                    )
-                elif row_diff == 1 and col_diff == -1:
-                    relationships.append(
-                        f"{obj1['name']} {random.choice(to_the_left)} and {random.choice(behind)} {obj2['name']}."
-                    )
-                    relationships.append(
-                        f"{obj2['name']} {random.choice(to_the_right)} and {random.choice(in_front_of)} {obj1['name']}."
-                    )
-                elif row_diff == 1 and col_diff == 1:
-                    relationships.append(
-                        f"{obj1['name']} {random.choice(to_the_right)} and {random.choice(behind)} {obj2['name']}."
-                    )
-                    relationships.append(
-                        f"{obj2['name']} {random.choice(to_the_left)} and {random.choice(in_front_of)} {obj1['name']}."
-                    )
+    if THRESHOLD_RELATIONSHIPS != 1:
+        selected_relationships = random.sample(relationships, THRESHOLD_RELATIONSHIPS)
 
-    selected_relationships = random.sample(
-        relationships, len(combination["objects"]) - 1
-    )
     caption_parts.extend(selected_relationships)
+
 
     # randomize the caption parts order
     caption_parts = random.sample(caption_parts, len(caption_parts))
@@ -376,19 +311,17 @@ def generate_combinations(camera_data, count):
 
         # roll a number between orientation['yaw_min'] and orientation['yaw_max']
         yaw = random.randint(orientation_data["yaw_min"], orientation_data["yaw_max"])
-        pitch = random.randint(
-            orientation_data["pitch_min"], orientation_data["pitch_max"]
-        )
+        pitch = random.randint(orientation_data["pitch_min"], orientation_data["pitch_max"])
 
         orientation = {
             "yaw": yaw,
             "pitch": pitch,
         }
-
+        
         # get the min_fov and max_fov across all framings
         fov_min = min([f["fov_min"] for f in camera_data["framings"]])
         fov_max = max([f["fov_max"] for f in camera_data["framings"]])
-
+        
         # Randomly roll an FOV value between FOV_min and FOV_max
         fov = random.uniform(fov_min, fov_max)
 
@@ -398,11 +331,9 @@ def generate_combinations(camera_data, count):
             if fov >= f["fov_min"] and fov <= f["fov_max"]:
                 framing = f
                 break
-
+        
         # Derive a coverage_factor between coverage_factor_min and coverage_factor_max
-        coverage_factor = random.uniform(
-            framing["coverage_factor_min"], framing["coverage_factor_max"]
-        )
+        coverage_factor = random.uniform(framing["coverage_factor_min"], framing["coverage_factor_max"])
 
         animation = random.choice(camera_data["animations"])
 
@@ -417,9 +348,7 @@ def generate_combinations(camera_data, count):
             object["from"] = chosen_dataset
             objects.append(object)
 
-        chosen_background = random.choices(
-            background_names, weights=background_weights
-        )[0]
+        chosen_background = random.choices(background_names, weights=background_weights)[0]
         # get the keys from the chosen background
         background_keys = list(background_dict[chosen_background].keys())
         background_id = random.choice(background_keys)
@@ -434,9 +363,8 @@ def generate_combinations(camera_data, count):
             "uv_scale": [random.uniform(0.8, 1.2), random.uniform(0.8, 1.2)],
             "uv_rotation": random.uniform(0, 360),
         }
-
+        
         framing["fov"] = fov
-        framing["coverage_factor"] = coverage_factor
 
         combination = {
             "index": i,
@@ -444,6 +372,7 @@ def generate_combinations(camera_data, count):
             "background": background,
             "orientation": orientation,
             "framing": framing,
+            "coverage_factor": coverage_factor,
             "animation": animation,
             "stage": stage,
         }
