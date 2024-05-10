@@ -168,5 +168,5 @@ This project follows the [all-contributors](https://github.com/all-contributors/
 <center><img src="docs/assets/DeepAI.png" width="200" alt="DeepAI" style="margin-left: auto; margin-right: auto;" /></center>
 </p>
 <p style="text-align: center; margin-left: auto; margin-right: auto; max-width:800px;">
-<center>Interested in working with us? Join our <a href="https://discord.gg/JMfbmHdPNB">Dicord</a> or post an <a href="https://github.com/RaccoonResearch/Simian/issues/new">issue</a> to get in touch.</center>
+<center>Interested in working with us? Join our <a href="https://discord.gg/JMfbmHdPNB">Discord</a> or post an <a href="https://github.com/RaccoonResearch/Simian/issues/new">issue</a> to get in touch.</center>
 </p>
