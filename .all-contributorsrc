@@ -17,6 +17,16 @@
         "test",
         "code"
       ]
+    },
+    {
+      "login": "eric-prog",
+      "name": "Eric S",
+      "avatar_url": "https://avatars.githubusercontent.com/u/59460685?v=4",
+      "profile": "https://ericsheen.tech/",
+      "contributions": [
+        "test",
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
