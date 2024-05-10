@@ -787,7 +787,7 @@
             ],
             "keyframes": [
                 {
-                    "CameraFramingPivot": {
+                    "CameraAnimationRoot": {
                         "rotation": [
                             0,
                             0,
@@ -796,7 +796,7 @@
                     }
                 },
                 {
-                    "CameraFramingPivot": {
+                    "CameraAnimationRoot": {
                         "rotation": [
                             0,
                             0,
@@ -837,7 +837,7 @@
             ],
             "keyframes": [
                 {
-                    "CameraFramingPivot": {
+                    "CameraAnimationRoot": {
                         "rotation": [
                             0,
                             0,
@@ -846,7 +846,7 @@
                     }
                 },
                 {
-                    "CameraFramingPivot": {
+                    "CameraAnimationRoot": {
                         "rotation": [
                             0,
                             0,
@@ -889,7 +889,7 @@
                     "CameraFramingPivot": {
                         "rotation": [
                             0,
-                            -45,
+                            45,
                             0
                         ]
                     }
@@ -920,7 +920,7 @@
                     "CameraFramingPivot": {
                         "rotation": [
                             0,
-                            -45,
+                            45,
                             0
                         ]
                     }
@@ -1124,16 +1124,16 @@
             ],
             "keyframes": [
                 {
-                    "CameraFramingPivot": {
+                    "Camera": {
                         "rotation": [
-                            -45,
+                            45,
                             0,
                             0
                         ]
                     }
                 },
                 {
-                    "CameraFramingPivot": {
+                    "Camera": {
                         "rotation": [
                             0,
                             0,
@@ -1171,7 +1171,7 @@
             ],
             "keyframes": [
                 {
-                    "CameraFramingPivot": {
+                    "Camera": {
                         "rotation": [
                             45,
                             0,
@@ -1180,7 +1180,7 @@
                     }
                 },
                 {
-                    "CameraFramingPivot": {
+                    "Camera": {
                         "rotation": [
                             0,
                             0,
@@ -1218,16 +1218,16 @@
             ],
             "keyframes": [
                 {
-                    "CameraFramingPivot": {
+                    "Camera": {
                         "rotation": [
                             0,
-                            0,
-                            45
+                            45,
+                            0
                         ]
                     }
                 },
                 {
-                    "CameraFramingPivot": {
+                    "Camera": {
                         "rotation": [
                             0,
                             0,
@@ -1265,16 +1265,16 @@
             ],
             "keyframes": [
                 {
-                    "CameraFramingPivot": {
+                    "Camera": {
                         "rotation": [
                             0,
-                            0,
-                            -45
+                            -45,
+                            0
                         ]
                     }
                 },
                 {
-                    "CameraFramingPivot": {
+                    "Camera": {
                         "rotation": [
                             0,
                             0,
