@@ -1,11 +1,11 @@
-requests
+ requests
 pandas
 tqdm
 fsspec
 argparse
 fire
 objaverse
-pytest
 numpy
 black
 celery
+scipy

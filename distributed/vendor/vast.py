@@ -33,11 +33,11 @@ except NameError:
     pass
 
 
-#server_url_default = "https://vast.ai"
+# server_url_default = "https://vast.ai"
 server_url_default = "https://console.vast.ai"
-#server_url_default = "host.docker.internal"
-#server_url_default = "http://localhost:5002"
-#server_url_default  = "https://vast.ai/api/v0"
+# server_url_default = "host.docker.internal"
+# server_url_default = "http://localhost:5002"
+# server_url_default  = "https://vast.ai/api/v0"
 api_key_file_base = "~/.vast_api_key"
 api_key_file = os.path.expanduser(api_key_file_base)
 api_key_guard = object()
@@ -50,7 +50,6 @@ class Object(object):
     pass
 
 
-
 def string_to_unix_epoch(date_string):
     try:
         # Check if the input is a float or integer representing Unix time
@@ -59,6 +58,7 @@ def string_to_unix_epoch(date_string):
         # If not, parse it as a date string
         date_object = datetime.strptime(date_string, "%m/%d/%Y")
         return time.mktime(date_object.timetuple())
+
 
 def fix_date_fields(query: Dict[str, Dict], date_fields: List[str]):
     """Takes in a query and date fields to correct and returns query with appropriate epoch dates"""
@@ -69,7 +69,8 @@ def fix_date_fields(query: Dict[str, Dict], date_fields: List[str]):
             new_sub_query = {k: string_to_unix_epoch(v) for k, v in sub_query.items()}
             new_query[field] = new_sub_query
         # else, use the original
-        else: new_query[field] = sub_query
+        else:
+            new_query[field] = sub_query
 
     return new_query
 
@@ -97,46 +98,50 @@ class hidden_aliases(object):
     def append(self, x):
         self.l.append(x)
 
-def http_get(args, req_url, headers = None, json = None):
+
+def http_get(args, req_url, headers=None, json=None):
     t = 0.15
     for i in range(0, args.retry):
         r = requests.get(req_url, headers=headers, json=json)
-        if (r.status_code == 429):
+        if r.status_code == 429:
             time.sleep(t)
             t *= 1.5
         else:
             break
     return r
+
 
 def http_put(args, req_url, headers, json):
     t = 0.3
     for i in range(0, int(args.retry)):
         r = requests.put(req_url, headers=headers, json=json)
-        if (r.status_code == 429):
+        if r.status_code == 429:
             time.sleep(t)
             t *= 1.5
         else:
             break
     return r
 
+
 def http_post(args, req_url, headers, json={}):
     t = 0.3
     for i in range(0, int(args.retry)):
-        #if (args.explain):
+        # if (args.explain):
         #    print(req_url)
         r = requests.post(req_url, headers=headers, json=json)
-        if (r.status_code == 429):
+        if r.status_code == 429:
             time.sleep(t)
             t *= 1.5
         else:
             break
     return r
+
 
 def http_del(args, req_url, headers, json={}):
     t = 0.3
     for i in range(0, int(args.retry)):
         r = requests.delete(req_url, headers=headers, json=json)
-        if (r.status_code == 429):
+        if r.status_code == 429:
             time.sleep(t)
             t *= 1.5
         else:
@@ -145,8 +150,9 @@ def http_del(args, req_url, headers, json={}):
 
 
 def load_permissions_from_file(file_path):
-    with open(file_path, 'r') as file:
+    with open(file_path, "r") as file:
         return json.load(file)
+
 
 class apwrap(object):
     def __init__(self, *args, **kwargs):
@@ -185,7 +191,7 @@ class apwrap(object):
         if obj:
             self.verbs.add(verb)
             self.objs.add(obj)
-            name = verb + ' ' + obj
+            name = verb + " " + obj
         else:
             self.objs.add(verb)
             name = verb
@@ -196,7 +202,10 @@ class apwrap(object):
         if not self.added_help_cmd:
             self.added_help_cmd = True
 
-            @self.command(argument("subcommand", default=None, nargs="?"), help="print this help message")
+            @self.command(
+                argument("subcommand", default=None, nargs="?"),
+                help="print this help message",
+            )
             def help(*a, **kw):
                 self.fail_with_help()
 
@@ -209,7 +218,9 @@ class apwrap(object):
                 verb, _, obj = x.partition(" ")
                 aliases_transformed.append(self.get_name(verb, obj))
             kwargs["formatter_class"] = argparse.RawDescriptionHelpFormatter
-            sp = self.subparsers().add_parser(name, aliases=aliases_transformed, help=help_, **kwargs)
+            sp = self.subparsers().add_parser(
+                name, aliases=aliases_transformed, help=help_, **kwargs
+            )
             self.subparser_objs.append(sp)
             for arg in arguments:
                 sp.add_argument(*arg.args, **arg.kwargs)
@@ -239,6 +250,7 @@ class apwrap(object):
 
 parser = apwrap(epilog="Use 'vast COMMAND --help' for more info about a command")
 
+
 def translate_null_strings_to_blanks(d: Dict) -> Dict:
     """Map over a dict and translate any null string values into ' '.
     Leave everything else as is. This is needed because you cannot add TableCell
@@ -257,7 +269,8 @@ def translate_null_strings_to_blanks(d: Dict) -> Dict:
     new_d = {k: translate_nulls(v) for k, v in d.items()}
     return new_d
 
-    req_url = apiurl(args, "/instances", {"owner": "me"});
+    req_url = apiurl(args, "/instances", {"owner": "me"})
+
 
 def apiurl(args: argparse.Namespace, subpath: str, query_args: Dict = None) -> str:
     """Creates the endpoint URL for a given combination of parameters.
@@ -273,28 +286,31 @@ def apiurl(args: argparse.Namespace, subpath: str, query_args: Dict = None) -> s
         query_args = {}
     if args.api_key is not None:
         query_args["api_key"] = args.api_key
-    
+
     query_json = None
 
     if query_args:
         # a_list      = [<expression> for <l-expression> in <expression>]
-        '''
+        """
         vector result;
         for (l_expression: expression) {
             result.push_back(expression);
         }
-        '''
+        """
         # an_iterator = (<expression> for <l-expression> in <expression>)
 
         query_json = "&".join(
-            "{x}={y}".format(x=x, y=quote_plus(y if isinstance(y, str) else json.dumps(y))) for x, y in
-            query_args.items())
-        
+            "{x}={y}".format(
+                x=x, y=quote_plus(y if isinstance(y, str) else json.dumps(y))
+            )
+            for x, y in query_args.items()
+        )
+
         result = args.url + "/api/v0" + subpath + "?" + query_json
     else:
         result = args.url + "/api/v0" + subpath
 
-    if (args.explain):
+    if args.explain:
         print("query args:")
         print(query_args)
         print("")
@@ -302,6 +318,7 @@ def apiurl(args: argparse.Namespace, subpath: str, query_args: Dict = None) -> s
         print(result)
         print("")
     return result
+
 
 def apiheaders(args: argparse.Namespace) -> Dict:
     """Creates the headers for a given combination of parameters.
@@ -312,7 +329,7 @@ def apiheaders(args: argparse.Namespace) -> Dict:
     result = {}
     if args.api_key is not None:
         result["Authorization"] = "Bearer " + args.api_key
-    return result 
+    return result
 
 
 def deindent(message: str) -> str:
@@ -324,7 +341,9 @@ def deindent(message: str) -> str:
     :rtype str:
     """
     message = re.sub(r" *$", "", message, flags=re.MULTILINE)
-    indents = [len(x) for x in re.findall("^ *(?=[^ ])", message, re.MULTILINE) if len(x)]
+    indents = [
+        len(x) for x in re.findall("^ *(?=[^ ])", message, re.MULTILINE) if len(x)
+    ]
     a = min(indents)
     message = re.sub(r"^ {," + str(a) + "}", "", message, flags=re.MULTILINE)
     return message.strip()
@@ -355,7 +374,7 @@ displayable_fields = (
     ("verification", "status", "{}", None, True),
     ("direct_port_count", "ports", "{}", None, True),
     ("geolocation", "country", "{}", None, True),
-   #  ("direct_port_count", "Direct Port Count", "{}", None, True),
+    #  ("direct_port_count", "Direct Port Count", "{}", None, True),
 )
 
 displayable_fields_reserved = (
@@ -381,7 +400,7 @@ displayable_fields_reserved = (
     ("verification", "status", "{}", None, True),
     ("direct_port_count", "ports", "{}", None, True),
     ("geolocation", "country", "{}", None, True),
-   #  ("direct_port_count", "Direct Port Count", "{}", None, True),
+    #  ("direct_port_count", "Direct Port Count", "{}", None, True),
 )
 
 
@@ -409,7 +428,7 @@ instance_fields = (
     ("inet_down", "Net down", "{:0.1f}", None, True),
     ("reliability2", "R", "{:0.1f}", lambda x: x * 100, True),
     ("label", "Label", "{}", None, True),
-    ("duration", "age(hours)", "{:0.2f}",  lambda x: x/(3600.0), True),
+    ("duration", "age(hours)", "{:0.2f}", lambda x: x / (3600.0), True),
 )
 
 ipaddr_fields = (
@@ -424,7 +443,7 @@ invoice_fields = (
     ("rate", "Rate", "{}", None, True),
     ("amount", "Amount", "{}", None, True),
     ("timestamp", "Timestamp", "{:0.1f}", None, True),
-    ("type", "Type", "{}", None, True)
+    ("type", "Type", "{}", None, True),
 )
 
 user_fields = (
@@ -456,7 +475,7 @@ user_fields = (
     ("paypal_email", "Paypal Email", "{}", None, True),
     ("ssh_key", "Ssh Key", "{}", None, True),
     ("user", "User", "{}", None, True),
-    ("username", "Username", "{}", None, True)
+    ("username", "Username", "{}", None, True),
 )
 
 connection_fields = (
@@ -464,6 +483,7 @@ connection_fields = (
     ("name", "NAME", "{}", None, True),
     ("cloud_type", "Cloud Type", "{}", None, True),
 )
+
 
 def version_string_sort(a, b) -> int:
     """
@@ -523,7 +543,7 @@ offers_fields = {
     "pci_gen",
     "pcie_bw",
     "reliability",
-    #"reliability2",
+    # "reliability2",
     "rentable",
     "rented",
     "storage_cost",
@@ -532,13 +552,13 @@ offers_fields = {
     "ubuntu_version",
     "verification",
     "verified",
-    "geolocation"
+    "geolocation",
 }
 
 offers_alias = {
     "cuda_vers": "cuda_max_good",
     "display_active": "gpu_display_active",
-    #"reliability": "reliability2",
+    # "reliability": "reliability2",
     "dlperf_usd": "dlperf_per_dphtotal",
     "dph": "dph_total",
     "flops_usd": "flops_per_dphtotal",
@@ -547,12 +567,14 @@ offers_alias = {
 offers_mult = {
     "cpu_ram": 1000,
     "gpu_ram": 1000,
-    "gpu_total_ram" : 1000,
+    "gpu_total_ram": 1000,
     "duration": 24.0 * 60.0 * 60.0,
 }
 
 
-def parse_query(query_str: str, res: Dict = None, fields = {}, field_alias = {}, field_multiplier = {}) -> Dict:
+def parse_query(
+    query_str: str, res: Dict = None, fields={}, field_alias={}, field_multiplier={}
+) -> Dict:
     """
     Basically takes a query string (like the ones in the examples of commands for the search_offers function) and
     processes it into a dict of URL parameters to be sent to the server.
@@ -561,21 +583,22 @@ def parse_query(query_str: str, res: Dict = None, fields = {}, field_alias = {},
     :param Dict res:
     :return Dict:
     """
-    if res is None: res = {}
+    if res is None:
+        res = {}
     if type(query_str) == list:
         query_str = " ".join(query_str)
     query_str = query_str.strip()
 
     # Revised regex pattern to accurately capture quoted strings, bracketed lists, and single words/numbers
-    #pattern    = r"([a-zA-Z0-9_]+)\s*(=|!=|<=|>=|<|>| in | nin | eq | neq | not eq | not in )?\s*(\"[^\"]*\"|\[[^\]]+\]|[^ ]+)"
-    #pattern    = "([a-zA-Z0-9_]+)( *[=><!]+| +(?:[lg]te?|nin|neq|eq|not ?eq|not ?in|in) )?( *)(\[[^\]]+\]|[^ ]+)?( *)"
-    pattern     = r"([a-zA-Z0-9_]+)( *[=><!]+| +(?:[lg]te?|nin|neq|eq|not ?eq|not ?in|in) )?( *)(\[[^\]]+\]|\"[^\"]+\"|[^ ]+)?( *)"
-    opts        = re.findall(pattern, query_str)
+    # pattern    = r"([a-zA-Z0-9_]+)\s*(=|!=|<=|>=|<|>| in | nin | eq | neq | not eq | not in )?\s*(\"[^\"]*\"|\[[^\]]+\]|[^ ]+)"
+    # pattern    = "([a-zA-Z0-9_]+)( *[=><!]+| +(?:[lg]te?|nin|neq|eq|not ?eq|not ?in|in) )?( *)(\[[^\]]+\]|[^ ]+)?( *)"
+    pattern = r"([a-zA-Z0-9_]+)( *[=><!]+| +(?:[lg]te?|nin|neq|eq|not ?eq|not ?in|in) )?( *)(\[[^\]]+\]|\"[^\"]+\"|[^ ]+)?( *)"
+    opts = re.findall(pattern, query_str)
 
-    #print("parse_query regex:")
-    #print(opts)
+    # print("parse_query regex:")
+    # print(opts)
 
-    #print(opts)
+    # print(opts)
     # res = {}
     op_names = {
         ">=": "gte",
@@ -599,12 +622,14 @@ def parse_query(query_str: str, res: Dict = None, fields = {}, field_alias = {},
         "in": "in",
     }
 
-
-
     joined = "".join("".join(x) for x in opts)
     if joined != query_str:
         raise ValueError(
-            "Unconsumed text. Did you forget to quote your query? " + repr(joined) + " != " + repr(query_str))
+            "Unconsumed text. Did you forget to quote your query? "
+            + repr(joined)
+            + " != "
+            + repr(query_str)
+        )
 
     for field, op, _, value, _ in opts:
         value = value.strip(",[]")
@@ -616,19 +641,33 @@ def parse_query(query_str: str, res: Dict = None, fields = {}, field_alias = {},
             res.pop(field)
             field = field_alias[field]
 
-        if (field == "driver_version") and ('.' in value):
+        if (field == "driver_version") and ("." in value):
             value = numeric_version(value)
 
         if not field in fields:
-            print("Warning: Unrecognized field: {}, see list of recognized fields.".format(field), file=sys.stderr);
+            print(
+                "Warning: Unrecognized field: {}, see list of recognized fields.".format(
+                    field
+                ),
+                file=sys.stderr,
+            )
         if not op_name:
-            raise ValueError("Unknown operator. Did you forget to quote your query? " + repr(op).strip("u"))
+            raise ValueError(
+                "Unknown operator. Did you forget to quote your query? "
+                + repr(op).strip("u")
+            )
         if op_name in ["in", "notin"]:
             value = [x.strip() for x in value.split(",") if x.strip()]
         if not value:
-            raise ValueError("Value cannot be blank. Did you forget to quote your query? " + repr((field, op, value)))
+            raise ValueError(
+                "Value cannot be blank. Did you forget to quote your query? "
+                + repr((field, op, value))
+            )
         if not field:
-            raise ValueError("Field cannot be blank. Did you forget to quote your query? " + repr((field, op, value)))
+            raise ValueError(
+                "Field cannot be blank. Did you forget to quote your query? "
+                + repr((field, op, value))
+            )
         if value in ["?", "*", "any"]:
             if op_name != "eq":
                 raise ValueError("Wildcard only makes sense with equals.")
@@ -639,22 +678,22 @@ def parse_query(query_str: str, res: Dict = None, fields = {}, field_alias = {},
             continue
 
         if isinstance(value, str):
-            value = value.replace('_', ' ')
-            value = value.strip('\"') 
+            value = value.replace("_", " ")
+            value = value.strip('"')
         elif isinstance(value, list):
-            value = [x.replace('_', ' ')    for x in value]
-            value = [x.strip('\"')          for x in value]
+            value = [x.replace("_", " ") for x in value]
+            value = [x.strip('"') for x in value]
 
         if field in field_multiplier:
             value = float(value) * field_multiplier[field]
             v[op_name] = value
         else:
-            #print(value)
-            if   (value == 'true') or (value == 'True'):
+            # print(value)
+            if (value == "true") or (value == "True"):
                 v[op_name] = True
-            elif (value == 'false') or (value == 'False'):
+            elif (value == "false") or (value == "False"):
                 v[op_name] = False
-            elif (value == 'None') or (value == 'null'):
+            elif (value == "None") or (value == "null"):
                 v[op_name] = None
             else:
                 v[op_name] = value
@@ -663,7 +702,7 @@ def parse_query(query_str: str, res: Dict = None, fields = {}, field_alias = {},
             res[field] = v
         else:
             res[field].update(v)
-    #print(res)
+    # print(res)
     return res
 
 
@@ -693,7 +732,7 @@ def display_table(rows: list, fields: Tuple) -> None:
             else:
                 val = conv(val)
                 s = fmt.format(val)
-            s = s.replace(' ', '_')
+            s = s.replace(" ", "_")
             idx = len(row)
             lengths[idx] = max(len(s), lengths[idx])
             row.append(s)
@@ -712,6 +751,7 @@ def display_table(rows: list, fields: Tuple) -> None:
 class VRLException(Exception):
     pass
 
+
 def parse_vast_url(url_str):
     """
     Breaks up a vast-style url in the form instance_id:path and does
@@ -723,7 +763,7 @@ def parse_vast_url(url_str):
 
     instance_id = None
     path = url_str
-    if (":" in url_str):
+    if ":" in url_str:
         url_parts = url_str.split(":", 2)
         if len(url_parts) == 2:
             (instance_id, path) = url_parts
@@ -734,10 +774,12 @@ def parse_vast_url(url_str):
         except:
             raise VRLException("Instance id must be an integer.")
 
-    valid_unix_path_regex = re.compile('^(/)?([^/\0]+(/)?)+$')
+    valid_unix_path_regex = re.compile("^(/)?([^/\0]+(/)?)+$")
     # Got this regex from https://stackoverflow.com/questions/537772/what-is-the-most-correct-regular-expression-for-a-unix-file-path
     if (path != "/") and (valid_unix_path_regex.match(path) is None):
-        raise VRLException(f"Path component: {path} of VRL is not a valid Unix style path.")
+        raise VRLException(
+            f"Path component: {path} of VRL is not a valid Unix style path."
+        )
 
     return (instance_id, path)
 
@@ -747,13 +789,15 @@ def parse_vast_url(url_str):
     argument("ssh_key", help="ssh key to attach to instance", type=str),
     usage="vastai attach instance_id ssh_key",
     help="Attach an ssh key to an instance. This will allow you to connect to the instance with the ssh key.",
-    epilog=deindent("""
+    epilog=deindent(
+        """
         Attach an ssh key to an instance. This will allow you to connect to the instance with the ssh key.
         Examples:
          vast attach 12371 ssh-rsa AAAAB3NzaC1yc2EAAA...
 
         The first example attaches the ssh key to instance 12371
-    """),
+    """
+    ),
 )
 def attach__ssh(args):
     url = apiurl(args, "/instances/{id}/ssh/".format(id=args.instance_id))
@@ -762,18 +806,21 @@ def attach__ssh(args):
     r.raise_for_status()
     print(r.json())
 
+
 @parser.command(
     argument("dst", help="instance_id:/path to target of copy operation.", type=str),
     usage="vastai cancel copy DST",
     help=" Cancel a remote copy in progress, specified by DST id",
-    epilog=deindent("""
+    epilog=deindent(
+        """
         Use this command to cancel any/all current remote copy operations copying to a specific named instance, given by DST.
         Examples:
          vast cancel copy 12371
 
         The first example cancels all copy operations currently copying data into instance 12371
 
-    """),
+    """
+    ),
 )
 def cancel__copy(args: argparse.Namespace):
     """
@@ -784,38 +831,45 @@ def cancel__copy(args: argparse.Namespace):
 
     url = apiurl(args, f"/commands/rsync/")
     dst_id = args.dst
-    if (dst_id is None):
+    if dst_id is None:
         print("invalid arguments")
         return
 
     print(f"canceling remote copies to {dst_id} ")
 
-    req_json = { "client_id": "me", "dst_id": dst_id, }
-    r = http_del(args, url, headers=headers,json=req_json)
+    req_json = {
+        "client_id": "me",
+        "dst_id": dst_id,
+    }
+    r = http_del(args, url, headers=headers, json=req_json)
     r.raise_for_status()
-    if (r.status_code == 200):
-        rj = r.json();
-        if (rj["success"]):
-            print("Remote copy canceled - check instance status bar for progress updates (~30 seconds delayed).")
+    if r.status_code == 200:
+        rj = r.json()
+        if rj["success"]:
+            print(
+                "Remote copy canceled - check instance status bar for progress updates (~30 seconds delayed)."
+            )
         else:
-            print(rj["msg"]);
+            print(rj["msg"])
     else:
-        print(r.text);
-        print("failed with error {r.status_code}".format(**locals()));
+        print(r.text)
+        print("failed with error {r.status_code}".format(**locals()))
 
 
 @parser.command(
     argument("dst", help="instance_id:/path to target of sync operation.", type=str),
     usage="vastai cancel sync DST",
     help=" Cancel a remote copy in progress, specified by DST id",
-    epilog=deindent("""
+    epilog=deindent(
+        """
         Use this command to cancel any/all current remote cloud sync operations copying to a specific named instance, given by DST.
         Examples:
          vast cancel sync 12371
 
         The first example cancels all copy operations currently copying data into instance 12371
 
-    """),
+    """
+    ),
 )
 def cancel__sync(args: argparse.Namespace):
     """
@@ -826,25 +880,29 @@ def cancel__sync(args: argparse.Namespace):
 
     url = apiurl(args, f"/commands/rclone/")
     dst_id = args.dst
-    if (dst_id is None):
+    if dst_id is None:
         print("invalid arguments")
         return
 
     print(f"canceling remote copies to {dst_id} ")
 
-    req_json = { "client_id": "me", "dst_id": dst_id, }
-    r = http_del(args, url, headers=headers,json=req_json)
+    req_json = {
+        "client_id": "me",
+        "dst_id": dst_id,
+    }
+    r = http_del(args, url, headers=headers, json=req_json)
     r.raise_for_status()
-    if (r.status_code == 200):
-        rj = r.json();
-        if (rj["success"]):
-            print("Remote copy canceled - check instance status bar for progress updates (~30 seconds delayed).")
+    if r.status_code == 200:
+        rj = r.json()
+        if rj["success"]:
+            print(
+                "Remote copy canceled - check instance status bar for progress updates (~30 seconds delayed)."
+            )
         else:
-            print(rj["msg"]);
+            print(rj["msg"])
     else:
-        print(r.text);
-        print("failed with error {r.status_code}".format(**locals()));
-
+        print(r.text)
+        print("failed with error {r.status_code}".format(**locals()))
 
 
 @parser.command(
@@ -852,10 +910,12 @@ def cancel__sync(args: argparse.Namespace):
     argument("--price", help="per machine bid price in $/hour", type=float),
     usage="vastai change bid id [--price PRICE]",
     help="Change the bid price for a spot/interruptible instance",
-    epilog=deindent("""
+    epilog=deindent(
+        """
         Change the current bid price of instance id to PRICE.
         If PRICE is not specified, then a winning bid price is used as the default.
-    """),
+    """
+    ),
 )
 def change__bid(args: argparse.Namespace):
     """Alter the bid with id contained in args.
@@ -865,15 +925,16 @@ def change__bid(args: argparse.Namespace):
     """
     url = apiurl(args, "/instances/bid_price/{id}/".format(id=args.id))
 
-    json_blob = {"client_id": "me", "price": args.price,}
-    if (args.explain):
+    json_blob = {
+        "client_id": "me",
+        "price": args.price,
+    }
+    if args.explain:
         print("request json: ")
         print(json_blob)
     r = http_put(args, url, headers=headers, json=json_blob)
     r.raise_for_status()
     print("Per gpu bid price changed".format(r.json()))
-
-
 
 
 @parser.command(
@@ -882,7 +943,8 @@ def change__bid(args: argparse.Namespace):
     argument("-i", "--identity", help="Location of ssh private key", type=str),
     usage="vastai copy SRC DST",
     help=" Copy directories between instances and/or local",
-    epilog=deindent("""
+    epilog=deindent(
+        """
         Copies a directory from a source location to a target location. Each of source and destination
         directories can be either local or remote, subject to appropriate read and write
         permissions required to carry out the action. The format for both src and dst is [instance_id:]path.
@@ -898,7 +960,8 @@ def change__bid(args: argparse.Namespace):
         The first example copy syncs all files from the absolute directory '/workspace' on instance 6003036 to the directory '/workspace' on instance 6003038.
         The second example copy syncs the relative directory 'data/test' on the local machine from '/data/test' in instance 11824.
         The third example copy syncs the directory '/data/test' in instance 11824 from the relative directory 'data/test' on the local machine.
-    """),
+    """
+    ),
 )
 def copy(args: argparse.Namespace):
     """
@@ -924,61 +987,98 @@ def copy(args: argparse.Namespace):
         "src_path": src_path,
         "dst_path": dst_path,
     }
-    if (args.explain):
+    if args.explain:
         print("request json: ")
         print(req_json)
-    r = http_put(args, url,  headers=headers,json=req_json)
+    r = http_put(args, url, headers=headers, json=req_json)
     r.raise_for_status()
-    if (r.status_code == 200):
-        rj = r.json();
-        #print(json.dumps(rj, indent=1, sort_keys=True))
+    if r.status_code == 200:
+        rj = r.json()
+        # print(json.dumps(rj, indent=1, sort_keys=True))
         if (rj["success"]) and ((src_id is None) or (dst_id is None)):
             homedir = subprocess.getoutput("echo $HOME")
-            #print(f"homedir: {homedir}")
+            # print(f"homedir: {homedir}")
             remote_port = None
-            identity = args.identity if (args.identity is not None) else f"{homedir}/.ssh/id_rsa"
-            if (src_id is None):
-                #result = subprocess.run(f"mkdir -p {src_path}", shell=True)
+            identity = (
+                args.identity
+                if (args.identity is not None)
+                else f"{homedir}/.ssh/id_rsa"
+            )
+            if src_id is None:
+                # result = subprocess.run(f"mkdir -p {src_path}", shell=True)
                 remote_port = rj["dst_port"]
                 remote_addr = rj["dst_addr"]
                 cmd = f"sudo rsync -arz -v --progress --rsh=ssh -e 'sudo ssh -i {identity} -p {remote_port} -o StrictHostKeyChecking=no' {src_path} vastai_kaalia@{remote_addr}::{dst_id}/{dst_path}"
                 print(cmd)
                 result = subprocess.run(cmd, shell=True)
-                #result = subprocess.run(["sudo", "rsync" "-arz", "-v", "--progress", "-rsh=ssh", "-e 'sudo ssh -i {homedir}/.ssh/id_rsa -p {remote_port} -o StrictHostKeyChecking=no'", src_path, "vastai_kaalia@{remote_addr}::{dst_id}"], shell=True)
-            elif (dst_id is None):
+                # result = subprocess.run(["sudo", "rsync" "-arz", "-v", "--progress", "-rsh=ssh", "-e 'sudo ssh -i {homedir}/.ssh/id_rsa -p {remote_port} -o StrictHostKeyChecking=no'", src_path, "vastai_kaalia@{remote_addr}::{dst_id}"], shell=True)
+            elif dst_id is None:
                 result = subprocess.run(f"mkdir -p {dst_path}", shell=True)
                 remote_port = rj["src_port"]
                 remote_addr = rj["src_addr"]
                 cmd = f"sudo rsync -arz -v --progress --rsh=ssh -e 'sudo ssh -i {identity} -p {remote_port} -o StrictHostKeyChecking=no' vastai_kaalia@{remote_addr}::{src_id}/{src_path} {dst_path}"
                 print(cmd)
                 result = subprocess.run(cmd, shell=True)
-                #result = subprocess.run(["sudo", "rsync" "-arz", "-v", "--progress", "-rsh=ssh", "-e 'sudo ssh -i {homedir}/.ssh/id_rsa -p {remote_port} -o StrictHostKeyChecking=no'", "vastai_kaalia@{remote_addr}::{src_id}", dst_path], shell=True)
+                # result = subprocess.run(["sudo", "rsync" "-arz", "-v", "--progress", "-rsh=ssh", "-e 'sudo ssh -i {homedir}/.ssh/id_rsa -p {remote_port} -o StrictHostKeyChecking=no'", "vastai_kaalia@{remote_addr}::{src_id}", dst_path], shell=True)
         else:
-            if (rj["success"]):
-                print("Remote to Remote copy initiated - check instance status bar for progress updates (~30 seconds delayed).")
+            if rj["success"]:
+                print(
+                    "Remote to Remote copy initiated - check instance status bar for progress updates (~30 seconds delayed)."
+                )
             else:
-                print(rj["msg"]);
+                print(rj["msg"])
     else:
-        print(r.text);
-        print("failed with error {r.status_code}".format(**locals()));
-
-
+        print(r.text)
+        print("failed with error {r.status_code}".format(**locals()))
 
 
 @parser.command(
     argument("--src", help="path to source of object to copy.", type=str),
-    argument("--dst", help="path to target of copy operation.", type=str, default="/workspace"),
+    argument(
+        "--dst",
+        help="path to target of copy operation.",
+        type=str,
+        default="/workspace",
+    ),
     argument("--instance", help="id of the instance", type=str),
-    argument("--connection", help="id of cloud connection on your account (get from calling 'vastai show connections')", type=str),
-    argument("--transfer", help="type of transfer, possible options include Instance To Cloud and Cloud To Instance", type=str, default="Instance to Cloud"),
-    argument("--dry-run", help="show what would have been transferred", action="store_true"),
-    argument("--size-only", help="skip based on size only, not mod-time or checksum", action="store_true"),
-    argument("--ignore-existing", help="skip all files that exist on destination", action="store_true"),
-    argument("--update", help="skip files that are newer on the destination", action="store_true"),
-    argument("--delete-excluded", help="delete files on dest excluded from transfer", action="store_true"),
+    argument(
+        "--connection",
+        help="id of cloud connection on your account (get from calling 'vastai show connections')",
+        type=str,
+    ),
+    argument(
+        "--transfer",
+        help="type of transfer, possible options include Instance To Cloud and Cloud To Instance",
+        type=str,
+        default="Instance to Cloud",
+    ),
+    argument(
+        "--dry-run", help="show what would have been transferred", action="store_true"
+    ),
+    argument(
+        "--size-only",
+        help="skip based on size only, not mod-time or checksum",
+        action="store_true",
+    ),
+    argument(
+        "--ignore-existing",
+        help="skip all files that exist on destination",
+        action="store_true",
+    ),
+    argument(
+        "--update",
+        help="skip files that are newer on the destination",
+        action="store_true",
+    ),
+    argument(
+        "--delete-excluded",
+        help="delete files on dest excluded from transfer",
+        action="store_true",
+    ),
     usage="vastai cloud copy --src SRC --dst DST --instance INSTANCE_ID -connection CONNECTION_ID --transfer TRANSFER_TYPE",
     help=" Copy files/folders to and from cloud providers",
-    epilog=deindent("""
+    epilog=deindent(
+        """
         Copies a directory from a source location to a target location. Each of source and destination
         directories can be either local or remote, subject to appropriate read and write
         permissions required to carry out the action. The format for both src and dst is [instance_id:]path.
@@ -994,7 +1094,8 @@ def copy(args: argparse.Namespace):
          vastai cloud_copy --src /folder --dst /workspace --instance 6003036 --connection 1001 --transfer "Instance To Cloud"
 
         The example copies all contents of /folder into /workspace on instance 6003036 from gdrive connection 'test_dir'.
-    """),
+    """
+    ),
 )
 def cloud__copy(args: argparse.Namespace):
     """
@@ -1005,8 +1106,8 @@ def cloud__copy(args: argparse.Namespace):
     """
 
     url = apiurl(args, f"/commands/rclone/")
-    #(src_id, src_path) = parse_vast_url(args.src)
-    #(dst_id, dst_path) = parse_vast_url(args.dst)
+    # (src_id, src_path) = parse_vast_url(args.src)
+    # (dst_id, dst_path) = parse_vast_url(args.dst)
     if (args.src is None) and (args.dst is None):
         print("invalid arguments")
         return
@@ -1026,7 +1127,9 @@ def cloud__copy(args: argparse.Namespace):
     if args.delete_excluded:
         flags.append("--delete-excluded")
 
-    print(f"copying {args.src} {args.dst} {args.instance} {args.connection} {args.transfer}")
+    print(
+        f"copying {args.src} {args.dst} {args.instance} {args.connection} {args.transfer}"
+    )
 
     req_json = {
         "src": args.src,
@@ -1034,51 +1137,74 @@ def cloud__copy(args: argparse.Namespace):
         "instance_id": args.instance,
         "selected": args.connection,
         "transfer": args.transfer,
-        "flags": flags
+        "flags": flags,
     }
 
-    if (args.explain):
+    if args.explain:
         print("request json: ")
         print(req_json)
-    
-    r = http_post(args, url, headers=headers,json=req_json)
+
+    r = http_post(args, url, headers=headers, json=req_json)
     r.raise_for_status()
-    if (r.status_code == 200):
-        print("Cloud Copy Started - check instance status bar for progress updates (~30 seconds delayed).")
-        print("When the operation is finished you should see 'Cloud Cody Operation Finished' in the instance status bar.")  
+    if r.status_code == 200:
+        print(
+            "Cloud Copy Started - check instance status bar for progress updates (~30 seconds delayed)."
+        )
+        print(
+            "When the operation is finished you should see 'Cloud Cody Operation Finished' in the instance status bar."
+        )
     else:
-        print(r.text);
-        print("failed with error {r.status_code}".format(**locals()));
+        print(r.text)
+        print("failed with error {r.status_code}".format(**locals()))
 
 
 @parser.command(
     argument("--name", help="name of the api-key", type=str),
-    argument("--permission_file", help="file path for json encoded permissions, see https://vast.ai/docs/cli/roles-and-permissions for more information", type=str),
-    argument("--key_params", help="optional wildcard key params for advanced keys", type=str),
+    argument(
+        "--permission_file",
+        help="file path for json encoded permissions, see https://vast.ai/docs/cli/roles-and-permissions for more information",
+        type=str,
+    ),
+    argument(
+        "--key_params", help="optional wildcard key params for advanced keys", type=str
+    ),
     usage="vastai create api-key --name NAME --permission_file PERMISSIONS",
     help="Create a new api-key with restricted permissions. Can be sent to other users and teammates",
-    epilog=deindent("""
+    epilog=deindent(
+        """
         In order to create api keys you must understand how permissions must be sent via json format. 
         You can find more information about permissions here: https://vast.ai/docs/cli/roles-and-permissions
-    """)
+    """
+    ),
 )
 def create__api_key(args):
-
     url = apiurl(args, "/auth/apikeys/")
     permissions = load_permissions_from_file(args.permission_file)
-    r = http_post(args, url, headers=headers, json={"name": args.name, "permissions": permissions, "key_params": args.key_params})
+    r = http_post(
+        args,
+        url,
+        headers=headers,
+        json={
+            "name": args.name,
+            "permissions": permissions,
+            "key_params": args.key_params,
+        },
+    )
     r.raise_for_status()
     print("api-key created {}".format(r.json()))
+
 
 @parser.command(
     argument("ssh_key", help="ssh key to add to your account", type=str),
     usage="vastai create ssh-key ssh_key",
     help="Create a new ssh-key",
-    epilog=deindent("""
+    epilog=deindent(
+        """
         Use this command to create a new ssh key for your account. 
         All ssh keys are stored in your account and can be used to connect to instances they've been added to
         All ssh keys should be added in rsa format
-    """)
+    """
+    ),
 )
 def create__ssh_key(args):
     url = apiurl(args, "/ssh/")
@@ -1086,42 +1212,98 @@ def create__ssh_key(args):
     r.raise_for_status()
     print("ssh-key created {}".format(r.json()))
 
+
 @parser.command(
-    
-    argument("--test_workers",help="number of workers to create to get an performance estimate for while initializing autogroup (default 3)", type=int, default=3),
-    argument("--gpu_ram",     help="estimated GPU RAM req  (independent of search string)", type=float),
-    argument("--template_hash", help="template hash (optional, but **Note**: if you use this field, you can skip launch_args and search_params, as they are automatically inferred from the template)", type=str),
-    argument("--template_id",   help="template id (optional)", type=int),
-    argument("--search_params", help="search param string for search offers    ex: \"gpu_ram>=23 num_gpus=2 gpu_name=RTX_4090 inet_down>200 direct_port_count>2 disk_space>=64\"", type=str),
-    argument("--launch_args",   help="launch args  string for create instance  ex: \"--onstart onstart_wget.sh  --env '-e ONSTART_PATH=https://s3.amazonaws.com/vast.ai/onstart_OOBA.sh' --image atinoda/text-generation-webui:default-nightly --disk 64\"", type=str),
-    argument("--endpoint_name", help="deployment endpoint name (allows multiple autoscale groups to share same deployment endpoint)", type=str),
-    argument("--endpoint_id",   help="deployment endpoint id (allows multiple autoscale groups to share same deployment endpoint)", type=int),
-    argument("--min_load", help="[NOTE: this field isn't currently used at the autojob level] minimum floor load in perf units/s  (token/s for LLms)", type=float),
-    argument("--target_util", help="[NOTE: this field isn't currently used at the autojob level] target capacity utilization (fraction, max 1.0, default 0.9)", type=float),
-    argument("--cold_mult",   help="[NOTE: this field isn't currently used at the autojob level]cold/stopped instance capacity target as multiple of hot capacity target (default 2.0)", type=float),
+    argument(
+        "--test_workers",
+        help="number of workers to create to get an performance estimate for while initializing autogroup (default 3)",
+        type=int,
+        default=3,
+    ),
+    argument(
+        "--gpu_ram",
+        help="estimated GPU RAM req  (independent of search string)",
+        type=float,
+    ),
+    argument(
+        "--template_hash",
+        help="template hash (optional, but **Note**: if you use this field, you can skip launch_args and search_params, as they are automatically inferred from the template)",
+        type=str,
+    ),
+    argument("--template_id", help="template id (optional)", type=int),
+    argument(
+        "--search_params",
+        help='search param string for search offers    ex: "gpu_ram>=23 num_gpus=2 gpu_name=RTX_4090 inet_down>200 direct_port_count>2 disk_space>=64"',
+        type=str,
+    ),
+    argument(
+        "--launch_args",
+        help="launch args  string for create instance  ex: \"--onstart onstart_wget.sh  --env '-e ONSTART_PATH=https://s3.amazonaws.com/vast.ai/onstart_OOBA.sh' --image atinoda/text-generation-webui:default-nightly --disk 64\"",
+        type=str,
+    ),
+    argument(
+        "--endpoint_name",
+        help="deployment endpoint name (allows multiple autoscale groups to share same deployment endpoint)",
+        type=str,
+    ),
+    argument(
+        "--endpoint_id",
+        help="deployment endpoint id (allows multiple autoscale groups to share same deployment endpoint)",
+        type=int,
+    ),
+    argument(
+        "--min_load",
+        help="[NOTE: this field isn't currently used at the autojob level] minimum floor load in perf units/s  (token/s for LLms)",
+        type=float,
+    ),
+    argument(
+        "--target_util",
+        help="[NOTE: this field isn't currently used at the autojob level] target capacity utilization (fraction, max 1.0, default 0.9)",
+        type=float,
+    ),
+    argument(
+        "--cold_mult",
+        help="[NOTE: this field isn't currently used at the autojob level]cold/stopped instance capacity target as multiple of hot capacity target (default 2.0)",
+        type=float,
+    ),
     usage="vastai autoscaler create [OPTIONS]",
     help="Create a new autoscale group",
-    epilog=deindent("""
+    epilog=deindent(
+        """
         Create a new autoscaling group to manage a pool of worker instances.
                     
         Example: vastai create autoscaler --template_hash HASH  --endpoint_name "LLama" --test_workers 5
-        """),
+        """
+    ),
 )
 def create__autoscaler(args):
-    url = apiurl(args, "/autojobs/" )
+    url = apiurl(args, "/autojobs/")
 
     # if args.launch_args_dict:
     #     launch_args_dict = json.loads(args.launch_args_dict)
     #     json_blob = {"client_id": "me", "min_load": args.min_load, "target_util": args.target_util, "cold_mult": args.cold_mult, "template_hash": args.template_hash, "template_id": args.template_id, "search_params": args.search_params, "launch_args_dict": launch_args_dict, "gpu_ram": args.gpu_ram, "endpoint_name": args.endpoint_name}
-    
-    json_blob = {"client_id": "me", "min_load": args.min_load, "target_util": args.target_util, "cold_mult": args.cold_mult, "test_workers" : args.test_workers, "template_hash": args.template_hash, "template_id": args.template_id, "search_params": args.search_params, "launch_args": args.launch_args, "gpu_ram": args.gpu_ram, "endpoint_name": args.endpoint_name, "endpoint_id": args.endpoint_id}
-    
-    if (args.explain):
+
+    json_blob = {
+        "client_id": "me",
+        "min_load": args.min_load,
+        "target_util": args.target_util,
+        "cold_mult": args.cold_mult,
+        "test_workers": args.test_workers,
+        "template_hash": args.template_hash,
+        "template_id": args.template_id,
+        "search_params": args.search_params,
+        "launch_args": args.launch_args,
+        "gpu_ram": args.gpu_ram,
+        "endpoint_name": args.endpoint_name,
+        "endpoint_id": args.endpoint_id,
+    }
+
+    if args.explain:
         print("request json: ")
         print(json_blob)
-    r = http_post(args, url, headers=headers,json=json_blob)
+    r = http_post(args, url, headers=headers, json=json_blob)
     r.raise_for_status()
-    if 'application/json' in r.headers.get('Content-Type', ''):
+    if "application/json" in r.headers.get("Content-Type", ""):
         try:
             print("autoscaler create {}".format(r.json()))
         except requests.exceptions.JSONDecodeError:
@@ -1129,36 +1311,75 @@ def create__autoscaler(args):
             print(r)
             print(r.text)  # Print the raw response to help with debugging.
     else:
-        print("The response is not JSON. Content-Type:", r.headers.get('Content-Type'))
+        print("The response is not JSON. Content-Type:", r.headers.get("Content-Type"))
         print(r.text)
 
 
 @parser.command(
-    argument("--min_load", help="minimum floor load in perf units/s  (token/s for LLms)", type=float, default=0.0),
-    argument("--target_util", help="target capacity utilization (fraction, max 1.0, default 0.9)", type=float, default=0.9),
-    argument("--cold_mult",   help="cold/stopped instance capacity target as multiple of hot capacity target (default 2.5)", type=float, default=2.5),
-    argument("--cold_workers", help="min number of workers to keep 'cold' when you have no load (default 5)", type=int, default=5),
-    argument("--max_workers", help="max number of workers your endpoint group can have (default 20)", type=int, default=20),
-    argument("--endpoint_name", help="deployment endpoint name (allows multiple autoscale groups to share same deployment endpoint)", type=str),
+    argument(
+        "--min_load",
+        help="minimum floor load in perf units/s  (token/s for LLms)",
+        type=float,
+        default=0.0,
+    ),
+    argument(
+        "--target_util",
+        help="target capacity utilization (fraction, max 1.0, default 0.9)",
+        type=float,
+        default=0.9,
+    ),
+    argument(
+        "--cold_mult",
+        help="cold/stopped instance capacity target as multiple of hot capacity target (default 2.5)",
+        type=float,
+        default=2.5,
+    ),
+    argument(
+        "--cold_workers",
+        help="min number of workers to keep 'cold' when you have no load (default 5)",
+        type=int,
+        default=5,
+    ),
+    argument(
+        "--max_workers",
+        help="max number of workers your endpoint group can have (default 20)",
+        type=int,
+        default=20,
+    ),
+    argument(
+        "--endpoint_name",
+        help="deployment endpoint name (allows multiple autoscale groups to share same deployment endpoint)",
+        type=str,
+    ),
     usage="vastai create endpoint [OPTIONS]",
     help="Create a new endpoint group",
-    epilog=deindent("""
+    epilog=deindent(
+        """
         Create a new endpoint group to manage a set of pool of worker instances as defined by autogroups and make them available to client requests.
                     
         Example: vastai create endpoint --target_util 0.9 --cold_mult 2.0 --endpoint_name "LLama"
-    """),
+    """
+    ),
 )
 def create__endpoint(args):
-    url = apiurl(args, "/endptjobs/" )
+    url = apiurl(args, "/endptjobs/")
 
-    json_blob = {"client_id": "me", "min_load": args.min_load, "target_util": args.target_util, "cold_mult": args.cold_mult, "cold_workers" : args.cold_workers, "max_workers" : args.max_workers, "endpoint_name": args.endpoint_name}
-    
-    if (args.explain):
+    json_blob = {
+        "client_id": "me",
+        "min_load": args.min_load,
+        "target_util": args.target_util,
+        "cold_mult": args.cold_mult,
+        "cold_workers": args.cold_workers,
+        "max_workers": args.max_workers,
+        "endpoint_name": args.endpoint_name,
+    }
+
+    if args.explain:
         print("request json: ")
         print(json_blob)
-    r = requests.post(url, headers=headers,json=json_blob)
+    r = requests.post(url, headers=headers, json=json_blob)
     r.raise_for_status()
-    if 'application/json' in r.headers.get('Content-Type', ''):
+    if "application/json" in r.headers.get("Content-Type", ""):
         try:
             print("create endpoint {}".format(r.json()))
         except requests.exceptions.JSONDecodeError:
@@ -1166,58 +1387,121 @@ def create__endpoint(args):
             print(r)
             print(r.text)  # Print the raw response to help with debugging.
     else:
-        print("The response is not JSON. Content-Type:", r.headers.get('Content-Type'))
+        print("The response is not JSON. Content-Type:", r.headers.get("Content-Type"))
         print(r.text)
 
+
 def get_runtype(args):
-    runtype = 'ssh'
+    runtype = "ssh"
     if args.args:
-        runtype = 'args'
-    if (args.args == '') or (args.args == ['']) or (args.args == []):
-        runtype = 'args'
+        runtype = "args"
+    if (args.args == "") or (args.args == [""]) or (args.args == []):
+        runtype = "args"
         args.args = None
     if args.jupyter_dir or args.jupyter_lab:
         args.jupyter = True
-    if args.jupyter and runtype == 'args':
-        print("Error: Can't use --jupyter and --args together. Try --onstart or --onstart-cmd instead of --args.", file=sys.stderr)
+    if args.jupyter and runtype == "args":
+        print(
+            "Error: Can't use --jupyter and --args together. Try --onstart or --onstart-cmd instead of --args.",
+            file=sys.stderr,
+        )
         return 1
 
     if args.jupyter:
-        runtype = 'jupyter_direc ssh_direc ssh_proxy' if args.direct else 'jupyter_proxy ssh_proxy'
+        runtype = (
+            "jupyter_direc ssh_direc ssh_proxy"
+            if args.direct
+            else "jupyter_proxy ssh_proxy"
+        )
 
     if args.ssh:
-        runtype = 'ssh_direc ssh_proxy' if args.direct else 'ssh_proxy'
+        runtype = "ssh_direc ssh_proxy" if args.direct else "ssh_proxy"
 
     return runtype
 
 
 @parser.command(
-    argument("ID", help="id of instance type to launch (returned from search offers)", type=int),
+    argument(
+        "ID",
+        help="id of instance type to launch (returned from search offers)",
+        type=int,
+    ),
     argument("--price", help="per machine bid price in $/hour", type=float),
-    argument("--disk", help="size of local disk partition in GB", type=float, default=10),
+    argument(
+        "--disk", help="size of local disk partition in GB", type=float, default=10
+    ),
     argument("--image", help="docker container image to launch", type=str),
-    argument("--login", help="docker login arguments for private repo authentication, surround with '' ", type=str),
+    argument(
+        "--login",
+        help="docker login arguments for private repo authentication, surround with '' ",
+        type=str,
+    ),
     argument("--label", help="label to set on the instance", type=str),
     argument("--onstart", help="filename to use as onstart script", type=str),
-    argument("--onstart-cmd", help="contents of onstart script as single argument", type=str),
-    argument("--entrypoint", help="override entrypoint for args launch instance", type=str),
-    argument("--ssh",     help="Launch as an ssh instance type.", action="store_true"),
-    argument("--jupyter", help="Launch as a jupyter instance instead of an ssh instance.", action="store_true"),
-    argument("--direct",  help="Use (faster) direct connections for jupyter & ssh.", action="store_true"),
-    argument("--jupyter-dir", help="For runtype 'jupyter', directory in instance to use to launch jupyter. Defaults to image's working directory.", type=str),
-    argument("--jupyter-lab", help="For runtype 'jupyter', Launch instance with jupyter lab.", action="store_true"),
-    argument("--lang-utf8", help="Workaround for images with locale problems: install and generate locales before instance launch, and set locale to C.UTF-8.", action="store_true"),
-    argument("--python-utf8", help="Workaround for images with locale problems: set python's locale to C.UTF-8.", action="store_true"),
+    argument(
+        "--onstart-cmd", help="contents of onstart script as single argument", type=str
+    ),
+    argument(
+        "--entrypoint", help="override entrypoint for args launch instance", type=str
+    ),
+    argument("--ssh", help="Launch as an ssh instance type.", action="store_true"),
+    argument(
+        "--jupyter",
+        help="Launch as a jupyter instance instead of an ssh instance.",
+        action="store_true",
+    ),
+    argument(
+        "--direct",
+        help="Use (faster) direct connections for jupyter & ssh.",
+        action="store_true",
+    ),
+    argument(
+        "--jupyter-dir",
+        help="For runtype 'jupyter', directory in instance to use to launch jupyter. Defaults to image's working directory.",
+        type=str,
+    ),
+    argument(
+        "--jupyter-lab",
+        help="For runtype 'jupyter', Launch instance with jupyter lab.",
+        action="store_true",
+    ),
+    argument(
+        "--lang-utf8",
+        help="Workaround for images with locale problems: install and generate locales before instance launch, and set locale to C.UTF-8.",
+        action="store_true",
+    ),
+    argument(
+        "--python-utf8",
+        help="Workaround for images with locale problems: set python's locale to C.UTF-8.",
+        action="store_true",
+    ),
     argument("--extra", help=argparse.SUPPRESS),
-    argument("--env",   help="env variables and port mapping options, surround with '' ", type=str),
-    argument("--args",  nargs=argparse.REMAINDER, help="list of arguments passed to container ENTRYPOINT. Onstart is recommended for this purpose. (must be last argument)"),
-    #argument("--create-from", help="Existing instance id to use as basis for new instance. Instance configuration should usually be identical, as only the difference from the base image is copied.", type=str),
-    argument("--force", help="Skip sanity checks when creating from an existing instance", action="store_true"),
-    argument("--cancel-unavail", help="Return error if scheduling fails (rather than creating a stopped instance)", action="store_true"),
+    argument(
+        "--env",
+        help="env variables and port mapping options, surround with '' ",
+        type=str,
+    ),
+    argument(
+        "--args",
+        nargs=argparse.REMAINDER,
+        help="list of arguments passed to container ENTRYPOINT. Onstart is recommended for this purpose. (must be last argument)",
+    ),
+    # argument("--create-from", help="Existing instance id to use as basis for new instance. Instance configuration should usually be identical, as only the difference from the base image is copied.", type=str),
+    argument(
+        "--force",
+        help="Skip sanity checks when creating from an existing instance",
+        action="store_true",
+    ),
+    argument(
+        "--cancel-unavail",
+        help="Return error if scheduling fails (rather than creating a stopped instance)",
+        action="store_true",
+    ),
     argument("--template_hash", help="Create instance from template info", type=str),
     usage="vastai create instance ID [OPTIONS] [--args ...]",
     help="Create a new instance",
-    epilog=deindent("""
+    epilog=deindent(
+        """
         Performs the same action as pressing the "RENT" button on the website at https://console.vast.ai/create/ 
         Creates an instance from an offer ID (which is returned from "search offers"). Each offer ID can only be used to create one instance.
         Besides the offer ID, you must pass in an '--image' argument as a minimum.
@@ -1241,7 +1525,8 @@ def get_runtype(args):
         Return value:
         Returns a json reporting the instance ID of the newly created instance:
         {'success': True, 'new_contract': 7835610} 
-    """),
+    """
+    ),
 )
 def create_instance(args: argparse.Namespace):
     """Performs the same action as pressing the "RENT" button on the website at https://console.vast.ai/create/.
@@ -1258,41 +1543,42 @@ def create_instance(args: argparse.Namespace):
     if runtype == 1:
         return 1
 
-    json_blob ={
+    json_blob = {
         "client_id": "me",
         "image": args.image,
-        "env" : parse_env(args.env),
+        "env": parse_env(args.env),
         "price": args.price,
         "disk": args.disk,
         "label": args.label,
         "extra": args.extra,
         "onstart": args.onstart_cmd,
-        "runtype": runtype, #full str
+        "runtype": runtype,  # full str
         "image_login": args.login,
         "python_utf8": args.python_utf8,
         "lang_utf8": args.lang_utf8,
         "use_jupyter_lab": args.jupyter_lab,
         "jupyter_dir": args.jupyter_dir,
-        #"create_from": args.create_from,
+        # "create_from": args.create_from,
         "force": args.force,
         "cancel_unavail": args.cancel_unavail,
-        "template_hash_id" : args.template_hash
+        "template_hash_id": args.template_hash,
     }
-    if (args.args != None):
+    if args.args != None:
         json_blob["args"] = args.args
 
-    #print(f"put asks/{args.id}/  runtype:{runtype}")
+    # print(f"put asks/{args.id}/  runtype:{runtype}")
     url = apiurl(args, "/asks/{id}/".format(id=args.ID))
 
-    if (args.explain):
+    if args.explain:
         print("request json: ")
         print(json_blob)
-    r = http_put(args, url,  headers=headers,json=json_blob)
+    r = http_put(args, url, headers=headers, json=json_blob)
     r.raise_for_status()
     if args.raw:
         print(json.dumps(r.json(), indent=1))
     else:
         print("Started. {}".format(r.json()))
+
 
 @parser.command(
     argument("--email", help="email address to use for login", type=str),
@@ -1301,20 +1587,21 @@ def create_instance(args: argparse.Namespace):
     argument("--type", help="host/client", type=str),
     usage="vastai create subaccount --email EMAIL --username USERNAME --password PASSWORD --type TYPE",
     help="Create a subaccount",
-    epilog=deindent("""
+    epilog=deindent(
+        """
        Creates a new account that is considered a child of your current account as defined via the API key. 
 
        vastai create subaccount --email bob@gmail.com --username bob --password password --type host
 
        vastai create subaccount --email vast@gmail.com --username vast --password password --type host
-    """),
+    """
+    ),
 )
 def create__subaccount(args):
-    """Creates a new account that is considered a child of your current account as defined via the API key.
-    """
+    """Creates a new account that is considered a child of your current account as defined via the API key."""
     # Default value for host_only, can adjust based on expected default behavior
     host_only = False
-    
+
     # Only process the --account_type argument if it's provided
     if args.type:
         host_only = args.type.lower() == "host"
@@ -1324,11 +1611,11 @@ def create__subaccount(args):
         "username": args.username,
         "password": args.password,
         "host_only": host_only,
-        "parent_id": "me"
+        "parent_id": "me",
     }
 
     # Use --explain to print the request JSON and return early
-    if getattr(args, 'explain', False):
+    if getattr(args, "explain", False):
         print("Request JSON would be: ")
         print(json_blob)
         return  # Prevents execution of the actual API call
@@ -1345,62 +1632,99 @@ def create__subaccount(args):
         print(r.text)
         print(f"Failed with error {r.status_code}")
 
+
 @parser.command(
     argument("--team_name", help="name of the team", type=str),
     usage="vastai create-team --team_name TEAM_NAME",
     help="Create a new team",
-    epilog=deindent("""
+    epilog=deindent(
+        """
         As of right now creating a team account will convert your current account into a team account. 
         Once you convert your user account into a team account, this change is permanent and cannot be reversed. 
         The created team account will inherit all aspects of your existing user account, including billing information, cloud services, and any other account settings.
         The user who initiates the team creation becomes the team owner. 
         Carefully evaluate the decision to convert your user account into a team account, as this change is permanent.
         For more information see: https://vast.ai/docs/team/introduction
-    """)
+    """
+    ),
 )
-
 def create__team(args):
     url = apiurl(args, "/team/")
     r = http_post(args, url, headers=headers, json={"team_name": args.team_name})
     r.raise_for_status()
     print(r.json())
 
+
 @parser.command(
     argument("--name", help="name of the role", type=str),
-    argument("--permissions", help="file path for json encoded permissions, look in the docs for more information", type=str),
+    argument(
+        "--permissions",
+        help="file path for json encoded permissions, look in the docs for more information",
+        type=str,
+    ),
     usage="vastai create team-role --name NAME --permissions PERMISSIONS",
     help="Add a new role to your",
-    epilog=deindent("""
+    epilog=deindent(
+        """
         Creating a new team role involves understanding how permissions must be sent via json format.
         You can find more information about permissions here: https://vast.ai/docs/cli/roles-and-permissions
-    """)
+    """
+    ),
 )
 def create__team_role(args):
     url = apiurl(args, "/team/roles/")
     permissions = load_permissions_from_file(args.permissions)
-    r = http_post(args, url, headers=headers, json={"name": args.name, "permissions": permissions})
+    r = http_post(
+        args, url, headers=headers, json={"name": args.name, "permissions": permissions}
+    )
     r.raise_for_status()
     print(r.json())
+
 
 @parser.command(
     argument("--name", help="name of the template", type=str),
     argument("--image", help="docker container image to launch", type=str),
-    argument("--image_tag", help="docker image tag (can also be appended to end of image_path)", type=str),
-    argument("--login", help="docker login arguments for private repo authentication, surround with ''", type=str),
+    argument(
+        "--image_tag",
+        help="docker image tag (can also be appended to end of image_path)",
+        type=str,
+    ),
+    argument(
+        "--login",
+        help="docker login arguments for private repo authentication, surround with ''",
+        type=str,
+    ),
     argument("--env", help="Contents of the 'Docker options' field", type=str),
-    
-    argument("--ssh",     help="Launch as an ssh instance type.", action="store_true"),
-    argument("--jupyter", help="Launch as a jupyter instance instead of an ssh instance.", action="store_true"),
-    argument("--direct",  help="Use (faster) direct connections for jupyter & ssh.", action="store_true"),
-    argument("--jupyter-dir", help="For runtype 'jupyter', directory in instance to use to launch jupyter. Defaults to image's working directory.", type=str),
-    argument("--jupyter-lab", help="For runtype 'jupyter', Launch instance with jupyter lab.", action="store_true"),
-
-    argument("--onstart-cmd", help="contents of onstart script as single argument", type=str),
+    argument("--ssh", help="Launch as an ssh instance type.", action="store_true"),
+    argument(
+        "--jupyter",
+        help="Launch as a jupyter instance instead of an ssh instance.",
+        action="store_true",
+    ),
+    argument(
+        "--direct",
+        help="Use (faster) direct connections for jupyter & ssh.",
+        action="store_true",
+    ),
+    argument(
+        "--jupyter-dir",
+        help="For runtype 'jupyter', directory in instance to use to launch jupyter. Defaults to image's working directory.",
+        type=str,
+    ),
+    argument(
+        "--jupyter-lab",
+        help="For runtype 'jupyter', Launch instance with jupyter lab.",
+        action="store_true",
+    ),
+    argument(
+        "--onstart-cmd", help="contents of onstart script as single argument", type=str
+    ),
     argument("--search_params", help="search offers filters", type=str),
     argument("--disk_space", help="disk storage space, in GB", type=str),
     usage="vastai create template",
     help="Create a new template",
-    epilog=deindent("""
+    epilog=deindent(
+        """
         Create a template that can be used to create instances with
         example: 
             vast ai create template --name "tgi-llama2-7B-quantized" --image_path "ghcr.io/huggingface/text-generation-inference:1.0.3" 
@@ -1408,9 +1732,9 @@ def create__team_role(args):
                                     --onstart_cmd 'wget -O - https://raw.githubusercontent.com/vast-ai/vast-pyworker/main/scripts/launch_tgi.sh | bash' 
                                     --search_params "gpu_ram>=23 num_gpus=1 gpu_name=RTX_3090 inet_down>128 direct_port_count>3 disk_space>=192 driver_version>=535086005 rented=False" 
                                     --disk 8.0 --ssh --direct
-    """)
+    """
+    ),
 )
-
 def create__template(args):
     url = apiurl(args, f"/users/0/templates/")
     jup_direct = args.jupyter and args.direct
@@ -1422,27 +1746,36 @@ def create__template(args):
         docker_login_repo = login[0]
     else:
         docker_login_repo = None
-    default_search_query = {"verified": {"eq": True}, "external": {"eq": False}, "rentable": {"eq": True}, "rented": {"eq": False}}
+    default_search_query = {
+        "verified": {"eq": True},
+        "external": {"eq": False},
+        "rentable": {"eq": True},
+        "rented": {"eq": False},
+    }
     template = {
-        "image" : args.image,
-        "tag" : args.image_tag,
-        "env" : args.env, #str format
-        "onstart" : args.onstart_cmd, #don't accept file name for now
-        "jup_direct" : jup_direct,
-        "ssh_direct" : ssh_direct,
-        "use_jupyter_lab" : args.jupyter_lab,
-        "runtype" : runtype,
-        "use_ssh" : use_ssh,
-        "jupyter_dir" : args.jupyter_dir,
-        "docker_login_repo" : docker_login_repo, #can't store username/password with template for now
-        "extra_filters" : parse_query(args.search_params, default_search_query, offers_fields, offers_alias, offers_mult),
-        "recommended_disk_space" : args.disk_space
+        "image": args.image,
+        "tag": args.image_tag,
+        "env": args.env,  # str format
+        "onstart": args.onstart_cmd,  # don't accept file name for now
+        "jup_direct": jup_direct,
+        "ssh_direct": ssh_direct,
+        "use_jupyter_lab": args.jupyter_lab,
+        "runtype": runtype,
+        "use_ssh": use_ssh,
+        "jupyter_dir": args.jupyter_dir,
+        "docker_login_repo": docker_login_repo,  # can't store username/password with template for now
+        "extra_filters": parse_query(
+            args.search_params,
+            default_search_query,
+            offers_fields,
+            offers_alias,
+            offers_mult,
+        ),
+        "recommended_disk_space": args.disk_space,
     }
 
-    json_blob = {
-        "templates" : [template]
-    }
-    if (args.explain):
+    json_blob = {"templates": [template]}
+    if args.explain:
         print("request json: ")
         print(json_blob)
 
@@ -1469,6 +1802,7 @@ def delete__api_key(args):
     r.raise_for_status()
     print(r.json())
 
+
 @parser.command(
     argument("ID", help="id ssh key to delete", type=int),
     usage="vastai delete ssh-key ID",
@@ -1480,25 +1814,28 @@ def delete__ssh_key(args):
     r.raise_for_status()
     print(r.json())
 
+
 @parser.command(
     argument("ID", help="id of group to delete", type=int),
     usage="vastai delete autoscaler ID ",
     help="Delete an autoscaler group",
-    epilog=deindent("""
+    epilog=deindent(
+        """
         Note that deleteing an autoscaler group doesn't automatically destroy all the instances that are associated with your autoscaler group.
         Example: vastai delete autoscaler 4242
-    """),
+    """
+    ),
 )
 def delete__autoscaler(args):
-    id  = args.ID
-    url = apiurl(args, f"/autojobs/{id}/" )
+    id = args.ID
+    url = apiurl(args, f"/autojobs/{id}/")
     json_blob = {"client_id": "me", "autojob_id": args.ID}
-    if (args.explain):
+    if args.explain:
         print("request json: ")
         print(json_blob)
-    r = http_del(args, url, headers=headers,json=json_blob)
+    r = http_del(args, url, headers=headers, json=json_blob)
     r.raise_for_status()
-    if 'application/json' in r.headers.get('Content-Type', ''):
+    if "application/json" in r.headers.get("Content-Type", ""):
         try:
             print("autoscaler delete {}".format(r.json()))
         except requests.exceptions.JSONDecodeError:
@@ -1506,28 +1843,31 @@ def delete__autoscaler(args):
             print(r)
             print(r.text)  # Print the raw response to help with debugging.
     else:
-        print("The response is not JSON. Content-Type:", r.headers.get('Content-Type'))
+        print("The response is not JSON. Content-Type:", r.headers.get("Content-Type"))
         print(r.text)
+
 
 @parser.command(
     argument("ID", help="id of endpoint group to delete", type=int),
     usage="vastai delete endpoint ID ",
     help="Delete an endpoint group",
-    epilog=deindent("""
+    epilog=deindent(
+        """
         Note that deleting an endpoint group doesn't automatically destroy all the instances that are associated with your endpoint group, nor all the autogroups.
         Example: vastai delete endpoint 4242
-    """),
+    """
+    ),
 )
 def delete__endpoint(args):
-    id  = args.ID
-    url = apiurl(args, f"/endptjobs/{id}/" )
+    id = args.ID
+    url = apiurl(args, f"/endptjobs/{id}/")
     json_blob = {"client_id": "me", "endptjob_id": args.ID}
-    if (args.explain):
+    if args.explain:
         print("request json: ")
         print(json_blob)
-    r = http_del(args, url, headers=headers,json=json_blob)
+    r = http_del(args, url, headers=headers, json=json_blob)
     r.raise_for_status()
-    if 'application/json' in r.headers.get('Content-Type', ''):
+    if "application/json" in r.headers.get("Content-Type", ""):
         try:
             print("delete endpoint {}".format(r.json()))
         except requests.exceptions.JSONDecodeError:
@@ -1535,52 +1875,56 @@ def delete__endpoint(args):
             print(r)
             print(r.text)  # Print the raw response to help with debugging.
     else:
-        print("The response is not JSON. Content-Type:", r.headers.get('Content-Type'))
+        print("The response is not JSON. Content-Type:", r.headers.get("Content-Type"))
         print(r.text)
 
-def destroy_instance(id,args):
+
+def destroy_instance(id, args):
     url = apiurl(args, "/instances/{id}/".format(id=id))
-    r = http_del(args, url, headers=headers,json={})
+    r = http_del(args, url, headers=headers, json={})
     r.raise_for_status()
     if args.raw:
         print(json.dumps(r.json(), indent=1))
-    elif (r.status_code == 200):
-        rj = r.json();
-        if (rj["success"]):
-            print("destroying instance {id}.".format(**(locals())));
+    elif r.status_code == 200:
+        rj = r.json()
+        if rj["success"]:
+            print("destroying instance {id}.".format(**(locals())))
         else:
-            print(rj["msg"]);
+            print(rj["msg"])
     else:
-        print(r.text);
-        print("failed with error {r.status_code}".format(**locals()));
+        print(r.text)
+        print("failed with error {r.status_code}".format(**locals()))
 
 
 @parser.command(
     argument("id", help="id of instance to delete", type=int),
     usage="vastai destroy instance id [-h] [--api-key API_KEY] [--raw]",
     help="Destroy an instance (irreversible, deletes data)",
-    epilog=deindent("""
+    epilog=deindent(
+        """
         Perfoms the same action as pressing the "DESTROY" button on the website at https://console.vast.ai/instances/
         Example: vastai destroy instance 4242
-    """),
+    """
+    ),
 )
 def destroy__instance(args):
     """Perfoms the same action as pressing the "DESTROY" button on the website at https://console.vast.ai/instances/.
 
     :param argparse.Namespace args: should supply all the command-line options
     """
-    destroy_instance(args.id,args)
+    destroy_instance(args.id, args)
+
 
 @parser.command(
-    argument("ids", help="ids of instance to destroy", type=int, nargs='+'),
+    argument("ids", help="ids of instance to destroy", type=int, nargs="+"),
     usage="vastai destroy instances [--raw] <id>",
     help="Destroy a list of instances (irreversible, deletes data)",
 )
 def destroy__instances(args):
-    """
-    """
+    """ """
     for id in args.ids:
         destroy_instance(id, args)
+
 
 @parser.command(
     usage="vastai destroy team",
@@ -1592,27 +1936,37 @@ def destroy__team(args):
     r.raise_for_status()
     print(r.json())
 
+
 @parser.command(
     argument("instance_id", help="id of the instance", type=int),
     argument("ssh_key_id", help="id of the key to attach to the instance", type=str),
     usage="vastai detach instance_id ssh_key_id",
     help="Detach an ssh key from an instance",
-    epilog=deindent("""
+    epilog=deindent(
+        """
         Example: vastai detach 99999 12345
-    """)
+    """
+    ),
 )
 def detach__ssh(args):
-    url = apiurl(args, "/instances/{id}/ssh/{ssh_key_id}/".format(id=args.instance_id, ssh_key_id=args.ssh_key_id))
+    url = apiurl(
+        args,
+        "/instances/{id}/ssh/{ssh_key_id}/".format(
+            id=args.instance_id, ssh_key_id=args.ssh_key_id
+        ),
+    )
     r = http_del(args, url, headers=headers)
     r.raise_for_status()
     print(r.json())
 
+
 @parser.command(
     argument("ID", help="id of instance to execute on", type=int),
-    argument("COMMAND", help="bash command surrounded by single quotes",  type=str),
+    argument("COMMAND", help="bash command surrounded by single quotes", type=str),
     usage="vastai execute ID COMMAND",
     help="Execute a (constrained) remote command on a machine",
-    epilog=deindent("""
+    epilog=deindent(
+        """
         examples:
           vastai execute 99999 'ls -l -o -r'
           vastai execute 99999 'rm -r home/delete_this.txt'
@@ -1626,41 +1980,49 @@ def detach__ssh(args):
         Return value:
         Returns the output of the command which was executed on the instance, if successful. May take a few seconds to retrieve the results.
 
-    """),
+    """
+    ),
 )
 def execute(args):
     """Execute a (constrained) remote command on a machine.
     :param argparse.Namespace args: should supply all the command-line options
     """
     url = apiurl(args, "/instances/command/{id}/".format(id=args.ID))
-    json_blob={"command": args.COMMAND} 
-    if (args.explain):
+    json_blob = {"command": args.COMMAND}
+    if args.explain:
         print("request json: ")
         print(json_blob)
-    r = http_put(args, url,  headers=headers,json=json_blob )
+    r = http_put(args, url, headers=headers, json=json_blob)
     r.raise_for_status()
 
-    if (r.status_code == 200):
+    if r.status_code == 200:
         rj = r.json()
-        if (rj["success"]):
-            for i in range(0,30):
+        if rj["success"]:
+            for i in range(0, 30):
                 time.sleep(0.3)
-                url = rj.get("result_url",None)
-                if (url is None):
-                    api_key_id_h = hashlib.md5( (args.api_key + str(args.ID)).encode('utf-8') ).hexdigest()
-                    url = "https://s3.amazonaws.com/vast.ai/instance_logs/" + api_key_id_h + "C.log"
+                url = rj.get("result_url", None)
+                if url is None:
+                    api_key_id_h = hashlib.md5(
+                        (args.api_key + str(args.ID)).encode("utf-8")
+                    ).hexdigest()
+                    url = (
+                        "https://s3.amazonaws.com/vast.ai/instance_logs/"
+                        + api_key_id_h
+                        + "C.log"
+                    )
                 # print(f"trying {url}")
-                r = requests.get(url) #headers=headers
+                r = requests.get(url)  # headers=headers
                 # print(f"got: {r.status_code}")
-                if (r.status_code == 200):
-                    filtered_text = r.text.replace(rj["writeable_path"], '');
+                if r.status_code == 200:
+                    filtered_text = r.text.replace(rj["writeable_path"], "")
                     print(filtered_text)
                     break
         else:
-            print(rj);
+            print(rj)
     else:
-        print(r.text);
-        print("failed with error {r.status_code}".format(**locals()));
+        print(r.text)
+        print("failed with error {r.status_code}".format(**locals()))
+
 
 @parser.command(
     argument("--email", help="email of user to be invited", type=str),
@@ -1669,13 +2031,15 @@ def execute(args):
     help="Invite a team member",
 )
 def invite__team_member(args):
-    url = apiurl(args, "/team/invite/", query_args={"email": args.email, "role": args.role})
+    url = apiurl(
+        args, "/team/invite/", query_args={"email": args.email, "role": args.role}
+    )
     r = http_post(args, url, headers=headers)
     r.raise_for_status()
-    if (r.status_code == 200):
+    if r.status_code == 200:
         print(f"successfully invited {args.email} to your current team")
     else:
-        print(r.text);
+        print(r.text)
         print(f"failed with error {r.status_code}")
 
 
@@ -1691,25 +2055,28 @@ def label__instance(args):
     :param argparse.Namespace args: should supply all the command-line options
     :rtype:
     """
-    url       = apiurl(args, "/instances/{id}/".format(id=args.id))
-    json_blob = { "label": args.label }
-    if (args.explain):
+    url = apiurl(args, "/instances/{id}/".format(id=args.id))
+    json_blob = {"label": args.label}
+    if args.explain:
         print("request json: ")
         print(json_blob)
-    r = http_put(args, url,  headers=headers,json=json_blob)
+    r = http_put(args, url, headers=headers, json=json_blob)
     r.raise_for_status()
 
-    rj = r.json();
+    rj = r.json()
     if rj["success"]:
-        print("label for {args.id} set to {args.label}.".format(**(locals())));
+        print("label for {args.id} set to {args.label}.".format(**(locals())))
     else:
-        print(rj["msg"]);
-
+        print(rj["msg"])
 
 
 @parser.command(
     argument("INSTANCE_ID", help="id of instance", type=int),
-    argument("--tail", help="Number of lines to show from the end of the logs (default '1000')", type=str),
+    argument(
+        "--tail",
+        help="Number of lines to show from the end of the logs (default '1000')",
+        type=str,
+    ),
     usage="vastai logs INSTANCE_ID [OPTIONS] ",
     help="Get the logs for an instance",
 )
@@ -1718,41 +2085,52 @@ def logs(args):
     :param argparse.Namespace args: should supply all the command-line options
     """
     url = apiurl(args, "/instances/request_logs/{id}/".format(id=args.INSTANCE_ID))
-    #url = apiurl(args, "/instances/bid_price/{id}/".format(id=args.INSTANCE_ID))
+    # url = apiurl(args, "/instances/bid_price/{id}/".format(id=args.INSTANCE_ID))
     json_blob = {}
-    if (args.tail):
-        json_blob['tail'] = args.tail
-    if (args.explain):
+    if args.tail:
+        json_blob["tail"] = args.tail
+    if args.explain:
         print("request json: ")
         print(json_blob)
 
-    r = http_put(args, url,  headers=headers,json=json_blob )
+    r = http_put(args, url, headers=headers, json=json_blob)
     r.raise_for_status()
 
-    if (r.status_code == 200):
-        rj = r.json();
-        for i in range(0,30):
+    if r.status_code == 200:
+        rj = r.json()
+        for i in range(0, 30):
             time.sleep(0.3)
-            #url = args.url + "/static/docker_logs/C" + str(args.INSTANCE_ID&255) + ".log" # apiurl(args, "/instances/request_logs/{id}/".format(id=args.id))
-            #url = "https://s3.amazonaws.com/vast.ai/instance_logs/" + args.api_key + str(args.INSTANCE_ID) + ".log"
-            api_key_id_h = hashlib.md5( (args.api_key + str(args.INSTANCE_ID)).encode('utf-8') ).hexdigest()
-            url = "https://s3.amazonaws.com/vast.ai/instance_logs/" + api_key_id_h + ".log"
-            print(f"waiting on logs for instance {args.INSTANCE_ID} fetching from {url}")
-            r = requests.get(url, headers=headers);
-            if (r.status_code == 200):
+            # url = args.url + "/static/docker_logs/C" + str(args.INSTANCE_ID&255) + ".log" # apiurl(args, "/instances/request_logs/{id}/".format(id=args.id))
+            # url = "https://s3.amazonaws.com/vast.ai/instance_logs/" + args.api_key + str(args.INSTANCE_ID) + ".log"
+            api_key_id_h = hashlib.md5(
+                (args.api_key + str(args.INSTANCE_ID)).encode("utf-8")
+            ).hexdigest()
+            url = (
+                "https://s3.amazonaws.com/vast.ai/instance_logs/"
+                + api_key_id_h
+                + ".log"
+            )
+            print(
+                f"waiting on logs for instance {args.INSTANCE_ID} fetching from {url}"
+            )
+            r = requests.get(url, headers=headers)
+            if r.status_code == 200:
                 print(r.text)
                 break
         else:
-            print(rj["msg"]);
+            print(rj["msg"])
     else:
-        print(r.text);
-        print("failed with error {r.status_code}".format(**locals()));
-
+        print(r.text)
+        print("failed with error {r.status_code}".format(**locals()))
 
 
 @parser.command(
     argument("ID", help="id of instance to prepay for", type=int),
-    argument("amount", help="amount of instance credit prepayment (default discount func of 0.2 for 1 month, 0.3 for 3 months)", type=float),
+    argument(
+        "amount",
+        help="amount of instance credit prepayment (default discount func of 0.2 for 1 month, 0.3 for 3 months)",
+        type=float,
+    ),
     usage="vastai prepay instance ID AMOUNT",
     help="Deposit credits into reserved instance.",
 )
@@ -1761,33 +2139,40 @@ def prepay__instance(args):
     :param argparse.Namespace args: should supply all the command-line options
     :rtype:
     """
-    url       = apiurl(args, "/instances/prepay/{id}/".format(id=args.ID))
-    json_blob = { "amount": args.amount }
-    if (args.explain):
+    url = apiurl(args, "/instances/prepay/{id}/".format(id=args.ID))
+    json_blob = {"amount": args.amount}
+    if args.explain:
         print("request json: ")
         print(json_blob)
-    r = http_put(args, url,  headers=headers,json=json_blob)
+    r = http_put(args, url, headers=headers, json=json_blob)
     r.raise_for_status()
 
-    rj = r.json();
+    rj = r.json()
     if rj["success"]:
-        timescale = round( rj["timescale"], 3)
-        discount_rate = 100.0*round( rj["discount_rate"], 3)
-        print("prepaid for {timescale} months of instance {args.ID} applying ${args.amount} credits for a discount of {discount_rate}%.".format(**(locals())));
+        timescale = round(rj["timescale"], 3)
+        discount_rate = 100.0 * round(rj["discount_rate"], 3)
+        print(
+            "prepaid for {timescale} months of instance {args.ID} applying ${args.amount} credits for a discount of {discount_rate}%.".format(
+                **(locals())
+            )
+        )
     else:
-        print(rj["msg"]);
+        print(rj["msg"])
 
-'''
-'''
+
+"""
+"""
 
 
 @parser.command(
     argument("ID", help="id of instance to reboot", type=int),
     usage="vastai reboot instance ID [OPTIONS]",
     help="Reboot (stop/start) an instance",
-    epilog=deindent("""
+    epilog=deindent(
+        """
         Stops and starts container without any risk of losing GPU priority.
-    """),
+    """
+    ),
 )
 def reboot__instance(args):
     """
@@ -1795,27 +2180,29 @@ def reboot__instance(args):
     :rtype:
     """
     url = apiurl(args, "/instances/reboot/{id}/".format(id=args.ID))
-    r = http_put(args, url,  headers=headers,json={})
+    r = http_put(args, url, headers=headers, json={})
     r.raise_for_status()
 
-    if (r.status_code == 200):
-        rj = r.json();
-        if (rj["success"]):
-            print("Rebooting instance {args.ID}.".format(**(locals())));
+    if r.status_code == 200:
+        rj = r.json()
+        if rj["success"]:
+            print("Rebooting instance {args.ID}.".format(**(locals())))
         else:
-            print(rj["msg"]);
+            print(rj["msg"])
     else:
-        print(r.text);
-        print("failed with error {r.status_code}".format(**locals()));
+        print(r.text)
+        print("failed with error {r.status_code}".format(**locals()))
 
 
 @parser.command(
     argument("ID", help="id of instance to reboot", type=int),
     usage="vastai recycle instance ID [OPTIONS]",
     help="Recycle (destroy/create) an instance",
-    epilog=deindent("""
+    epilog=deindent(
+        """
         Destroys and recreates container in place (from newly pulled image) without any risk of losing GPU priority.
-    """),
+    """
+    ),
 )
 def recycle__instance(args):
     """
@@ -1823,18 +2210,19 @@ def recycle__instance(args):
     :rtype:
     """
     url = apiurl(args, "/instances/recycle/{id}/".format(id=args.ID))
-    r = http_put(args, url,  headers=headers,json={})
+    r = http_put(args, url, headers=headers, json={})
     r.raise_for_status()
 
-    if (r.status_code == 200):
+    if r.status_code == 200:
         rj = r.json()
-        if (rj["success"]):
-            print("Recycling instance {args.ID}.".format(**(locals())));
+        if rj["success"]:
+            print("Recycling instance {args.ID}.".format(**(locals())))
         else:
-            print(rj["msg"]);
+            print(rj["msg"])
     else:
         print(r.text)
-        print("failed with error {r.status_code}".format(**locals()));
+        print("failed with error {r.status_code}".format(**locals()))
+
 
 @parser.command(
     argument("ID", help="id of user to remove", type=int),
@@ -1847,6 +2235,7 @@ def remove__team_member(args):
     r.raise_for_status()
     print(r.json())
 
+
 @parser.command(
     argument("NAME", help="name of the role", type=str),
     usage="vastai remove team-role NAME",
@@ -1857,6 +2246,7 @@ def remove__team_role(args):
     r = http_del(args, url, headers=headers)
     r.raise_for_status()
     print(r.json())
+
 
 @parser.command(
     argument("ID", help="machine id", type=int),
@@ -1869,16 +2259,16 @@ def reports(args):
     :rtype:
     """
     url = apiurl(args, "/machines/{id}/reports/".format(id=args.ID))
-    json_blob = {"machine_id" : args.ID}
+    json_blob = {"machine_id": args.ID}
 
-    if (args.explain):
+    if args.explain:
         print("request json: ")
         print(json_blob)
-    
+
     r = requests.get(url, headers=headers, json=json_blob)
     r.raise_for_status()
 
-    if (r.status_code == 200):
+    if r.status_code == 200:
         print(f"reports: {json.dumps(r.json(), indent=2)}")
 
 
@@ -1887,49 +2277,54 @@ def reports(args):
     help="Reset your api-key (get new key from website).",
 )
 def reset__api_key(args):
-    """Caution: a bad API key will make it impossible to connect to the servers.
-    """
-    print('fml')
-    #url = apiurl(args, "/users/current/reset-apikey/", {"owner": "me"})
-    url = apiurl(args, "/commands/reset_apikey/" )
-    json_blob = {"client_id": "me",}
-    if (args.explain):
+    """Caution: a bad API key will make it impossible to connect to the servers."""
+    print("fml")
+    # url = apiurl(args, "/users/current/reset-apikey/", {"owner": "me"})
+    url = apiurl(args, "/commands/reset_apikey/")
+    json_blob = {
+        "client_id": "me",
+    }
+    if args.explain:
         print("request json: ")
         print(json_blob)
-    r = http_put(args, url,  headers=headers,json=json_blob)
+    r = http_put(args, url, headers=headers, json=json_blob)
     r.raise_for_status()
     print("api-key reset ".format(r.json()))
 
-def start_instance(id,args):
+
+def start_instance(id, args):
     url = apiurl(args, "/instances/{id}/".format(id=id))
-    json_blob ={"state": "running"}
-    if (args.explain):
+    json_blob = {"state": "running"}
+    if args.explain:
         print("request json: ")
         print(json_blob)
-    r = http_put(args, url,  headers=headers,json=json_blob)
+    r = http_put(args, url, headers=headers, json=json_blob)
     r.raise_for_status()
 
-    if (r.status_code == 200):
-        rj = r.json();
-        if (rj["success"]):
-            print("starting instance {id}.".format(**(locals())));
+    if r.status_code == 200:
+        rj = r.json()
+        if rj["success"]:
+            print("starting instance {id}.".format(**(locals())))
         else:
-            print(rj["msg"]);
+            print(rj["msg"])
     else:
-        print(r.text);
-        print("failed with error {r.status_code}".format(**locals()));
+        print(r.text)
+        print("failed with error {r.status_code}".format(**locals()))
+
 
 @parser.command(
     argument("ID", help="ID of instance to start/restart", type=int),
     usage="vastai start instance ID [OPTIONS]",
     help="Start a stopped instance",
-    epilog=deindent("""
+    epilog=deindent(
+        """
         This command attempts to bring an instance from the "stopped" state into the "running" state. This is subject to resource availability on the machine that the instance is located on.
         If your instance is stuck in the "scheduling" state for more than 30 seconds after running this, it likely means that the required resources on the machine to run your instance are currently unavailable.
         Examples: 
             vastai start instances $(vastai show instances -q)
             vastai start instance 329838
-    """),
+    """
+    ),
 )
 def start__instance(args):
     """
@@ -1937,49 +2332,51 @@ def start__instance(args):
     :param argparse.Namespace args: should supply all the command-line options
     :rtype:
     """
-    start_instance(args.ID,args)
+    start_instance(args.ID, args)
+
 
 @parser.command(
-    argument("IDs", help="ids of instance to start", type=int, nargs='+'),
+    argument("IDs", help="ids of instance to start", type=int, nargs="+"),
     usage="vastai start instances [OPTIONS] ID0 ID1 ID2...",
     help="Start a list of instances",
 )
 def start__instances(args):
-    """
-    """
+    """ """
     for id in args.IDs:
         start_instance(id, args)
 
 
-def stop_instance(id,args):
+def stop_instance(id, args):
     url = apiurl(args, "/instances/{id}/".format(id=id))
-    json_blob ={"state": "stopped"}
-    if (args.explain):
+    json_blob = {"state": "stopped"}
+    if args.explain:
         print("request json: ")
         print(json_blob)
-    r = http_put(args, url,  headers=headers,json=json_blob)
+    r = http_put(args, url, headers=headers, json=json_blob)
     r.raise_for_status()
 
-    if (r.status_code == 200):
-        rj = r.json();
-        if (rj["success"]):
-            print("stopping instance {id}.".format(**(locals())));
+    if r.status_code == 200:
+        rj = r.json()
+        if rj["success"]:
+            print("stopping instance {id}.".format(**(locals())))
         else:
-            print(rj["msg"]);
+            print(rj["msg"])
     else:
-        print(r.text);
-        print("failed with error {r.status_code}".format(**locals()));
+        print(r.text)
+        print("failed with error {r.status_code}".format(**locals()))
 
 
 @parser.command(
     argument("ID", help="id of instance to stop", type=int),
     usage="vastai stop instance ID [OPTIONS]",
     help="Stop a running instance",
-    epilog=deindent("""
+    epilog=deindent(
+        """
         This command brings an instance from the "running" state into the "stopped" state. When an instance is "stopped" all of your data on the instance is preserved, 
         and you can resume use of your instance by starting it again. Once stopped, starting an instance is subject to resource availability on the machine that the instance is located on.
         There are ways to move data off of a stopped instance, which are described here: https://vast.ai/docs/gpu-instances/data-movement
-    """)
+    """
+    ),
 )
 def stop__instance(args):
     """
@@ -1987,21 +2384,23 @@ def stop__instance(args):
     :param argparse.Namespace args: should supply all the command-line options
     :rtype:
     """
-    stop_instance(args.ID,args)
+    stop_instance(args.ID, args)
+
 
 @parser.command(
-    argument("IDs", help="ids of instance to stop", type=int, nargs='+'),
+    argument("IDs", help="ids of instance to stop", type=int, nargs="+"),
     usage="vastai stop instances [OPTIONS] ID0 ID1 ID2...",
     help="Stop a list of instances",
-    epilog=deindent("""
+    epilog=deindent(
+        """
         Examples: 
             vastai stop instances $(vastai show instances -q)
             vastai stop instances 329838 984849
-    """),
+    """
+    ),
 )
 def stop__instances(args):
-    """
-    """
+    """ """
 
     for id in args.IDs:
         stop_instance(id, args)
@@ -2010,7 +2409,7 @@ def stop__instances(args):
 def numeric_version(version_str):
     try:
         # Split the version string by the period
-        major, minor, patch = version_str.split('.')
+        major, minor, patch = version_str.split(".")
 
         # Pad each part with leading zeros to make it 3 digits
         major = major.zfill(3)
@@ -2022,7 +2421,7 @@ def numeric_version(version_str):
 
         # Convert the concatenated string to an integer
         result = int(numeric_version_str)
-        #print(result)
+        # print(result)
         return result
 
     except ValueError:
@@ -2031,22 +2430,29 @@ def numeric_version(version_str):
 
 
 benchmarks_fields = {
-    "contract_id",#             int        ID of instance/contract reporting benchmark
-    "id",#                      int        benchmark unique ID
-    "image",#                   string     image used for benchmark
-    "last_update",#             float      date of benchmark
-    "machine_id",#              int        id of machine benchmarked
-    "model",#                   string     name of model used in benchmark
-    "name",#                    string     name of benchmark
-    "num_gpus",#                int        number of gpus used in benchmark
-    "score"#                   float      benchmark score result
+    "contract_id",  #             int        ID of instance/contract reporting benchmark
+    "id",  #                      int        benchmark unique ID
+    "image",  #                   string     image used for benchmark
+    "last_update",  #             float      date of benchmark
+    "machine_id",  #              int        id of machine benchmarked
+    "model",  #                   string     name of model used in benchmark
+    "name",  #                    string     name of benchmark
+    "num_gpus",  #                int        number of gpus used in benchmark
+    "score",  #                   float      benchmark score result
 }
 
+
 @parser.command(
-    argument("query", help="Search query in simple query syntax (see below)", nargs="*", default=None),
+    argument(
+        "query",
+        help="Search query in simple query syntax (see below)",
+        nargs="*",
+        default=None,
+    ),
     usage="vastai search benchmarks [--help] [--api-key API_KEY] [--raw] <query>",
     help="Search for benchmark results using custom query",
-    epilog=deindent("""
+    epilog=deindent(
+        """
         Query syntax:
 
             query = comparison comparison...
@@ -2077,7 +2483,8 @@ benchmarks_fields = {
             name                    string     name of benchmark
             num_gpus                int        number of gpus used in benchmark
             score                   float      benchmark score result
-    """),
+    """
+    ),
     aliases=hidden_aliases(["search benchmarks"]),
 )
 def search__benchmarks(args):
@@ -2088,56 +2495,62 @@ def search__benchmarks(args):
         query = {}
         if args.query is not None:
             query = parse_query(args.query, query, benchmarks_fields)
-            query = fix_date_fields(query, ['last_update'])
+            query = fix_date_fields(query, ["last_update"])
 
     except ValueError as e:
         print("Error: ", e)
-        return 1  
-    #url = apiurl(args, "/benchmarks", {"select_cols" : ['id','last_update','machine_id','score'], "select_filters" : query})
-    url = apiurl(args, "/benchmarks", {"select_cols" : ['*'], "select_filters" : query})
+        return 1
+    # url = apiurl(args, "/benchmarks", {"select_cols" : ['id','last_update','machine_id','score'], "select_filters" : query})
+    url = apiurl(args, "/benchmarks", {"select_cols": ["*"], "select_filters": query})
     r = requests.get(url, headers=headers)
     r.raise_for_status()
     rows = r.json()
-    if True: # args.raw:
+    if True:  # args.raw:
         print(json.dumps(rows, indent=1, sort_keys=True))
     else:
         display_table(rows, displayable_fields)
 
 
-
 invoices_fields = {
-    'id',#               int,                   
-    'user_id',#          int,      
-    'when',#             float,                     
-    'paid_on',#          float,                     
-    'payment_expected',# float,                     
-    'amount_cents',#     int,                   
-    'is_credit',#        bool,                   
-    'is_delayed',#       bool,                   
-    'balance_before',#   float,                     
-    'balance_after',#    float,                     
-    'original_amount',#  int,                   
-    'event_id',#         string,                    
-    'cut_amount',#       int,                   
-    'cut_percent',#      float,                     
-    'extra',#            json,           
-    'service',#          string,                    
-    'stripe_charge',#    json,           
-    'stripe_refund',#    json,           
-    'stripe_payout',#    json,           
-    'error',#            json,           
-    'paypal_email',#     string,                    
-    'transfer_group',#   string,                    
-    'failed',#           bool,                   
-    'refunded',#         bool,                   
-    'is_check',#         bool,                   
+    "id",  #               int,
+    "user_id",  #          int,
+    "when",  #             float,
+    "paid_on",  #          float,
+    "payment_expected",  # float,
+    "amount_cents",  #     int,
+    "is_credit",  #        bool,
+    "is_delayed",  #       bool,
+    "balance_before",  #   float,
+    "balance_after",  #    float,
+    "original_amount",  #  int,
+    "event_id",  #         string,
+    "cut_amount",  #       int,
+    "cut_percent",  #      float,
+    "extra",  #            json,
+    "service",  #          string,
+    "stripe_charge",  #    json,
+    "stripe_refund",  #    json,
+    "stripe_payout",  #    json,
+    "error",  #            json,
+    "paypal_email",  #     string,
+    "transfer_group",  #   string,
+    "failed",  #           bool,
+    "refunded",  #         bool,
+    "is_check",  #         bool,
 }
 
+
 @parser.command(
-    argument("query", help="Search query in simple query syntax (see below)", nargs="*", default=None),
+    argument(
+        "query",
+        help="Search query in simple query syntax (see below)",
+        nargs="*",
+        default=None,
+    ),
     usage="vastai search invoices [--help] [--api-key API_KEY] [--raw] <query>",
     help="Search for benchmark results using custom query",
-    epilog=deindent("""
+    epilog=deindent(
+        """
         Query syntax:
 
             query = comparison comparison...
@@ -2184,7 +2597,8 @@ invoices_fields = {
     failed              bool,                   
     refunded            bool,                   
     is_check            bool,                   
-    """),
+    """
+    ),
     aliases=hidden_aliases(["search invoices"]),
 )
 def search__invoices(args):
@@ -2195,37 +2609,96 @@ def search__invoices(args):
         query = {}
         if args.query is not None:
             query = parse_query(args.query, query, invoices_fields)
-            query = fix_date_fields(query, ['when', 'paid_on', 'payment_expected', 'balance_before', 'balance_after'])
+            query = fix_date_fields(
+                query,
+                [
+                    "when",
+                    "paid_on",
+                    "payment_expected",
+                    "balance_before",
+                    "balance_after",
+                ],
+            )
 
     except ValueError as e:
         print("Error: ", e)
-        return 1  
-    url = apiurl(args, "/invoices", {"select_cols" : ['*'], "select_filters" : query})
+        return 1
+    url = apiurl(args, "/invoices", {"select_cols": ["*"], "select_filters": query})
     r = requests.get(url, headers=headers)
     r.raise_for_status()
     rows = r.json()
-    if True: # args.raw:
+    if True:  # args.raw:
         print(json.dumps(rows, indent=1, sort_keys=True))
     else:
         display_table(rows, displayable_fields)
 
 
 @parser.command(
-    argument("-t", "--type", default="on-demand", help="Show 'on-demand', 'reserved', or 'bid'(interruptible) pricing. default: on-demand"),
-    argument("-i", "--interruptible", dest="type", const="bid", action="store_const", help="Alias for --type=bid"),
-    argument("-b", "--bid", dest="type", const="bid", action="store_const", help="Alias for --type=bid"),
-    argument("-r", "--reserved", dest="type", const="reserved", action="store_const", help="Alias for --type=reserved"),
-    argument("-d", "--on-demand", dest="type", const="on-demand", action="store_const", help="Alias for --type=on-demand"),
+    argument(
+        "-t",
+        "--type",
+        default="on-demand",
+        help="Show 'on-demand', 'reserved', or 'bid'(interruptible) pricing. default: on-demand",
+    ),
+    argument(
+        "-i",
+        "--interruptible",
+        dest="type",
+        const="bid",
+        action="store_const",
+        help="Alias for --type=bid",
+    ),
+    argument(
+        "-b",
+        "--bid",
+        dest="type",
+        const="bid",
+        action="store_const",
+        help="Alias for --type=bid",
+    ),
+    argument(
+        "-r",
+        "--reserved",
+        dest="type",
+        const="reserved",
+        action="store_const",
+        help="Alias for --type=reserved",
+    ),
+    argument(
+        "-d",
+        "--on-demand",
+        dest="type",
+        const="on-demand",
+        action="store_const",
+        help="Alias for --type=on-demand",
+    ),
     argument("-n", "--no-default", action="store_true", help="Disable default query"),
     argument("--new", action="store_true", help="New search exp"),
     argument("--limit", type=int, help=""),
     argument("--disable-bundling", action="store_true", help="Deprecated"),
-    argument("--storage", type=float, default=5.0, help="Amount of storage to use for pricing, in GiB. default=5.0GiB"),
-    argument("-o", "--order", type=str, help="Comma-separated list of fields to sort on. postfix field with - to sort desc. ex: -o 'num_gpus,total_flops-'.  default='score-'", default='score-'),
-    argument("query", help="Query to search for. default: 'external=false rentable=true verified=true', pass -n to ignore default", nargs="*", default=None),
+    argument(
+        "--storage",
+        type=float,
+        default=5.0,
+        help="Amount of storage to use for pricing, in GiB. default=5.0GiB",
+    ),
+    argument(
+        "-o",
+        "--order",
+        type=str,
+        help="Comma-separated list of fields to sort on. postfix field with - to sort desc. ex: -o 'num_gpus,total_flops-'.  default='score-'",
+        default="score-",
+    ),
+    argument(
+        "query",
+        help="Query to search for. default: 'external=false rentable=true verified=true', pass -n to ignore default",
+        nargs="*",
+        default=None,
+    ),
     usage="vastai search offers [--help] [--api-key API_KEY] [--raw] <query>",
     help="Search for instance types using custom query",
-    epilog=deindent("""
+    epilog=deindent(
+        """
         Query syntax:
 
             query = comparison comparison...
@@ -2312,7 +2785,8 @@ def search__invoices(args):
             total_flops:            float     total TFLOPs from all GPUs
             ubuntu_version          string    host machine ubuntu OS version
             verified:               bool      is the machine verified
-    """),
+    """
+    ),
     aliases=hidden_aliases(["search instances"]),
 )
 def search_offers(args):
@@ -2321,22 +2795,28 @@ def search_offers(args):
     :param argparse.Namespace args: should supply all the command-line options
     """
 
-
     try:
-
         if args.no_default:
             query = {}
         else:
-            query = {"verified": {"eq": True}, "external": {"eq": False}, "rentable": {"eq": True}, "rented": {"eq": False}}
-            #query = {"verified": {"eq": True}, "external": {"eq": False}, "rentable": {"eq": True} }
+            query = {
+                "verified": {"eq": True},
+                "external": {"eq": False},
+                "rentable": {"eq": True},
+                "rented": {"eq": False},
+            }
+            # query = {"verified": {"eq": True}, "external": {"eq": False}, "rentable": {"eq": True} }
 
         if args.query is not None:
-            query = parse_query(args.query, query, offers_fields, offers_alias, offers_mult)
+            query = parse_query(
+                args.query, query, offers_fields, offers_alias, offers_mult
+            )
 
         order = []
         for name in args.order.split(","):
             name = name.strip()
-            if not name: continue
+            if not name:
+                continue
             direction = "asc"
             field = name
             if name.strip("-") != name:
@@ -2345,19 +2825,19 @@ def search_offers(args):
             if name.strip("+") != name:
                 direction = "asc"
                 field = name.strip("+")
-            #print(f"{field} {name} {direction}")
+            # print(f"{field} {name} {direction}")
             if field in offers_alias:
-                field = offers_alias[field];
+                field = offers_alias[field]
             order.append([field, direction])
 
         query["order"] = order
         query["type"] = args.type
-        if (args.limit):
+        if args.limit:
             query["limit"] = int(args.limit)
         query["allocated_storage"] = args.storage
         # For backwards compatibility, support --type=interruptible option
-        if query["type"] == 'interruptible':
-            query["type"] = 'bid'
+        if query["type"] == "interruptible":
+            query["type"] = "bid"
         if args.disable_bundling:
             query["disable_bundling"] = True
     except ValueError as e:
@@ -2365,18 +2845,18 @@ def search_offers(args):
         return 1
 
     new_search_ept = args.new
-    
-    #json_blob = {"select_cols" : ['*'], "q" : query}
+
+    # json_blob = {"select_cols" : ['*'], "q" : query}
     json_blob = query
 
     if new_search_ept:
-        #geolocation = query.pop("geolocation", None)
-        #query = {'reliability2': {'gt': '0.1'}}
-        json_blob = {"select_cols" : ['*'], "q" : query}
+        # geolocation = query.pop("geolocation", None)
+        # query = {'reliability2': {'gt': '0.1'}}
+        json_blob = {"select_cols": ["*"], "q": query}
         url = apiurl(args, "/search/asks/")
         stime = time.time()
 
-        if (args.explain):
+        if args.explain:
             print("request json: ")
             print(json_blob)
 
@@ -2385,28 +2865,28 @@ def search_offers(args):
         print(f"request took {etime-stime}s")
 
     else:
-        if (args.explain):
+        if args.explain:
             print("request json: ")
             print(json_blob)
-        #url = apiurl(args, "/bundles", {"q": query})
-        #r = requests.get(url, headers=headers)
+        # url = apiurl(args, "/bundles", {"q": query})
+        # r = requests.get(url, headers=headers)
         url = apiurl(args, "/bundles/")
         r = http_post(args, url, headers=headers, json=json_blob)
 
     r.raise_for_status()
-   
-    if (r.headers.get('Content-Type') != 'application/json'):
+
+    if r.headers.get("Content-Type") != "application/json":
         print(f"invalid return Content-Type: {r.headers.get('Content-Type')}")
-        return   
+        return
 
     rows = r.json()["offers"]
 
     # TODO: add this post-query geolocation filter to the database call rather than handling it locally
-    if 'rented' in query:
-        filter_q  = query['rented']
+    if "rented" in query:
+        filter_q = query["rented"]
         filter_op = list(filter_q.keys())[0]
-        target    = filter_q[filter_op]
-        new_rows  = []
+        target = filter_q[filter_op]
+        new_rows = []
         for row in rows:
             rented = False
             if "rented" in row and row["rented"] is not None:
@@ -2424,37 +2904,44 @@ def search_offers(args):
     if args.raw:
         print(json.dumps(rows, indent=1, sort_keys=True))
     else:
-        if args.type == "reserved":           
+        if args.type == "reserved":
             display_table(rows, displayable_fields_reserved)
         else:
             display_table(rows, displayable_fields)
 
 
 templates_fields = {
-    "creator_id",#              int        ID of creator
-    "created_at",#              float      time of initial template creation (UTC epoch timestamp)
-    "count_created",#           int        #instances created (popularity)
-    "default_tag",#             string     image default tag
-    "docker_login_repo",#       string     image docker repository
-    "id",#                      int        template unique ID
-    "image",#                   string     image used for benchmark
-    "jup_direct",#              bool       supports jupyter direct
-    "hash_id",#                 string     unique hash ID of template
-    "private",#                 bool       true: only your templates, None: public templates
-    "name",#                    string     displayable name
-    "recent_create_date",#      float      last time of instance creation (UTC epoch timestamp)
-    "recommended_disk_space",#  float      min disk space required
-    "recommended",#             bool       is templated on our recommended list
-    "ssh_direct",#              bool       supports ssh direct
-    "tag",#                     string     image tag
-    "use_ssh",#                 string     supports ssh (direct or proxy)
+    "creator_id",  #              int        ID of creator
+    "created_at",  #              float      time of initial template creation (UTC epoch timestamp)
+    "count_created",  #           int        #instances created (popularity)
+    "default_tag",  #             string     image default tag
+    "docker_login_repo",  #       string     image docker repository
+    "id",  #                      int        template unique ID
+    "image",  #                   string     image used for benchmark
+    "jup_direct",  #              bool       supports jupyter direct
+    "hash_id",  #                 string     unique hash ID of template
+    "private",  #                 bool       true: only your templates, None: public templates
+    "name",  #                    string     displayable name
+    "recent_create_date",  #      float      last time of instance creation (UTC epoch timestamp)
+    "recommended_disk_space",  #  float      min disk space required
+    "recommended",  #             bool       is templated on our recommended list
+    "ssh_direct",  #              bool       supports ssh direct
+    "tag",  #                     string     image tag
+    "use_ssh",  #                 string     supports ssh (direct or proxy)
 }
 
+
 @parser.command(
-    argument("query", help="Search query in simple query syntax (see below)", nargs="*", default=None),
+    argument(
+        "query",
+        help="Search query in simple query syntax (see below)",
+        nargs="*",
+        default=None,
+    ),
     usage="vastai search templates [--help] [--api-key API_KEY] [--raw] <query>",
     help="Search for template results using custom query",
-    epilog=deindent("""
+    epilog=deindent(
+        """
         Query syntax:
 
             query = comparison comparison...
@@ -2491,7 +2978,8 @@ templates_fields = {
     recommended             bool       is templated on our recommended list
     ssh_direct              bool       supports ssh direct
     tag                     string     image tag
-    use_ssh                 bool       supports ssh (direct or proxy)    """),
+    use_ssh                 bool       supports ssh (direct or proxy)    """
+    ),
     aliases=hidden_aliases(["search templates"]),
 )
 def search__templates(args):
@@ -2502,16 +2990,16 @@ def search__templates(args):
         query = {}
         if args.query is not None:
             query = parse_query(args.query, query, templates_fields)
-            query = fix_date_fields(query, ['created_at', 'recent_create_date'])
+            query = fix_date_fields(query, ["created_at", "recent_create_date"])
 
     except ValueError as e:
         print("Error: ", e)
-        return 1  
-    url = apiurl(args, "/templates", {"select_cols" : ['*'], "select_filters" : query})
+        return 1
+    url = apiurl(args, "/templates", {"select_cols": ["*"], "select_filters": query})
     r = requests.get(url, headers=headers)
     r.raise_for_status()
     rows = r.json()
-    if True: # args.raw:
+    if True:  # args.raw:
         print(json.dumps(rows, indent=1, sort_keys=True))
     else:
         display_table(rows, displayable_fields)
@@ -2531,12 +3019,12 @@ def set__api_key(args):
     print("Your api key has been saved in {}".format(api_key_file_base))
 
 
-
 @parser.command(
     argument("--file", help="file path for params in json format", type=str),
     usage="vastai set user --file FILE",
     help="Update user data from json file",
-    epilog=deindent("""
+    epilog=deindent(
+        """
 
     Available fields:
 
@@ -2560,17 +3048,17 @@ def set__api_key(args):
     autobill_threshold              string
     phone_number                    string
     tfa_enabled                     bool
-    """),
+    """
+    ),
 )
 def set__user(args):
     params = None
-    with open(args.file, 'r') as file:
+    with open(args.file, "r") as file:
         params = json.load(file)
     url = apiurl(args, "/users/")
     r = requests.put(url, headers=headers, json=params)
     r.raise_for_status()
     print(f"{r.json()}")
-
 
 
 @parser.command(
@@ -2588,7 +3076,7 @@ def ssh_url(args):
 
 
 @parser.command(
-    argument("id",   help="id", type=int),
+    argument("id", help="id", type=int),
     usage="vastai scp-url ID",
     help="scp url helper",
 )
@@ -2602,61 +3090,64 @@ def scp_url(args):
 
 
 def _ssh_url(args, protocol):
-
     json_object = None
 
     # Opening JSON file
     try:
-        with open(f"ssh_{args.id}.json", 'r') as openfile:
+        with open(f"ssh_{args.id}.json", "r") as openfile:
             json_object = json.load(openfile)
     except:
         pass
 
-    port      = None
-    ipaddr    = None
+    port = None
+    ipaddr = None
 
     if json_object is not None:
         ipaddr = json_object["ipaddr"]
-        port   = json_object["port"]
+        port = json_object["port"]
 
     if ipaddr is None:
-        req_url = apiurl(args, "/instances", {"owner": "me"});
-        r = http_get(args, req_url);
+        req_url = apiurl(args, "/instances", {"owner": "me"})
+        r = http_get(args, req_url)
         r.raise_for_status()
         rows = r.json()["instances"]
         if args.id:
-            instance, = [r for r in rows if r['id'] == args.id]
+            (instance,) = [r for r in rows if r["id"] == args.id]
         elif len(rows) > 1:
             print("Found multiple running instances")
             return 1
         else:
-            instance, = rows
+            (instance,) = rows
 
-        ports     = instance.get("ports",{})
-        port_22d  = ports.get("22/tcp",None)
-        port      = -1
+        ports = instance.get("ports", {})
+        port_22d = ports.get("22/tcp", None)
+        port = -1
         try:
-            if (port_22d is not None):
+            if port_22d is not None:
                 ipaddr = instance["public_ipaddr"]
-                port   = int(port_22d[0]["HostPort"])
-            else:        
+                port = int(port_22d[0]["HostPort"])
+            else:
                 ipaddr = instance["ssh_host"]
-                port   = int(instance["ssh_port"])+1 if "jupyter" in instance["image_runtype"] else int(instance["ssh_port"])
+                port = (
+                    int(instance["ssh_port"]) + 1
+                    if "jupyter" in instance["image_runtype"]
+                    else int(instance["ssh_port"])
+                )
         except:
             port = -1
 
-    if (port > 0):
-        print(f'{protocol}root@{ipaddr}:{port}')
+    if port > 0:
+        print(f"{protocol}root@{ipaddr}:{port}")
     else:
-        print(f'error: ssh port not found')
+        print(f"error: ssh port not found")
 
-   
     # Writing to sample.json
     try:
         with open(f"ssh_{args.id}.json", "w") as outfile:
-            json.dump({"ipaddr":ipaddr, "port":port}, outfile)
+            json.dump({"ipaddr": ipaddr, "port": port}, outfile)
     except:
         pass
+
 
 @parser.command(
     argument("id", help="id of apikey to get", type=int),
@@ -2668,6 +3159,7 @@ def show__api_key(args):
     r = http_get(args, url, headers=headers)
     r.raise_for_status()
     print(r.json())
+
 
 @parser.command(
     usage="vastai show api-keys",
@@ -2682,6 +3174,7 @@ def show__api_keys(args):
     else:
         print(r.json())
 
+
 @parser.command(
     usage="vastai show ssh-keys",
     help="List your ssh keys associated with your account",
@@ -2695,68 +3188,74 @@ def show__ssh_keys(args):
     else:
         print(r.json())
 
+
 @parser.command(
     usage="vastai show autoscalers [--api-key API_KEY]",
     help="Display user's current autoscaler groups",
-    epilog=deindent("""
+    epilog=deindent(
+        """
         Example: vastai show autoscalers 
-    """),
+    """
+    ),
 )
 def show__autoscalers(args):
-    url = apiurl(args, "/autojobs/" )
+    url = apiurl(args, "/autojobs/")
     json_blob = {"client_id": "me", "api_key": args.api_key}
-    if (args.explain):
+    if args.explain:
         print("request json: ")
         print(json_blob)
-    r = http_get(args, url, headers=headers,json=json_blob)
+    r = http_get(args, url, headers=headers, json=json_blob)
     r.raise_for_status()
-    #print("autoscaler list ".format(r.json()))
+    # print("autoscaler list ".format(r.json()))
 
-    if (r.status_code == 200):
-        rj = r.json();
-        if (rj["success"]):
-            rows = rj["results"] 
+    if r.status_code == 200:
+        rj = r.json()
+        if rj["success"]:
+            rows = rj["results"]
             if args.raw:
                 print(json.dumps(rows, indent=1, sort_keys=True))
             else:
-                #print(rows)
+                # print(rows)
                 print(json.dumps(rows, indent=1, sort_keys=True))
         else:
-            print(rj["msg"]);
+            print(rj["msg"])
+
 
 @parser.command(
     usage="vastai show endpoints [--api-key API_KEY]",
     help="Display user's current endpoint groups",
-    epilog=deindent("""
+    epilog=deindent(
+        """
         Example: vastai show endpoints
-    """),
+    """
+    ),
 )
 def show__endpoints(args):
-    url = apiurl(args, "/endptjobs/" )
+    url = apiurl(args, "/endptjobs/")
     json_blob = {"client_id": "me", "api_key": args.api_key}
-    if (args.explain):
+    if args.explain:
         print("request json: ")
         print(json_blob)
-    r = http_get(args, url, headers=headers,json=json_blob)
+    r = http_get(args, url, headers=headers, json=json_blob)
     r.raise_for_status()
-    #print("autoscaler list ".format(r.json()))
+    # print("autoscaler list ".format(r.json()))
 
-    if (r.status_code == 200):
-        rj = r.json();
-        if (rj["success"]):
-            rows = rj["results"] 
+    if r.status_code == 200:
+        rj = r.json()
+        if rj["success"]:
+            rows = rj["results"]
             if args.raw:
                 print(json.dumps(rows, indent=1, sort_keys=True))
             else:
-                #print(rows)
+                # print(rows)
                 print(json.dumps(rows, indent=1, sort_keys=True))
         else:
-            print(rj["msg"]);
+            print(rj["msg"])
 
 
 @parser.command(
     usage="vastai show connections [--api-key API_KEY] [--raw]",
-    help="Displays user's cloud connections"
+    help="Displays user's cloud connections",
 )
 def show__connections(args):
     """
@@ -2765,9 +3264,9 @@ def show__connections(args):
     :param argparse.Namespace args: should supply all the command-line options
     :rtype:
     """
-    req_url = apiurl(args, "/users/cloud_integrations/");
+    req_url = apiurl(args, "/users/cloud_integrations/")
     print(req_url)
-    r = http_get(args, req_url, headers=headers);
+    r = http_get(args, req_url, headers=headers)
     r.raise_for_status()
     rows = r.json()
 
@@ -2780,7 +3279,7 @@ def show__connections(args):
 @parser.command(
     argument("ID", help="id of instance to get info for", type=int),
     usage="vastai show deposit ID [options]",
-    help="Display reserve deposit info for an instance"
+    help="Display reserve deposit info for an instance",
 )
 def show__deposit(args):
     """
@@ -2789,7 +3288,9 @@ def show__deposit(args):
     :param argparse.Namespace args: should supply all the command-line options
     :rtype:
     """
-    req_url = apiurl(args, "/instances/balance/{id}/".format(id=args.ID) , {"owner": "me"} )
+    req_url = apiurl(
+        args, "/instances/balance/{id}/".format(id=args.ID), {"owner": "me"}
+    )
     r = http_get(args, req_url)
     r.raise_for_status()
     print(json.dumps(r.json(), indent=1, sort_keys=True))
@@ -2797,8 +3298,18 @@ def show__deposit(args):
 
 @parser.command(
     argument("-q", "--quiet", action="store_true", help="only display numeric ids"),
-    argument("-s", "--start_date", help="start date and time for report. Many formats accepted", type=str),
-    argument("-e", "--end_date", help="end date and time for report. Many formats accepted ", type=str),
+    argument(
+        "-s",
+        "--start_date",
+        help="start date and time for report. Many formats accepted",
+        type=str,
+    ),
+    argument(
+        "-e",
+        "--end_date",
+        help="end date and time for report. Many formats accepted ",
+        type=str,
+    ),
     argument("-m", "--machine_id", help="Machine id (optional)", type=int),
     usage="vastai show earnings [OPTIONS]",
     help="Get machine earning history reports",
@@ -2811,11 +3322,11 @@ def show__earnings(args):
     :rtype:
     """
 
-    Minutes = 60.0;
-    Hours	= 60.0*Minutes;
-    Days	= 24.0*Hours;
-    Years	= 365.0*Days;
-    cday    = time.time() / Days
+    Minutes = 60.0
+    Hours = 60.0 * Minutes
+    Days = 24.0 * Hours
+    Years = 365.0 * Days
+    cday = time.time() / Days
     sday = cday - 1.0
     eday = cday - 1.0
 
@@ -2842,11 +3353,15 @@ def show__earnings(args):
             start_timestamp = time.mktime(start_date.timetuple())
             sday = start_timestamp / Days
         except ValueError:
-            print(f"Warning: Invalid start date format! Ignoring start date! \n {str(e)}")
+            print(
+                f"Warning: Invalid start date format! Ignoring start date! \n {str(e)}"
+            )
 
-
-
-    req_url = apiurl(args, "/users/me/machine-earnings", {"owner": "me", "sday": sday, "eday": eday, "machid" :args.machine_id});
+    req_url = apiurl(
+        args,
+        "/users/me/machine-earnings",
+        {"owner": "me", "sday": sday, "eday": eday, "machid": args.machine_id},
+    )
     r = http_get(args, req_url)
     r.raise_for_status()
     rows = r.json()
@@ -2857,25 +3372,44 @@ def show__earnings(args):
 def sum(X, k):
     y = 0
     for x in X:
-        a = float(x.get(k,0))
+        a = float(x.get(k, 0))
         y += a
     return y
 
-def select(X,k):
+
+def select(X, k):
     Y = set()
     for x in X:
-        v = x.get(k,None)
+        v = x.get(k, None)
         if v is not None:
             Y.add(v)
     return Y
 
+
 @parser.command(
     argument("-q", "--quiet", action="store_true", help="only display numeric ids"),
-    argument("-s", "--start_date", help="start date and time for report. Many formats accepted (optional)", type=str),
-    argument("-e", "--end_date", help="end date and time for report. Many formats accepted (optional)", type=str),
-    argument("-c", "--only_charges", action="store_true", help="Show only charge items."),
-    argument("-p", "--only_credits", action="store_true", help="Show only credit items."),
-    argument("--instance_label", help="Filter charges on a particular instance label (useful for autoscaler groups)"),
+    argument(
+        "-s",
+        "--start_date",
+        help="start date and time for report. Many formats accepted (optional)",
+        type=str,
+    ),
+    argument(
+        "-e",
+        "--end_date",
+        help="end date and time for report. Many formats accepted (optional)",
+        type=str,
+    ),
+    argument(
+        "-c", "--only_charges", action="store_true", help="Show only charge items."
+    ),
+    argument(
+        "-p", "--only_credits", action="store_true", help="Show only credit items."
+    ),
+    argument(
+        "--instance_label",
+        help="Filter charges on a particular instance label (useful for autoscaler groups)",
+    ),
     usage="vastai show invoices [OPTIONS]",
     help="Get billing history reports",
 )
@@ -2888,8 +3422,17 @@ def show__invoices(args):
     :rtype:
     """
 
-    sdate,edate = convert_dates_to_timestamps(args)
-    req_url = apiurl(args, "/users/me/invoices", {"owner": "me", "sdate":sdate, "edate":edate, "inc_charges" : not args.only_credits});
+    sdate, edate = convert_dates_to_timestamps(args)
+    req_url = apiurl(
+        args,
+        "/users/me/invoices",
+        {
+            "owner": "me",
+            "sdate": sdate,
+            "edate": edate,
+            "inc_charges": not args.only_credits,
+        },
+    )
 
     r = http_get(args, req_url)
     r.raise_for_status()
@@ -2901,29 +3444,26 @@ def show__invoices(args):
 
     contract_ids = None
 
-    if (args.instance_label):
-        #print(rows)
-        contract_ids = select(rows, 'instance_id')
-        #print(contract_ids)
+    if args.instance_label:
+        # print(rows)
+        contract_ids = select(rows, "instance_id")
+        # print(contract_ids)
 
         url = apiurl(args, f"/contracts/fetch/")
 
-        req_json = {
-            "label": args.instance_label,
-            "contract_ids": list(contract_ids)
-        }
+        req_json = {"label": args.instance_label, "contract_ids": list(contract_ids)}
 
-        if (args.explain):
+        if args.explain:
             print("request json: ")
             print(req_json)
-        
-        result = http_post(args, url, headers=headers,json=req_json)
+
+        result = http_post(args, url, headers=headers, json=req_json)
         result.raise_for_status()
         filtered_rows = result.json()["contracts"]
-        #print(rows)
+        # print(rows)
 
-        contract_ids = select(filtered_rows, 'id')
-        #print(contract_ids)
+        contract_ids = select(filtered_rows, "id")
+        # print(contract_ids)
 
         rows2 = []
         for row in rows:
@@ -2951,7 +3491,7 @@ def show__invoices(args):
 @parser.command(
     argument("id", help="id of instance to get", type=int),
     usage="vastai show instance [--api-key API_KEY] [--raw]",
-    help="Display user's current instances"
+    help="Display user's current instances",
 )
 def show__instance(args):
     """
@@ -2961,25 +3501,26 @@ def show__instance(args):
     :rtype:
     """
 
-    #req_url = apiurl(args, "/instance", {"owner": "me"});
-    req_url = apiurl(args, "/instances/{id}/".format(id=args.id) , {"owner": "me"} )
-   
-    #r = http_get(req_url)
+    # req_url = apiurl(args, "/instance", {"owner": "me"});
+    req_url = apiurl(args, "/instances/{id}/".format(id=args.id), {"owner": "me"})
+
+    # r = http_get(req_url)
     r = http_get(args, req_url)
     r.raise_for_status()
     row = r.json()["instances"]
-    row['duration'] = time.time() - row['start_date']
-    row['extra_env'] = {env_var[0]: env_var[1] for env_var in row['extra_env']}
+    row["duration"] = time.time() - row["start_date"]
+    row["extra_env"] = {env_var[0]: env_var[1] for env_var in row["extra_env"]}
     if args.raw:
         print(json.dumps(row, indent=1, sort_keys=True))
     else:
-        #print(row)
+        # print(row)
         display_table([row], instance_fields)
+
 
 @parser.command(
     argument("-q", "--quiet", action="store_true", help="only display numeric ids"),
     usage="vastai show instances [OPTIONS] [--api-key API_KEY] [--raw]",
-    help="Display user's current instances"
+    help="Display user's current instances",
 )
 def show__instances(args):
     """
@@ -2988,14 +3529,14 @@ def show__instances(args):
     :param argparse.Namespace args: should supply all the command-line options
     :rtype:
     """
-    req_url = apiurl(args, "/instances", {"owner": "me"});
-    #r = http_get(req_url)
+    req_url = apiurl(args, "/instances", {"owner": "me"})
+    # r = http_get(req_url)
     r = http_get(args, req_url)
     r.raise_for_status()
     rows = r.json()["instances"]
     for row in rows:
-        row['duration'] = time.time() - row['start_date']
-        row['extra_env'] = {env_var[0]: env_var[1] for env_var in row['extra_env']}
+        row["duration"] = time.time() - row["start_date"]
+        row["extra_env"] = {env_var[0]: env_var[1] for env_var in row["extra_env"]}
 
     if args.quiet:
         for row in rows:
@@ -3008,11 +3549,9 @@ def show__instances(args):
         display_table(rows, instance_fields)
 
 
-
-
 @parser.command(
     usage="vastai show ipaddrs [--api-key API_KEY] [--raw]",
-    help="Display user's history of ip addresses"
+    help="Display user's history of ip addresses",
 )
 def show__ipaddrs(args):
     """
@@ -3022,8 +3561,8 @@ def show__ipaddrs(args):
     :rtype:
     """
 
-    req_url = apiurl(args, "/users/me/ipaddrs", {"owner": "me"});
-    r = http_get(args, req_url);
+    req_url = apiurl(args, "/users/me/ipaddrs", {"owner": "me"})
+    r = http_get(args, req_url)
     r.raise_for_status()
     rows = r.json()["results"]
     if args.raw:
@@ -3032,14 +3571,17 @@ def show__ipaddrs(args):
         display_table(rows, ipaddr_fields)
 
 
-
 @parser.command(
-    argument("-q", "--quiet", action="store_true", help="display information about user"),
+    argument(
+        "-q", "--quiet", action="store_true", help="display information about user"
+    ),
     usage="vastai show user [OPTIONS]",
     help="   Get current user data",
-    epilog=deindent("""
+    epilog=deindent(
+        """
         Shows stats for logged-in user. These include user balance, email, and ssh key. Does not show API key.
-    """)
+    """
+    ),
 )
 def show__user(args):
     """
@@ -3048,8 +3590,8 @@ def show__user(args):
     :param argparse.Namespace args: should supply all the command-line options
     :rtype:
     """
-    req_url = apiurl(args, "/users/current", {"owner": "me"});
-    r = http_get(args, req_url);
+    req_url = apiurl(args, "/users/current", {"owner": "me"})
+    r = http_get(args, req_url)
     r.raise_for_status()
     user_blob = r.json()
     user_blob.pop("api_key")
@@ -3059,10 +3601,16 @@ def show__user(args):
     else:
         display_table([user_blob], user_fields)
 
+
 @parser.command(
-    argument("-q", "--quiet", action="store_true", help="display subaccounts from current user"),
+    argument(
+        "-q",
+        "--quiet",
+        action="store_true",
+        help="display subaccounts from current user",
+    ),
     usage="vastai show subaccounts [OPTIONS]",
-    help="Get current subaccounts"
+    help="Get current subaccounts",
 )
 def show__subaccounts(args):
     """
@@ -3071,14 +3619,15 @@ def show__subaccounts(args):
     :param argparse.Namespace args: should supply all the command-line options
     :rtype:
     """
-    req_url = apiurl(args, "/subaccounts", {"owner": "me"});
-    r = http_get(args, req_url);
+    req_url = apiurl(args, "/subaccounts", {"owner": "me"})
+    r = http_get(args, req_url)
     r.raise_for_status()
     rows = r.json()["users"]
     if args.raw:
         print(json.dumps(rows, indent=1, sort_keys=True))
     else:
         display_table(rows, user_fields)
+
 
 @parser.command(
     usage="vastai show team-members",
@@ -3094,6 +3643,7 @@ def show__team_members(args):
     else:
         print(r.json())
 
+
 @parser.command(
     argument("NAME", help="name of the role", type=str),
     usage="vastai show team-role NAME",
@@ -3105,10 +3655,8 @@ def show__team_role(args):
     r.raise_for_status()
     print(json.dumps(r.json(), indent=1, sort_keys=True))
 
-@parser.command(
-    usage="vastai show team-roles",
-    help="Show roles for a team"
-)
+
+@parser.command(usage="vastai show team-roles", help="Show roles for a team")
 def show__team_roles(args):
     url = apiurl(args, "/team/roles-full/")
     r = http_get(args, url, headers=headers)
@@ -3119,76 +3667,135 @@ def show__team_roles(args):
     else:
         print(r.json())
 
+
 @parser.command(
     argument("recipient", help="email of recipient account", type=str),
-    argument("amount",    help="$dollars of credit to transfer ", type=float),
+    argument("amount", help="$dollars of credit to transfer ", type=float),
     usage="vastai transfer credit RECIPIENT AMOUNT",
     help="Transfer credits to another account",
-    epilog=deindent("""
+    epilog=deindent(
+        """
         Transfer (amount) credits to account with email (recipient).
-    """),
+    """
+    ),
 )
-
 def transfer__credit(args: argparse.Namespace):
     url = apiurl(args, "/commands/transfer_credit/")
- 
-    print(f"Transfer ${args.amount} credit to account {args.recipient}?  This is irreversible.")
+
+    print(
+        f"Transfer ${args.amount} credit to account {args.recipient}?  This is irreversible."
+    )
     ok = input("Continue? [y/n] ")
     if ok.strip().lower() != "y":
         return
 
     json_blob = {
-        "sender":    "me",
+        "sender": "me",
         "recipient": args.recipient,
-        "amount":    args.amount,
+        "amount": args.amount,
     }
-    if (args.explain):
+    if args.explain:
         print("request json: ")
         print(json_blob)
-    r = http_put(args, url,  headers=headers,json=json_blob)
+    r = http_put(args, url, headers=headers, json=json_blob)
     r.raise_for_status()
 
-    if (r.status_code == 200):
-        rj = r.json();
-        if (rj["success"]):
+    if r.status_code == 200:
+        rj = r.json()
+        if rj["success"]:
             print(f"Sent {args.amount} to {args.recipient} ".format(r.json()))
         else:
-            print(rj["msg"]);
+            print(rj["msg"])
     else:
-        print(r.text);
-        print("failed with error {r.status_code}".format(**locals()));
-
+        print(r.text)
+        print("failed with error {r.status_code}".format(**locals()))
 
 
 @parser.command(
     argument("ID", help="id of autoscale group to update", type=int),
-    argument("--min_load", help="minimum floor load in perf units/s  (token/s for LLms)", type=float),
-    argument("--target_util",      help="target capacity utilization (fraction, max 1.0, default 0.9)", type=float),
-    argument("--cold_mult",   help="cold/stopped instance capacity target as multiple of hot capacity target (default 2.5)", type=float),
-    argument("--test_workers",help="number of workers to create to get an performance estimate for while initializing autogroup (default 3)", type=int),
-    argument("--gpu_ram",   help="estimated GPU RAM req  (independent of search string)", type=float),
-    argument("--template_hash",   help="template hash (**Note**: if you use this field, you can skip launch_args and search_params, as they are automatically inferred from the template)", type=str),
-    argument("--template_id",   help="template id", type=int),
-    argument("--search_params",   help="search param string for search offers    ex: \"gpu_ram>=23 num_gpus=2 gpu_name=RTX_4090 inet_down>200 direct_port_count>2 disk_space>=64\"", type=str),
-    argument("--launch_args",   help="launch args  string for create instance  ex: \"--onstart onstart_wget.sh  --env '-e ONSTART_PATH=https://s3.amazonaws.com/vast.ai/onstart_OOBA.sh' --image atinoda/text-generation-webui:default-nightly --disk 64\"", type=str),
-    argument("--endpoint_name",   help="deployment endpoint name (allows multiple autoscale groups to share same deployment endpoint)", type=str),
-    argument("--endpoint_id",   help="deployment endpoint id (allows multiple autoscale groups to share same deployment endpoint)", type=int),
+    argument(
+        "--min_load",
+        help="minimum floor load in perf units/s  (token/s for LLms)",
+        type=float,
+    ),
+    argument(
+        "--target_util",
+        help="target capacity utilization (fraction, max 1.0, default 0.9)",
+        type=float,
+    ),
+    argument(
+        "--cold_mult",
+        help="cold/stopped instance capacity target as multiple of hot capacity target (default 2.5)",
+        type=float,
+    ),
+    argument(
+        "--test_workers",
+        help="number of workers to create to get an performance estimate for while initializing autogroup (default 3)",
+        type=int,
+    ),
+    argument(
+        "--gpu_ram",
+        help="estimated GPU RAM req  (independent of search string)",
+        type=float,
+    ),
+    argument(
+        "--template_hash",
+        help="template hash (**Note**: if you use this field, you can skip launch_args and search_params, as they are automatically inferred from the template)",
+        type=str,
+    ),
+    argument("--template_id", help="template id", type=int),
+    argument(
+        "--search_params",
+        help='search param string for search offers    ex: "gpu_ram>=23 num_gpus=2 gpu_name=RTX_4090 inet_down>200 direct_port_count>2 disk_space>=64"',
+        type=str,
+    ),
+    argument(
+        "--launch_args",
+        help="launch args  string for create instance  ex: \"--onstart onstart_wget.sh  --env '-e ONSTART_PATH=https://s3.amazonaws.com/vast.ai/onstart_OOBA.sh' --image atinoda/text-generation-webui:default-nightly --disk 64\"",
+        type=str,
+    ),
+    argument(
+        "--endpoint_name",
+        help="deployment endpoint name (allows multiple autoscale groups to share same deployment endpoint)",
+        type=str,
+    ),
+    argument(
+        "--endpoint_id",
+        help="deployment endpoint id (allows multiple autoscale groups to share same deployment endpoint)",
+        type=int,
+    ),
     usage="vastai update autoscaler ID [OPTIONS]",
     help="Update an existing autoscale group",
-    epilog=deindent("""
+    epilog=deindent(
+        """
         Example: vastai update autoscaler 4242 --min_load 100 --target_util 0.9 --cold_mult 2.0 --search_params \"gpu_ram>=23 num_gpus=2 gpu_name=RTX_4090 inet_down>200 direct_port_count>2 disk_space>=64\" --launch_args \"--onstart onstart_wget.sh  --env '-e ONSTART_PATH=https://s3.amazonaws.com/vast.ai/onstart_OOBA.sh' --image atinoda/text-generation-webui:default-nightly --disk 64\" --gpu_ram 32.0 --endpoint_name "LLama" --endpoint_id 2
-    """),
+    """
+    ),
 )
 def update__autoscaler(args):
-    id  = args.ID
-    url = apiurl(args, f"/autojobs/{id}/" )
-    json_blob = {"client_id": "me", "autojob_id": args.ID, "min_load": args.min_load, "target_util": args.target_util, "cold_mult": args.cold_mult, "test_workers" : args.test_workers, "template_hash": args.template_hash, "template_id": args.template_id, "search_params": args.search_params, "launch_args": args.launch_args, "gpu_ram": args.gpu_ram, "endpoint_name": args.endpoint_name, "endpoint_id": args.endpoint_id}
-    if (args.explain):
+    id = args.ID
+    url = apiurl(args, f"/autojobs/{id}/")
+    json_blob = {
+        "client_id": "me",
+        "autojob_id": args.ID,
+        "min_load": args.min_load,
+        "target_util": args.target_util,
+        "cold_mult": args.cold_mult,
+        "test_workers": args.test_workers,
+        "template_hash": args.template_hash,
+        "template_id": args.template_id,
+        "search_params": args.search_params,
+        "launch_args": args.launch_args,
+        "gpu_ram": args.gpu_ram,
+        "endpoint_name": args.endpoint_name,
+        "endpoint_id": args.endpoint_id,
+    }
+    if args.explain:
         print("request json: ")
         print(json_blob)
-    r = http_put(args, url,  headers=headers,json=json_blob)
+    r = http_put(args, url, headers=headers, json=json_blob)
     r.raise_for_status()
-    if 'application/json' in r.headers.get('Content-Type', ''):
+    if "application/json" in r.headers.get("Content-Type", ""):
         try:
             print("autoscaler update {}".format(r.json()))
         except requests.exceptions.JSONDecodeError:
@@ -3196,33 +3803,69 @@ def update__autoscaler(args):
             print(r)
             print(r.text)  # Print the raw response to help with debugging.
     else:
-        print("The response is not JSON. Content-Type:", r.headers.get('Content-Type'))
+        print("The response is not JSON. Content-Type:", r.headers.get("Content-Type"))
         print(r.text)
+
 
 @parser.command(
     argument("ID", help="id of endpoint group to update", type=int),
-    argument("--min_load", help="minimum floor load in perf units/s  (token/s for LLms)", type=float),
-    argument("--target_util",      help="target capacity utilization (fraction, max 1.0, default 0.9)", type=float),
-    argument("--cold_mult",   help="cold/stopped instance capacity target as multiple of hot capacity target (default 2.5)", type=float),
-    argument("--cold_workers", help="min number of workers to keep 'cold' when you have no load (default 5)", type=int),
-    argument("--max_workers", help="max number of workers your endpoint group can have (default 20)", type=int),
-    argument("--endpoint_name",   help="deployment endpoint name (allows multiple autoscale groups to share same deployment endpoint)", type=str),
+    argument(
+        "--min_load",
+        help="minimum floor load in perf units/s  (token/s for LLms)",
+        type=float,
+    ),
+    argument(
+        "--target_util",
+        help="target capacity utilization (fraction, max 1.0, default 0.9)",
+        type=float,
+    ),
+    argument(
+        "--cold_mult",
+        help="cold/stopped instance capacity target as multiple of hot capacity target (default 2.5)",
+        type=float,
+    ),
+    argument(
+        "--cold_workers",
+        help="min number of workers to keep 'cold' when you have no load (default 5)",
+        type=int,
+    ),
+    argument(
+        "--max_workers",
+        help="max number of workers your endpoint group can have (default 20)",
+        type=int,
+    ),
+    argument(
+        "--endpoint_name",
+        help="deployment endpoint name (allows multiple autoscale groups to share same deployment endpoint)",
+        type=str,
+    ),
     usage="vastai update endpoint ID [OPTIONS]",
     help="Update an existing endpoint group",
-    epilog=deindent("""
+    epilog=deindent(
+        """
         Example: vastai update endpoint 4242 --min_load 100 --target_util 0.9 --cold_mult 2.0 --endpoint_name "LLama"
-    """),
+    """
+    ),
 )
 def update__endpoint(args):
-    id  = args.ID
-    url = apiurl(args, f"/endptjobs/{id}/" )
-    json_blob = {"client_id": "me", "endptjob_id": args.ID, "min_load": args.min_load, "target_util": args.target_util, "cold_mult": args.cold_mult, "cold_workers": args.cold_workers, "max_workers" : args.max_workers, "endpoint_name": args.endpoint_name}
-    if (args.explain):
+    id = args.ID
+    url = apiurl(args, f"/endptjobs/{id}/")
+    json_blob = {
+        "client_id": "me",
+        "endptjob_id": args.ID,
+        "min_load": args.min_load,
+        "target_util": args.target_util,
+        "cold_mult": args.cold_mult,
+        "cold_workers": args.cold_workers,
+        "max_workers": args.max_workers,
+        "endpoint_name": args.endpoint_name,
+    }
+    if args.explain:
         print("request json: ")
         print(json_blob)
-    r = http_put(args, url,  headers=headers,json=json_blob)
+    r = http_put(args, url, headers=headers, json=json_blob)
     r.raise_for_status()
-    if 'application/json' in r.headers.get('Content-Type', ''):
+    if "application/json" in r.headers.get("Content-Type", ""):
         try:
             print("update endpoint {}".format(r.json()))
         except requests.exceptions.JSONDecodeError:
@@ -3230,26 +3873,33 @@ def update__endpoint(args):
             print(r)
             print(r.text)  # Print the raw response to help with debugging.
     else:
-        print("The response is not JSON. Content-Type:", r.headers.get('Content-Type'))
+        print("The response is not JSON. Content-Type:", r.headers.get("Content-Type"))
         print(r.text)
 
 
 @parser.command(
     argument("ID", help="id of the role", type=int),
     argument("--name", help="name of the template", type=str),
-    argument("--permissions", help="file path for json encoded permissions, look in the docs for more information", type=str),
+    argument(
+        "--permissions",
+        help="file path for json encoded permissions, look in the docs for more information",
+        type=str,
+    ),
     usage="vastai update team-role ID --name NAME --permissions PERMISSIONS",
     help="Update an existing team role",
 )
 def update__team_role(args):
     url = apiurl(args, "/team/roles/{id}/".format(id=args.ID))
     permissions = load_permissions_from_file(args.permissions)
-    r = http_put(args, url,  headers=headers, json={"name": args.name, "permissions": permissions})
+    r = http_put(
+        args, url, headers=headers, json={"name": args.name, "permissions": permissions}
+    )
     r.raise_for_status()
     if args.raw:
         print(json.dumps(r.json(), indent=1))
     else:
         print(json.dumps(r.json(), indent=1))
+
 
 @parser.command(
     argument("id", help="id of the ssh key to update", type=int),
@@ -3259,14 +3909,15 @@ def update__team_role(args):
 )
 def update__ssh_key(args):
     url = apiurl(args, "/ssh/{id}/".format(id=args.ID))
-    r = http_put(args, url,  headers=headers, json={"ssh_key": args.ssh_key})
+    r = http_put(args, url, headers=headers, json={"ssh_key": args.ssh_key})
     r.raise_for_status()
     print(r.json())
+
 
 def convert_dates_to_timestamps(args):
     selector_flag = ""
     end_timestamp = time.time()
-    start_timestamp = time.time() - (24*60*60)
+    start_timestamp = time.time() - (24 * 60 * 60)
     start_date_txt = ""
     end_date_txt = ""
 
@@ -3280,7 +3931,7 @@ def convert_dates_to_timestamps(args):
             end_timestamp = time.mktime(end_date.timetuple())
         except ValueError as e:
             print(f"Warning: Invalid end date format! Ignoring end date! \n {str(e)}")
-    
+
     if args.start_date:
         try:
             start_date = dateutil.parser.parse(str(args.start_date))
@@ -3304,23 +3955,24 @@ def filter_invoice_items(args: argparse.Namespace, rows: List) -> Dict:
     """
 
     try:
-        #import vast_pdf
+        # import vast_pdf
         import dateutil
         from dateutil import parser
 
     except ImportError:
-        print("""\nWARNING: The 'vast_pdf' library is not present. This library is used to print invoices in PDF format. If
+        print(
+            """\nWARNING: The 'vast_pdf' library is not present. This library is used to print invoices in PDF format. If
         you do not need this feature you can ignore this message. To get the library you should download the vast-python
         github repository. Just do 'git@github.com:vast-ai/vast-python.git' and then 'cd vast-python'. Once in that
         directory you can run 'vast.py' and it will have access to 'vast_pdf.py'. The library depends on a Python
-        package called Borb to make the PDF files. To install this package do 'pip3 install borb'.\n""")
+        package called Borb to make the PDF files. To install this package do 'pip3 install borb'.\n"""
+        )
 
     try:
         vast_pdf
     except NameError:
         vast_pdf = Object()
         vast_pdf.invoice_number = -1
-
 
     selector_flag = ""
     end_timestamp: float = 9999999999
@@ -3349,12 +4001,14 @@ def filter_invoice_items(args: argparse.Namespace, rows: List) -> Dict:
 
         def type_filter_fn(row):
             return True if row["type"] == "charge" else False
+
     elif args.only_credits:
         type_txt = "Only showing credits."
         selector_flag = "only_credits"
 
         def type_filter_fn(row):
             return True if row["type"] == "payment" else False
+
     else:
         type_txt = ""
 
@@ -3363,17 +4017,26 @@ def filter_invoice_items(args: argparse.Namespace, rows: List) -> Dict:
 
     if args.end_date:
         if args.start_date:
-            header_text = f'Invoice items after {start_date_txt} and before {end_date_txt}.'
+            header_text = (
+                f"Invoice items after {start_date_txt} and before {end_date_txt}."
+            )
         else:
-            header_text = f'Invoice items before {end_date_txt}.'
+            header_text = f"Invoice items before {end_date_txt}."
     elif args.start_date:
-        header_text = f'Invoice items after {start_date_txt}.'
+        header_text = f"Invoice items after {start_date_txt}."
     else:
         header_text = " "
 
     header_text = header_text + " " + type_txt
 
-    rows = list(filter(lambda row: end_timestamp >= (row["timestamp"] or 0.0) >= start_timestamp and type_filter_fn(row) and float(row["amount"]) != 0, rows))
+    rows = list(
+        filter(
+            lambda row: end_timestamp >= (row["timestamp"] or 0.0) >= start_timestamp
+            and type_filter_fn(row)
+            and float(row["amount"]) != 0,
+            rows,
+        )
+    )
 
     if start_date_txt:
         start_date_txt = "S:" + start_date_txt
@@ -3384,12 +4047,12 @@ def filter_invoice_items(args: argparse.Namespace, rows: List) -> Dict:
     now = date.today()
     invoice_number: int = now.year * 12 + now.month - 1
 
-
-    pdf_filename_fields = list(filter(lambda fld: False if fld == "" else True,
-                                      [str(invoice_number),
-                                       start_date_txt,
-                                       end_date_txt,
-                                       selector_flag]))
+    pdf_filename_fields = list(
+        filter(
+            lambda fld: False if fld == "" else True,
+            [str(invoice_number), start_date_txt, end_date_txt, selector_flag],
+        )
+    )
 
     filename = "invoice_" + "-".join(pdf_filename_fields) + ".pdf"
     return {"rows": rows, "header_text": header_text, "pdf_filename": filename}
@@ -3397,10 +4060,24 @@ def filter_invoice_items(args: argparse.Namespace, rows: List) -> Dict:
 
 @parser.command(
     argument("-q", "--quiet", action="store_true", help="only display numeric ids"),
-    argument("-s", "--start_date", help="start date and time for report. Many formats accepted (optional)", type=str),
-    argument("-e", "--end_date", help="end date and time for report. Many formats accepted (optional)", type=str),
-    argument("-c", "--only_charges", action="store_true", help="Show only charge items."),
-    argument("-p", "--only_credits", action="store_true", help="Show only credit items."),
+    argument(
+        "-s",
+        "--start_date",
+        help="start date and time for report. Many formats accepted (optional)",
+        type=str,
+    ),
+    argument(
+        "-e",
+        "--end_date",
+        help="end date and time for report. Many formats accepted (optional)",
+        type=str,
+    ),
+    argument(
+        "-c", "--only_charges", action="store_true", help="Show only charge items."
+    ),
+    argument(
+        "-p", "--only_credits", action="store_true", help="Show only credit items."
+    ),
     usage="vastai generate pdf-invoices [OPTIONS]",
 )
 def generate__pdf_invoices(args):
@@ -3415,14 +4092,18 @@ def generate__pdf_invoices(args):
     try:
         import vast_pdf
     except ImportError:
-        print("""\nWARNING: The 'vast_pdf' library is not present. This library is used to print invoices in PDF format. If
+        print(
+            """\nWARNING: The 'vast_pdf' library is not present. This library is used to print invoices in PDF format. If
         you do not need this feature you can ignore this message. To get the library you should download the vast-python
         github repository. Just do 'git@github.com:vast-ai/vast-python.git' and then 'cd vast-python'. Once in that
         directory you can run 'vast.py' and it will have access to 'vast_pdf.py'. The library depends on a Python
-        package called Borb to make the PDF files. To install this package do 'pip3 install borb'.\n""")
+        package called Borb to make the PDF files. To install this package do 'pip3 install borb'.\n"""
+        )
 
-    sdate,edate = convert_dates_to_timestamps(args)
-    req_url_inv = apiurl(args, "/users/me/invoices", {"owner": "me", "sdate":sdate, "edate":edate})
+    sdate, edate = convert_dates_to_timestamps(args)
+    req_url_inv = apiurl(
+        args, "/users/me/invoices", {"owner": "me", "sdate": sdate, "edate": edate}
+    )
 
     r_inv = http_get(args, req_url_inv, headers=headers)
     r_inv.raise_for_status()
@@ -3447,13 +4128,13 @@ def generate__pdf_invoices(args):
 def cleanup_machine(args, machine_id):
     req_url = apiurl(args, f"/machines/{machine_id}/cleanup/")
 
-    if (args.explain):
+    if args.explain:
         print("request json: ")
     r = http_put(args, req_url, headers=headers, json={})
 
-    if (r.status_code == 200):
+    if r.status_code == 200:
         rj = r.json()
-        if (rj["success"]):
+        if rj["success"]:
             print(json.dumps(r.json(), indent=1))
         else:
             if args.raw:
@@ -3464,16 +4145,19 @@ def cleanup_machine(args, machine_id):
         print(r.text)
         print("failed with error {r.status_code}".format(**locals()))
 
+
 @parser.command(
     argument("ID", help="id of machine to cleanup", type=int),
     usage="vastai cleanup machine ID [options]",
     help="[Host] Remove all expired storage instances from the machine, freeing up space.",
-    epilog=deindent("""
+    epilog=deindent(
+        """
         Instances expire on their end date. Expired instances still pay storage fees, but can not start.
         Since hosts are still paid storage fees for expired instances, we do not auto delete them.
         Instead you can use this CLI/API function to delete all expired storage instances for a machine.
         This is useful if you are running low on storage, want to do maintenance, or are subsidizing storage, etc.
-    """)
+    """
+    ),
 )
 def cleanup__machine(args):
     """
@@ -3486,18 +4170,24 @@ def cleanup__machine(args):
 def list_machine(args, id):
     req_url = apiurl(args, "/machines/create_asks/")
 
-    json_blob = {'machine': id, 'price_gpu': args.price_gpu,
-                        'price_disk': args.price_disk, 'price_inetu': args.price_inetu,
-                        'price_inetd': args.price_inetd, 'min_chunk': args.min_chunk,
-                        'end_date': string_to_unix_epoch(args.end_date), 'credit_discount_max': args.discount_rate}
-    if (args.explain):
+    json_blob = {
+        "machine": id,
+        "price_gpu": args.price_gpu,
+        "price_disk": args.price_disk,
+        "price_inetu": args.price_inetu,
+        "price_inetd": args.price_inetd,
+        "min_chunk": args.min_chunk,
+        "end_date": string_to_unix_epoch(args.end_date),
+        "credit_discount_max": args.discount_rate,
+    }
+    if args.explain:
         print("request json: ")
         print(json_blob)
     r = http_put(args, req_url, headers=headers, json=json_blob)
 
-    if (r.status_code == 200):
+    if r.status_code == 200:
         rj = r.json()
-        if (rj["success"]):
+        if rj["success"]:
             price_gpu_ = str(args.price_gpu) if args.price_gpu is not None else "def"
             price_inetu_ = str(args.price_inetu)
             price_inetd_ = str(args.price_inetd)
@@ -3507,11 +4197,17 @@ def list_machine(args, id):
             if args.raw:
                 print(json.dumps(r.json(), indent=1))
             else:
-                print("offers created/updated for machine {id},  @ ${price_gpu_}/gpu/day, ${price_inetu_}/GB up, ${price_inetd_}/GB down, {min_chunk_}/min gpus, max discount_rate {discount_rate_}, till {end_date_}".format(**locals()))
+                print(
+                    "offers created/updated for machine {id},  @ ${price_gpu_}/gpu/day, ${price_inetu_}/GB up, ${price_inetd_}/GB down, {min_chunk_}/min gpus, max discount_rate {discount_rate_}, till {end_date_}".format(
+                        **locals()
+                    )
+                )
                 num_extended = rj.get("extended", 0)
 
                 if num_extended > 0:
-                    print(f"extended {num_extended} client contracts to {args.end_date}")
+                    print(
+                        f"extended {num_extended} client contracts to {args.end_date}"
+                    )
 
         else:
             if args.raw:
@@ -3525,23 +4221,54 @@ def list_machine(args, id):
 
 @parser.command(
     argument("ID", help="id of machine to list", type=int),
-    argument("-g", "--price_gpu", help="per gpu rental price in $/hour  (price for active instances)", type=float),
-    argument("-s", "--price_disk",
-             help="storage price in $/GB/month (price for inactive instances), default: $0.15/GB/month", type=float),
-    argument("-u", "--price_inetu", help="price for internet upload bandwidth in $/GB", type=float),
-    argument("-d", "--price_inetd", help="price for internet download bandwidth in $/GB", type=float),
-    argument("-r", "--discount_rate", help="Max long term prepay discount rate fraction, default: 0.4 ", type=float),
+    argument(
+        "-g",
+        "--price_gpu",
+        help="per gpu rental price in $/hour  (price for active instances)",
+        type=float,
+    ),
+    argument(
+        "-s",
+        "--price_disk",
+        help="storage price in $/GB/month (price for inactive instances), default: $0.15/GB/month",
+        type=float,
+    ),
+    argument(
+        "-u",
+        "--price_inetu",
+        help="price for internet upload bandwidth in $/GB",
+        type=float,
+    ),
+    argument(
+        "-d",
+        "--price_inetd",
+        help="price for internet download bandwidth in $/GB",
+        type=float,
+    ),
+    argument(
+        "-r",
+        "--discount_rate",
+        help="Max long term prepay discount rate fraction, default: 0.4 ",
+        type=float,
+    ),
     argument("-m", "--min_chunk", help="minimum amount of gpus", type=int),
-    argument("-e", "--end_date", help="contract offer expiration - the available until date (optional, in unix float timestamp or MM/DD/YYYY format)", type=str),
+    argument(
+        "-e",
+        "--end_date",
+        help="contract offer expiration - the available until date (optional, in unix float timestamp or MM/DD/YYYY format)",
+        type=str,
+    ),
     usage="vastai list machine ID [options]",
     help="[Host] list a machine for rent",
-    epilog=deindent("""
+    epilog=deindent(
+        """
         Performs the same action as pressing the "LIST" button on the site https://cloud.vast.ai/host/machines.
         On the end date the listing will expire and your machine will unlist. However any existing client jobs will still remain until ended by their owners.
         Once you list your machine and it is rented, it is extremely important that you don't interfere with the machine in any way. 
         If your machine has an active client job and then goes offline, crashes, or has performance problems, this could permanently lower your reliability rating. 
         We strongly recommend you test the machine first and only list when ready.
-    """)
+    """
+    ),
 )
 def list__machine(args):
     """
@@ -3553,26 +4280,56 @@ def list__machine(args):
 
 
 @parser.command(
-    argument("IDs", help="ids of instance to destroy", type=int, nargs='+'),
-    argument("-g", "--price_gpu", help="per gpu rental price in $/hour  (price for active instances)", type=float),
-    argument("-s", "--price_disk",
-             help="storage price in $/GB/month (price for inactive instances), default: $0.15/GB/month", type=float),
-    argument("-u", "--price_inetu", help="price for internet upload bandwidth in $/GB", type=float),
-    argument("-d", "--price_inetd", help="price for internet download bandwidth in $/GB", type=float),
-    argument("-r", "--discount_rate", help="Max long term prepay discount rate fraction, default: 0.4 ", type=float),
+    argument("IDs", help="ids of instance to destroy", type=int, nargs="+"),
+    argument(
+        "-g",
+        "--price_gpu",
+        help="per gpu rental price in $/hour  (price for active instances)",
+        type=float,
+    ),
+    argument(
+        "-s",
+        "--price_disk",
+        help="storage price in $/GB/month (price for inactive instances), default: $0.15/GB/month",
+        type=float,
+    ),
+    argument(
+        "-u",
+        "--price_inetu",
+        help="price for internet upload bandwidth in $/GB",
+        type=float,
+    ),
+    argument(
+        "-d",
+        "--price_inetd",
+        help="price for internet download bandwidth in $/GB",
+        type=float,
+    ),
+    argument(
+        "-r",
+        "--discount_rate",
+        help="Max long term prepay discount rate fraction, default: 0.4 ",
+        type=float,
+    ),
     argument("-m", "--min_chunk", help="minimum amount of gpus", type=int),
-    argument("-e", "--end_date", help="contract offer expiration - the available until date (optional, in unix float timestamp or MM/DD/YYYY format)", type=str),
+    argument(
+        "-e",
+        "--end_date",
+        help="contract offer expiration - the available until date (optional, in unix float timestamp or MM/DD/YYYY format)",
+        type=str,
+    ),
     usage="vastai list machines IDs [options]",
     help="[Host] list machines for rent",
-    epilog=deindent("""
+    epilog=deindent(
+        """
         This variant can be used to list or update the listings for multiple machines at once with the same args.
         You could extend the end dates of all your machines using a command combo like this:
         ./vast.py list machines $(./vast.py show machines -q) -e 12/31/2024 --retry 6
-    """)
+    """
+    ),
 )
 def list__machines(args):
-    """
-    """
+    """ """
     for id in args.IDs:
         list_machine(args, id)
 
@@ -3589,20 +4346,23 @@ def remove__defjob(args):
     :param argparse.Namespace args: should supply all the command-line options
     :rtype:
     """
-    req_url = apiurl(args, "/machines/{machine_id}/defjob/".format(machine_id=args.id));
+    req_url = apiurl(args, "/machines/{machine_id}/defjob/".format(machine_id=args.id))
     # print(req_url);
     r = http_del(args, req_url, headers=headers)
 
-    if (r.status_code == 200):
-        rj = r.json();
-        if (rj["success"]):
-            print("default instance for machine {machine_id} removed.".format(machine_id=args.id));
+    if r.status_code == 200:
+        rj = r.json()
+        if rj["success"]:
+            print(
+                "default instance for machine {machine_id} removed.".format(
+                    machine_id=args.id
+                )
+            )
         else:
-            print(rj["msg"]);
+            print(rj["msg"])
     else:
-        print(r.text);
-        print("failed with error {r.status_code}".format(**locals()));
-
+        print(r.text)
+        print("failed with error {r.status_code}".format(**locals()))
 
 
 def set_ask(args):
@@ -3611,24 +4371,34 @@ def set_ask(args):
     :param argparse.Namespace args: should supply all the command-line options
     :rtype:
     """
-    print("set asks!\n");
-
+    print("set asks!\n")
 
 
 @parser.command(
     argument("id", help="id of machine to launch default instance on", type=int),
     argument("--price_gpu", help="per gpu rental price in $/hour", type=float),
-    argument("--price_inetu", help="price for internet upload bandwidth in $/GB", type=float),
-    argument("--price_inetd", help="price for internet download bandwidth in $/GB", type=float),
+    argument(
+        "--price_inetu", help="price for internet upload bandwidth in $/GB", type=float
+    ),
+    argument(
+        "--price_inetd",
+        help="price for internet download bandwidth in $/GB",
+        type=float,
+    ),
     argument("--image", help="docker container image to launch", type=str),
-    argument("--args", nargs=argparse.REMAINDER, help="list of arguments passed to container launch"),
+    argument(
+        "--args",
+        nargs=argparse.REMAINDER,
+        help="list of arguments passed to container launch",
+    ),
     usage="vastai set defjob id [--api-key API_KEY] [--price_gpu PRICE_GPU] [--price_inetu PRICE_INETU] [--price_inetd PRICE_INETD] [--image IMAGE] [--args ...]",
     help="[Host] Create default jobs for a machine",
-    epilog=deindent("""
+    epilog=deindent(
+        """
         Performs the same action as creating a background job at https://cloud.vast.ai/host/create.       
                     
-    """)
-    
+    """
+    ),
 )
 def set__defjob(args):
     """
@@ -3636,22 +4406,32 @@ def set__defjob(args):
     :param argparse.Namespace args: should supply all the command-line options
     :rtype:
     """
-    req_url   = apiurl(args, "/machines/create_bids/");
-    json_blob = {'machine': args.id, 'price_gpu': args.price_gpu, 'price_inetu': args.price_inetu, 'price_inetd': args.price_inetd, 'image': args.image, 'args': args.args}
-    if (args.explain):
+    req_url = apiurl(args, "/machines/create_bids/")
+    json_blob = {
+        "machine": args.id,
+        "price_gpu": args.price_gpu,
+        "price_inetu": args.price_inetu,
+        "price_inetd": args.price_inetd,
+        "image": args.image,
+        "args": args.args,
+    }
+    if args.explain:
         print("request json: ")
         print(json_blob)
     r = http_put(args, req_url, headers=headers, json=json_blob)
-    if (r.status_code == 200):
-        rj = r.json();
-        if (rj["success"]):
+    if r.status_code == 200:
+        rj = r.json()
+        if rj["success"]:
             print(
-                "bids created for machine {args.id},  @ ${args.price_gpu}/gpu/day, ${args.price_inetu}/GB up, ${args.price_inetd}/GB down".format(**locals()));
+                "bids created for machine {args.id},  @ ${args.price_gpu}/gpu/day, ${args.price_inetu}/GB up, ${args.price_inetd}/GB down".format(
+                    **locals()
+                )
+            )
         else:
-            print(rj["msg"]);
+            print(rj["msg"])
     else:
-        print(r.text);
-        print("failed with error {r.status_code}".format(**locals()));
+        print(r.text)
+        print("failed with error {r.status_code}".format(**locals()))
 
 
 def smart_split(s, char):
@@ -3661,7 +4441,7 @@ def smart_split(s, char):
 
     for c in s:
         if c == char and not in_quotes:
-            parts.append(''.join(current))
+            parts.append("".join(current))
             current = []
         elif c == '"':
             in_quotes = not in_quotes
@@ -3669,62 +4449,61 @@ def smart_split(s, char):
         else:
             current.append(c)
 
-    parts.append(''.join(current))  # add last part
+    parts.append("".join(current))  # add last part
 
     return parts
 
 
-
-
 def parse_env(envs):
     result = {}
-    if (envs is None):
+    if envs is None:
         return result
-    #env  = envs.split(' ')
-    env = smart_split(envs,' ')
+    # env  = envs.split(' ')
+    env = smart_split(envs, " ")
     # print(env)
     prev = None
     for e in env:
-        if (prev is None):
-          if (e in {"-e", "-p", "-h"}):
-              prev = e
-          else:
-              #print(result)
-              return result
+        if prev is None:
+            if e in {"-e", "-p", "-h"}:
+                prev = e
+            else:
+                # print(result)
+                return result
         else:
-          if (prev == "-p"):
-            if set(e).issubset(set("0123456789:tcp/udp")):
-                result["-p " + e] = "1"
+            if prev == "-p":
+                if set(e).issubset(set("0123456789:tcp/udp")):
+                    result["-p " + e] = "1"
+                else:
+                    return result
+            elif prev == "-e":
+                kv = e.split("=")
+                if (
+                    len(kv) >= 2
+                ):  # set(e).issubset(set("1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_=")):
+                    val = kv[1].strip("'\"")
+                    result[kv[0]] = val
+                else:
+                    return result
             else:
-                return result
-          elif (prev == "-e"):
-            kv = e.split('=')
-            if len(kv) >= 2: #set(e).issubset(set("1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_=")):
-                val = kv[1].strip("'\"")
-                result[kv[0]] = val
-            else:
-                return result
-          else:
-              result[prev] = e
-          prev = None
+                result[prev] = e
+            prev = None
 
-    #print(result)
+    # print(result)
     return result
 
 
-#print(parse_env("-e TYZ=BM3828 -e BOB=UTC -p 10831:22 -p 8080:8080"))
-
-
-
+# print(parse_env("-e TYZ=BM3828 -e BOB=UTC -p 10831:22 -p 8080:8080"))
 
 
 def pretty_print_POST(req):
-    print('{}\n{}\r\n{}\r\n\r\n{}'.format(
-        '-----------START-----------',
-        req.method + ' ' + req.url,
-        '\r\n'.join('{}: {}'.format(k, v) for k, v in req.headers.items()),
-        req.body,
-    ))
+    print(
+        "{}\n{}\r\n{}\r\n\r\n{}".format(
+            "-----------START-----------",
+            req.method + " " + req.url,
+            "\r\n".join("{}: {}".format(k, v) for k, v in req.headers.items()),
+            req.body,
+        )
+    )
 
 
 @parser.command(
@@ -3732,9 +4511,11 @@ def pretty_print_POST(req):
     argument("--price", help="per gpu min bid price in $/hour", type=float),
     usage="vastai set min_bid id [--price PRICE]",
     help="[Host] Set the minimum bid/rental price for a machine",
-    epilog=deindent("""
+    epilog=deindent(
+        """
         Change the current min bid price of machine id to PRICE.
-    """),
+    """
+    ),
 )
 def set__min_bid(args):
     """
@@ -3743,28 +4524,37 @@ def set__min_bid(args):
     :rtype:
     """
     url = apiurl(args, "/machines/{id}/minbid/".format(id=args.id))
-    json_blob = {"client_id": "me", "price": args.price,}
-    if (args.explain):
+    json_blob = {
+        "client_id": "me",
+        "price": args.price,
+    }
+    if args.explain:
         print("request json: ")
         print(json_blob)
-    r = http_put(args, url,  headers=headers,json=json_blob)
+    r = http_put(args, url, headers=headers, json=json_blob)
     r.raise_for_status()
     print("Per gpu min bid price changed".format(r.json()))
 
 
 @parser.command(
     argument("id", help="id of machine to schedule maintenance for", type=int),
-    argument("--sdate",      help="maintenance start date in unix epoch time (UTC seconds)", type=float),
-    argument("--duration",   help="maintenance duration in hours", type=float),
+    argument(
+        "--sdate",
+        help="maintenance start date in unix epoch time (UTC seconds)",
+        type=float,
+    ),
+    argument("--duration", help="maintenance duration in hours", type=float),
     usage="vastai schedule maintenance id [--sdate START_DATE --duration DURATION]",
     help="[Host] Schedule upcoming maint window",
-    epilog=deindent("""
+    epilog=deindent(
+        """
         The proper way to perform maintenance on your machine is to wait until all active contracts have expired or the machine is vacant.
         For unplanned or unscheduled maintenance, use this schedule maint command. That will notify the client that you have to take the machine down and that they should save their work. 
         You can specify a date and duration.           
         Example: vastai schedule maint 8207 --sdate 1677562671 --duration 0.5
-    """),
-    )
+    """
+    ),
+)
 def schedule__maint(args):
     """
     :param argparse.Namespace args: should supply all the command-line options
@@ -3779,23 +4569,30 @@ def schedule__maint(args):
     if ok.strip().lower() != "y":
         return
 
-    json_blob = {"client_id": "me", "sdate": string_to_unix_epoch(args.sdate), "duration": args.duration}
-    if (args.explain):
+    json_blob = {
+        "client_id": "me",
+        "sdate": string_to_unix_epoch(args.sdate),
+        "duration": args.duration,
+    }
+    if args.explain:
         print("request json: ")
         print(json_blob)
-    r = http_put(args, url,  headers=headers,json=json_blob)
+    r = http_put(args, url, headers=headers, json=json_blob)
     r.raise_for_status()
     print(f"Maintenance window scheduled for {dt} success".format(r.json()))
+
 
 @parser.command(
     argument("id", help="id of machine to cancel maintenance(s) for", type=int),
     usage="vastai cancel maint id",
     help="[Host] Cancel maint window",
-    epilog=deindent("""
+    epilog=deindent(
+        """
         For deleting a machine's scheduled maintenance window(s), use this cancel maint command.    
         Example: vastai cancel maint 8207
-    """),
-    )
+    """
+    ),
+)
 def cancel__maint(args):
     """
     :param argparse.Namespace args: should supply all the command-line options
@@ -3809,14 +4606,17 @@ def cancel__maint(args):
         return
 
     json_blob = {"client_id": "me", "machine_id": args.id}
-    if (args.explain):
+    if args.explain:
         print("request json: ")
         print(json_blob)
-    r = http_put(args, url,  headers=headers,json=json_blob)
+    r = http_put(args, url, headers=headers, json=json_blob)
     r.raise_for_status()
     print(r.text)
-    print(f"Cancel maintenance window(s) scheduled for machine {args.id} success".format(r.json()))
-
+    print(
+        f"Cancel maintenance window(s) scheduled for machine {args.id} success".format(
+            r.json()
+        )
+    )
 
 
 @parser.command(
@@ -3831,8 +4631,8 @@ def show__machines(args):
     :param argparse.Namespace args: should supply all the command-line options
     :rtype:
     """
-    req_url = apiurl(args, "/machines", {"owner": "me"});
-    r = http_get(args, req_url);
+    req_url = apiurl(args, "/machines", {"owner": "me"})
+    r = http_get(args, req_url)
     r.raise_for_status()
     rows = r.json()["machines"]
     if args.raw:
@@ -3842,8 +4642,13 @@ def show__machines(args):
             if args.quiet:
                 print("{id}".format(id=machine["id"]))
             else:
-                print("{N} machines: ".format(N=len(rows)));
-                print("{id}: {json}".format(id=machine["id"], json=json.dumps(machine, indent=4, sort_keys=True)))
+                print("{N} machines: ".format(N=len(rows)))
+                print(
+                    "{id}: {json}".format(
+                        id=machine["id"],
+                        json=json.dumps(machine, indent=4, sort_keys=True),
+                    )
+                )
 
 
 @parser.command(
@@ -3858,17 +4663,21 @@ def unlist__machine(args):
     :param argparse.Namespace args: should supply all the command-line options
     :rtype:
     """
-    req_url = apiurl(args, "/machines/{machine_id}/asks/".format(machine_id=args.id));
+    req_url = apiurl(args, "/machines/{machine_id}/asks/".format(machine_id=args.id))
     r = http_del(args, req_url, headers=headers)
-    if (r.status_code == 200):
-        rj = r.json();
-        if (rj["success"]):
-            print("all offers for machine {machine_id} removed, machine delisted.".format(machine_id=args.id));
+    if r.status_code == 200:
+        rj = r.json()
+        if rj["success"]:
+            print(
+                "all offers for machine {machine_id} removed, machine delisted.".format(
+                    machine_id=args.id
+                )
+            )
         else:
-            print(rj["msg"]);
+            print(rj["msg"])
     else:
-        print(r.text);
-        print("failed with error {r.status_code}".format(**locals()));
+        print(r.text)
+        print("failed with error {r.status_code}".format(**locals()))
 
 
 def _get_gpu_names() -> List[str]:
@@ -3879,11 +4688,12 @@ def _get_gpu_names() -> List[str]:
     r.raise_for_status()  # Will raise an exception for HTTP errors
     gpu_names = r.json()
     formatted_gpu_names = []
-    for name in gpu_names['gpu_names']:
+    for name in gpu_names["gpu_names"]:
         formatted_gpu_names.append(name.replace(" ", "_").replace("-", "_"))
     return formatted_gpu_names
 
-# dictionary maps region to list of countries 
+
+# dictionary maps region to list of countries
 # matches FE code's dropdown menu
 REGIONS = {
     "North_America": "[US, CA]",
@@ -3894,34 +4704,115 @@ REGIONS = {
     "Africa": "[EG, ZA]",
 }
 
+
 @parser.command(
-    argument("-g", "--gpu-name", type=str, required=True, choices=_get_gpu_names(), help="Name of the GPU model, replace spaces with underscores"),
-    argument("-n", "--num-gpus", type=str, required=True, choices=["1", "2", "4", "8", "12", "14"], help="Number of GPUs required"),
-    argument("-r", "--region", type=str, choices=["North_America", "South_America", "Europe", "Asia", "Oceania", "Africa"], help="Geographical location of the instance"),
-    argument("-i", "--image", required=True, help="Name of the image to use for instance"),
-    argument("-d", "--disk", type=float, default=16.0, help="Disk space required in GB"),
+    argument(
+        "-g",
+        "--gpu-name",
+        type=str,
+        required=True,
+        choices=_get_gpu_names(),
+        help="Name of the GPU model, replace spaces with underscores",
+    ),
+    argument(
+        "-n",
+        "--num-gpus",
+        type=str,
+        required=True,
+        choices=["1", "2", "4", "8", "12", "14"],
+        help="Number of GPUs required",
+    ),
+    argument(
+        "-r",
+        "--region",
+        type=str,
+        choices=[
+            "North_America",
+            "South_America",
+            "Europe",
+            "Asia",
+            "Oceania",
+            "Africa",
+        ],
+        help="Geographical location of the instance",
+    ),
+    argument(
+        "-i", "--image", required=True, help="Name of the image to use for instance"
+    ),
+    argument(
+        "-d", "--disk", type=float, default=16.0, help="Disk space required in GB"
+    ),
     argument("--price", help="per machine bid price in $/hour", type=float),
-    argument("--login", help="docker login arguments for private repo authentication, surround with '' ", type=str),
+    argument(
+        "--login",
+        help="docker login arguments for private repo authentication, surround with '' ",
+        type=str,
+    ),
     argument("--label", help="label to set on the instance", type=str),
     argument("--onstart", help="filename to use as onstart script", type=str),
-    argument("--onstart-cmd", help="contents of onstart script as single argument", type=str),
-    argument("--entrypoint", help="override entrypoint for args launch instance", type=str),
-    argument("--ssh",     help="Launch as an ssh instance type.", action="store_true"),
-    argument("--jupyter", help="Launch as a jupyter instance instead of an ssh instance.", action="store_true"),
-    argument("--direct",  help="Use (faster) direct connections for jupyter & ssh.", action="store_true"),
-    argument("--jupyter-dir", help="For runtype 'jupyter', directory in instance to use to launch jupyter. Defaults to image's working directory.", type=str),
-    argument("--jupyter-lab", help="For runtype 'jupyter', Launch instance with jupyter lab.", action="store_true"),
-    argument("--lang-utf8", help="Workaround for images with locale problems: install and generate locales before instance launch, and set locale to C.UTF-8.", action="store_true"),
-    argument("--python-utf8", help="Workaround for images with locale problems: set python's locale to C.UTF-8.", action="store_true"),
+    argument(
+        "--onstart-cmd", help="contents of onstart script as single argument", type=str
+    ),
+    argument(
+        "--entrypoint", help="override entrypoint for args launch instance", type=str
+    ),
+    argument("--ssh", help="Launch as an ssh instance type.", action="store_true"),
+    argument(
+        "--jupyter",
+        help="Launch as a jupyter instance instead of an ssh instance.",
+        action="store_true",
+    ),
+    argument(
+        "--direct",
+        help="Use (faster) direct connections for jupyter & ssh.",
+        action="store_true",
+    ),
+    argument(
+        "--jupyter-dir",
+        help="For runtype 'jupyter', directory in instance to use to launch jupyter. Defaults to image's working directory.",
+        type=str,
+    ),
+    argument(
+        "--jupyter-lab",
+        help="For runtype 'jupyter', Launch instance with jupyter lab.",
+        action="store_true",
+    ),
+    argument(
+        "--lang-utf8",
+        help="Workaround for images with locale problems: install and generate locales before instance launch, and set locale to C.UTF-8.",
+        action="store_true",
+    ),
+    argument(
+        "--python-utf8",
+        help="Workaround for images with locale problems: set python's locale to C.UTF-8.",
+        action="store_true",
+    ),
     argument("--extra", help=argparse.SUPPRESS),
-    argument("--env",   help="env variables and port mapping options, surround with '' ", type=str),
-    argument("--args",  nargs=argparse.REMAINDER, help="list of arguments passed to container ENTRYPOINT. Onstart is recommended for this purpose. (must be last argument)"),
-    argument("--force", help="Skip sanity checks when creating from an existing instance", action="store_true"),
-    argument("--cancel-unavail", help="Return error if scheduling fails (rather than creating a stopped instance)", action="store_true"),
+    argument(
+        "--env",
+        help="env variables and port mapping options, surround with '' ",
+        type=str,
+    ),
+    argument(
+        "--args",
+        nargs=argparse.REMAINDER,
+        help="list of arguments passed to container ENTRYPOINT. Onstart is recommended for this purpose. (must be last argument)",
+    ),
+    argument(
+        "--force",
+        help="Skip sanity checks when creating from an existing instance",
+        action="store_true",
+    ),
+    argument(
+        "--cancel-unavail",
+        help="Return error if scheduling fails (rather than creating a stopped instance)",
+        action="store_true",
+    ),
     argument("--template_hash", help="Create instance from template info", type=str),
     usage="vastai launch instance [--help] [--api-key API_KEY] <gpu_name> <num_gpus> <image> [geolocation] [disk_space]",
     help="Launch the top instance from the search offers based on the given parameters",
-    epilog=deindent("""
+    epilog=deindent(
+        """
         Launches an instance based on the given parameters. The instance will be created with the top offer from the search results.
         Besides the gpu_name and num_gpus, you must pass in an '--image' argument as a minimum.
 
@@ -3951,7 +4842,8 @@ REGIONS = {
             ssh, jupyter, direct:   bool      Flags to specify the instance type and connection method.
             env:                    str       Environment variables and port mappings, encapsulated in single quotes.
             args:                   list      Arguments passed to the container's ENTRYPOINT, used only if '--args' is specified.
-    """),
+    """
+    ),
 )
 def launch__instance(args):
     """Allows for a more streamlined and simplified way to create an instance.
@@ -3964,12 +4856,19 @@ def launch__instance(args):
     if args.disk:
         args_query += f" disk_space>={args.disk}"
 
-    base_query = {"verified": {"eq": True}, "external": {"eq": False}, "rentable": {"eq": True}, "rented": {"eq": False}}
-    query = parse_query(args_query, base_query, offers_fields, offers_alias, offers_mult)
+    base_query = {
+        "verified": {"eq": True},
+        "external": {"eq": False},
+        "rentable": {"eq": True},
+        "rented": {"eq": False},
+    }
+    query = parse_query(
+        args_query, base_query, offers_fields, offers_alias, offers_mult
+    )
 
     # let's stick with default for these search params
     # this can be expanded upon in the future
-    query["order"] = [['score', 'desc']]
+    query["order"] = [["score", "desc"]]
     query["type"] = "on-demand"
     query["limit"] = 3
     query["allocated_storage"] = 5.0
@@ -3984,20 +4883,20 @@ def launch__instance(args):
         return 1
 
     json_blob = {
-        "client_id": "me", 
-        "gpu_name": args.gpu_name, 
-        "num_gpus": args.num_gpus, 
-        "region": args.region, 
-        "image": args.image, 
-        "disk": args.disk,  
-        "q" : query,
-        "env" : parse_env(args.env),
+        "client_id": "me",
+        "gpu_name": args.gpu_name,
+        "num_gpus": args.num_gpus,
+        "region": args.region,
+        "image": args.image,
+        "disk": args.disk,
+        "q": query,
+        "env": parse_env(args.env),
         "price": args.price,
         "disk": args.disk,
         "label": args.label,
         "extra": args.extra,
         "onstart": args.onstart_cmd,
-        "runtype": runtype, #full str
+        "runtype": runtype,  # full str
         "image_login": args.login,
         "python_utf8": args.python_utf8,
         "lang_utf8": args.lang_utf8,
@@ -4005,14 +4904,14 @@ def launch__instance(args):
         "jupyter_dir": args.jupyter_dir,
         "force": args.force,
         "cancel_unavail": args.cancel_unavail,
-        "template_hash_id" : args.template_hash
+        "template_hash_id": args.template_hash,
     }
-    if (args.args != None):
+    if args.args != None:
         json_blob["args"] = args.args
 
     url = apiurl(args, "/launch_instance/".format())
 
-    if (args.explain):
+    if args.explain:
         print("request json: ")
         print(json_blob)
     r = http_put(args, url, headers=headers, json=json_blob)
@@ -4023,15 +4922,18 @@ def launch__instance(args):
             print(json.dumps(r.json(), indent=1))
         else:
             print("Started. {}".format(r.json()))
-        if response_data.get('success'):
-            print(f"Instance launched successfully: {response_data.get('new_contract')}")
+        if response_data.get("success"):
+            print(
+                f"Instance launched successfully: {response_data.get('new_contract')}"
+            )
         else:
-            print(f"Failed to launch instance: {response_data.get('error')}, {response_data.get('message')}")
+            print(
+                f"Failed to launch instance: {response_data.get('error')}, {response_data.get('message')}"
+            )
     except requests.exceptions.HTTPError as err:
         print(f"HTTP error occurred: {err}")
     except Exception as err:
         print(f"An error occurred: {err}")
-
 
 
 login_deprecated_message = """
@@ -4057,13 +4959,27 @@ def login(args):
     print(login_deprecated_message)
 """
 
+
 def main():
     parser.add_argument("--url", help="server REST api url", default=server_url_default)
     parser.add_argument("--retry", help="retry limit", default=3)
-    parser.add_argument("--raw", action="store_true", help="output machine-readable json")
-    parser.add_argument("--explain", action="store_true", help="output verbose explanation of mapping of CLI calls to HTTPS API endpoints")
-    parser.add_argument("--api-key", help="api key. defaults to using the one stored in {}".format(api_key_file_base), type=str, required=False, default=api_key_guard)
-
+    parser.add_argument(
+        "--raw", action="store_true", help="output machine-readable json"
+    )
+    parser.add_argument(
+        "--explain",
+        action="store_true",
+        help="output verbose explanation of mapping of CLI calls to HTTPS API endpoints",
+    )
+    parser.add_argument(
+        "--api-key",
+        help="api key. defaults to using the one stored in {}".format(
+            api_key_file_base
+        ),
+        type=str,
+        required=False,
+        default=api_key_guard,
+    )
 
     args = parser.parse_args()
     if args.api_key is api_key_guard:
@@ -4079,13 +4995,13 @@ def main():
         sys.exit(args.func(args) or 0)
     except requests.exceptions.HTTPError as e:
         try:
-            errmsg = e.response.json().get("msg");
+            errmsg = e.response.json().get("msg")
         except JSONDecodeError:
             if e.response.status_code == 401:
                 errmsg = "Please log in or sign up"
             else:
                 errmsg = "(no detail message supplied)"
-        print("failed with error {e.response.status_code}: {errmsg}".format(**locals()));
+        print("failed with error {e.response.status_code}: {errmsg}".format(**locals()))
 
 
 if __name__ == "__main__":

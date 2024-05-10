@@ -1,14 +1,22 @@
 import os
 import subprocess
 import sys
+import argparse
+
+# Parse command-line arguments
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    "--debug", action="store_true", help="Print the command to run each subtest"
+)
+args = parser.parse_args()
 
 files = os.listdir("tests")
 test_files = [file for file in files if file.endswith("_test.py")]
 
 # Append Simian to sys.path before importing from package
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../"))
-
 from simian.utils import get_blender_path
+
 blender_command = get_blender_path()
 
 # Flag to track if any test has failed
@@ -16,16 +24,24 @@ test_failed = False
 
 for test_file in test_files:
     print(f"Running tests in {test_file}...")
+
     cmd = [blender_command, "--background", "--python", f"tests/{test_file}"]
-    
+
+    if args.debug:
+        print(f"Command: {' '.join(cmd)}")
+
     # Run the test file and capture the output
     result = subprocess.run(cmd, capture_output=True, text=True)
-    
+
     # Check if there are any errors in the output
-    if "FAILED" in result.stdout or "ERROR" in result.stdout or "Traceback" in result.stdout:
+    if (
+        "FAILED" in result.stderr
+        or "ERROR" in result.stderr
+        or "ValueError" in result.stderr
+        or "Traceback" in result.stderr
+    ):
         print(f"Tests in {test_file} failed!")
-        print("Error output:")
-        print(result.stdout)
+        print(result.stderr)
         test_failed = True
     else:
         print(f"Tests in {test_file} passed.")

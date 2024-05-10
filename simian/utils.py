@@ -4,32 +4,6 @@ import platform
 import re
 import subprocess
 import sys
-import pandas as pd
-
-
-def get_combination_objects(file="combinations.json") -> pd.DataFrame:
-    """
-    Fetches a DataFrame of example objects from a JSON file.
-
-    This function is used primarily for debugging purposes, where combinations
-    of objects are read from a JSON file and returned as a pandas DataFrame.
-
-    Returns:
-        pd.DataFrame: DataFrame containing example object combinations.
-    """
-    combinations = pd.read_json("combinations.json", orient="records")
-    return combinations
-
-
-def get_blender_path():
-    # if we are on macOS, then application_path is /Applications/Blender.app/Contents/MacOS/Blender
-    if platform.system() == "Darwin":
-        application_path = "/Applications/Blender.app/Contents/MacOS/Blender"
-    else:
-        application_path = "./blender/blender"
-    if not os.path.exists(application_path):
-        raise FileNotFoundError(f"Blender not found at {application_path}.")
-    return application_path
 
 
 def check_imports() -> None:
@@ -66,3 +40,32 @@ def check_imports() -> None:
                         [sys.executable, "-m", "pip", "install", requirement],
                         check=True,  # Ensures any error in installation raises an exception
                     )
+
+
+check_imports()
+import pandas as pd
+
+
+def get_combination_objects(file="combinations.json") -> pd.DataFrame:
+    """
+    Fetches a DataFrame of example objects from a JSON file.
+
+    This function is used primarily for debugging purposes, where combinations
+    of objects are read from a JSON file and returned as a pandas DataFrame.
+
+    Returns:
+        pd.DataFrame: DataFrame containing example object combinations.
+    """
+    combinations = pd.read_json("combinations.json", orient="records")
+    return combinations
+
+
+def get_blender_path():
+    # if we are on macOS, then application_path is /Applications/Blender.app/Contents/MacOS/Blender
+    if platform.system() == "Darwin":
+        application_path = "/Applications/Blender.app/Contents/MacOS/Blender"
+    else:
+        application_path = "./blender/blender"
+    if not os.path.exists(application_path):
+        raise FileNotFoundError(f"Blender not found at {application_path}.")
+    return application_path

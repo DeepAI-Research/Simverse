@@ -1,5 +1,50 @@
 import math
 import bpy
+from mathutils import Vector
+
+from simian.utils import check_imports
+
+check_imports()
+
+import numpy as np
+from scipy.spatial.transform import Rotation as R
+
+
+def rotate_points(points, angles):
+    """Rotate points by given angles in degrees for (x, y, z) rotations."""
+    rotation = R.from_euler("xyz", angles, degrees=True)
+    return np.array([rotation.apply(point) for point in points])
+
+
+def compute_camera_distance(points, fov_deg):
+    """Calculate the camera distance required to frame the bounding sphere of the points."""
+    # Calculate the center of the bounding sphere (use the centroid for simplicity)
+    centroid = np.mean(points, axis=0)
+    # Calculate the radius as the max distance from the centroid to any point
+    radius = np.max(np.linalg.norm(points - centroid, axis=1))
+    # Calculate the camera distance using the radius and the field of view
+    fov_rad = math.radians(fov_deg)
+    distance = radius / math.tan(fov_rad / 2)
+    return distance, centroid, radius
+
+
+def perspective_project(points, camera_distance, fov_deg, aspect_ratio=1.0):
+    """Project points onto a 2D plane using a perspective projection considering the aspect ratio."""
+    screen_points = []
+    fov_rad = math.radians(fov_deg)
+    f = 1.0 / math.tan(fov_rad / 2)
+    for point in points:
+        # Translate point to camera's frame of reference (camera along the positive x-axis)
+        p_cam = np.array([camera_distance - point[0], point[1], point[2]])
+        # Apply perspective projection if the point is in front of the camera
+        if p_cam[0] > 0:
+            x = (p_cam[1] * f) / (p_cam[0] * aspect_ratio)  # Adjust x by aspect ratio
+            y = p_cam[2] * f / p_cam[0]
+            # Normalize to range [0, 1] for OpenGL screen space
+            screen_x = (x + 1) / 2
+            screen_y = (y + 1) / 2
+            screen_points.append((screen_x, screen_y))
+    return np.array(screen_points)
 
 
 def create_camera_rig() -> bpy.types.Object:
@@ -42,8 +87,9 @@ def create_camera_rig() -> bpy.types.Object:
     camera = bpy.data.cameras.new("Camera")
     camera_object = bpy.data.objects.new("Camera", camera)
 
-    # rotate the Camera 90º,
+    # Rotate the Camera 90º
     camera_object.delta_rotation_euler = [1.5708, 0, 1.5708]
+    camera_object.data.lens_unit = "FOV"
 
     camera_object.parent = camera_animation_pivot
     bpy.context.scene.collection.objects.link(camera_object)
@@ -75,40 +121,37 @@ def set_camera_settings(combination: dict) -> None:
         None
     """
     camera = bpy.context.scene.objects["Camera"]
+    camera_data = camera.data
 
-    # get the camera on the camera object
-    camera = camera.data
+    # Get the initial lens value from the combination
+    initial_lens = combination["framing"]["fov"]
 
-    camera.lens = combination["framing"]["fov"]
+    # Get the first keyframe's angle_offset value, if available
+    animation = combination["animation"]
+    keyframes = animation["keyframes"]
+    if (
+        keyframes
+        and "Camera" in keyframes[0]
+        and "angle_offset" in keyframes[0]["Camera"]
+    ):
+        angle_offset = keyframes[0]["Camera"]["angle_offset"]
+        camera_data.angle = math.radians(initial_lens + angle_offset)
+    else:
+        camera_data.angle = math.radians(initial_lens)
 
     orientation_data = combination["orientation"]
-
     orientation = {"pitch": orientation_data["pitch"], "yaw": orientation_data["yaw"]}
 
     # Rotate CameraOrientationPivotYaw by the Y
     camera_orientation_pivot_yaw = bpy.data.objects.get("CameraOrientationPivotYaw")
-
-    # Convert from degrees to radians. orientation['pitch'] is in degrees, but Blender uses radians
     camera_orientation_pivot_yaw.rotation_euler[2] = orientation["yaw"] * math.pi / 180
 
     # Rotate CameraOrientationPivotPitch by the X
     camera_orientation_pivot_pitch = bpy.data.objects.get("CameraOrientationPivotPitch")
-
-    # Apply the pitch rotation adjustment. Negative sign used to invert the rotation for upward pitch in Blender's coordinate system.
     camera_orientation_pivot_pitch.rotation_euler[1] = (
         orientation["pitch"] * -math.pi / 180
     )
-    framing = combination["framing"]
 
-    # Set the root of the whole rig to the orientation position
-    camera_animation_root = bpy.data.objects.get("CameraAnimationRoot")
-
-    # TODO: Get the center of the bounding box of the focus object and set the camera to that position
-    camera_animation_root.location = [0, 0, 0.5]
-
-    # Set the CameraFramingPivot X to the framing
-    camera_framing_pivot = bpy.data.objects.get("CameraFramingPivot")
-    camera_framing_pivot.location = framing["position"]
     set_camera_animation(combination)
 
 
@@ -117,29 +160,21 @@ def set_camera_animation(combination: dict, frame_distance: int = 120) -> None:
     Applies the specified animation to the camera based on the keyframes from the camera_data.json file.
 
     Args:
-        animation_name (str): The name of the animation to apply to the camera.
-        camera_data (dict): The dictionary containing the camera data from the JSON file.
-
-    Raises:
-        ValueError: If the animation is not found in the camera data.
+        combination (dict): The combination dictionary containing animation data.
+        frame_distance (int): The distance between frames for keyframe placement.
 
     Returns:
         None
     """
-    # Find the animation in the camera data
     animation = combination["animation"]
-
-    # Get the keyframes from the animation
     keyframes = animation["keyframes"]
 
-    # Iterate over the keyframes and apply the transformations to the corresponding objects
     for i, keyframe in enumerate(keyframes):
         for obj_name, transforms in keyframe.items():
             obj = bpy.data.objects.get(obj_name)
             if obj is None:
                 raise ValueError(f"Object {obj_name} not found in the scene")
-
-            # Set the keyframe for each transformation
+            original_location = obj.location.copy()
             frame = i * frame_distance
             for transform_name, value in transforms.items():
                 if transform_name == "position":
@@ -151,6 +186,82 @@ def set_camera_animation(combination: dict, frame_distance: int = 120) -> None:
                 elif transform_name == "scale":
                     obj.scale = value
                     obj.keyframe_insert(data_path="scale", frame=frame)
+                elif transform_name == "angle_offset" and obj_name == "Camera":
+                    camera_data = bpy.data.objects["Camera"].data
+                    camera_data.angle = math.radians(
+                        combination["framing"]["fov"] + value
+                    )
+                    camera_data.keyframe_insert(data_path="lens", frame=frame)
+            obj.location = original_location
 
-    # Set the current frame to the start of the animation
     bpy.context.scene.frame_set(0)
+
+
+def position_camera(combination: dict, focus_object: bpy.types.Object) -> None:
+    """
+    Positions the camera based on the coverage factor and lens values.
+
+    Args:
+        combination (dict): The combination dictionary containing coverage factor and lens values.
+
+    Returns:
+        None
+    """
+    camera = bpy.context.scene.objects["Camera"]
+
+    print(f"Focus object: {focus_object.name}")
+
+    # Get the bounding box of the focus object in world space
+    bpy.context.view_layer.update()
+    bbox = [
+        focus_object.matrix_world @ Vector(corner) for corner in focus_object.bound_box
+    ]
+    bbox_points = np.array([corner.to_tuple() for corner in bbox])
+
+    # Rotate points as per the desired view angle if any
+    # Assuming we want to compute this based on some predefined rotation angles
+    rotation_angles = (45, 45, 45)  # Example rotation angles
+    rotated_points = rotate_points(bbox_points, rotation_angles)
+
+    print("combination")
+    print(combination)
+
+    # scale rotated_points by combination["framing"]["coverage_factor"]
+    rotated_points *= combination["framing"]["coverage_factor"]
+
+    # Calculate the camera distance to frame the rotated bounding box correctly
+    fov_deg = combination["framing"][
+        "fov"
+    ]  # Get the FOV from combination or default to 45
+    aspect_ratio = (
+        bpy.context.scene.render.resolution_x / bpy.context.scene.render.resolution_y
+    )
+    print("aspect_ratio", aspect_ratio)
+    camera_distance, centroid, radius = compute_camera_distance(
+        rotated_points, fov_deg / aspect_ratio
+    )
+
+    # Set the camera properties
+    camera.data.angle = math.radians(fov_deg)  # Set camera FOV
+    if aspect_ratio >= 1:
+        camera.data.sensor_fit = "HORIZONTAL"
+    else:
+        camera.data.sensor_fit = "VERTICAL"
+
+    # Position the camera based on the computed distance
+    camera.location = Vector((camera_distance, 0, 0))  # Adjust this as needed
+
+    bbox = [
+        focus_object.matrix_world @ Vector(corner) for corner in focus_object.bound_box
+    ]
+    bbox_min = min(bbox, key=lambda v: v.z)
+    bbox_max = max(bbox, key=lambda v: v.z)
+
+    # Calculate the height of the bounding box
+    bbox_height = bbox_max.z - bbox_min.z
+
+    # Set the position of the CameraAnimationRoot object to slightly above the focus object center, quasi-rule of thirds
+    # bbox_height / 2 is the center of the bounding box, bbox_height / 1.66 is more aesthetically pleasing
+    bpy.data.objects["CameraAnimationRoot"].location = focus_object.location + Vector(
+        (0, 0, bbox_height * 0.66)
+    )

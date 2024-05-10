@@ -28,6 +28,7 @@ sys.path.append(simian_path)
 redis_url = os.environ.get("REDIS_URL", "redis://localhost:6379")
 app = Celery("tasks", broker=redis_url)
 
+
 @app.task(name="render_object", acks_late=True, reject_on_worker_lost=True)
 def render_object(
     combination_index: int,

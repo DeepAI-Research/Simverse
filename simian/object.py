@@ -193,6 +193,9 @@ def normalize_object_scale(
     max_dimension = max(bbox_dimensions)
     scale = scale_factor / max_dimension
     obj.scale = (scale, scale, scale)
+    # make sure object is active and apply the scale
+    bpy.context.view_layer.objects.active = obj
+    bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
     return obj
 
 

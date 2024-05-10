@@ -1,22 +1,11 @@
 import argparse
-import platform
 import sys
 import json
 import os
 import ssl
+import bpy
 
 ssl._create_default_https_context = ssl._create_unverified_context
-
-# Append Simian to sys.path before importing from package
-sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../"))
-
-from simian.utils import check_imports
-
-check_imports()
-
-import pandas as pd
-import objaverse
-import bpy
 
 # Get the directory of the currently executing script
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -29,26 +18,28 @@ if current_dir.endswith("simian"):
 simian_path = os.path.join(current_dir)
 sys.path.append(simian_path)
 
+from simian.utils import check_imports
+
+check_imports()
+import pandas as pd
+from simian.camera import create_camera_rig, position_camera, set_camera_settings
+from simian.position import create_grid, find_largest_length, place_objects_on_grid
 from simian.camera import create_camera_rig, set_camera_settings
 from simian.object import (
     apply_all_modifiers,
     apply_and_remove_armatures,
-    delete_all_empties,
-    delete_invisible_objects,
     get_meshes_in_hierarchy,
     join_objects_in_hierarchy,
     load_object,
     lock_all_objects,
     normalize_object_scale,
-    optimize_meshes_in_hierarchy,
-    remove_loose_meshes,
-    remove_small_geometry,
     set_pivot_to_bottom,
     unlock_objects,
     unparent_keep_transform,
 )
 from simian.background import create_photosphere, set_background
 from simian.scene import apply_stage_material, create_stage, initialize_scene
+import objaverse
 
 
 def read_combination(combination_file: str, index: int = 0) -> dict:
@@ -71,7 +62,7 @@ def render_scene(
     context: bpy.types.Context,
     combination_file,
     start_frame: int = 1,
-    end_frame: int = 25,
+    end_frame: int = 65,
     combination_index=0,
     height=1080,
     width=1920,
@@ -84,7 +75,7 @@ def render_scene(
         - context (bpy.types.Context): Blender context.
         - combination_file (str): Path to the JSON file containing camera combinations.
         - start_frame (int): Start frame of the animation. Defaults to 1.
-        - end_frame (int): End frame of the animation. Defaults to 25.
+        - end_frame (int): End frame of the animation. Defaults to 65.
         - combination_index (int): Index of the camera combination to use from the JSON file. Defaults to 0.
         - height (int): Render output height. Defaults to 1080.
         - width (int): Render output width. Defaults to 1920.
@@ -108,8 +99,10 @@ def render_scene(
     initial_objects = lock_all_objects()
 
     combination = read_combination(combination_file, combination_index)
+    all_objects = []
 
-    # Load and place each object in the 3x3 grid
+    focus_object = None
+
     for object_data in combination["objects"]:
         object_file = objaverse.load_objects([object_data["uid"]])[object_data["uid"]]
 
@@ -118,16 +111,19 @@ def render_scene(
 
         apply_and_remove_armatures()
         apply_all_modifiers(obj)
-        optimize_meshes_in_hierarchy(obj)
+        # optimize_meshes_in_hierarchy(obj)
 
         join_objects_in_hierarchy(obj)
 
-        optimize_meshes_in_hierarchy(obj)
+        # optimize_meshes_in_hierarchy(obj)
 
-        remove_loose_meshes(obj)
+        # remove_loose_meshes(obj)
 
         meshes = get_meshes_in_hierarchy(obj)
         obj = meshes[0]
+
+        if focus_object is None:
+            focus_object = obj
 
         unparent_keep_transform(obj)
         set_pivot_to_bottom(obj)
@@ -142,8 +138,15 @@ def render_scene(
         obj.scale = [object_data["scale"]["factor"] for _ in range(3)]
         normalize_object_scale(obj)
 
+        obj.name = object_data["uid"]  # Set the Blender object's name to the UID
+
+        all_objects.append(obj)
+
     # Unlock and unhide the initial objects
     unlock_objects(initial_objects)
+
+    largest_length = find_largest_length(all_objects)
+    place_objects_on_grid(all_objects, largest_length)
 
     set_camera_settings(combination)
     set_background(args.hdri_path, combination)
@@ -190,7 +193,12 @@ if __name__ == "__main__":
         type=str,
         default="combinations.json",
         help="Path to the JSON file containing camera combinations.",
-        required=False,
+    )
+    parser.add_argument(
+        "--hdri_path",
+        type=str,
+        default="backgrounds",
+        help="Path to the directory where the background HDRs will be saved.",
     )
     parser.add_argument(
         "--combination_index",
@@ -209,7 +217,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--end_frame",
         type=int,
-        default=25,
+        default=65,
         help="End frame of the animation.",
         required=False,
     )
@@ -219,16 +227,9 @@ if __name__ == "__main__":
     parser.add_argument(
         "--height", type=int, default=1080, help="Render output height.", required=False
     )
-    parser.add_argument(
-        "--hdri_path",
-        type=str,
-        default="backgrounds",
-        help="Path to the directory where the background HDRs will be saved.",
-        required=False,
-    )
 
-    if " -- " in sys.argv:
-        argv = sys.argv[sys.argv.index(" -- ") + 1 :]
+    if "--" in sys.argv:
+        argv = sys.argv[sys.argv.index("--") + 1 :]
     else:
         argv = []
 

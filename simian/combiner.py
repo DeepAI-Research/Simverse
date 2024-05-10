@@ -385,7 +385,25 @@ def generate_combinations(camera_data, count):
             "pitch": pitch,
         }
 
-        framing = random.choice(camera_data["framings"])
+        # get the min_fov and max_fov across all framings
+        fov_min = min([f["fov_min"] for f in camera_data["framings"]])
+        fov_max = max([f["fov_max"] for f in camera_data["framings"]])
+
+        # Randomly roll an FOV value between FOV_min and FOV_max
+        fov = random.uniform(fov_min, fov_max)
+
+        # find the corresponding framing
+        framing = None
+        for f in camera_data["framings"]:
+            if fov >= f["fov_min"] and fov <= f["fov_max"]:
+                framing = f
+                break
+
+        # Derive a coverage_factor between coverage_factor_min and coverage_factor_max
+        coverage_factor = random.uniform(
+            framing["coverage_factor_min"], framing["coverage_factor_max"]
+        )
+
         animation = random.choice(camera_data["animations"])
 
         chosen_dataset = random.choices(dataset_names, weights=dataset_weights)[0]
@@ -417,6 +435,9 @@ def generate_combinations(camera_data, count):
             "uv_rotation": random.uniform(0, 360),
         }
 
+        framing["fov"] = fov
+        framing["coverage_factor"] = coverage_factor
+
         combination = {
             "index": i,
             "objects": objects,
@@ -432,7 +453,6 @@ def generate_combinations(camera_data, count):
 
         # remove description from framing, animation and orientation
         framing = framing.copy()
-
         framing.pop("descriptions", None)
 
         animation = animation.copy()

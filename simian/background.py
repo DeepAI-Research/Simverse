@@ -4,7 +4,7 @@ import requests
 import bpy
 
 
-def get_background_path(hdri_path: str, combination: Dict) -> str:
+def get_hdri_path(hdri_path: str, combination: Dict) -> str:
     """
     Get the local file path for the background HDR image.
 
@@ -37,7 +37,7 @@ def get_background(hdri_path: str, combination: Dict) -> None:
     Returns:
         None
     """
-    hdri_path = get_background_path(hdri_path, combination)
+    hdri_path = get_hdri_path(hdri_path, combination)
 
     background = combination["background"]
     background_url = background["url"]
@@ -71,7 +71,7 @@ def set_background(hdri_path: str, combination: Dict) -> None:
         None
     """
     get_background(hdri_path, combination)
-    hdri_path = get_background_path(hdri_path, combination)
+    hdri_path = get_hdri_path(hdri_path, combination)
 
     # Check if the scene has a world, and create one if it doesn't
     if bpy.context.scene.world is None:
@@ -111,7 +111,9 @@ def set_background(hdri_path: str, combination: Dict) -> None:
     print(f"Set background to {hdri_path}")
 
 
-def create_photosphere(hdri_path: str, combination: Dict) -> bpy.types.Object:
+def create_photosphere(
+    hdri_path: str, combination: Dict, scale: float = 10
+) -> bpy.types.Object:
     """
     Create a photosphere object in the scene.
 
@@ -128,8 +130,9 @@ def create_photosphere(hdri_path: str, combination: Dict) -> bpy.types.Object:
         bpy.types.Object: The created photosphere object.
     """
     bpy.ops.mesh.primitive_uv_sphere_add(
-        segments=64, ring_count=32, radius=1.0, location=(0, 0, 3)
+        segments=64, ring_count=32, radius=scale, location=(0, 0, 3)
     )
+
     bpy.ops.object.shade_smooth()
 
     # invert the UV sphere normals
@@ -172,7 +175,7 @@ def create_photosphere_material(
     # Create and connect the nodes
     emission = nodes.new(type="ShaderNodeEmission")
     env_tex = nodes.new(type="ShaderNodeTexEnvironment")
-    env_tex.image = bpy.data.images.load(get_background_path(hdri_path, combination))
+    env_tex.image = bpy.data.images.load(get_hdri_path(hdri_path, combination))
     mat.node_tree.links.new(env_tex.outputs["Color"], emission.inputs["Color"])
     output = nodes.new(type="ShaderNodeOutputMaterial")
     mat.node_tree.links.new(emission.outputs["Emission"], output.inputs["Surface"])

@@ -25,9 +25,15 @@ jobs:
     - name: Run install_blender_linux.sh
       run: bash scripts/install_blender_linux.sh
 
+    - name: Get the data
+      run: bash scripts/get_data.sh
+
+
+    - name: Generate combinations
+      run: python simian/combiner.py
+
     - name: Run tests
-      run: |
-        python tests/__run__.py
+      run: python tests/__run__.py
 
     - name: Check test results
       if: failure()

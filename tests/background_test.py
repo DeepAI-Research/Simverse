@@ -7,7 +7,7 @@ sys.path.append(simian_path)
 
 from unittest.mock import patch, MagicMock
 from simian.background import (
-    get_background_path,
+    get_hdri_path,
     get_background,
     set_background,
     create_photosphere,
@@ -18,18 +18,18 @@ import bpy
 from simian.background import set_background
 
 
-def test_get_background_path():
+def test_get_hdri_path():
     """
-    Test the get_background_path function.
+    Test the get_hdri_path function.
     """
     combination = {"background": {"id": "123", "from": "test_dataset"}}
-    background_path = "/fake/path"
+    hdri_path = "/fake/path"
     expected_result = f"/fake/path/test_dataset/123.hdr"
-    result = get_background_path(background_path, combination)
+    result = get_hdri_path(hdri_path, combination)
 
-    print("test_get_background_path result: ", result)
+    print("test_get_hdri_path result: ", result)
     assert result == expected_result
-    print("============ Test Passed: get_background_path ============")
+    print("============ Test Passed: get_hdri_path ============")
 
 
 def test_get_background():
@@ -43,7 +43,7 @@ def test_get_background():
             "from": "test_dataset",
         }
     }
-    background_path = "/fake/path"
+    hdri_path = "/fake/path"
 
     with patch("os.makedirs"), patch("os.path.exists", return_value=False), patch(
         "requests.get"
@@ -52,7 +52,7 @@ def test_get_background():
         mock_response.content = b"fake data"
         mock_get.return_value = mock_response
 
-        get_background(background_path, combination)
+        get_background(hdri_path, combination)
         print("get_background called")
 
         mock_get.assert_called_with("http://example.com/image.hdr")
@@ -67,28 +67,38 @@ def test_set_background():
         "background": {
             "id": "123",
             "from": "test_dataset",
-            "url": "http://example.com/image.hdr"
+            "url": "http://example.com/image.hdr",
         }
     }
     # Use a path in the user's home directory or another writable location
     background_base_path = os.path.join(os.path.expanduser("~"), "test_backgrounds")
 
     # Mocking dependencies
-    with patch('simian.background.get_background_path', return_value=os.path.join(background_base_path, "test_dataset/123.hdr")) as mock_get_path:
-        with patch('os.path.exists', return_value=False):
-            with patch('requests.get') as mock_get:
+    with patch(
+        "simian.background.get_hdri_path",
+        return_value=os.path.join(background_base_path, "test_dataset/123.hdr"),
+    ) as mock_get_path:
+        with patch("os.path.exists", return_value=False):
+            with patch("requests.get") as mock_get:
                 mock_response = MagicMock()
                 mock_response.content = b"Fake HDR content"
                 mock_get.return_value = mock_response
 
                 # Ensure the directory exists before writing
-                os.makedirs(os.path.dirname(os.path.join(background_base_path, "test_dataset/123.hdr")), exist_ok=True)
+                os.makedirs(
+                    os.path.dirname(
+                        os.path.join(background_base_path, "test_dataset/123.hdr")
+                    ),
+                    exist_ok=True,
+                )
 
                 # Function call
                 set_background(background_base_path, combination)
 
                 # Open the file to simulate writing to it
-                with open(os.path.join(background_base_path, "test_dataset/123.hdr"), "wb") as file:
+                with open(
+                    os.path.join(background_base_path, "test_dataset/123.hdr"), "wb"
+                ) as file:
                     file.write(mock_response.content)
 
                 mock_get.assert_called_with("http://example.com/image.hdr")
@@ -100,15 +110,17 @@ def create_test_photosphere():
     Create a UV sphere in Blender with specific parameters.
     """
     # Create a UV sphere in Blender with specific parameters
-    bpy.ops.mesh.primitive_uv_sphere_add(segments=64, ring_count=32, radius=1.0, location=(0, 0, 3))
+    bpy.ops.mesh.primitive_uv_sphere_add(
+        segments=64, ring_count=32, radius=1.0, location=(0, 0, 3)
+    )
     sphere = bpy.context.object
     bpy.ops.object.shade_smooth()
 
     # Enter edit mode, select all vertices, and flip the normals
-    bpy.ops.object.mode_set(mode='EDIT')
-    bpy.ops.mesh.select_all(action='SELECT')
+    bpy.ops.object.mode_set(mode="EDIT")
+    bpy.ops.mesh.select_all(action="SELECT")
     bpy.ops.mesh.flip_normals()
-    bpy.ops.object.mode_set(mode='OBJECT')
+    bpy.ops.object.mode_set(mode="OBJECT")
 
     # Rename the sphere for identification
     sphere.name = "Photosphere"
@@ -132,15 +144,17 @@ def test_create_photosphere_material():
     Test the create_photosphere_material function.
     """
     # Create a UV sphere in Blender with specific parameters
-    bpy.ops.mesh.primitive_uv_sphere_add(segments=64, ring_count=32, radius=1.0, location=(0, 0, 3))
+    bpy.ops.mesh.primitive_uv_sphere_add(
+        segments=64, ring_count=32, radius=1.0, location=(0, 0, 3)
+    )
     sphere = bpy.context.object
     bpy.ops.object.shade_smooth()
 
     # Enter edit mode, select all vertices, and flip the normals
-    bpy.ops.object.mode_set(mode='EDIT')
-    bpy.ops.mesh.select_all(action='SELECT')
+    bpy.ops.object.mode_set(mode="EDIT")
+    bpy.ops.mesh.select_all(action="SELECT")
     bpy.ops.mesh.flip_normals()
-    bpy.ops.object.mode_set(mode='OBJECT')
+    bpy.ops.object.mode_set(mode="OBJECT")
 
     # Rename the sphere for identification
     sphere.name = "Photosphere"
@@ -150,29 +164,37 @@ def test_create_photosphere_material():
         "background": {
             "id": "123",
             "from": "test_dataset",
-            "url": "http://example.com/image.hdr"
+            "url": "http://example.com/image.hdr",
         }
     }
 
     # Set the base path for background images
     background_base_path = os.path.join(os.path.expanduser("~"), "test_backgrounds")
 
-    # Mock the get_background_path function to return a known path
-    with patch('simian.background.get_background_path', return_value=os.path.join(background_base_path, "test_dataset/123.hdr")) as mock_get_path:
+    # Mock the get_hdri_path function to return a known path
+    with patch(
+        "simian.background.get_hdri_path",
+        return_value=os.path.join(background_base_path, "test_dataset/123.hdr"),
+    ) as mock_get_path:
         # Mock the existence of the background image file
-        with patch('os.path.exists', return_value=True):
+        with patch("os.path.exists", return_value=True):
             # Mock the open function to simulate reading the background image
-            with patch('builtins.open', MagicMock()) as mock_open:
+            with patch("builtins.open", MagicMock()) as mock_open:
                 # Call the create_photosphere_material function
                 create_photosphere_material(background_base_path, combination, sphere)
 
                 # Verify that the material was created
-                assert sphere.data.materials[0].name == "PhotosphereMaterial", "Material not created successfully"
-                print("============ Test Passed: test_create_photosphere_material ============")
+                assert (
+                    sphere.data.materials[0].name == "PhotosphereMaterial"
+                ), "Material not created successfully"
+                print(
+                    "============ Test Passed: test_create_photosphere_material ============"
+                )
+
 
 # Run tests if this file is executed as a script
 if __name__ == "__main__":
-    test_get_background_path()
+    test_get_hdri_path()
     test_get_background()
     test_set_background()
     test_create_photosphere()
