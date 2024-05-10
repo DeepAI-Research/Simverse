@@ -15,7 +15,8 @@
       "contributions": [
         "infra",
         "test",
-        "code"
+        "code",
+        "doc"
       ]
     },
     {
@@ -24,8 +25,8 @@
       "avatar_url": "https://avatars.githubusercontent.com/u/59460685?v=4",
       "profile": "https://ericsheen.tech/",
       "contributions": [
-        "test",
         "code",
+        "test",
         "doc"
       ]
     }
