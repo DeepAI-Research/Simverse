@@ -1039,12 +1039,12 @@
             "keyframes": [
                 {
                     "Camera": {
-                        "lens_offset": 10
+                        "angle_offset": 10
                     }
                 },
                 {
                     "Camera": {
-                        "lens_offset": 0
+                        "angle_offset": 0
                     }
                 }
             ]
@@ -1086,12 +1086,12 @@
             "keyframes": [
                 {
                     "Camera": {
-                        "lens_offset": 0
+                        "angle_offset": 0
                     }
                 },
                 {
                     "Camera": {
-                        "lens_offset": 10
+                        "angle_offset": 10
                     }
                 }
             ]

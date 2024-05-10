@@ -80,6 +80,7 @@ def create_camera_rig() -> bpy.types.Object:
 
     # Rotate the Camera 90º
     camera_object.delta_rotation_euler = [1.5708, 0, 1.5708]
+    camera_object.data.lens_unit = "FOV"
 
     camera_object.parent = camera_animation_pivot
     bpy.context.scene.collection.objects.link(camera_object)
@@ -116,14 +117,14 @@ def set_camera_settings(combination: dict) -> None:
     # Get the initial lens value from the combination
     initial_lens = combination["framing"]["fov"]
 
-    # Get the first keyframe's lens_offset value, if available
+    # Get the first keyframe's angle_offset value, if available
     animation = combination["animation"]
     keyframes = animation["keyframes"]
-    if keyframes and "Camera" in keyframes[0] and "lens_offset" in keyframes[0]["Camera"]:
-        lens_offset = keyframes[0]["Camera"]["lens_offset"]
-        camera_data.angle = initial_lens + lens_offset
+    if keyframes and "Camera" in keyframes[0] and "angle_offset" in keyframes[0]["Camera"]:
+        angle_offset = keyframes[0]["Camera"]["angle_offset"]
+        camera_data.angle = math.radians(initial_lens + angle_offset)
     else:
-        camera_data.angle = initial_lens
+        camera_data.angle = math.radians(initial_lens)
 
     orientation_data = combination["orientation"]
     orientation = {"pitch": orientation_data["pitch"], "yaw": orientation_data["yaw"]}
@@ -172,10 +173,10 @@ def set_camera_animation(combination: dict, frame_distance: int = 120) -> None:
                 elif transform_name == "scale":
                     obj.scale = value
                     obj.keyframe_insert(data_path="scale", frame=frame)
-                elif transform_name == "lens_offset" and obj_name == "Camera":
+                elif transform_name == "angle_offset" and obj_name == "Camera":
                     camera_data = bpy.data.objects["Camera"].data
-                    camera_data.angle = combination["framing"]["fov"] + value
-                    camera_data.keyframe_insert(data_path="angle", frame=frame)
+                    camera_data.angle = math.radians(combination["framing"]["fov"] + value)
+                    camera_data.keyframe_insert(data_path="lens", frame=frame)
             obj.location = original_location
             
 
@@ -205,6 +206,9 @@ def position_camera(combination: dict, focus_object: bpy.types.Object) -> None:
     # Assuming we want to compute this based on some predefined rotation angles
     rotation_angles = (45, 45, 45)  # Example rotation angles
     rotated_points = rotate_points(bbox_points, rotation_angles)
+    
+    print("combination")
+    print(combination)
     
     # scale rotated_points by combination["framing"]["coverage_factor"]
     rotated_points *= combination["framing"]["coverage_factor"]

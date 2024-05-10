@@ -1,66 +1,14 @@
+import os
+import sys
 import bpy
 import math
 from mathutils import Vector
 
-def create_camera_rig() -> bpy.types.Object:
-    """
-    Creates a camera rig consisting of multiple objects in Blender.
+current_dir = os.path.dirname(os.path.abspath(__file__))
+combiner_path = os.path.join(current_dir, "../")
+sys.path.append(combiner_path)
 
-    Returns:
-        dict: A dictionary containing the created objects:
-            - camera_animation_root: The root object of the camera animation hierarchy.
-            - camera_orientation_pivot_yaw: The yaw pivot object for camera orientation.
-            - camera_orientation_pivot_pitch: The pitch pivot object for camera orientation.
-            - camera_framing_pivot: The pivot object for camera framing.
-            - camera_animation_pivot: The pivot object for camera animation.
-            - camera_object: The camera object.
-            - camera: The camera data.
-    """
-    camera_animation_root = bpy.data.objects.new("CameraAnimationRoot", None)
-    bpy.context.scene.collection.objects.link(camera_animation_root)
-
-    camera_orientation_pivot_yaw = bpy.data.objects.new(
-        "CameraOrientationPivotYaw", None
-    )
-    camera_orientation_pivot_yaw.parent = camera_animation_root
-    bpy.context.scene.collection.objects.link(camera_orientation_pivot_yaw)
-
-    camera_orientation_pivot_pitch = bpy.data.objects.new(
-        "CameraOrientationPivotPitch", None
-    )
-    camera_orientation_pivot_pitch.parent = camera_orientation_pivot_yaw
-    bpy.context.scene.collection.objects.link(camera_orientation_pivot_pitch)
-
-    camera_framing_pivot = bpy.data.objects.new("CameraFramingPivot", None)
-    camera_framing_pivot.parent = camera_orientation_pivot_pitch
-    bpy.context.scene.collection.objects.link(camera_framing_pivot)
-
-    camera_animation_pivot = bpy.data.objects.new("CameraAnimationPivot", None)
-    camera_animation_pivot.parent = camera_framing_pivot
-    bpy.context.scene.collection.objects.link(camera_animation_pivot)
-
-    camera = bpy.data.cameras.new("Camera")
-    
-    camera_object = bpy.data.objects.new("Camera", camera)
-    camera_object.data.lens_unit = 'FOV'
-
-    # Rotate the Camera 90º
-    camera_object.delta_rotation_euler = [1.5708, 0, 1.5708]
-
-    camera_object.parent = camera_animation_pivot
-    bpy.context.scene.collection.objects.link(camera_object)
-
-    bpy.context.scene.camera = camera_object
-
-    return {
-        "camera_animation_root": camera_animation_root,
-        "camera_orientation_pivot_yaw": camera_orientation_pivot_yaw,
-        "camera_orientation_pivot_pitch": camera_orientation_pivot_pitch,
-        "camera_framing_pivot": camera_framing_pivot,
-        "camera_animation_pivot": camera_animation_pivot,
-        "camera_object": camera_object,
-        "camera": camera,
-    }
+from simian.camera import create_camera_rig
 
 def calculate_optimal_distance(camera, obj):
     """
@@ -91,10 +39,6 @@ def calculate_optimal_distance(camera, obj):
     distance = (diagonal / 2) / math.tan(fov_average / 2)
 
     return distance
-
-
-
-
 
 def position_camera_for_object(camera, obj):
     """
@@ -143,14 +87,13 @@ def is_vertex_in_frame(camera, vertex):
 
     return abs(x_relative) <= 0.5 and abs(y_relative) <= 0.5
 
-
 def test_optimal_distance():
-    # Create a test scene
+    # Clear existing objects
     bpy.ops.object.select_all(action='SELECT')
     bpy.ops.object.delete()
     
+    # Create the camera rig
     dict = create_camera_rig()
-    
     camera = dict['camera_object']
 
     # Set camera properties
@@ -159,40 +102,47 @@ def test_optimal_distance():
     camera.data.lens_unit = 'FOV'
     camera.data.angle = math.radians(35)
 
-    # Create a test object (cube)
-    bpy.ops.mesh.primitive_cube_add(size=2, location=(0, 0, 0))
-    cube = bpy.context.active_object
-    
-    # update view
-    bpy.context.view_layer.update()
+    # Define different cube dimensions
+    cube_dimensions = [
+        (1, 10, 1),
+        (10, 1, 1),
+        (1, 1, 10)
+    ]
 
-    # Position the camera for the cube
-    position_camera_for_object(camera, cube)
-    
-    all_vertices_in_frame = True
-    for vertex in cube.data.vertices:
-        world_vertex = cube.matrix_world @ vertex.co
-        if not is_vertex_in_frame(camera, world_vertex):
-            all_vertices_in_frame = False
-            print(f"Vertex {vertex.co} is outside the camera's frame.")
+    # Iterate over each set of dimensions
+    for i, (width, depth, height) in enumerate(cube_dimensions, start=1):
+        # Create a test object (cube) with specific dimensions
+        bpy.ops.mesh.primitive_cube_add(size=1, location=(0, 0, 0))
+        cube = bpy.context.active_object
+        cube.scale = (width / 2, depth / 2, height / 2)  # Blender uses half-dimensions for scale
+        bpy.context.view_layer.update()
 
-    if all_vertices_in_frame:
-        print("All vertices are within the camera's frame.")
-    else:
-        print("Some vertices are outside the camera's frame.")
-    
-    # add a light
-    bpy.ops.object.light_add(type='SUN', location=(0, 0, 10))
+        # Apply scale to ensure the transformations are correct
+        bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
 
-    # set render file path to render.png
-    bpy.context.scene.render.filepath = 'render.png'
-    
-    bpy.ops.render.render(write_still=True)
-    
-    # save the scene
+        # Position the camera for the cube
+        position_camera_for_object(camera, cube)
+
+        all_vertices_in_frame = True
+        for vertex in cube.data.vertices:
+            world_vertex = cube.matrix_world @ vertex.co
+            if not is_vertex_in_frame(camera, world_vertex):
+                all_vertices_in_frame = False
+                print(f"Cube {i}: Vertex {vertex.co} is outside the camera's frame.")
+
+        if all_vertices_in_frame:
+            print(f"All vertices of Cube {i} are within the camera's frame.")
+        else:
+            print(f"Some vertices of Cube {i} are outside the camera's frame.")
+
+        # Remove the cube after rendering to prepare for the next one
+        bpy.data.objects.remove(cube, do_unlink=True)
+
+    # Save the Blender scene
     bpy.ops.wm.save_as_mainfile(filepath='test.blend')
 
     print("Test completed.")
+
 
 if __name__ == "__main__":
     test_optimal_distance()
