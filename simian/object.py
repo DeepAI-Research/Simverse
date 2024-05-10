@@ -193,7 +193,6 @@ def normalize_object_scale(
     max_dimension = max(bbox_dimensions)
     scale = scale_factor / max_dimension
     obj.scale = (scale, scale, scale)
-    
     return obj
 
 

@@ -1,40 +1,22 @@
 import argparse
 import platform
-import subprocess
 import sys
 import json
 import os
 import ssl
-import pandas as pd
-import objaverse
-import bpy
 
 ssl._create_default_https_context = ssl._create_unverified_context
 
+# Append Simian to sys.path before importing from package
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../"))
 
-def check_imports() -> None:
-    """
-    Checks and installs required dependencies specified in the requirements.txt file.
-
-    Args:
-        None
-
-    Returns:
-        None
-    """
-    with open("requirements.txt", "r") as f:
-        requirements = f.readlines()
-    for requirement in requirements:
-        try:
-            __import__(requirement)
-        except ImportError:
-            print(f"Installing {requirement}")
-            subprocess.run(
-                ["bash", "-c", f"{sys.executable} -m pip install {requirement}"]
-            )
-
+from simian.utils import check_imports
 
 check_imports()
+
+import pandas as pd
+import objaverse
+import bpy
 
 # Get the directory of the currently executing script
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -47,6 +29,7 @@ if current_dir.endswith("simian"):
 simian_path = os.path.join(current_dir)
 sys.path.append(simian_path)
 
+from simian.position import create_grid, find_largest_length, place_objects_on_grid
 from simian.camera import create_camera_rig, set_camera_settings
 from simian.object import (
     apply_all_modifiers,
@@ -67,7 +50,6 @@ from simian.object import (
 )
 from simian.background import create_photosphere, set_background
 from simian.scene import apply_stage_material, create_stage, initialize_scene
-from simian.position import create_grid, find_largest_length, place_objects_on_grid
 
 
 def read_combination(combination_file: str, index: int = 0) -> dict:
@@ -115,7 +97,7 @@ def render_scene(
     print(f"Rendering scene with combination {combination_index}")
 
     os.makedirs(output_dir, exist_ok=True)
-    
+
     initialize_scene()
     create_camera_rig()
 
@@ -127,9 +109,8 @@ def render_scene(
     initial_objects = lock_all_objects()
 
     combination = read_combination(combination_file, combination_index)
-
     all_objects = []
-
+    # Load and place each object in the 3x3 grid
     for object_data in combination["objects"]:
         object_file = objaverse.load_objects([object_data["uid"]])[object_data["uid"]]
 
@@ -151,28 +132,31 @@ def render_scene(
 
         unparent_keep_transform(obj)
         set_pivot_to_bottom(obj)
-        
+
+        # Calculate the grid cell position
+        grid_cell = object_data["placement"]
+        row = (grid_cell - 1) // 3
+        col = (grid_cell - 1) % 3
+
+        obj.location = [col - 1, row - 1, 0]
+
         obj.scale = [object_data["scale"]["factor"] for _ in range(3)]
         normalize_object_scale(obj)
-
-        obj.name = object_data['uid']  # Set the Blender object's name to the UID
         
-        all_objects.append(obj)
-    
-    # In the render_scene function, after creating all_objects
-    for obj, obj_data in zip(all_objects, combination["objects"]):
-        obj["placement"] = obj_data["placement"]
+        obj.name = object_data['uid']  # Set the Blender object's name to the UID
 
-    largest_length = find_largest_length(all_objects)
-    place_objects_on_grid(all_objects, largest_length)
+        all_objects.append(obj)
 
     # Unlock and unhide the initial objects
     unlock_objects(initial_objects)
 
-    set_camera_settings(combination)
-    set_background(args.background_path, combination)
+    largest_length = find_largest_length(all_objects)
+    place_objects_on_grid(all_objects, largest_length)
 
-    create_photosphere(args.background_path, combination).scale = (10, 10, 10)
+    set_camera_settings(combination)
+    set_background(args.hdri_path, combination)
+
+    create_photosphere(args.hdri_path, combination).scale = (10, 10, 10)
 
     stage = create_stage(combination)
     apply_stage_material(stage, combination)
@@ -205,7 +189,8 @@ if __name__ == "__main__":
     parser.add_argument(
         "--output_dir",
         type=str,
-        required=True,
+        default="renders",
+        required=False,
         help="Path to the directory where the rendered video will be saved.",
     )
     parser.add_argument(
@@ -213,58 +198,53 @@ if __name__ == "__main__":
         type=str,
         default="combinations.json",
         help="Path to the JSON file containing camera combinations.",
-    )
-    parser.add_argument(
-        "--background_path",
-        type=str,
-        default="backgrounds",
-        help="Path to the directory where the background HDRs will be saved.",
+        required=False,
     )
     parser.add_argument(
         "--combination_index",
         type=int,
         default=0,
         help="Index of the camera combination to use from the JSON file.",
+        required=False,
     )
     parser.add_argument(
         "--start_frame",
         type=int,
         default=1,
         help="Start frame of the animation.",
+        required=False,
     )
     parser.add_argument(
         "--end_frame",
         type=int,
         default=25,
         help="End frame of the animation.",
+        required=False,
     )
-    parser.add_argument("--width", type=int, default=1920, help="Render output width.")
     parser.add_argument(
-        "--height", type=int, default=1080, help="Render output height."
+        "--width", type=int, default=1920, help="Render output width.", required=False
+    )
+    parser.add_argument(
+        "--height", type=int, default=1080, help="Render output height.", required=False
+    )
+    parser.add_argument(
+        "--hdri_path",
+        type=str,
+        default="backgrounds",
+        help="Path to the directory where the background HDRs will be saved.",
+        required=False,
     )
 
-    argv = sys.argv[sys.argv.index("--") + 1 :]
-    args = parser.parse_args(argv)
+    if "--" in sys.argv:
+        argv = sys.argv[sys.argv.index("--") + 1 :]
+    else:
+        argv = []
 
-    # Now parse the arguments from the correct starting point
     args = parser.parse_args(argv)
 
     context = bpy.context
     scene = context.scene
     render = scene.render
-
-    os_system = platform.system()
-
-    # if we are on mac, device type is METAL
-    # if we are on windows or linux, device type is CUDA
-    if os_system == "Darwin":
-        bpy.context.preferences.addons[
-            "cycles"
-        ].preferences.compute_device_type = "METAL"
-    else:
-        bpy.context.preferences.addons[
-            "cycles"
-        ].preferences.compute_device_type = "CUDA"
 
     combinations = pd.read_json("combinations.json", orient="records")
     combinations = combinations.iloc[args.combination_index]
