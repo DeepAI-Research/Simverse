@@ -137,8 +137,8 @@ def render_scene(
 
         obj.scale = [object_data["scale"]["factor"] for _ in range(3)]
         normalize_object_scale(obj)
-        
-        obj.name = object_data['uid']  # Set the Blender object's name to the UID
+
+        obj.name = object_data["uid"]  # Set the Blender object's name to the UID
 
         all_objects.append(obj)
 

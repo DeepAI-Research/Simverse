@@ -5,7 +5,9 @@ import argparse
 
 # Parse command-line arguments
 parser = argparse.ArgumentParser()
-parser.add_argument("--debug", action="store_true", help="Print the command to run each subtest")
+parser.add_argument(
+    "--debug", action="store_true", help="Print the command to run each subtest"
+)
 args = parser.parse_args()
 
 files = os.listdir("tests")
@@ -32,7 +34,12 @@ for test_file in test_files:
     result = subprocess.run(cmd, capture_output=True, text=True)
 
     # Check if there are any errors in the output
-    if "FAILED" in result.stderr or "ERROR" in result.stderr or "ValueError" in result.stderr or "Traceback" in result.stderr:
+    if (
+        "FAILED" in result.stderr
+        or "ERROR" in result.stderr
+        or "ValueError" in result.stderr
+        or "Traceback" in result.stderr
+    ):
         print(f"Tests in {test_file} failed!")
         print(result.stderr)
         test_failed = True

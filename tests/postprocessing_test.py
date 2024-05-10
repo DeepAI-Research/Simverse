@@ -7,14 +7,18 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 simian_path = os.path.join(current_dir, "../")
 sys.path.append(simian_path)
 
-from simian.postprocessing import setup_compositor_for_black_and_white, setup_compositor_for_cel_shading, setup_compositor_for_depth
+from simian.postprocessing import (
+    setup_compositor_for_black_and_white,
+    setup_compositor_for_cel_shading,
+    setup_compositor_for_depth,
+)
 
 
 def mock_new_node(*args, **kwargs):
     """
     Mock for the nodes.new function in Blender.
     """
-    node_type = kwargs.get('type', 'UnknownType')
+    node_type = kwargs.get("type", "UnknownType")
     node = MagicMock()
     node.type = node_type
     node.inputs = MagicMock()
@@ -68,7 +72,9 @@ def test_setup_compositor_for_cel_shading():
     nodes.new.assert_any_call(type="CompositorNodeAlphaOver")
     nodes.new.assert_any_call(type="CompositorNodeComposite")
     assert links.new.called
-    print("============ Test Passed: test_setup_compositor_for_cel_shading ============")
+    print(
+        "============ Test Passed: test_setup_compositor_for_cel_shading ============"
+    )
 
 
 def test_setup_compositor_for_depth():

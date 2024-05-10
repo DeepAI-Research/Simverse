@@ -9,6 +9,7 @@ sys.path.append(combiner_path)
 
 from simian.combiner import read_json_file, generate_caption, generate_combinations
 
+
 def test_read_json_file():
     """
     Test the read_json_file function.
@@ -27,17 +28,16 @@ def test_generate_caption():
     """
     # Provide a sample input for generate_caption, including the 'uid' key
     combination = {
-        
         "objects": [
             {
                 "name": "Cube",
                 "description": "A simple geometric shape",
-                "uid": "12345"  # Unique identifier for the object
+                "uid": "12345",  # Unique identifier for the object
             }
         ],
         "background": {"name": "Beach"},
         "stage": {"material": {"name": "Sand"}},
-        "orientation": {"pitch": 15, "yaw": 30}
+        "orientation": {"pitch": 15, "yaw": 30},
     }
     caption = generate_caption(combination)
     assert "Cube" in caption, "Caption does not include object name."
@@ -52,15 +52,26 @@ def test_generate_combinations():
     """
     # Prepare mock data for camera_data and a small count
     camera_data = {
-        "orientation": {"yaw_min": 0, "yaw_max": 180, "pitch_min": -90, "pitch_max": 90},
+        "orientation": {
+            "yaw_min": 0,
+            "yaw_max": 180,
+            "pitch_min": -90,
+            "pitch_max": 90,
+        },
         "framings": [{"name": "wide"}],
-        "animations": [{"name": "zoom_in"}]
+        "animations": [{"name": "zoom_in"}],
     }
     combinations = generate_combinations(camera_data, 2)
-    assert len(combinations) == 2, "generate_combinations did not create the correct number of combinations."
+    assert (
+        len(combinations) == 2
+    ), "generate_combinations did not create the correct number of combinations."
     for combination in combinations:
-        assert combination['orientation']['yaw'] <= 180, "Yaw is out of the specified range."
-        assert combination['orientation']['pitch'] <= 90, "Pitch is out of the specified range."
+        assert (
+            combination["orientation"]["yaw"] <= 180
+        ), "Yaw is out of the specified range."
+        assert (
+            combination["orientation"]["pitch"] <= 90
+        ), "Pitch is out of the specified range."
         print("============ Test Passed: test_generate_combinations ============")
 
 

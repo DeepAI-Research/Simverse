@@ -38,7 +38,7 @@ def render_object(
     args = f"--width {width} --height {height} --combination_index {combination_index}"
     args += f" --output_dir {output_dir}"
     args += f" --hdri_path {hdri_path}"
-    
+
     command = f"{get_blender_path()} --background --python simian/render.py -- {args}"
     subprocess.run(["bash", "-c", command], timeout=10000, check=False)
 

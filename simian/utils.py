@@ -5,6 +5,7 @@ import re
 import subprocess
 import sys
 
+
 def check_imports() -> None:
     """
     Checks and installs required Python packages specified in the requirements.txt file.
@@ -40,8 +41,10 @@ def check_imports() -> None:
                         check=True,  # Ensures any error in installation raises an exception
                     )
 
+
 check_imports()
 import pandas as pd
+
 
 def get_combination_objects(file="combinations.json") -> pd.DataFrame:
     """

@@ -10,6 +10,7 @@ sys.path.append(combiner_path)
 
 from simian.camera import create_camera_rig
 
+
 def calculate_optimal_distance(camera, obj):
     """
     Calculate the optimal distance between the camera and an object
@@ -39,6 +40,7 @@ def calculate_optimal_distance(camera, obj):
     distance = (diagonal / 2) / math.tan(fov_average / 2)
 
     return distance
+
 
 def position_camera_for_object(camera, obj):
     """
@@ -87,34 +89,35 @@ def is_vertex_in_frame(camera, vertex):
 
     return abs(x_relative) <= 0.5 and abs(y_relative) <= 0.5
 
+
 def test_optimal_distance():
     # Clear existing objects
-    bpy.ops.object.select_all(action='SELECT')
+    bpy.ops.object.select_all(action="SELECT")
     bpy.ops.object.delete()
-    
+
     # Create the camera rig
     dict = create_camera_rig()
-    camera = dict['camera_object']
+    camera = dict["camera_object"]
 
     # Set camera properties
     camera.data.sensor_width = 36
     camera.data.sensor_height = 24
-    camera.data.lens_unit = 'FOV'
+    camera.data.lens_unit = "FOV"
     camera.data.angle = math.radians(35)
 
     # Define different cube dimensions
-    cube_dimensions = [
-        (1, 10, 1),
-        (10, 1, 1),
-        (1, 1, 10)
-    ]
+    cube_dimensions = [(1, 10, 1), (10, 1, 1), (1, 1, 10)]
 
     # Iterate over each set of dimensions
     for i, (width, depth, height) in enumerate(cube_dimensions, start=1):
         # Create a test object (cube) with specific dimensions
         bpy.ops.mesh.primitive_cube_add(size=1, location=(0, 0, 0))
         cube = bpy.context.active_object
-        cube.scale = (width / 2, depth / 2, height / 2)  # Blender uses half-dimensions for scale
+        cube.scale = (
+            width / 2,
+            depth / 2,
+            height / 2,
+        )  # Blender uses half-dimensions for scale
         bpy.context.view_layer.update()
 
         # Apply scale to ensure the transformations are correct
@@ -139,7 +142,7 @@ def test_optimal_distance():
         bpy.data.objects.remove(cube, do_unlink=True)
 
     # Save the Blender scene
-    bpy.ops.wm.save_as_mainfile(filepath='test.blend')
+    bpy.ops.wm.save_as_mainfile(filepath="test.blend")
 
     print("Test completed.")
 
