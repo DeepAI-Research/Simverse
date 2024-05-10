@@ -167,6 +167,8 @@ def render_scene(
     scene.render.ffmpeg.codec = "H264"
     scene.render.ffmpeg.constant_rate_factor = "PERC_LOSSLESS"
     scene.render.ffmpeg.ffmpeg_preset = "BEST"
+    
+    position_camera(combination, focus_object)
 
     # Set output path and start rendering
     render_path = os.path.join(output_dir, f"{combination_index}.mp4")
