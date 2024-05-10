@@ -111,7 +111,7 @@ def set_background(hdri_path: str, combination: Dict) -> None:
     print(f"Set background to {hdri_path}")
 
 
-def create_photosphere(hdri_path: str, combination: Dict) -> bpy.types.Object:
+def create_photosphere(hdri_path: str, combination: Dict, scale: float = 10) -> bpy.types.Object:
     """
     Create a photosphere object in the scene.
 
@@ -128,8 +128,9 @@ def create_photosphere(hdri_path: str, combination: Dict) -> bpy.types.Object:
         bpy.types.Object: The created photosphere object.
     """
     bpy.ops.mesh.primitive_uv_sphere_add(
-        segments=64, ring_count=32, radius=1.0, location=(0, 0, 3)
+        segments=64, ring_count=32, radius=scale, location=(0, 0, 3)
     )
+    
     bpy.ops.object.shade_smooth()
 
     # invert the UV sphere normals

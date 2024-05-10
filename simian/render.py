@@ -156,7 +156,7 @@ def render_scene(
     position_camera(combination, focus_object)
     set_background(args.hdri_path, combination)
 
-    create_photosphere(args.hdri_path, combination).scale = (10, 10, 10)
+    create_photosphere(args.hdri_path, combination, scale=50)
 
     stage = create_stage(combination)
     apply_stage_material(stage, combination)

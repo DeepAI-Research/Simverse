@@ -428,6 +428,7 @@ def generate_combinations(camera_data, count):
         }
         
         framing["fov"] = fov
+        framing["coverage_factor"] = coverage_factor
 
         combination = {
             "index": i,
@@ -435,7 +436,6 @@ def generate_combinations(camera_data, count):
             "background": background,
             "orientation": orientation,
             "framing": framing,
-            "coverage_factor": coverage_factor,
             "animation": animation,
             "stage": stage,
         }
