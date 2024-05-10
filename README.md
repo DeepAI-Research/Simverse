@@ -113,8 +113,8 @@ We welcome contributions! We're especially interested in help adding and refinin
 
 ### How to contribute
 
-1. Check out the issues here: https://github.com/RaccoonResearch/simian/issues
-2. Join our Discord here: https://discord.gg/JMfbmHdPNB
+1. Check out the issues <a href="https://github.com/RaccoonResearch/simian/issues">here</a>. 
+2. Join our Discord <a href="https://discord.gg/JMfbmHdPNB">here</a>.
 3. Get in touch with us so we can coordinate on development.
 4. Or, you know, just YOLO a pull request. We're pretty chill.
 
