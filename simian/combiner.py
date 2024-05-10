@@ -3,7 +3,7 @@ import os
 import random
 import argparse
 import re
-from transform import determine_relationships, degrees_to_radians, adjust_positions
+from transform import determine_relationships, adjust_positions
 
 
 def read_json_file(file_path):
@@ -164,12 +164,7 @@ texture_names = list(texture_data.keys())
 texture_weights = [len(texture_data[name]["maps"]) for name in texture_names]
 
 
-# ============================================================================== BELOW NEEDS FIXING:
-
-
 def generate_caption(combination):
-    # object_names = [obj["name"] for obj in combination["objects"]]
-
     background_name = combination["background"]["name"]
     floor_material_name = combination["stage"]["material"]["name"]
 
@@ -211,9 +206,11 @@ def generate_caption(combination):
 
     ", ".join(
         [
-            obj["name"] + ", " + obj["description"]
-            if obj["description"] is not None
-            else obj["name"]
+            (
+                obj["name"] + ", " + obj["description"]
+                if obj["description"] is not None
+                else obj["name"]
+            )
             for obj in combination["objects"]
         ]
     )
@@ -372,6 +369,7 @@ def generate_combinations(camera_data, count):
         }
 
         framing["fov"] = fov
+        framing["coverage_factor"] = coverage_factor
 
         combination = {
             "index": i,
@@ -379,7 +377,6 @@ def generate_combinations(camera_data, count):
             "background": background,
             "orientation": orientation,
             "framing": framing,
-            "coverage_factor": coverage_factor,
             "animation": animation,
             "stage": stage,
         }
