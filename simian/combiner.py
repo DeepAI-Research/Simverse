@@ -117,7 +117,9 @@ for dataset in models:
                     category_map[category] = set()
                 category_map[category].add(object_id)
 
-        print(f"Loaded {local_count} unique entries out of {len(dataset_data)} from {dataset}")
+        print(
+            f"Loaded {local_count} unique entries out of {len(dataset_data)} from {dataset}"
+        )
         dataset_dict[dataset] = dataset_data
     else:
         print(f"Dataset file {dataset_path} not found")

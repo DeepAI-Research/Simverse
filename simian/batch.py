@@ -62,23 +62,23 @@ def render_objects(
     # Set the number of processes to three times the number of CPU cores if not specified.
     if processes is None:
         processes = multiprocessing.cpu_count() * 3
-        
+
     scripts_dir = os.path.dirname(os.path.realpath(__file__))
     target_directory = os.path.join(scripts_dir, "../", "renders")
     hdri_path = os.path.join(scripts_dir, "../", "backgrounds")
-    
+
     # make sure renders directory exists
     os.makedirs(target_directory, exist_ok=True)
 
     # Loop over each combination index to set up and run the rendering process.
     for i in range(start_index, end_index):
         args = f"--width {width} --height {height} --combination_index {i} --start_frame {start_frame} --end_frame {end_frame} --output_dir {target_directory} --hdri_path {hdri_path}"
-        
+
         application_path = get_blender_path()
-        
+
         # Construct and print the Blender command line.
         command = f"{application_path} --background --python simian/render.py -- {args}"
-        
+
         print("This is the command: ", command)
 
         # Execute the rendering command with a timeout.
