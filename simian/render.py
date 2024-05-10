@@ -22,6 +22,10 @@ if current_dir.endswith("simian"):
 simian_path = os.path.join(current_dir)
 sys.path.append(simian_path)
 
+from simian.utils import check_imports
+
+check_imports()
+
 from simian.camera import create_camera_rig, position_camera, set_camera_settings
 from simian.object import (
     apply_all_modifiers,
@@ -43,9 +47,6 @@ from simian.object import (
 from simian.background import create_photosphere, set_background
 from simian.scene import apply_stage_material, create_stage, initialize_scene
 from simian.position import create_grid, find_largest_length, place_objects_on_grid
-from simian.utils import check_imports
-
-check_imports()
 
 def read_combination(combination_file: str, index: int = 0) -> dict:
     """
