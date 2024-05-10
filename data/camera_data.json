@@ -411,8 +411,8 @@
             "name": "extreme_closeup",
             "fov_min": 10,
             "fov_max": 15,
-            "coverage_factor_min": 0.9,
-            "coverage_factor_max": 1.3,
+            "coverage_factor_min": 0.7,
+            "coverage_factor_max": 1.1,
             "descriptions": [
                 "Extreme close-up shot",
                 "Extremely tight framing",
@@ -450,8 +450,8 @@
             "name": "closeup",
             "fov_min": 15,
             "fov_max": 24,
-            "coverage_factor_min": 0.9,
-            "coverage_factor_max": 1.1,
+            "coverage_factor_min": 1.0,
+            "coverage_factor_max": 1.2,
             "descriptions": [
                 "Close-up shot of the objects.",
                 "Close-up framing.",
@@ -489,7 +489,7 @@
             "fov_min": 24,
             "fov_max": 30,
             "coverage_factor_min": 0.8,
-            "coverage_factor_max": 1.0,
+            "coverage_factor_max": 1.2,
             "descriptions": [
                 "Medium close-up shot",
                 "Slightly tight framing",
@@ -519,8 +519,8 @@
             "name": "medium",
             "fov_min": 30,
             "fov_max": 40,
-            "coverage_factor_min": 0.7,
-            "coverage_factor_max": 0.9,
+            "coverage_factor_min": 1.0,
+            "coverage_factor_max": 1.5,
             "descriptions": [
                 "Medium shot",
                 "Medium framing",
@@ -548,8 +548,8 @@
             "name": "medium_wide",
             "fov_min": 40,
             "fov_max": 55,
-            "coverage_factor_min": 0.7,
-            "coverage_factor_max": 0.9,
+            "coverage_factor_min": 1.5,
+            "coverage_factor_max": 2.0,
             "descriptions": [
                 "Medium-wide shot",
                 "Medium wide shot",
@@ -578,8 +578,8 @@
             "name": "wide",
             "fov_min": 55,
             "fov_max": 70,
-            "coverage_factor_min": 0.6,
-            "coverage_factor_max": 0.8,
+            "coverage_factor_min": 2.0,
+            "coverage_factor_max": 3.0,
             "descriptions": [
                 "Wide shot.",
                 "Wide angle",
@@ -609,8 +609,8 @@
             "name": "extreme_wide",
             "fov_min": 70,
             "fov_max": 90,
-            "coverage_factor_min": 0.4,
-            "coverage_factor_max": 0.6,
+            "coverage_factor_min": 3.0,
+            "coverage_factor_max": 4.0,
             "descriptions": [
                 "Extreme wide shot",
                 "Extreme wide angle",
@@ -787,7 +787,7 @@
             ],
             "keyframes": [
                 {
-                    "CameraAnimationRoot": {
+                    "CameraFramingPivot": {
                         "rotation": [
                             0,
                             0,
@@ -796,7 +796,7 @@
                     }
                 },
                 {
-                    "CameraAnimationRoot": {
+                    "CameraFramingPivot": {
                         "rotation": [
                             0,
                             0,
@@ -837,7 +837,7 @@
             ],
             "keyframes": [
                 {
-                    "CameraAnimationRoot": {
+                    "CameraFramingPivot": {
                         "rotation": [
                             0,
                             0,
@@ -846,7 +846,7 @@
                     }
                 },
                 {
-                    "CameraAnimationRoot": {
+                    "CameraFramingPivot": {
                         "rotation": [
                             0,
                             0,
@@ -877,7 +877,7 @@
             ],
             "keyframes": [
                 {
-                    "CameraAnimationRoot": {
+                    "CameraFramingPivot": {
                         "rotation": [
                             0,
                             0,
@@ -886,10 +886,10 @@
                     }
                 },
                 {
-                    "CameraAnimationRoot": {
+                    "CameraFramingPivot": {
                         "rotation": [
-                            90,
                             0,
+                            90,
                             0
                         ]
                     }
@@ -917,16 +917,16 @@
             ],
             "keyframes": [
                 {
-                    "CameraAnimationRoot": {
+                    "CameraFramingPivot": {
                         "rotation": [
-                            90,
                             0,
+                            90,
                             0
                         ]
                     }
                 },
                 {
-                    "CameraAnimationRoot": {
+                    "CameraFramingPivot": {
                         "rotation": [
                             0,
                             0,
@@ -1124,7 +1124,7 @@
             ],
             "keyframes": [
                 {
-                    "CameraAnimationRoot": {
+                    "CameraFramingPivot": {
                         "rotation": [
                             -45,
                             0,
@@ -1133,7 +1133,7 @@
                     }
                 },
                 {
-                    "CameraAnimationRoot": {
+                    "CameraFramingPivot": {
                         "rotation": [
                             0,
                             0,
@@ -1171,7 +1171,7 @@
             ],
             "keyframes": [
                 {
-                    "CameraAnimationRoot": {
+                    "CameraFramingPivot": {
                         "rotation": [
                             45,
                             0,
@@ -1180,7 +1180,7 @@
                     }
                 },
                 {
-                    "CameraAnimationRoot": {
+                    "CameraFramingPivot": {
                         "rotation": [
                             0,
                             0,
@@ -1218,7 +1218,7 @@
             ],
             "keyframes": [
                 {
-                    "CameraAnimationRoot": {
+                    "CameraFramingPivot": {
                         "rotation": [
                             0,
                             0,
@@ -1227,7 +1227,7 @@
                     }
                 },
                 {
-                    "CameraAnimationRoot": {
+                    "CameraFramingPivot": {
                         "rotation": [
                             0,
                             0,
@@ -1265,7 +1265,7 @@
             ],
             "keyframes": [
                 {
-                    "CameraAnimationRoot": {
+                    "CameraFramingPivot": {
                         "rotation": [
                             0,
                             0,
@@ -1274,7 +1274,7 @@
                     }
                 },
                 {
-                    "CameraAnimationRoot": {
+                    "CameraFramingPivot": {
                         "rotation": [
                             0,
                             0,
@@ -1312,7 +1312,7 @@
             ],
             "keyframes": [
                 {
-                    "CameraAnimationRoot": {
+                    "CameraOrientationPivotYaw": {
                         "position": [
                             0,
                             0,
@@ -1321,7 +1321,7 @@
                     }
                 },
                 {
-                    "CameraAnimationRoot": {
+                    "CameraOrientationPivotYaw": {
                         "position": [
                             0,
                             2,
@@ -1359,7 +1359,7 @@
             ],
             "keyframes": [
                 {
-                    "CameraAnimationRoot": {
+                    "CameraOrientationPivotYaw": {
                         "position": [
                             0,
                             2,
@@ -1368,7 +1368,7 @@
                     }
                 },
                 {
-                    "CameraAnimationRoot": {
+                    "CameraOrientationPivotYaw": {
                         "position": [
                             0,
                             0,

@@ -8,3 +8,4 @@ objaverse
 numpy
 black
 celery
+scipy
