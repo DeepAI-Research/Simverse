@@ -1,12 +1,8 @@
 import argparse
-import platform
-import subprocess
 import sys
 import json
 import os
 import ssl
-import pandas as pd
-import objaverse
 import bpy
 
 ssl._create_default_https_context = ssl._create_unverified_context
@@ -25,28 +21,25 @@ sys.path.append(simian_path)
 from simian.utils import check_imports
 
 check_imports()
-
+import pandas as pd
 from simian.camera import create_camera_rig, position_camera, set_camera_settings
+from simian.position import create_grid, find_largest_length, place_objects_on_grid
+from simian.camera import create_camera_rig, set_camera_settings
 from simian.object import (
     apply_all_modifiers,
     apply_and_remove_armatures,
-    delete_all_empties,
-    delete_invisible_objects,
     get_meshes_in_hierarchy,
     join_objects_in_hierarchy,
     load_object,
     lock_all_objects,
     normalize_object_scale,
-    optimize_meshes_in_hierarchy,
-    remove_loose_meshes,
-    remove_small_geometry,
     set_pivot_to_bottom,
     unlock_objects,
     unparent_keep_transform,
 )
 from simian.background import create_photosphere, set_background
 from simian.scene import apply_stage_material, create_stage, initialize_scene
-from simian.position import create_grid, find_largest_length, place_objects_on_grid
+import objaverse
 
 
 def read_combination(combination_file: str, index: int = 0) -> dict:
@@ -106,7 +99,6 @@ def render_scene(
     initial_objects = lock_all_objects()
 
     combination = read_combination(combination_file, combination_index)
-
     all_objects = []
 
     focus_object = None
@@ -136,30 +128,30 @@ def render_scene(
         unparent_keep_transform(obj)
         set_pivot_to_bottom(obj)
 
+        # Calculate the grid cell position
+        grid_cell = object_data["placement"]
+        row = (grid_cell - 1) // 3
+        col = (grid_cell - 1) % 3
+
+        obj.location = [col - 1, row - 1, 0]
+
         obj.scale = [object_data["scale"]["factor"] for _ in range(3)]
         normalize_object_scale(obj)
-
-        obj.name = object_data["uid"]  # Set the Blender object's name to the UID
+        
+        obj.name = object_data['uid']  # Set the Blender object's name to the UID
 
         all_objects.append(obj)
-
-    # In the render_scene function, after creating all_objects
-    for obj, obj_data in zip(all_objects, combination["objects"]):
-        obj["placement"] = obj_data["placement"]
-
-    largest_length = find_largest_length(all_objects)
-    place_objects_on_grid(all_objects, largest_length)
 
     # Unlock and unhide the initial objects
     unlock_objects(initial_objects)
 
+    largest_length = find_largest_length(all_objects)
+    place_objects_on_grid(all_objects, largest_length)
+
     set_camera_settings(combination)
-
-    position_camera(combination, focus_object)
-
     set_background(args.hdri_path, combination)
 
-    create_photosphere(args.hdri_path, combination, scale=50)
+    create_photosphere(args.hdri_path, combination).scale = (10, 10, 10)
 
     stage = create_stage(combination)
     apply_stage_material(stage, combination)
@@ -192,7 +184,8 @@ if __name__ == "__main__":
     parser.add_argument(
         "--output_dir",
         type=str,
-        required=True,
+        default="renders",
+        required=False,
         help="Path to the directory where the rendered video will be saved.",
     )
     parser.add_argument(
@@ -212,50 +205,39 @@ if __name__ == "__main__":
         type=int,
         default=0,
         help="Index of the camera combination to use from the JSON file.",
+        required=False,
     )
     parser.add_argument(
         "--start_frame",
         type=int,
         default=1,
         help="Start frame of the animation.",
+        required=False,
     )
     parser.add_argument(
         "--end_frame",
         type=int,
         default=65,
         help="End frame of the animation.",
+        required=False,
     )
-    parser.add_argument("--width", type=int, default=1920, help="Render output width.")
     parser.add_argument(
-        "--height", type=int, default=1080, help="Render output height."
+        "--width", type=int, default=1920, help="Render output width.", required=False
     )
-
-    print("sys.argv", sys.argv)
+    parser.add_argument(
+        "--height", type=int, default=1080, help="Render output height.", required=False
+    )
 
     if "--" in sys.argv:
         argv = sys.argv[sys.argv.index("--") + 1 :]
     else:
         argv = []
 
-    # Now parse the arguments from the correct starting point
     args = parser.parse_args(argv)
 
     context = bpy.context
     scene = context.scene
     render = scene.render
-
-    os_system = platform.system()
-
-    # if we are on mac, device type is METAL
-    # if we are on windows or linux, device type is CUDA
-    if os_system == "Darwin":
-        bpy.context.preferences.addons[
-            "cycles"
-        ].preferences.compute_device_type = "METAL"
-    else:
-        bpy.context.preferences.addons[
-            "cycles"
-        ].preferences.compute_device_type = "CUDA"
 
     combinations = pd.read_json("combinations.json", orient="records")
     combinations = combinations.iloc[args.combination_index]
