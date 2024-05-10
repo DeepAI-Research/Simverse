@@ -1,5 +1,7 @@
 # Simian
 
+<img src="assets/simian_banner.png" style="width: 100%">
+
 Simian is a synthetic data generation tool for creating image caption or video caption pairs. What is novel about Simian is that it focuses on high-quality, specific captioning for features that are difficult to capture in current image and video description models-- for example camera movement, actor intent or physical interactions.
 
 ## Welcome

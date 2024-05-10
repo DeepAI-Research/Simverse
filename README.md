@@ -1,15 +1,13 @@
 # Simian
 A synthetic data generator for video caption pairs.
 
+<img src="docs/assets/simian_banner.png" style="width: 100%">
+
 ![docs](https://github.com/RaccoonResearch/simian/actions/workflows/mkdocs.yml/badge.svg)
 ![tests](https://github.com/RaccoonResearch/simian/actions/workflows/tests.yml/badge.svg)
 [![License](https://img.shields.io/badge/License-MIT-blue)](https://github.com/RaccoonResearch/simian/blob/main/LICENSE)
 [![stars](https://img.shields.io/github/stars/RaccoonResearch/simian?style=social)](https://github.com/RaccoonResearch/simian)
 [![forks](https://img.shields.io/github/forks/RaccoonResearch/simian?style=social)](https://github.com/RaccoonResearch/simian)
-
-https://github.com/RaccoonResearch/simian/assets/18633264/54346aa8-fde4-4c11-b210-52525082a650
-
-*Medium shot, orbiting The Moon to the right. It's mid-day and the sky is clear. The background is an air museum with a few planes parked.*
 
 Simian creates synthetic data that is usable for generative video and video captioning tasks. The data consists of videos and captions. The videos are generated using Blender, a 3D modeling software.
 
