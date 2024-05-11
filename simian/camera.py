@@ -155,7 +155,7 @@ def set_camera_settings(combination: dict) -> None:
     set_camera_animation(combination)
 
 
-def set_camera_animation(combination: dict, frame_distance: int = 120) -> None:
+def set_camera_animation(combination: dict, frame_distance: int = 65) -> None:
     """
     Applies the specified animation to the camera based on the keyframes from the camera_data.json file.
 

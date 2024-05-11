@@ -174,6 +174,38 @@ def apply_stage_material(stage: bpy.types.Object, combination: dict) -> None:
         links.new(normal_tex.outputs["Color"], normal_map.inputs["Color"])
         links.new(normal_map.outputs["Normal"], principled.inputs["Normal"])
 
+    if "AO" in stage_material["maps"]:
+        ao_url = stage_material["maps"]["AO"]
+        ao_path = download_texture(ao_url, material_name, "AO")
+        ao_tex = nodes.new(type="ShaderNodeTexImage")
+        ao_tex.image = bpy.data.images.load(ao_path)
+        links.new(mapping.outputs["Vector"], ao_tex.inputs["Vector"])
+        links.new(ao_tex.outputs["Color"], principled.inputs["Ambient Occlusion"])
+
+    if "Rough" in stage_material["maps"]:
+        rough_url = stage_material["maps"]["Rough"]
+        rough_path = download_texture(rough_url, material_name, "Rough")
+        rough_tex = nodes.new(type="ShaderNodeTexImage")
+        rough_tex.image = bpy.data.images.load(rough_path)
+        links.new(mapping.outputs["Vector"], rough_tex.inputs["Vector"])
+        links.new(rough_tex.outputs["Color"], principled.inputs["Roughness"])
+
+    if "Roughness" in stage_material["maps"]:
+        roughness_url = stage_material["maps"]["Roughness"]
+        roughness_path = download_texture(roughness_url, material_name, "Roughness")
+        roughness_tex = nodes.new(type="ShaderNodeTexImage")
+        roughness_tex.image = bpy.data.images.load(roughness_path)
+        links.new(mapping.outputs["Vector"], roughness_tex.inputs["Vector"])
+        links.new(roughness_tex.outputs["Color"], principled.inputs["Roughness"])
+
+    if "arm" in stage_material["maps"]:
+        arm_url = stage_material["maps"]["arm"]
+        arm_path = download_texture(arm_url, material_name, "Arm")
+        arm_tex = nodes.new(type="ShaderNodeTexImage")
+        arm_tex.image = bpy.data.images.load(arm_path)
+        links.new(mapping.outputs["Vector"], arm_tex.inputs["Vector"])
+        links.new(arm_tex.outputs["Color"], principled.inputs["Metallic"])
+
     # Load and connect rough_ao texture
     if "rough_ao" in stage_material["maps"]:
         rough_ao_url = stage_material["maps"]["rough_ao"]

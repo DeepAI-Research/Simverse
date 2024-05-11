@@ -241,8 +241,9 @@ if __name__ == "__main__":
     scene = context.scene
     render = scene.render
 
-    combinations = pd.read_json("combinations.json", orient="records")
-    combinations = combinations.iloc[args.combination_index]
+    with open("combinations.json", "r") as file:
+        data = json.load(file)
+        combinations = data["combinations"]
 
     # get the object uid from the 'object' column, which is a dictionary
     objects_column = combinations["objects"]

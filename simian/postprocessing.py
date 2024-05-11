@@ -31,9 +31,9 @@ def setup_compositor_for_black_and_white(context: bpy.types.Context) -> None:
     composite.location = (300, 0)
 
     # Configure Hue Sat node for desaturation
-    hue_sat.inputs[
-        "Saturation"
-    ].default_value = 0  # Reduce saturation to zero to get grayscale
+    hue_sat.inputs["Saturation"].default_value = (
+        0  # Reduce saturation to zero to get grayscale
+    )
     # increase contrast
     hue_sat.inputs["Value"].default_value = 2.0
 
