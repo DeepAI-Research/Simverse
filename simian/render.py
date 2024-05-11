@@ -23,7 +23,7 @@ from simian.utils import check_imports
 check_imports()
 import pandas as pd
 from simian.camera import create_camera_rig, position_camera, set_camera_settings
-from simian.position import create_grid, find_largest_length, place_objects_on_grid
+from simian.position import find_largest_length, place_objects_on_grid
 from simian.camera import create_camera_rig, set_camera_settings
 from simian.object import (
     apply_all_modifiers,
@@ -147,6 +147,8 @@ def render_scene(
 
     largest_length = find_largest_length(all_objects)
     place_objects_on_grid(all_objects, largest_length)
+
+    print("HEREERERE")
 
     set_camera_settings(combination)
     set_background(args.hdri_path, combination)

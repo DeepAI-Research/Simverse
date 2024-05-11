@@ -3,6 +3,7 @@ import os
 import random
 import argparse
 import re
+from transform import determine_relationships, adjust_positions
 
 
 def read_json_file(file_path):
@@ -164,8 +165,6 @@ texture_weights = [len(texture_data[name]["maps"]) for name in texture_names]
 
 
 def generate_caption(combination):
-    object_names = [obj["name"] for obj in combination["objects"]]
-
     background_name = combination["background"]["name"]
     floor_material_name = combination["stage"]["material"]["name"]
 
@@ -175,12 +174,13 @@ def generate_caption(combination):
 
     for object in objects:
         if object == objects[0]:
-            object["placement"] = 5
-            positions_taken.add(5)
+            object["placement"] = 4
+            positions_taken.add(4)
         else:
-            object["placement"] = random.choice(
-                [i for i in range(1, 9) if i not in positions_taken]
-            )
+            rand_placement = [i for i in range(0, 9) if i not in positions_taken]
+            object["placement"] = random.choice(rand_placement)
+            positions_taken.add(rand_placement[0])
+
         object_id = object["uid"]
 
         object_scales = object_data["scales"]
@@ -203,11 +203,13 @@ def generate_caption(combination):
 
     caption_parts = []
 
-    object_name_descriptions = ", ".join(
+    ", ".join(
         [
-            obj["name"] + ", " + obj["description"]
-            if obj["description"] is not None
-            else obj["name"]
+            (
+                obj["name"] + ", " + obj["description"]
+                if obj["description"] is not None
+                else obj["name"]
+            )
             for obj in combination["objects"]
         ]
     )
@@ -262,10 +264,6 @@ def generate_caption(combination):
     ).replace("<degrees>", str(combination["orientation"]["yaw"]))
     caption_parts.append(orientation_text)
 
-    # framing_text = random.choice(camera_data["framing"]["descriptions"])
-    # framing_text = framing_text.replace("<objects>", object_names)
-    # caption_parts.append(framing_text)
-
     stage_data = read_json_file("data/stage_data.json")
 
     background_prefix = random.choice(stage_data["background_names"])
@@ -277,85 +275,23 @@ def generate_caption(combination):
     ).strip()
     background_name = "".join([i for i in background_name if not i.isdigit()]).strip()
 
-    # TODO: Omit the background for any angle > 30 degrees
-    # omit the floor for any angle < 15 degrees (i.e. 0 to tilted upward)
-    # mad libs the background and floor from data
-
     caption_parts.append(f"The {background_prefix} is {background_name}.")
     caption_parts.append(f"The {floor_prefix} is {floor_material_name}.")
 
-    to_the_left = object_data["relationships"]["to_the_left"]
-    to_the_right = object_data["relationships"]["to_the_right"]
-    in_front_of = object_data["relationships"]["in_front_of"]
-    behind = object_data["relationships"]["behind"]
+    THRESHOLD_RELATIONSHIPS = len(combination["objects"])
 
-    relationships = []
-    for i, obj1 in enumerate(combination["objects"]):
-        for j, obj2 in enumerate(combination["objects"]):
-            if i != j:
-                row_diff = (obj1["placement"] - 1) // 3 - (obj2["placement"] - 1) // 3
-                col_diff = (obj1["placement"] - 1) % 3 - (obj2["placement"] - 1) % 3
+    adjusted_objects = adjust_positions(combination["objects"], combination["orientation"]["yaw"])
+    relationships = determine_relationships(adjusted_objects, object_data)
 
-                if row_diff == 0 and col_diff == -1:
-                    relationships.append(
-                        f"{obj1['name']} {random.choice(to_the_left)} {obj2['name']}."
-                    )
-                    relationships.append(
-                        f"{obj2['name']} {random.choice(to_the_right)} {obj1['name']}."
-                    )
-                elif row_diff == 0 and col_diff == 1:
-                    relationships.append(
-                        f"{obj1['name']} {random.choice(to_the_right)} {obj2['name']}."
-                    )
-                    relationships.append(
-                        f"{obj2['name']} {random.choice(to_the_left)} {obj1['name']}."
-                    )
-                elif row_diff == -1 and col_diff == 0:
-                    relationships.append(
-                        f"{obj1['name']} {random.choice(in_front_of)} {obj2['name']}."
-                    )
-                    relationships.append(
-                        f"{obj2['name']} {random.choice(behind)} {obj1['name']}."
-                    )
-                elif row_diff == 1 and col_diff == 0:
-                    relationships.append(
-                        f"{obj1['name']} {random.choice(behind)} {obj2['name']}."
-                    )
-                    relationships.append(
-                        f"{obj2['name']} {random.choice(in_front_of)} {obj1['name']}."
-                    )
-                elif row_diff == -1 and col_diff == -1:
-                    relationships.append(
-                        f"{obj1['name']} {random.choice(to_the_left)} and {random.choice(in_front_of)} {obj2['name']}."
-                    )
-                    relationships.append(
-                        f"{obj2['name']} {random.choice(to_the_right)} and {random.choice(behind)} {obj1['name']}."
-                    )
-                elif row_diff == -1 and col_diff == 1:
-                    relationships.append(
-                        f"{obj1['name']} {random.choice(to_the_right)} and {random.choice(in_front_of)} {obj2['name']}."
-                    )
-                    relationships.append(
-                        f"{obj2['name']} {random.choice(to_the_left)} and {random.choice(behind)} {obj1['name']}."
-                    )
-                elif row_diff == 1 and col_diff == -1:
-                    relationships.append(
-                        f"{obj1['name']} {random.choice(to_the_left)} and {random.choice(behind)} {obj2['name']}."
-                    )
-                    relationships.append(
-                        f"{obj2['name']} {random.choice(to_the_right)} and {random.choice(in_front_of)} {obj1['name']}."
-                    )
-                elif row_diff == 1 and col_diff == 1:
-                    relationships.append(
-                        f"{obj1['name']} {random.choice(to_the_right)} and {random.choice(behind)} {obj2['name']}."
-                    )
-                    relationships.append(
-                        f"{obj2['name']} {random.choice(to_the_left)} and {random.choice(in_front_of)} {obj1['name']}."
-                    )
+    # write relationships into the json file with combination["objects"]["relationships"]
+    for i, obj in enumerate(combination["objects"]):
+        obj["relationships"] = relationships[i]
 
-    selected_relationships = random.sample(
-        relationships, len(combination["objects"]) - 1
-    )
+    selected_relationships = []  # Initialize it as an empty list
+
+    if THRESHOLD_RELATIONSHIPS != 1:
+        selected_relationships = random.sample(relationships, THRESHOLD_RELATIONSHIPS)
+
     caption_parts.extend(selected_relationships)
 
     # randomize the caption parts order
