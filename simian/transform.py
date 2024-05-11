@@ -30,7 +30,7 @@ def adjust_positions(objects, camera_yaw):
     empty_objs = []
     for obj in objects:
         grid_x, grid_y = lookup_table[obj["placement"]]
-        empty_obj = copy.copy(obj)
+        empty_obj = obj
         empty_obj["transformed_position"] = apply_rotation([grid_x, grid_y], rotation_matrix)
         empty_objs.append(empty_obj)
     return empty_objs

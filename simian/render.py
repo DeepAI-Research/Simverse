@@ -33,6 +33,8 @@ from simian.object import (
     load_object,
     lock_all_objects,
     normalize_object_scale,
+    optimize_meshes_in_hierarchy,
+    remove_loose_meshes,
     set_pivot_to_bottom,
     unlock_objects,
     unparent_keep_transform,
@@ -111,13 +113,9 @@ def render_scene(
 
         apply_and_remove_armatures()
         apply_all_modifiers(obj)
-        # optimize_meshes_in_hierarchy(obj)
-
         join_objects_in_hierarchy(obj)
-
-        # optimize_meshes_in_hierarchy(obj)
-
-        # remove_loose_meshes(obj)
+        optimize_meshes_in_hierarchy(obj)
+        remove_loose_meshes(obj)
 
         meshes = get_meshes_in_hierarchy(obj)
         obj = meshes[0]
@@ -128,27 +126,18 @@ def render_scene(
         unparent_keep_transform(obj)
         set_pivot_to_bottom(obj)
 
-        # Calculate the grid cell position
-        grid_cell = object_data["placement"]
-        row = (grid_cell - 1) // 3
-        col = (grid_cell - 1) % 3
-
-        obj.location = [col - 1, row - 1, 0]
-
         obj.scale = [object_data["scale"]["factor"] for _ in range(3)]
         normalize_object_scale(obj)
 
         obj.name = object_data["uid"]  # Set the Blender object's name to the UID
 
-        all_objects.append(obj)
-
-    # Unlock and unhide the initial objects
-    unlock_objects(initial_objects)
+        all_objects.append({obj: object_data["placement"]})
 
     largest_length = find_largest_length(all_objects)
     place_objects_on_grid(all_objects, largest_length)
 
-    print("HEREERERE")
+    # Unlock and unhide the initial objects
+    unlock_objects(initial_objects)
 
     set_camera_settings(combination)
     set_background(args.hdri_path, combination)

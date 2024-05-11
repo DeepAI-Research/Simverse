@@ -11,8 +11,11 @@ def find_largest_length(objects):
     Returns:
         largest_dimension (float): The largest dimension found among all objects.
     """
+
+    # object = [{obj: [placement_x, placement_y]}]
     largest_dimension = 0
     for obj in objects:
+        obj = list(obj.keys())[0]
         # Ensure the object's current transformations are applied
         bpy.context.view_layer.update()
 
@@ -49,24 +52,26 @@ def place_objects_on_grid(objects, largest_length):
         None
     """
 
+    # objects = [{obj: 1}, {obj: 1}]
     for obj in objects:
+        print("Here 1")
         if obj:
-            # Calculate grid cell row and column based on placement
-            placement = obj.get("placement")
-            if placement is not None:
-
+            placement = list(obj.values())[0]
+            if placement:
+                print("Here 3")
                 lookup_table = {
                     0: (-1, 1), 1: (0, 1), 2: (1, 1),
                     3: (-1, 0), 4: (0, 0), 5: (1, 0),
                     6: (-1, -1), 7: (0, -1), 8: (1, -1)
                 }
-
-                coordinate_x, coordinate_y = lookup_table[placement[0]], lookup_table[placement[1]]
-
+                coordinate_x, coordinate_y = lookup_table[placement]
                 padding = 0.1
-
                 # cell_center_x is the x-coordinate of the center of the cell (row)
                 cell_center_x = (coordinate_x + padding) * largest_length
                 cell_center_y = (coordinate_y + padding) * largest_length
-
+                print("Here 4")
+                print(obj) # {bpy.data.objects['9b1fe3f138e746c1a69224856732a01b']: 4}
+                obj = list(obj.keys())[0]
                 obj.location = (cell_center_x, cell_center_y, 0)  # Set object location
+                print("Here 5")
+       
