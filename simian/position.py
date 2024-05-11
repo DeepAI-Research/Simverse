@@ -38,20 +38,6 @@ def find_largest_length(objects):
     return largest_dimension
 
 
-def create_grid(largest_length):
-    """
-    Create a conceptual grid based on the largest length and a buffer.
-
-    Args:
-        largest_length (float): The largest dimension among all objects.
-        buffer (int): Additional space around each object within a grid cell.
-
-    Returns:
-        cell_size (float): The size of each side of a square grid cell.
-    """
-    return largest_length
-
-
 def place_objects_on_grid(objects, largest_length):
     """
     Place objects in the scene based on a conceptual grid.
@@ -63,7 +49,7 @@ def place_objects_on_grid(objects, largest_length):
     Returns:
         None
     """
-    cell_size = create_grid(largest_length)  # Creates grid cell size
+    cell_size = largest_length  # Creates grid cell size
 
     for obj in objects:
         if obj:
@@ -111,7 +97,7 @@ def place_objects_on_grid(objects, largest_length):
 
                 # cell_center_x is the x-coordinate of the center of the cell (row)
                 cell_center_x = (cell_col + 0.5) * cell_size - (1.5 * cell_size)
-                cell_center_y = (cell_row + 0.5) * cell_size - 1.5 * cell_size
+                cell_center_y = (cell_row + 0.5) * cell_size - (1.5 * cell_size)
 
                 """
                 0 1 2

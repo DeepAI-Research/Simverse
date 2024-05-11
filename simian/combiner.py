@@ -174,13 +174,12 @@ def generate_caption(combination):
 
     for object in objects:
         if object == objects[0]:
-            object["placement"] = 5
-            positions_taken.add(5)
+            object["placement"] = 4
+            positions_taken.add(4)
         else:
-            object["placement"] = random.choice(
-                [i for i in range(0, 9) if i not in positions_taken]
-            )
-            positions_taken.add(object["placement"])
+            rand_placement = [i for i in range(0, 9) if i not in positions_taken]
+            object["placement"] = random.choice(rand_placement)
+            positions_taken.add(rand_placement[0])
 
         object_id = object["uid"]
 
@@ -281,8 +280,12 @@ def generate_caption(combination):
 
     THRESHOLD_RELATIONSHIPS = len(combination["objects"])
 
-    adjust_positions(combination["objects"], combination["orientation"]["yaw"])
-    relationships = determine_relationships(combination["objects"], object_data)
+    adjusted_objects = adjust_positions(combination["objects"], combination["orientation"]["yaw"])
+    relationships = determine_relationships(adjusted_objects, object_data)
+
+    # write relationships into the json file with combination["objects"]["relationships"]
+    for i, obj in enumerate(combination["objects"]):
+        obj["relationships"] = relationships[i]
 
     selected_relationships = []  # Initialize it as an empty list
 
