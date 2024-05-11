@@ -123,6 +123,41 @@ def set_camera_settings(combination: dict) -> None:
     camera = bpy.context.scene.objects["Camera"]
     camera_data = camera.data
 
+    postprocessing = combination.get("postprocessing", {})
+
+    # Apply bloom settings
+    bloom_settings = postprocessing.get("bloom", {})
+    threshold = bloom_settings.get("threshold", 0.8)
+    intensity = bloom_settings.get("intensity", 0.5)
+    radius = bloom_settings.get("radius", 5.0)
+    bpy.context.scene.eevee.use_bloom = True
+    bpy.context.scene.eevee.bloom_threshold = threshold
+    bpy.context.scene.eevee.bloom_intensity = intensity
+    bpy.context.scene.eevee.bloom_radius = radius
+
+    # Apply SSAO settings
+    ssao_settings = postprocessing.get("ssao", {})
+    distance = ssao_settings.get("distance", 0.2)
+    factor = ssao_settings.get("factor", 0.5)
+    bpy.context.scene.eevee.use_gtao = True
+    bpy.context.scene.eevee.gtao_distance = distance
+    bpy.context.scene.eevee.gtao_factor = factor
+
+    # Apply SSRR settings
+    ssrr_settings = postprocessing.get("ssrr", {})
+    max_roughness = ssrr_settings.get("max_roughness", 0.5)
+    thickness = ssrr_settings.get("thickness", 0.1)
+    bpy.context.scene.eevee.use_ssr = True
+    bpy.context.scene.eevee.use_ssr_refraction = True
+    bpy.context.scene.eevee.ssr_max_roughness = max_roughness
+    bpy.context.scene.eevee.ssr_thickness = thickness
+
+    # Apply motion blur settings
+    motionblur_settings = postprocessing.get("motionblur", {})
+    shutter_speed = motionblur_settings.get("shutter_speed", 0.5)
+    bpy.context.scene.eevee.use_motion_blur = True
+    bpy.context.scene.eevee.motion_blur_shutter = shutter_speed
+
     # Get the initial lens value from the combination
     initial_lens = combination["framing"]["fov"]
 
@@ -151,6 +186,9 @@ def set_camera_settings(combination: dict) -> None:
     camera_orientation_pivot_pitch.rotation_euler[1] = (
         orientation["pitch"] * -math.pi / 180
     )
+
+    # set the camera framerate to 30
+    bpy.context.scene.render.fps = 30
 
     set_camera_animation(combination)
 

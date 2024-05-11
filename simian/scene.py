@@ -179,8 +179,20 @@ def apply_stage_material(stage: bpy.types.Object, combination: dict) -> None:
         ao_path = download_texture(ao_url, material_name, "AO")
         ao_tex = nodes.new(type="ShaderNodeTexImage")
         ao_tex.image = bpy.data.images.load(ao_path)
+        mixRGB = nodes.new(type="ShaderNodeMixRGB")
+        mixRGB.blend_type = "MULTIPLY"
+        links.new(ao_tex.outputs["Color"], mixRGB.inputs["Color2"])
         links.new(mapping.outputs["Vector"], ao_tex.inputs["Vector"])
-        links.new(ao_tex.outputs["Color"], principled.inputs["Ambient Occlusion"])
+
+        # Connect the MixRGB node to the base color input
+        if "Diffuse" in stage_material["maps"]:
+            links.new(diffuse_tex.outputs["Color"], mixRGB.inputs["Color1"])
+            links.new(mixRGB.outputs["Color"], principled.inputs["Base Color"])
+    else:
+        # If no diffuse texture, use a default base color
+        principled.inputs["Base Color"].default_value = (1.0, 1.0, 1.0, 1.0)
+        links.new(ao_tex.outputs["Color"], mixRGB.inputs["Color1"])
+        links.new(mixRGB.outputs["Color"], principled.inputs["Base Color"])
 
     if "Rough" in stage_material["maps"]:
         rough_url = stage_material["maps"]["Rough"]
@@ -204,7 +216,34 @@ def apply_stage_material(stage: bpy.types.Object, combination: dict) -> None:
         arm_tex = nodes.new(type="ShaderNodeTexImage")
         arm_tex.image = bpy.data.images.load(arm_path)
         links.new(mapping.outputs["Vector"], arm_tex.inputs["Vector"])
-        links.new(arm_tex.outputs["Color"], principled.inputs["Metallic"])
+
+        # Create separate RGB nodes for ambient occlusion, roughness, and metallic
+        ao_rgb = nodes.new(type="ShaderNodeSeparateRGB")
+        rough_rgb = nodes.new(type="ShaderNodeSeparateRGB")
+        metal_rgb = nodes.new(type="ShaderNodeSeparateRGB")
+
+        # Connect the "arm" texture to the separate RGB nodes
+        links.new(arm_tex.outputs["Color"], ao_rgb.inputs["Image"])
+        links.new(arm_tex.outputs["Color"], rough_rgb.inputs["Image"])
+        links.new(arm_tex.outputs["Color"], metal_rgb.inputs["Image"])
+
+        # Multiply the ambient occlusion with the base color
+        mixRGB = nodes.new(type="ShaderNodeMixRGB")
+        mixRGB.blend_type = "MULTIPLY"
+        links.new(ao_rgb.outputs["R"], mixRGB.inputs["Color2"])
+
+        if "Diffuse" in stage_material["maps"]:
+            links.new(diffuse_tex.outputs["Color"], mixRGB.inputs["Color1"])
+            links.new(mixRGB.outputs["Color"], principled.inputs["Base Color"])
+        else:
+            # If no diffuse texture, use a default base color
+            principled.inputs["Base Color"].default_value = (0.8, 0.8, 0.8, 1.0)
+            links.new(ao_rgb.outputs["R"], mixRGB.inputs["Color1"])
+            links.new(mixRGB.outputs["Color"], principled.inputs["Base Color"])
+
+        # Connect roughness and metallic to the principled BSDF node
+        links.new(rough_rgb.outputs["G"], principled.inputs["Roughness"])
+        links.new(metal_rgb.outputs["B"], principled.inputs["Metallic"])
 
     # Load and connect rough_ao texture
     if "rough_ao" in stage_material["maps"]:

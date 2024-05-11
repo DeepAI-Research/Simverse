@@ -53,8 +53,10 @@ def read_combination(combination_file: str, index: int = 0) -> dict:
         None
     """
     with open(combination_file, "r") as file:
-        combinations = json.load(file)
-        return combinations[min(index, len(combinations) - 1)]
+        data = json.load(file)
+        # read the combinations from the JSON file and load as pandas dataframe
+        combinations_data = data["combinations"]
+        return combinations_data[index]
 
 
 def render_scene(
@@ -241,12 +243,11 @@ if __name__ == "__main__":
     scene = context.scene
     render = scene.render
 
-    with open("combinations.json", "r") as file:
-        data = json.load(file)
-        combinations = data["combinations"]
+    combination = read_combination(args.combination_file, args.combination_index)
 
     # get the object uid from the 'object' column, which is a dictionary
-    objects_column = combinations["objects"]
+    objects_column = combination["objects"]
+
     download_dirs = ([],)
     for object in objects_column:
         uid = object["uid"]
