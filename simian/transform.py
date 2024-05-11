@@ -47,8 +47,6 @@ def determine_relationships(objects, object_data):
     Returns:
         - list: List of spatial relationships between objects.
     """
-    print("Objects are")
-    print(objects)
     # Retrieve directional relationship phrases from object data
     to_the_left = object_data["relationships"]["to_the_left"]
     to_the_right = object_data["relationships"]["to_the_right"]
@@ -63,9 +61,7 @@ def determine_relationships(objects, object_data):
             if i != j:
                 # Get transformed positions
                 pos1 = obj1["transformed_position"]
-                print("pos1: ", pos1)
                 pos2 = obj2["transformed_position"]
-                print("pos2: ", pos2)
 
                 relationship = ""
 
@@ -82,8 +78,7 @@ def determine_relationships(objects, object_data):
                     relationship += (" and " + random.choice(behind)) if relationship else random.choice(behind)
 
                 # If there is a significant relationship, add it to the list
-                if relationship is not "":
-                    print("relationship is")
+                if relationship != "":
                     print(relationship)
                     relationships.append(
                         f"{obj1['name']} {relationship} {obj2['name']}."
