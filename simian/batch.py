@@ -15,7 +15,6 @@ from simian.utils import get_blender_path
 def render_objects(
     download_dir: Optional[str] = None,
     processes: Optional[int] = None,
-    save_repo_format: Optional[Literal["zip", "tar", "tar.gz", "files"]] = None,
     render_timeout: int = 3000,
     width: int = 1920,
     height: int = 1080,
@@ -36,8 +35,6 @@ def render_objects(
             If None, objects are not downloaded. Defaults to None.
         - processes (Optional[int]): Number of processes to use for multiprocessing.
             Defaults to three times the number of CPU cores.
-        - save_repo_format (Optional[Literal["zip", "tar", "tar.gz", "files"]]):
-            Format to save repositories after rendering. If None, no saving is performed.
         - render_timeout (int): Maximum time in seconds for a single rendering process.
         - width (int): Width of the rendering in pixels.
         - height (int): Height of the rendering in pixels.
@@ -53,12 +50,6 @@ def render_objects(
     Returns:
         None
     """
-    # Ensure download directory is specified if a save format is set.
-    if download_dir is None and save_repo_format is not None:
-        raise ValueError(
-            f"Download directory must be specified if save_repo_format is set."
-        )
-
     # Set the number of processes to three times the number of CPU cores if not specified.
     if processes is None:
         processes = multiprocessing.cpu_count() * 3

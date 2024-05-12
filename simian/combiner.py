@@ -3,7 +3,7 @@ import os
 import random
 import argparse
 import re
-from transform import determine_relationships, adjust_positions
+from simian.transform import determine_relationships, adjust_positions
 
 
 def read_json_file(file_path):

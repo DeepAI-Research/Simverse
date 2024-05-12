@@ -31,21 +31,19 @@ def test_render_objects():
     """
     download_dir = "/fake/download/path"
     processes = 4
-    save_repo_format = "zip"
     render_timeout = 3000
     width = 1920
     height = 1080
     start_index = 0
     end_index = 1
     start_frame = 1
-    end_frame = 65
+    end_frame = 2
 
     # Call the function
     try:
         render_objects(
             download_dir=download_dir,
             processes=processes,
-            save_repo_format=save_repo_format,
             render_timeout=render_timeout,
             width=width,
             height=height,
