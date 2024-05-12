@@ -880,7 +880,7 @@
                     "CameraFramingPivot": {
                         "rotation": [
                             0,
-                            30,
+                            -30,
                             0
                         ]
                     }
@@ -911,7 +911,7 @@
                     "CameraFramingPivot": {
                         "rotation": [
                             0,
-                            30,
+                            -30,
                             0
                         ]
                     }
@@ -1372,10 +1372,10 @@
     ],
     "postprocessing": {
         "bloom": {
-            "threshold_min": 0.6,
+            "threshold_min": 0.7,
             "threshold_max": 1.0,
             "intensity_min": 0.0,
-            "intensity_max": 1.2,
+            "intensity_max": 1.0,
             "radius_min": 1.0,
             "radius_max": 10.0,
             "types": {
@@ -1413,7 +1413,7 @@
                 },
                 "medium": {
                     "intensity_min": 0.2,
-                    "intensity_max": 0.6,
+                    "intensity_max": 0.5,
                     "descriptions": [
                         "Medium bloom effect applied.",
                         "The scene has a moderate bloom effect.",
@@ -1428,8 +1428,8 @@
                     ]
                 },
                 "high": {
-                    "intensity_min": 0.6,
-                    "intensity_max": 1.0,
+                    "intensity_min": 0.5,
+                    "intensity_max": 0.8,
                     "descriptions": [
                         "High bloom effect applied.",
                         "The scene has a strong bloom effect.",
@@ -1444,8 +1444,8 @@
                     ]
                 },
                 "extreme": {
-                    "intensity_min": 1.0,
-                    "intensity_max": 1.2,
+                    "intensity_min": 0.8,
+                    "intensity_max": 1.1,
                     "descriptions": [
                         "Extreme bloom effect applied.",
                         "The scene has an intense bloom effect.",
