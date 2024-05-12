@@ -23,7 +23,7 @@ from simian.utils import check_imports
 check_imports()
 import pandas as pd
 from simian.camera import create_camera_rig, position_camera, set_camera_settings
-from simian.position import create_grid, find_largest_length, place_objects_on_grid
+from simian.position import find_largest_length, place_objects_on_grid
 from simian.camera import create_camera_rig, set_camera_settings
 from simian.object import (
     apply_all_modifiers,
@@ -33,6 +33,8 @@ from simian.object import (
     load_object,
     lock_all_objects,
     normalize_object_scale,
+    optimize_meshes_in_hierarchy,
+    remove_loose_meshes,
     set_pivot_to_bottom,
     unlock_objects,
     unparent_keep_transform,
@@ -53,8 +55,10 @@ def read_combination(combination_file: str, index: int = 0) -> dict:
         None
     """
     with open(combination_file, "r") as file:
-        combinations = json.load(file)
-        return combinations[min(index, len(combinations) - 1)]
+        data = json.load(file)
+        # read the combinations from the JSON file and load as pandas dataframe
+        combinations_data = data["combinations"]
+        return combinations_data[index]
 
 
 def render_scene(
@@ -111,13 +115,9 @@ def render_scene(
 
         apply_and_remove_armatures()
         apply_all_modifiers(obj)
-        # optimize_meshes_in_hierarchy(obj)
-
         join_objects_in_hierarchy(obj)
-
-        # optimize_meshes_in_hierarchy(obj)
-
-        # remove_loose_meshes(obj)
+        optimize_meshes_in_hierarchy(obj)
+        remove_loose_meshes(obj)
 
         meshes = get_meshes_in_hierarchy(obj)
         obj = meshes[0]
@@ -128,25 +128,18 @@ def render_scene(
         unparent_keep_transform(obj)
         set_pivot_to_bottom(obj)
 
-        # Calculate the grid cell position
-        grid_cell = object_data["placement"]
-        row = (grid_cell - 1) // 3
-        col = (grid_cell - 1) % 3
-
-        obj.location = [col - 1, row - 1, 0]
-
         obj.scale = [object_data["scale"]["factor"] for _ in range(3)]
         normalize_object_scale(obj)
 
         obj.name = object_data["uid"]  # Set the Blender object's name to the UID
 
-        all_objects.append(obj)
-
-    # Unlock and unhide the initial objects
-    unlock_objects(initial_objects)
+        all_objects.append({obj: object_data["placement"]})
 
     largest_length = find_largest_length(all_objects)
     place_objects_on_grid(all_objects, largest_length)
+
+    # Unlock and unhide the initial objects
+    unlock_objects(initial_objects)
 
     set_camera_settings(combination)
     set_background(args.hdri_path, combination)
@@ -241,11 +234,11 @@ if __name__ == "__main__":
     scene = context.scene
     render = scene.render
 
-    combinations = pd.read_json("combinations.json", orient="records")
-    combinations = combinations.iloc[args.combination_index]
+    combination = read_combination(args.combination_file, args.combination_index)
 
     # get the object uid from the 'object' column, which is a dictionary
-    objects_column = combinations["objects"]
+    objects_column = combination["objects"]
+
     download_dirs = ([],)
     for object in objects_column:
         uid = object["uid"]

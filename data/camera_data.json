@@ -2,7 +2,7 @@
     "orientation": {
         "yaw_max": 360,
         "yaw_min": 0,
-        "pitch_max": 90,
+        "pitch_max": 75,
         "pitch_min": 0,
         "labels": {
             "yaw": {
@@ -328,13 +328,6 @@
                 ]
             },
             "pitch": {
-                "-15": [
-                    "tilted up slightly",
-                    "slightly upward",
-                    "mildly upward",
-                    "<degrees> degrees upward",
-                    "<degrees> forward"
-                ],
                 "0": [
                     "level with the ground",
                     "horizontally level",
@@ -354,7 +347,8 @@
                     "downward tilt",
                     "angled down",
                     "<degrees> degrees downward",
-                    "<degrees> forward"
+                    "<degrees> forward",
+                    "angled downward"
                 ],
                 "45": [
                     "tilted down sharply",
@@ -368,14 +362,11 @@
                     "steeply angled down",
                     "sharply angled downward",
                     "<degrees> degrees downward",
-                    "<degrees> forward"
-                ],
-                "90": [
-                    "pointing straight down",
-                    "directly downward",
-                    "straight down",
-                    "<degrees> degrees downward",
-                    "<degrees> forward"
+                    "<degrees> forward",
+                    "angled down sharply",
+                    "<degrees> down steeply>",
+                    "<degrees> steeply down",
+                    "<degrees> sharply downward"
                 ]
             }
         },
@@ -791,7 +782,7 @@
                         "rotation": [
                             0,
                             0,
-                            360
+                            90
                         ]
                     }
                 },
@@ -850,7 +841,7 @@
                         "rotation": [
                             0,
                             0,
-                            360
+                            90
                         ]
                     }
                 }
@@ -889,7 +880,7 @@
                     "CameraFramingPivot": {
                         "rotation": [
                             0,
-                            45,
+                            -30,
                             0
                         ]
                     }
@@ -920,7 +911,7 @@
                     "CameraFramingPivot": {
                         "rotation": [
                             0,
-                            45,
+                            -30,
                             0
                         ]
                     }
@@ -1126,7 +1117,7 @@
                 {
                     "Camera": {
                         "rotation": [
-                            45,
+                            15,
                             0,
                             0
                         ]
@@ -1135,7 +1126,7 @@
                 {
                     "Camera": {
                         "rotation": [
-                            0,
+                            -15,
                             0,
                             0
                         ]
@@ -1173,7 +1164,7 @@
                 {
                     "Camera": {
                         "rotation": [
-                            45,
+                            15,
                             0,
                             0
                         ]
@@ -1182,7 +1173,7 @@
                 {
                     "Camera": {
                         "rotation": [
-                            0,
+                            -15,
                             0,
                             0
                         ]
@@ -1221,7 +1212,7 @@
                     "Camera": {
                         "rotation": [
                             0,
-                            45,
+                            15,
                             0
                         ]
                     }
@@ -1230,7 +1221,7 @@
                     "Camera": {
                         "rotation": [
                             0,
-                            0,
+                            -15,
                             0
                         ]
                     }
@@ -1268,7 +1259,7 @@
                     "Camera": {
                         "rotation": [
                             0,
-                            -45,
+                            -15,
                             0
                         ]
                     }
@@ -1277,7 +1268,7 @@
                     "Camera": {
                         "rotation": [
                             0,
-                            0,
+                            15,
                             0
                         ]
                     }
@@ -1378,5 +1369,359 @@
                 }
             ]
         }
-    ]
+    ],
+    "postprocessing": {
+        "bloom": {
+            "threshold_min": 0.7,
+            "threshold_max": 1.0,
+            "intensity_min": 0.0,
+            "intensity_max": 1.0,
+            "radius_min": 1.0,
+            "radius_max": 10.0,
+            "types": {
+                "none": {
+                    "intensity_min": 0.0,
+                    "intensity_max": 0.02,
+                    "descriptions": [
+                        "No bloom effect applied.",
+                        "The scene has no bloom effect.",
+                        "Bloom effect is turned off.",
+                        "The scene is rendered without bloom.",
+                        "No bloom is used in the scene.",
+                        "The scene does not have a bloom effect.",
+                        "Bloom is disabled in the scene.",
+                        "The scene is not enhanced with bloom.",
+                        "No bloom is present in the scene.",
+                        "The scene is not rendered with bloom."
+                    ]
+                },
+                "low": {
+                    "intensity_min": 0.02,
+                    "intensity_max": 0.2,
+                    "descriptions": [
+                        "Low bloom effect applied.",
+                        "The scene has a subtle bloom effect.",
+                        "Bloom effect is set to low intensity.",
+                        "The scene is rendered with a mild bloom effect.",
+                        "Low bloom is used in the scene.",
+                        "The scene has a slight bloom effect.",
+                        "Bloom is set to low intensity in the scene.",
+                        "The scene is enhanced with a gentle bloom effect.",
+                        "Low bloom is present in the scene.",
+                        "The scene is rendered with a mild bloom effect."
+                    ]
+                },
+                "medium": {
+                    "intensity_min": 0.2,
+                    "intensity_max": 0.5,
+                    "descriptions": [
+                        "Medium bloom effect applied.",
+                        "The scene has a moderate bloom effect.",
+                        "Bloom effect is set to medium intensity.",
+                        "The scene is rendered with a moderate bloom effect.",
+                        "Medium bloom is used in the scene.",
+                        "The scene has a noticeable bloom effect.",
+                        "Bloom is set to medium intensity in the scene.",
+                        "The scene is enhanced with a moderate bloom effect.",
+                        "Medium bloom is present in the scene.",
+                        "The scene is rendered with a moderate bloom effect."
+                    ]
+                },
+                "high": {
+                    "intensity_min": 0.5,
+                    "intensity_max": 0.8,
+                    "descriptions": [
+                        "High bloom effect applied.",
+                        "The scene has a strong bloom effect.",
+                        "Bloom effect is set to high intensity.",
+                        "The scene is rendered with a strong bloom effect.",
+                        "High bloom is used in the scene.",
+                        "The scene has a powerful bloom effect.",
+                        "Bloom is set to high intensity in the scene.",
+                        "The scene is enhanced with a strong bloom effect.",
+                        "High bloom is present in the scene.",
+                        "The scene is rendered with a strong bloom effect."
+                    ]
+                },
+                "extreme": {
+                    "intensity_min": 0.8,
+                    "intensity_max": 1.1,
+                    "descriptions": [
+                        "Extreme bloom effect applied.",
+                        "The scene has an intense bloom effect.",
+                        "Bloom effect is set to extreme intensity.",
+                        "The scene is rendered with an extreme bloom effect.",
+                        "Extreme bloom is used in the scene.",
+                        "The scene has an overwhelming bloom effect.",
+                        "Bloom is set to extreme intensity in the scene.",
+                        "The scene is enhanced with an extreme bloom effect.",
+                        "Extreme bloom is present in the scene.",
+                        "The scene is rendered with an extreme bloom effect."
+                    ]
+                }
+            }
+        },
+        "ssao": {
+            "distance_min": 0.02,
+            "distance_max": 1.2,
+            "factor_min": 0.0,
+            "factor_max": 1.0,
+            "types": {
+                "none": {
+                    "factor_min": 0.0,
+                    "factor_max": 0.02,
+                    "descriptions": [
+                        "No ambient occlusion effect applied.",
+                        "The scene has no ambient occlusion effect.",
+                        "Ambient occlusion is turned off.",
+                        "The scene is rendered without ambient occlusion.",
+                        "No ambient occlusion is used in the scene.",
+                        "The scene does not have an ambient occlusion effect.",
+                        "Ambient occlusion is disabled in the scene.",
+                        "The scene is not enhanced with ambient occlusion.",
+                        "No ambient occlusion is present in the scene.",
+                        "The scene is not rendered with ambient occlusion."
+                    ]
+                },
+                "low": {
+                    "factor_min": 0.02,
+                    "factor_max": 0.2,
+                    "descriptions": [
+                        "Low ambient occlusion effect applied.",
+                        "The scene has a subtle ambient occlusion effect.",
+                        "Ambient occlusion is set to low intensity.",
+                        "The scene is rendered with a mild ambient occlusion effect.",
+                        "Low ambient occlusion is used in the scene.",
+                        "The scene has a slight ambient occlusion effect.",
+                        "Ambient occlusion is set to low intensity in the scene.",
+                        "The scene is enhanced with a gentle ambient occlusion effect.",
+                        "Low ambient occlusion is present in the scene.",
+                        "The scene is rendered with a mild ambient occlusion effect."
+                    ]
+                },
+                "medium": {
+                    "factor_min": 0.2,
+                    "factor_max": 0.6,
+                    "descriptions": [
+                        "Medium ambient occlusion effect applied.",
+                        "The scene has a moderate ambient occlusion effect.",
+                        "Ambient occlusion is set to medium intensity.",
+                        "The scene is rendered with a moderate ambient occlusion effect.",
+                        "Medium ambient occlusion is used in the scene.",
+                        "The scene has a noticeable ambient occlusion effect.",
+                        "Ambient occlusion is set to medium intensity in the scene.",
+                        "The scene is enhanced with a moderate ambient occlusion effect.",
+                        "Medium ambient occlusion is present in the scene.",
+                        "The scene is rendered with a moderate ambient occlusion effect."
+                    ]
+                },
+                "high": {
+                    "factor_min": 0.6,
+                    "factor_max": 1.0,
+                    "descriptions": [
+                        "High ambient occlusion effect applied.",
+                        "The scene has a strong ambient occlusion effect.",
+                        "Ambient occlusion is set to high intensity.",
+                        "The scene is rendered with a strong ambient occlusion effect.",
+                        "High ambient occlusion is used in the scene.",
+                        "The scene has a powerful ambient occlusion effect.",
+                        "Ambient occlusion is set to high intensity in the scene.",
+                        "The scene is enhanced with a strong ambient occlusion effect.",
+                        "High ambient occlusion is present in the scene.",
+                        "The scene is rendered with a strong ambient occlusion effect."
+                    ]
+                },
+                "extreme": {
+                    "factor_min": 1.0,
+                    "factor_max": 1.2,
+                    "descriptions": [
+                        "Extreme ambient occlusion effect applied.",
+                        "The scene has an intense ambient occlusion effect.",
+                        "Ambient occlusion is set to extreme intensity.",
+                        "The scene is rendered with an extreme ambient occlusion effect.",
+                        "Extreme ambient occlusion is used in the scene.",
+                        "The scene has an overwhelming ambient occlusion effect.",
+                        "Ambient occlusion is set to extreme intensity in the scene.",
+                        "The scene is enhanced with an extreme ambient occlusion effect.",
+                        "Extreme ambient occlusion is present in the scene.",
+                        "The scene is rendered with an extreme ambient occlusion effect."
+                    ]
+                }
+            }
+        },
+        "ssrr": {
+            "min_max_roughness": 0.0,
+            "max_max_roughness": 1.0,
+            "min_thickness": 0.05,
+            "max_thickness": 5.0,
+            "types": {
+                "none": {
+                    "max_roughness_min": 0.0,
+                    "max_roughness_max": 0.02,
+                    "descriptions": [
+                        "No screen-space ray tracing effect applied.",
+                        "The scene has no screen-space ray tracing effect.",
+                        "Screen-space ray tracing is turned off.",
+                        "The scene is rendered without screen-space ray tracing.",
+                        "No screen-space ray tracing is used in the scene.",
+                        "The scene does not have a screen-space ray tracing effect.",
+                        "Screen-space ray tracing is disabled in the scene.",
+                        "The scene is not enhanced with screen-space ray tracing.",
+                        "No screen-space ray tracing is present in the scene.",
+                        "The scene is not rendered with screen-space ray tracing."
+                    ]
+                },
+                "low": {
+                    "max_roughness_min": 0.02,
+                    "max_roughness_max": 0.1,
+                    "descriptions": [
+                        "Low screen-space ray tracing effect applied.",
+                        "The scene has a subtle screen-space ray tracing effect.",
+                        "Screen-space ray tracing is set to low intensity.",
+                        "The scene is rendered with a mild screen-space ray tracing effect.",
+                        "Low screen-space ray tracing is used in the scene.",
+                        "The scene has a slight screen-space ray tracing effect.",
+                        "Screen-space ray tracing is set to low intensity in the scene.",
+                        "The scene is enhanced with a gentle screen-space ray tracing effect.",
+                        "Low screen-space ray tracing is present in the scene.",
+                        "The scene is rendered with a mild screen-space ray tracing effect."
+                    ]
+                },
+                "medium": {
+                    "max_roughness_min": 0.1,
+                    "max_roughness_max": 0.3,
+                    "descriptions": [
+                        "Medium screen-space ray tracing effect applied.",
+                        "The scene has a moderate screen-space ray tracing effect.",
+                        "Screen-space ray tracing is set to medium intensity.",
+                        "The scene is rendered with a moderate screen-space ray tracing effect.",
+                        "Medium screen-space ray tracing is used in the scene.",
+                        "The scene has a noticeable screen-space ray tracing effect.",
+                        "Screen-space ray tracing is set to medium intensity in the scene.",
+                        "The scene is enhanced with a moderate screen-space ray tracing effect.",
+                        "Medium screen-space ray tracing is present in the scene.",
+                        "The scene is rendered with a moderate screen-space ray tracing effect."
+                    ]
+                },
+                "high": {
+                    "max_roughness_min": 0.3,
+                    "max_roughness_max": 0.6,
+                    "descriptions": [
+                        "High screen-space ray tracing effect applied.",
+                        "The scene has a strong screen-space ray tracing effect.",
+                        "Screen-space ray tracing is set to high intensity.",
+                        "The scene is rendered with a strong screen-space ray tracing effect.",
+                        "High screen-space ray tracing is used in the scene.",
+                        "The scene has a powerful screen-space ray tracing effect.",
+                        "Screen-space ray tracing is set to high intensity in the scene.",
+                        "The scene is enhanced with a strong screen-space ray tracing effect.",
+                        "High screen-space ray tracing is present in the scene.",
+                        "The scene is rendered with a strong screen-space ray tracing effect."
+                    ],
+                    "extreme": {
+                        "max_roughness_min": 0.6,
+                        "max_roughness_max": 1.0,
+                        "descriptions": [
+                            "Extreme screen-space ray tracing effect applied.",
+                            "The scene has an intense screen-space ray tracing effect.",
+                            "Screen-space ray tracing is set to extreme intensity.",
+                            "The scene is rendered with an extreme screen-space ray tracing effect.",
+                            "Extreme screen-space ray tracing is used in the scene.",
+                            "The scene has an overwhelming screen-space ray tracing effect.",
+                            "Screen-space ray tracing is set to extreme intensity in the scene.",
+                            "The scene is enhanced with an extreme screen-space ray tracing effect.",
+                            "Extreme screen-space ray tracing is present in the scene.",
+                            "The scene is rendered with an extreme screen-space ray tracing effect."
+                        ]
+                    }
+                }
+            }
+        },
+        "motionblur": {
+            "shutter_speed_min": 0.0,
+            "shutter_speed_max": 1.0,
+            "types": {
+                "none": {
+                    "shutter_speed_min": 0.0,
+                    "shutter_speed_max": 0.02,
+                    "descriptions": [
+                        "No motion blur effect applied.",
+                        "The scene has no motion blur effect.",
+                        "Motion blur is turned off.",
+                        "The scene is rendered without motion blur.",
+                        "No motion blur is used in the scene.",
+                        "The scene does not have a motion blur effect.",
+                        "Motion blur is disabled in the scene.",
+                        "The scene is not enhanced with motion blur.",
+                        "No motion blur is present in the scene.",
+                        "The scene is not rendered with motion blur."
+                    ]
+                },
+                "low": {
+                    "shutter_speed_min": 0.02,
+                    "shutter_speed_max": 0.2,
+                    "descriptions": [
+                        "Low motion blur effect applied.",
+                        "The scene has a subtle motion blur effect.",
+                        "Motion blur is set to low intensity.",
+                        "The scene is rendered with a mild motion blur effect.",
+                        "Low motion blur is used in the scene.",
+                        "The scene has a slight motion blur effect.",
+                        "Motion blur is set to low intensity in the scene.",
+                        "The scene is enhanced with a gentle motion blur effect.",
+                        "Low motion blur is present in the scene.",
+                        "The scene is rendered with a mild motion blur effect."
+                    ]
+                },
+                "medium": {
+                    "shutter_speed_min": 0.2,
+                    "shutter_speed_max": 0.5,
+                    "descriptions": [
+                        "Medium motion blur effect applied.",
+                        "The scene has a moderate motion blur effect.",
+                        "Motion blur is set to medium intensity.",
+                        "The scene is rendered with a moderate motion blur effect.",
+                        "Medium motion blur is used in the scene.",
+                        "The scene has a noticeable motion blur effect.",
+                        "Motion blur is set to medium intensity in the scene.",
+                        "The scene is enhanced with a moderate motion blur effect.",
+                        "Medium motion blur is present in the scene.",
+                        "The scene is rendered with a moderate motion blur effect."
+                    ]
+                },
+                "high": {
+                    "shutter_speed_min": 0.5,
+                    "shutter_speed_max": 0.8,
+                    "descriptions": [
+                        "High motion blur effect applied.",
+                        "The scene has a strong motion blur effect.",
+                        "Motion blur is set to high intensity.",
+                        "The scene is rendered with a strong motion blur effect.",
+                        "High motion blur is used in the scene.",
+                        "The scene has a powerful motion blur effect.",
+                        "Motion blur is set to high intensity in the scene.",
+                        "The scene is enhanced with a strong motion blur effect.",
+                        "High motion blur is present in the scene.",
+                        "The scene is rendered with a strong motion blur effect."
+                    ]
+                },
+                "extreme": {
+                    "shutter_speed_min": 0.8,
+                    "shutter_speed_max": 1.0,
+                    "descriptions": [
+                        "Extreme motion blur effect applied.",
+                        "The scene has an intense motion blur effect.",
+                        "Motion blur is set to extreme intensity.",
+                        "The scene is rendered with an extreme motion blur effect.",
+                        "Extreme motion blur is used in the scene.",
+                        "The scene has an overwhelming motion blur effect.",
+                        "Motion blur is set to extreme intensity in the scene.",
+                        "The scene is enhanced with an extreme motion blur effect.",
+                        "Extreme motion blur is present in the scene.",
+                        "The scene is rendered with an extreme motion blur effect."
+                    ]
+                }
+            }
+        }
+    }
 }
