@@ -69,7 +69,7 @@ def render_objects(
             data = json.load(file)
             combinations_data = data["combinations"]
             num_combinations = len(combinations_data)
-        
+
         end_index = num_combinations
 
     # Loop over each combination index to set up and run the rendering process.

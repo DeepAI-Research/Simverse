@@ -103,7 +103,6 @@ def determine_relationships(objects, object_data):
 
                 # If there is a significant relationship, add it to the list
                 if relationship != "":
-                    print(relationship)
                     relationships.append(
                         f"{obj1['name']} {relationship} {obj2['name']}."
                     )

@@ -619,36 +619,43 @@ def generate_orientation(camera_data, objects, background):
     # If so, re-roll the orientation until a non-occluded orientation is found
     while True:
         occluded = False
-        for obj in objects:
+        for obj in objects[1:]:
             # Calculate the vector from the camera to the object
-            camera_to_object = [
-                obj["transformed_position"][0] - 0,
-                obj["transformed_position"][1] - 0,
+            # calculate the position of the camera on the unit circle from yaw
+            camera_x = math.cos(math.radians(yaw))
+            camera_y = math.sin(math.radians(yaw))
+
+            camera_vector = [camera_x, camera_y, 0]
+
+            # get the position of the object
+            object_position = obj["transformed_position"]
+
+            # normalize the object position, account for divisino by 0
+            object_position = [
+                a / max(1e-6, sum([b**2 for b in object_position])) ** 0.5
+                for a in object_position
             ]
-            # Calculate the angle between the camera direction and the vector to the object
-            camera_direction = [
-                math.cos(math.radians(yaw)),
-                math.sin(math.radians(yaw)),
-            ]
-            angle = math.acos(
-                (
-                    camera_to_object[0] * camera_direction[0]
-                    + camera_to_object[1] * camera_direction[1]
-                )
-                / (
-                    math.sqrt(camera_to_object[0] ** 2 + camera_to_object[1] ** 2)
-                    * math.sqrt(camera_direction[0] ** 2 + camera_direction[1] ** 2)
-                )
-            )
-            # If the angle is less than a threshold (e.g., 10 degrees), the object is occluding the camera
-            if math.degrees(angle) < 10:
+
+            # if the magnitude of the object position is 0, ignore it
+            if sum([a**2 for a in object_position]) < 0.001:
+                continue
+
+            # dot product of the camera vector and the object position
+            dot_product = sum([a * b for a, b in zip(camera_vector, object_position)])
+
+            # calculate an angle padding on both sides of the object to use as a threshold
+            angle = math.radians(15)
+            # set the theshold to the dot product - cos of the angle
+            threshold = math.cos(angle)
+
+            if dot_product > threshold:
                 occluded = True
                 break
 
         if not occluded:
             break
 
-        # Re-roll the orientation
+        # Re-roll the orientation if occluded and try again
         yaw = random.randint(orientation_data["yaw_min"], orientation_data["yaw_max"])
         pitch = random.randint(
             orientation_data["pitch_min"], orientation_data["pitch_max"]
@@ -711,7 +718,9 @@ def generate_animation(camera_data):
     """
     animation = random.choice(camera_data["animations"])
     animation = animation.copy()
+    animation["speed_factor"] = random.uniform(0.5, 2.0)
     animation.pop("descriptions", None)
+    print(animation)
     return animation
 
 
@@ -733,7 +742,7 @@ def generate_objects():
 
     objects = []
     positions_taken = set()
-    for _ in range(number_of_objects):
+    for i in range(number_of_objects):
         object = random.choice(dataset_dict[chosen_dataset])
         scale_key = random.choice(list(keys))
         scale = {
@@ -744,13 +753,18 @@ def generate_objects():
             ],
         }
 
+        placement = 5
+        if i > 0:
+            placement = random.choice(
+                [i for i in range(1, 9) if i not in positions_taken]
+            )
+        positions_taken.add(placement)
+
         object = {
             "name": object["name"],
             "uid": object["uid"],
             "description": object["description"],
-            "placement": len(objects) == 0
-            and 5
-            or random.choice([i for i in range(1, 9) if i not in positions_taken]),
+            "placement": placement,
             "from": chosen_dataset,
             "scale": scale,
         }
@@ -823,8 +837,9 @@ def generate_combinations(camera_data, count, seed):
     Returns:
         dict: Generated combinations data.
     """
-    if seed is not None:
-        random.seed(seed)
+    if seed is None:
+        seed = -1
+    random.seed(seed)
 
     combinations = []
 
