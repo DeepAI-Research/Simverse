@@ -47,6 +47,11 @@ python3 simian/combiner.py --count 1000 --seed 42
 You can generate individually:
 ```bash
 # MacOS
+# Download Blender for MacOS
+To generate videos on MacOS, you will need Blender installed. Download Blender from the official source using the link below:
+[Download Blender 4.1.1 for MacOS (ARM64)](https://www.blender.org/download/release/Blender4.1/blender-4.1.1-macos-arm64.dmg/)
+
+
 /Applications/Blender.app/Contents/MacOS/Blender --background --python simian/render.py
 
 # Linux
