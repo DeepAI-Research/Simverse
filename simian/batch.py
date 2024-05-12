@@ -1,3 +1,4 @@
+import json
 import multiprocessing
 import os
 import platform
@@ -19,7 +20,7 @@ def render_objects(
     width: int = 1920,
     height: int = 1080,
     start_index: int = 0,
-    end_index: int = 9,
+    end_index: int = -1,
     start_frame: int = 1,
     end_frame: int = 65,
 ) -> None:
@@ -60,6 +61,16 @@ def render_objects(
 
     # make sure renders directory exists
     os.makedirs(target_directory, exist_ok=True)
+
+    if end_index == -1:
+
+        # get the length of combinations.json
+        with open(os.path.join(scripts_dir, "../", "combinations.json"), "r") as file:
+            data = json.load(file)
+            combinations_data = data["combinations"]
+            num_combinations = len(combinations_data)
+        
+        end_index = num_combinations
 
     # Loop over each combination index to set up and run the rendering process.
     for i in range(start_index, end_index):
