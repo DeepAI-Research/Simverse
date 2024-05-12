@@ -51,8 +51,6 @@ You can generate individually:
 ```bash
 # MacOS
 # Download Blender for MacOS
-
-
 /Applications/Blender.app/Contents/MacOS/Blender --background --python simian/render.py
 
 # Linux
