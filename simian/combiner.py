@@ -1,21 +1,46 @@
 import json
+import math
 import os
 import random
 import argparse
 import re
+import sys
+
+# Get the directory of the currently executing script
+current_dir = os.path.dirname(os.path.abspath(__file__))
+
+# if the directory is simian, remove that
+if current_dir.endswith("simian"):
+    current_dir = os.path.dirname(current_dir)
+
+# Append the simian directory to sys.path
+simian_path = os.path.join(current_dir)
+sys.path.append(simian_path)
+
 from simian.transform import determine_relationships, adjust_positions
 
 
 def read_json_file(file_path):
     """
     Read a JSON file and return the data as a dictionary.
+
+    Args:
+        file_path (str): Path to the JSON file.
+
+    Returns:
+        dict: Data from the JSON file.
     """
     with open(file_path, "r") as file:
         return json.load(file)
 
 
-# Setup argparse for command line arguments
 def parse_args():
+    """
+    Parse command line arguments using argparse.
+
+    Returns:
+        argparse.Namespace: Parsed arguments.
+    """
     parser = argparse.ArgumentParser(description="Generate random camera combinations.")
     parser.add_argument(
         "--count", type=int, default=10, help="Number of combinations to generate"
@@ -157,84 +182,51 @@ background_names = list(background_dict.keys())
 background_weights = [len(background_dict[name]) for name in background_names]
 
 
-def generate_caption(combination):
+def generate_stage_captions(combination):
+    """
+    Generate captions for the stage based on the combination data.
+
+    Args:
+        combination (dict): Combination data.
+
+    Returns:
+        list: List of stage captions.
+    """
+    stage_data = read_json_file("data/stage_data.json")
+    background_prefix = random.choice(stage_data["background_names"])
+    floor_prefix = random.choice(stage_data["material_names"])
     background_name = combination["background"]["name"]
     floor_material_name = combination["stage"]["material"]["name"]
 
-    objects = combination["objects"]
-
-    positions_taken = set()
-
-    for object in objects:
-        if object == objects[0]:
-            object["placement"] = 4
-            positions_taken.add(4)
-        else:
-            rand_placement = [i for i in range(0, 9) if i not in positions_taken]
-            object["placement"] = random.choice(rand_placement)
-            positions_taken.add(rand_placement[0])
-
-        object_id = object["uid"]
-
-        object_scales = object_data["scales"]
-
-        keys = object_scales.keys()
-        # choose a key randomly
-        scale_key = random.choice(list(keys))
-
-        object["scale"] = {
-            "factor": object_scales[scale_key]["factor"] * random.uniform(0.9, 1.0),
-            "name": scale_key,
-            "name_synonym": object_scales[scale_key]["names"][
-                random.randint(0, len(object_scales[scale_key]["names"]) - 1)
-            ],
-        }
-
-        if object_id in captions_data:
-            description = captions_data[object_id]
-            object["description"] = description
-
-    caption_parts = []
-
-    ", ".join(
-        [
-            (
-                obj["name"] + ", " + obj["description"]
-                if obj["description"] is not None
-                else obj["name"]
-            )
-            for obj in combination["objects"]
-        ]
+    # remove all numbers and trim
+    floor_material_name = "".join(
+        [i for i in floor_material_name if not i.isdigit()]
+    ).strip()
+    background_name = (
+        "".join([i for i in background_name if not i.isdigit()])
+        .strip()
+        .replace("#", "")
+        .replace("_", " ")
+        .replace("(", "")
+        .replace(")", "")
     )
+    caption_parts = []
+    caption_parts.append(f"The {background_prefix} is {background_name}.")
+    caption_parts.append(f"The {floor_prefix} is {floor_material_name}.")
+    return caption_parts
 
-    object_descriptions = []
 
-    # for each object in the scene
-    for obj in combination["objects"]:
-        # get the object name and description
-        object_name = obj["name"]
-        object_description = obj["description"]
+def generate_orientation_caption(camera_data, combination):
+    """
+    Generate a caption for the camera orientation based on the combination data.
 
-        # get the relationship between the object name and description
-        object_name_description_relationship = random.choice(
-            object_data["name_description_relationship"]
-        )
-        object_name_description_relationship = (
-            object_name_description_relationship.replace("<name>", object_name)
-        )
-        object_name_description_relationship = (
-            object_name_description_relationship.replace(
-                "<description>", object_description
-            )
-        )
-        object_descriptions.append(object_name_description_relationship)
+    Args:
+        camera_data (dict): Camera data.
+        combination (dict): Combination data.
 
-    # randomize order of object_descriptions
-    random.shuffle(object_descriptions)
-    # join the object descriptions
-    object_descriptions = " ".join(object_descriptions)
-    caption_parts.append(object_descriptions)
-
+    Returns:
+        str: Orientation caption.
+    """
     pitch_labels = camera_data["orientation"]["labels"]["pitch"]
     yaw_labels = camera_data["orientation"]["labels"]["yaw"]
 
@@ -255,31 +247,58 @@ def generate_caption(combination):
     orientation_text = orientation_text.replace(
         "<yaw>", random.choice(yaw_labels[closest_yaw_label])
     ).replace("<degrees>", str(combination["orientation"]["yaw"]))
-    caption_parts.append(orientation_text)
 
-    # TODO: Add DOF to caption
+    return orientation_text
 
-    # TODO: Add framing to caption
 
-    # TODO: Add postprocessing to caption
+def generate_object_name_description_captions(combination):
+    """
+    Generate captions for object names and descriptions based on the combination data.
 
-    # framing_text = random.choice(camera_data["framing"]["descriptions"])
-    # framing_text = framing_text.replace("<objects>", object_names)
-    # caption_parts.append(framing_text)
-    stage_data = read_json_file("data/stage_data.json")
+    Args:
+        combination (dict): Combination data.
 
-    background_prefix = random.choice(stage_data["background_names"])
-    floor_prefix = random.choice(stage_data["material_names"])
+    Returns:
+        str: Object name and description captions.
+    """
+    object_name_descriptions = []
+    # for each object in the scene
+    for obj in combination["objects"]:
+        # get the object name and description
+        object_name = obj["name"]
+        object_description = obj["description"]
 
-    # remove all numbers and trim
-    floor_material_name = "".join(
-        [i for i in floor_material_name if not i.isdigit()]
-    ).strip()
-    background_name = "".join([i for i in background_name if not i.isdigit()]).strip()
+        # get the relationship between the object name and description
+        object_name_description_relationship = random.choice(
+            object_data["name_description_relationship"]
+        )
+        object_name_description_relationship = (
+            object_name_description_relationship.replace("<name>", object_name)
+        )
+        object_name_description_relationship = (
+            object_name_description_relationship.replace(
+                "<description>", object_description
+            )
+        )
+        object_name_descriptions.append(object_name_description_relationship)
 
-    caption_parts.append(f"The {background_prefix} is {background_name}.")
-    caption_parts.append(f"The {floor_prefix} is {floor_material_name}.")
+    # randomize order of object_descriptions
+    random.shuffle(object_name_descriptions)
+    # join the object descriptions
+    object_name_descriptions = " ".join(object_name_descriptions)
+    return object_name_descriptions
 
+
+def generate_relationship_captions(combination):
+    """
+    Generate captions for object relationships based on the combination data.
+
+    Args:
+        combination (dict): Combination data.
+
+    Returns:
+        list: List of relationship captions.
+    """
     THRESHOLD_RELATIONSHIPS = len(combination["objects"])
 
     adjusted_objects = adjust_positions(
@@ -287,34 +306,208 @@ def generate_caption(combination):
     )
     relationships = determine_relationships(adjusted_objects, object_data)
 
-    # write relationships into the json file with combination["objects"]["relationships"]
-    # TODO: This code is bad
+    # Write relationships into the JSON file with combination["objects"]["relationships"]
     for i, obj in enumerate(combination["objects"]):
-        # TODO: Added this but we probably need to check if the object has a relationships key
+        if "relationships" not in obj:
+            obj["relationships"] = []
         if i < len(relationships):
             obj["relationships"] = relationships[i]
 
-    selected_relationships = []  # Initialize it as an empty list
+    selected_relationships = []
 
     if THRESHOLD_RELATIONSHIPS != 1:
         selected_relationships = random.sample(relationships, THRESHOLD_RELATIONSHIPS)
 
+    return selected_relationships
+
+
+def generate_fov_caption(combination):
+    """
+    Generate a caption for the field of view (FOV) based on the combination data.
+
+    Args:
+        combination (dict): Combination data.
+
+    Returns:
+        str: FOV caption.
+    """
+    fov_templates = {
+        "degrees": [
+            "The camera has a <fov> degree field of view.",
+            "The camera has a <fov> degree FOV.",
+            "The field of view is <fov> degrees.",
+            "Set the fov of the camera to <fov> degrees.",
+            "Set the FOV of the camera to <fov>°",
+        ],
+        "mm": [
+            "The camera has a <mm> mm focal length.",
+            "The camera has a <mm> mm focal length.",
+            "The focal length is <mm> mm.",
+            "Set the focal length of the camera to <mm> mm.",
+        ],
+    }
+
+    fov = combination["framing"]["fov"]
+
+    # FOV is stored as degrees in the framing data
+    fov_types = "degrees", "mm"
+
+    # Select a random FOV type
+    fov_type = random.choice(fov_types)
+
+    # Select a random FOV template
+    fov_template = random.choice(fov_templates[fov_type])
+
+    # Replace the <fov> placeholder with the FOV value
+    fov_template = fov_template.replace("<fov>", str(fov))
+
+    # Convert FOV to focal length
+    focal_length = 35 / (2 * math.tan(math.radians(fov) / 2))
+    fov_caption = fov_template.replace("<mm>", str(focal_length))
+
+    if fov_type == "degrees":
+        fov_caption += f" ({focal_length:.2f} mm focal length)"
+
+    return fov_caption
+
+
+def generate_postprocessing_caption(combination):
+    """
+    Generate a caption for postprocessing based on the combination data.
+
+    Args:
+        combination (dict): Combination data.
+
+    Returns:
+        str: Postprocessing caption.
+    """
+    postprocessing = combination["postprocessing"]
+
+    caption_parts = []
+
+    # Bloom
+    if postprocessing["bloom"]["type"] != "none":
+        bloom_caption = f"The bloom effect is set to {postprocessing['bloom']['type']} with a threshold of {postprocessing['bloom']['threshold']:.2f}, intensity of {postprocessing['bloom']['intensity']:.2f}, and radius of {postprocessing['bloom']['radius']:.2f}."
+        caption_parts.append(bloom_caption)
+
+    # SSAO
+    if postprocessing["ssao"]["type"] != "none":
+        ssao_caption = f"The screen space ambient occlusion (SSAO) effect is set to {postprocessing['ssao']['type']} with a distance of {postprocessing['ssao']['distance']:.2f} and factor of {postprocessing['ssao']['factor']:.2f}."
+        caption_parts.append(ssao_caption)
+
+    # SSRR
+    if postprocessing["ssrr"]["type"] != "none":
+        ssrr_caption = f"The screen space reflections (SSRR) effect is set to {postprocessing['ssrr']['type']} with a maximum roughness of {postprocessing['ssrr']['max_roughness']:.2f} and thickness of {postprocessing['ssrr']['thickness']:.2f}."
+        caption_parts.append(ssrr_caption)
+
+    # Motion Blur
+    if postprocessing["motionblur"]["type"] != "none":
+        motionblur_caption = f"The motion blur effect is set to {postprocessing['motionblur']['type']} with a shutter speed of {postprocessing['motionblur']['shutter_speed']:.2f}."
+        caption_parts.append(motionblur_caption)
+
+    return " ".join(caption_parts)
+
+
+def generate_framing_caption(camera_data, combination):
+    """
+    Generate a caption for framing based on the camera data and combination data.
+
+    Args:
+        camera_data (dict): Camera data.
+        combination (dict): Combination data.
+
+    Returns:
+        str: Framing caption.
+    """
+    framing = combination["framing"]
+    framing_name = framing["name"]
+
+    # Find the matching framing in camera_data
+    matching_framing = next(
+        (f for f in camera_data["framings"] if f["name"] == framing_name), None
+    )
+
+    if matching_framing:
+        framing_description = random.choice(matching_framing["descriptions"])
+        framing_description = framing_description.replace("<fov>", str(framing["fov"]))
+        framing_description = framing_description.replace(
+            "<coverage_factor>", str(framing["coverage_factor"])
+        )
+        return framing_description
+    else:
+        return ""
+
+
+def generate_caption(combination):
+    """
+    Generate a complete caption based on the combination data.
+
+    Args:
+        combination (dict): Combination data.
+
+    Returns:
+        str: Complete caption.
+    """
+    caption_parts = []
+
+    # Add object name and description captions to the caption
+    object_name_descriptions = generate_object_name_description_captions(combination)
+    caption_parts.append(object_name_descriptions)
+
+    # Add the camera orientation to the caption
+    orientation_text = generate_orientation_caption(camera_data, combination)
+    caption_parts.append(orientation_text)
+
+    fov_caption = generate_fov_caption(combination)
+    caption_parts.append(fov_caption)
+
+    framing_caption = generate_framing_caption(camera_data, combination)
+    caption_parts.append(framing_caption)
+
+    postprocessing_caption = generate_postprocessing_caption(combination)
+    caption_parts.append(postprocessing_caption)
+
+    # Add the stage caption
+    stage_captions = generate_stage_captions(combination)
+    caption_parts.extend(stage_captions)
+
+    # Add the relationship captions
+    selected_relationships = generate_relationship_captions(combination)
     caption_parts.extend(selected_relationships)
 
-    # randomize the caption parts order
+    # Randomize the caption parts order
     caption_parts = random.sample(caption_parts, len(caption_parts))
 
-    caption = " ".join(caption_parts).replace("..", ".")
-    caption = re.sub(r"\.(?=[a-zA-Z])", ". ", caption)
+    # Trim the caption parts
+    caption = (
+        " ".join(caption_parts)
+        .replace("..", ".")
+        .replace("  ", " ")
+        .replace(" .", ".")
+        .replace(" ,", ",")
+        .replace(",.", ".")
+        .replace(".,", ",")
+    )
+    caption = re.sub(r"\.(?=[a-zA-Z])", ". ", caption)  # Add space after period
+    caption = caption.strip()  # Remove leading and trailing whitespace
 
-    return caption.strip()
+    return caption
 
 
 def generate_postprocessing(camera_data):
+    """
+    Generate postprocessing settings based on the camera data.
+
+    Args:
+        camera_data (dict): Camera data.
+
+    Returns:
+        dict: Postprocessing settings.
+    """
     postprocessing = {}
 
     bloom_data = camera_data["postprocessing"]["bloom"]
-    # TODO: Generate post processing
+
     bloom_threshold = random.uniform(
         bloom_data["threshold_min"], bloom_data["threshold_max"]
     )
@@ -323,11 +516,8 @@ def generate_postprocessing(camera_data):
     )
     bloom_radius = random.uniform(bloom_data["radius_min"], bloom_data["radius_max"])
 
-    # get the type from bloom_data["types"] and the description from bloom_data["types"]<type>["descriptions"] which corresponds to the intensity we rolled
-    # iterate bloom_data["types"] and find the entry where intensity_min <= bloom_intensity <= intensity_max
     bloom_type = "none"
     bloom_types = bloom_data["types"]
-    # bloom_data["types"] are objects, get the keys
     for t in bloom_types.keys():
         if (
             bloom_intensity >= bloom_types[t]["intensity_min"]
@@ -407,23 +597,62 @@ def generate_postprocessing(camera_data):
     return postprocessing
 
 
-def generate_orientation(camera_data):
+def generate_orientation(camera_data, objects, background):
+    """
+    Generate camera orientation based on the camera data, objects, and background.
+
+    Args:
+        camera_data (dict): Camera data.
+        objects (list): List of objects in the scene.
+        background (dict): Background information.
+
+    Returns:
+        dict: Camera orientation.
+    """
     orientation_data = camera_data["orientation"]
 
-    # roll a number between orientation['yaw_min'] and orientation['yaw_max']
+    # Roll a number between orientation['yaw_min'] and orientation['yaw_max']
     yaw = random.randint(orientation_data["yaw_min"], orientation_data["yaw_max"])
     pitch = random.randint(orientation_data["pitch_min"], orientation_data["pitch_max"])
 
-    # TODO: check if the camera is going to be occluded by the object
-    # if so, re-roll the orientation
+    # Check if the camera is going to be occluded by the objects
+    # If so, re-roll the orientation until a non-occluded orientation is found
+    while True:
+        occluded = False
+        for obj in objects:
+            # Calculate the vector from the camera to the object
+            camera_to_object = [
+                obj["transformed_position"][0] - 0,
+                obj["transformed_position"][1] - 0,
+            ]
+            # Calculate the angle between the camera direction and the vector to the object
+            camera_direction = [
+                math.cos(math.radians(yaw)),
+                math.sin(math.radians(yaw)),
+            ]
+            angle = math.acos(
+                (
+                    camera_to_object[0] * camera_direction[0]
+                    + camera_to_object[1] * camera_direction[1]
+                )
+                / (
+                    math.sqrt(camera_to_object[0] ** 2 + camera_to_object[1] ** 2)
+                    * math.sqrt(camera_direction[0] ** 2 + camera_direction[1] ** 2)
+                )
+            )
+            # If the angle is less than a threshold (e.g., 10 degrees), the object is occluding the camera
+            if math.degrees(angle) < 10:
+                occluded = True
+                break
 
-    # first, get the object positions for all objects that are not the first object in 0,0
-    # then compute the vector from 0,0 to object pos
-    # to get the arc angle, we need to get the bounding sphere of the object
-    # calculate the angle between the vector and the bounding sphere
-    # use this as the epsilon for the occlusion check
-    # if the value of the normalized vector to the camera is dot product with the normalized vector to the object is greater than the epsilon, then the object is occluding the camera
-    # re-roll the orientation if this is the case
+        if not occluded:
+            break
+
+        # Re-roll the orientation
+        yaw = random.randint(orientation_data["yaw_min"], orientation_data["yaw_max"])
+        pitch = random.randint(
+            orientation_data["pitch_min"], orientation_data["pitch_max"]
+        )
 
     orientation = {
         "yaw": yaw,
@@ -434,14 +663,23 @@ def generate_orientation(camera_data):
 
 
 def generate_framing(camera_data):
-    # get the min_fov and max_fov across all framings
+    """
+    Generate camera framing based on the camera data.
+
+    Args:
+        camera_data (dict): Camera data.
+
+    Returns:
+        dict: Camera framing.
+    """
+    # Get the min_fov and max_fov across all framings
     fov_min = min([f["fov_min"] for f in camera_data["framings"]])
     fov_max = max([f["fov_max"] for f in camera_data["framings"]])
 
     # Randomly roll an FOV value between FOV_min and FOV_max
     fov = random.uniform(fov_min, fov_max)
 
-    # find the corresponding framing
+    # Find the corresponding framing
     framing = None
     for f in camera_data["framings"]:
         if fov >= f["fov_min"] and fov <= f["fov_max"]:
@@ -462,6 +700,15 @@ def generate_framing(camera_data):
 
 
 def generate_animation(camera_data):
+    """
+    Generate camera animation based on the camera data.
+
+    Args:
+        camera_data (dict): Camera data.
+
+    Returns:
+        dict: Camera animation.
+    """
     animation = random.choice(camera_data["animations"])
     animation = animation.copy()
     animation.pop("descriptions", None)
@@ -469,9 +716,15 @@ def generate_animation(camera_data):
 
 
 def generate_objects():
+    """
+    Generate a list of random objects.
+
+    Returns:
+        list: List of generated objects.
+    """
     chosen_dataset = random.choices(dataset_names, weights=dataset_weights)[0]
 
-    # randomly generate max_number_of_objects
+    # Randomly generate max_number_of_objects
     max_number_of_objects = parse_args().max_number_of_objects
     number_of_objects = random.randint(1, max_number_of_objects)
 
@@ -502,8 +755,8 @@ def generate_objects():
             "scale": scale,
         }
 
-        if object_id in captions_data:
-            description = captions_data[object_id]
+        if object["uid"] in captions_data:
+            description = captions_data[object["uid"]]
             object["description"] = description
 
         objects.append(object)
@@ -512,8 +765,14 @@ def generate_objects():
 
 
 def generate_background():
+    """
+    Generate a random background.
+
+    Returns:
+        dict: Generated background.
+    """
     chosen_background = random.choices(background_names, weights=background_weights)[0]
-    # get the keys from the chosen background
+    # Get the keys from the chosen background
     background_keys = list(background_dict[chosen_background].keys())
     background_id = random.choice(background_keys)
     bg = background_dict[chosen_background][background_id]
@@ -529,6 +788,12 @@ def generate_background():
 
 
 def generate_stage():
+    """
+    Generate a random stage.
+
+    Returns:
+        dict: Generated stage.
+    """
     texture_names = list(texture_data.keys())
     texture_weights = [len(texture_data[name]["maps"]) for name in texture_names]
     chosen_texture = random.choices(texture_names, weights=texture_weights)[0]
@@ -547,6 +812,17 @@ def generate_stage():
 
 
 def generate_combinations(camera_data, count, seed):
+    """
+    Generate random combinations of camera settings, objects, background, and stage.
+
+    Args:
+        camera_data (dict): Camera data.
+        count (int): Number of combinations to generate.
+        seed (int): Seed for the random number generator.
+
+    Returns:
+        dict: Generated combinations data.
+    """
     if seed is not None:
         random.seed(seed)
 
@@ -554,17 +830,21 @@ def generate_combinations(camera_data, count, seed):
 
     # Generate combinations on the fly up to the specified count
     for i in range(count):
-        orientation = generate_orientation(camera_data)
+        objects = generate_objects()
+        background = generate_background()
+
+        # Calculate the transformed positions of the objects
+        adjusted_objects = adjust_positions(objects, random.randint(0, 360))
+        for obj, adjusted_obj in zip(objects, adjusted_objects):
+            obj["transformed_position"] = adjusted_obj["transformed_position"]
+
+        orientation = generate_orientation(camera_data, objects, background)
 
         framing = generate_framing(camera_data)
 
         postprocessing = generate_postprocessing(camera_data)
 
         animation = generate_animation(camera_data)
-
-        objects = generate_objects()
-
-        background = generate_background()
 
         stage = generate_stage()
 
