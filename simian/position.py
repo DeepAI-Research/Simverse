@@ -30,13 +30,10 @@ def find_largest_length(objects):
             - min(bbox_corners, key=lambda v: v[1])[1]
         )
 
-        print(f"Object: {obj.name} - Width: {width}, Height: {height}")
-
         # Calculate the maximum dimension for the current object
         current_max = max(width, height)
         largest_dimension = max(largest_dimension, current_max)
 
-    print("LARGEST DIMENSION:", largest_dimension)
     return largest_dimension
 
 
@@ -54,11 +51,9 @@ def place_objects_on_grid(objects, largest_length):
 
     # objects = [{obj: 1}, {obj: 1}]
     for obj in objects:
-        print("Here 1")
         if obj:
             placement = list(obj.values())[0]
             if placement:
-                print("Here 3")
                 lookup_table = {
                     0: (-1, 1),
                     1: (0, 1),
@@ -75,8 +70,5 @@ def place_objects_on_grid(objects, largest_length):
                 # cell_center_x is the x-coordinate of the center of the cell (row)
                 cell_center_x = (coordinate_x + padding) * largest_length
                 cell_center_y = (coordinate_y + padding) * largest_length
-                print("Here 4")
-                print(obj)  # {bpy.data.objects['9b1fe3f138e746c1a69224856732a01b']: 4}
                 obj = list(obj.keys())[0]
                 obj.location = (cell_center_x, cell_center_y, 0)  # Set object location
-                print("Here 5")
