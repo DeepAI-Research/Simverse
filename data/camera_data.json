@@ -1303,7 +1303,7 @@
             ],
             "keyframes": [
                 {
-                    "CameraOrientationPivotYaw": {
+                    "CameraAnimationPivot": {
                         "position": [
                             0,
                             0,
@@ -1312,11 +1312,11 @@
                     }
                 },
                 {
-                    "CameraOrientationPivotYaw": {
+                    "CameraAnimationPivot": {
                         "position": [
                             0,
-                            2,
-                            0
+                            0,
+                            2
                         ]
                     }
                 }
@@ -1350,16 +1350,16 @@
             ],
             "keyframes": [
                 {
-                    "CameraOrientationPivotYaw": {
+                    "CameraAnimationPivot": {
                         "position": [
                             0,
-                            2,
-                            0
+                            0,
+                            2
                         ]
                     }
                 },
                 {
-                    "CameraOrientationPivotYaw": {
+                    "CameraAnimationPivot": {
                         "position": [
                             0,
                             0,
