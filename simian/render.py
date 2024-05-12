@@ -22,7 +22,12 @@ from simian.utils import check_imports
 
 check_imports()
 import pandas as pd
-from simian.camera import create_camera_rig, position_camera, set_camera_settings
+from simian.camera import (
+    create_camera_rig,
+    position_camera,
+    set_camera_animation,
+    set_camera_settings,
+)
 from simian.position import find_largest_length, place_objects_on_grid
 from simian.camera import create_camera_rig, set_camera_settings
 from simian.object import (
@@ -142,6 +147,7 @@ def render_scene(
     unlock_objects(initial_objects)
 
     set_camera_settings(combination)
+    set_camera_animation(combination, end_frame)
     set_background(args.hdri_path, combination)
 
     create_photosphere(args.hdri_path, combination).scale = (10, 10, 10)

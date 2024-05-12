@@ -163,6 +163,7 @@ def set_camera_settings(combination: dict) -> None:
 
     # Get the first keyframe's angle_offset value, if available
     animation = combination["animation"]
+    print("animation", animation)
     keyframes = animation["keyframes"]
     if (
         keyframes
@@ -190,8 +191,6 @@ def set_camera_settings(combination: dict) -> None:
     # set the camera framerate to 30
     bpy.context.scene.render.fps = 30
 
-    set_camera_animation(combination)
-
 
 def set_camera_animation(combination: dict, frame_distance: int = 65) -> None:
     """
@@ -205,6 +204,7 @@ def set_camera_animation(combination: dict, frame_distance: int = 65) -> None:
         None
     """
     animation = combination["animation"]
+    speed_factor = animation.get("speed_factor", 1)
     keyframes = animation["keyframes"]
 
     for i, keyframe in enumerate(keyframes):
@@ -216,13 +216,17 @@ def set_camera_animation(combination: dict, frame_distance: int = 65) -> None:
             frame = i * frame_distance
             for transform_name, value in transforms.items():
                 if transform_name == "position":
-                    obj.location = value
+                    # multiply the values by the speed factor
+                    obj.location = [coord * speed_factor for coord in value]
                     obj.keyframe_insert(data_path="location", frame=frame)
                 elif transform_name == "rotation":
-                    obj.rotation_euler = [math.radians(angle) for angle in value]
+                    obj.rotation_euler = [
+                        math.radians(angle * speed_factor) for angle in value
+                    ]
                     obj.keyframe_insert(data_path="rotation_euler", frame=frame)
                 elif transform_name == "scale":
-                    obj.scale = value
+                    # multiply the values by the speed factor
+                    obj.scale = [coord * speed_factor for coord in value]
                     obj.keyframe_insert(data_path="scale", frame=frame)
                 elif transform_name == "angle_offset" and obj_name == "Camera":
                     camera_data = bpy.data.objects["Camera"].data

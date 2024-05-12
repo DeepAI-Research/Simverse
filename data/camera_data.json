@@ -626,29 +626,25 @@
     ],
     "animations": [
         {
-            "animations": [
-                {
-                    "name": "static",
-                    "descriptions": [
-                        "The camera remains stationary.",
-                        "No camera movement.",
-                        "The camera holds still.",
-                        "Static camera shot.",
-                        "The camera does not move.",
-                        "Steady, unmoving camera.",
-                        "Fixed camera position.",
-                        "Motionless camera.",
-                        "The camera is locked in place.",
-                        "Stable, static camera view.",
-                        "The scene is captured from a fixed perspective.",
-                        "Unmoving camera angle.",
-                        "The camera is set in a fixed position.",
-                        "No motion in the camera view.",
-                        "The objects are captured with a static camera."
-                    ],
-                    "keyframes": []
-                }
-            ]
+            "name": "static",
+            "descriptions": [
+                "The camera remains stationary.",
+                "No camera movement.",
+                "The camera holds still.",
+                "Static camera shot.",
+                "The camera does not move.",
+                "Steady, unmoving camera.",
+                "Fixed camera position.",
+                "Motionless camera.",
+                "The camera is locked in place.",
+                "Stable, static camera view.",
+                "The scene is captured from a fixed perspective.",
+                "Unmoving camera angle.",
+                "The camera is set in a fixed position.",
+                "No motion in the camera view.",
+                "The objects are captured with a static camera."
+            ],
+            "keyframes": []
         },
         {
             "name": "pan_left",

@@ -718,7 +718,9 @@ def generate_animation(camera_data):
     """
     animation = random.choice(camera_data["animations"])
     animation = animation.copy()
+    animation["speed_factor"] = random.uniform(0.5, 2.0)
     animation.pop("descriptions", None)
+    print(animation)
     return animation
 
 
