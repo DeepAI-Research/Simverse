@@ -8,26 +8,14 @@ from celery import Celery
 # Append Simian to sys.path before importing from package
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../"))
 
-from simian.utils import check_imports
+from simian.utils import check_imports, get_blender_path
 
 ssl._create_default_https_context = ssl._create_unverified_context
 
 check_imports()
 
-# Get the directory of the currently executing script
-current_dir = os.path.dirname(os.path.abspath(__file__))
-
-# if the directory is simian, remove that
-if current_dir.endswith("simian"):
-    current_dir = os.path.dirname(current_dir)
-
-# Append the simian directory to sys.path
-simian_path = os.path.join(current_dir)
-sys.path.append(simian_path)
-
-redis_url = os.environ.get("REDIS_URL", "redis://localhost:6379")
-app = Celery("tasks", broker=redis_url)
-
+from distributed.utils import get_redis_values
+app = Celery("tasks", broker=get_redis_values())
 
 @app.task(name="render_object", acks_late=True, reject_on_worker_lost=True)
 def render_object(
@@ -53,6 +41,8 @@ def render_object(
     args = f"--width {width} --height {height} --combination_index {combination_index}"
     args += f" --output_dir {output_dir}"
     args += f" --hdri_path {hdri_path}"
+    application_path = get_blender_path()
 
     command = f"{application_path} --background --python simian/render.py -- {args}"
-    subprocess.run(["bash", "-c", command], timeout=10000, check=False)
+    print("Worker running: ", command)
+    # subprocess.run(["bash", "-c", command], timeout=10000, check=False)
