@@ -26,7 +26,7 @@ celery -A simian.worker worker --loglevel=info
 To start the distributed rendering, run the following command:
 
 ```bash
-python3 distributed/simian.py --start_index 0 --end_index 10 --width 1024 --height 576
+python3 simian/simian.py --start_index 0 --end_index 10 --width 1024 --height 576
 ```
 
 ::: simian.distributed
