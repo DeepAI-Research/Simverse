@@ -6,7 +6,7 @@ import time
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../"))
 
 from simian.utils import get_combination_objects
-from distributed.vendor.vast import (
+from simian.vendor.vast import (
     create_instance,
     search_offers,
     copy,

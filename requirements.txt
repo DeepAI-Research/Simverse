@@ -9,4 +9,4 @@ numpy
 black
 celery
 scipy
-dotenv
+redis
