@@ -118,23 +118,55 @@ def render_scene(
         load_object(object_file)
         obj = [obj for obj in context.view_layer.objects.selected][0]
 
+        print(f"Object rotation before apply_and_remove_armatures: {obj.rotation_euler}")
         apply_and_remove_armatures()
+        print(f"Object rotation after apply_and_remove_armatures: {obj.rotation_euler}")
+
+        print(f"Object rotation before apply_all_modifiers: {obj.rotation_euler}")
         apply_all_modifiers(obj)
+        print(f"Object rotation after apply_all_modifiers: {obj.rotation_euler}")
+
+        print(f"Object rotation before join_objects_in_hierarchy: {obj.rotation_euler}")
         join_objects_in_hierarchy(obj)
+        print(f"Object rotation after join_objects_in_hierarchy: {obj.rotation_euler}")
+
+        print(f"Object rotation before optimize_meshes_in_hierarchy: {obj.rotation_euler}")
         optimize_meshes_in_hierarchy(obj)
+        print(f"Object rotation after optimize_meshes_in_hierarchy: {obj.rotation_euler}")
+
+        print(f"Object rotation before remove_loose_meshes: {obj.rotation_euler}")
         remove_loose_meshes(obj)
+        print(f"Object rotation after remove_loose_meshes: {obj.rotation_euler}")
 
         meshes = get_meshes_in_hierarchy(obj)
         obj = meshes[0]
+
+        if obj.scale.z < 0:
+            obj.scale.z *= -1
+
+        print(f"Object rotation after get_meshes_in_hierarchy: {obj.rotation_euler}")
+        print(f"Object scale after get_meshes_in_hierarchy: {obj.scale}")
 
         if focus_object is None:
             focus_object = obj
 
         unparent_keep_transform(obj)
+
+        if obj.scale.z < 0:
+            obj.scale.z *= -1
+        print(f"Object rotation after unparent_keep_transform: {obj.rotation_euler}")
+        print(f"Object scale after unparent_keep_transform: {obj.scale}")
+
         set_pivot_to_bottom(obj)
+        print(f"Object rotation after set_pivot_to_bottom: {obj.rotation_euler}")
+        print(f"Object scale after set_pivot_to_bottom: {obj.scale}")
 
         obj.scale = [object_data["scale"]["factor"] for _ in range(3)]
+        print(f"Object scale after setting scale: {obj.scale}")
+
         normalize_object_scale(obj)
+        print(f"Object rotation after normalize_object_scale: {obj.rotation_euler}")
+        print(f"Object scale after normalize_object_scale: {obj.scale}")
 
         obj.name = object_data["uid"]  # Set the Blender object's name to the UID
 
@@ -255,7 +287,7 @@ if __name__ == "__main__":
     # Render the images
     render_scene(
         start_frame=args.start_frame,
-        end_frame=args.end_frame,
+        end_frame=3,
         output_dir=args.output_dir,
         context=context,
         combination_file=args.combination_file,
