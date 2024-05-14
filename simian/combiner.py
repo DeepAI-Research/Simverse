@@ -453,6 +453,63 @@ def generate_framing_caption(camera_data, combination):
         return framing_description
     else:
         return ""
+    
+
+def generate_animation_captions(combination):
+    """
+    Generate captions for camera animations based on the combination data.
+    This is based on speed_factor
+
+    Args:
+        combination (dict): Combination data.
+
+    Returns:
+        list: List of animation captions.
+    """
+
+    """
+    "animation": {
+        "name": "tilt_down",
+        "keyframes": [
+            {
+                "Camera": {
+                    "rotation": [
+                        15,
+                        0,
+                        0
+                    ]
+                }
+            },
+            {
+                "Camera": {
+                    "rotation": [
+                        -15,
+                        0,
+                        0
+                    ]
+                }
+            }
+        ],
+        "speed_factor": 1.2154695988360353
+    },
+    """
+    animation = combination["animation"]
+    animation_name = animation["name"]
+    speed_factor = animation["speed_factor"]
+
+    animation_data = camera_data["animations"]
+    matching_animation = next(
+        (a for a in animation_data if a["name"] == animation_name), None
+    )
+
+    if matching_animation:
+        animation_description = random.choice(matching_animation["descriptions"])
+        animation_description = animation_description.replace(
+            "<speed_factor>", str(speed_factor)
+        )
+        return [animation_description]
+    
+    return []
 
 
 def generate_caption(combination):
@@ -487,6 +544,9 @@ def generate_caption(combination):
     # Add the stage caption
     stage_captions = generate_stage_captions(combination)
     caption_parts.extend(stage_captions)
+
+    animation_captions = generate_animation_captions(combination)
+    caption_parts.extend(animation_captions)
 
     # Add the relationship captions
     selected_relationships = generate_relationship_captions(combination)
@@ -778,7 +838,7 @@ def generate_objects():
         object = random.choice(dataset_dict[chosen_dataset])
         scale_key = random.choice(list(keys))
         scale = {
-            "factor": object_scales[scale_key]["factor"] * random.uniform(0.9, 1.0),
+            "factor": object_scales[scale_key]["factor"],
             "name": scale_key,
             "name_synonym": object_scales[scale_key]["names"][
                 random.randint(0, len(object_scales[scale_key]["names"]) - 1)
@@ -891,7 +951,7 @@ def generate_combinations(camera_data, count, seed):
 
         postprocessing = generate_postprocessing(camera_data)
 
-        animation = generate_animation(camera_data)
+        animation = generate_animation(camera_data) # speed is between 0.5 and 2
 
         stage = generate_stage()
 
