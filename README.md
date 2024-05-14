@@ -21,6 +21,10 @@ This project is in open development phase and is not ready for public use. Many 
 
 1. Install Python 3.10. If you're on Linux, set it up with this <a href="https://gist.github.com/lalalune/986704a935d202ab2350ca90b2fc9755">gist</a>.
 
+2. Install dependences:
+```bash
+pip install -r requirements.txt
+```
 
 2. Download the datasets:
 ```bash
