@@ -218,7 +218,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--end_frame",
         type=int,
-        default=3,
+        default=65,
         help="End frame of the animation.",
         required=False,
     )
