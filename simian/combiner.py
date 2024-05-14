@@ -261,22 +261,6 @@ def generate_object_name_description_captions(combination):
     Returns:
         str: Object name and description captions.
     """
-
-
-    """
-    "name_description_relationship": [
-        "The <name> is <description>.",
-        "Name is <description>.",
-        "The <name> is described as <description>.",
-        "<name> is <description>.",
-        "<name>: <description>.",
-        "<name> = <description>.",
-        "<name> (<description>)."
-    ],
-    "scale_description_relationship": [
-        "The <name> is scalled by <scale_factor> and is <scale_name>."
-    ],
-    """
     object_name_descriptions = []
     # for each object in the scene
     for obj in combination["objects"]:
