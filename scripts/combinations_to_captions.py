@@ -1,6 +1,5 @@
 import json
 
-
 # Read the combinations.json file
 with open('combinations.json', 'r') as file:
     combinations = json.load(file)
