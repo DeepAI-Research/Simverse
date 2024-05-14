@@ -493,22 +493,26 @@ def set_pivot_to_bottom(obj: bpy.types.Object) -> None:
     # Calculate the center of mass
     bpy.context.view_layer.update()
     center_of_mass = obj.location
+    print("Center of mass:", center_of_mass)
 
-    # Calculate the bounding box bottom
     bbox_min = [obj.matrix_world @ Vector(corner) for corner in obj.bound_box][0]
     for corner in obj.bound_box:
         world_corner = obj.matrix_world @ Vector(corner)
         if world_corner.z < bbox_min.z:
             bbox_min = world_corner
+    print("Bounding box bottom:", bbox_min)
 
-    # Set origin to the center of mass, then adjust Z-coordinate to the bottom of the bounding box
     bpy.ops.object.origin_set(type="ORIGIN_CENTER_OF_MASS", center="BOUNDS")
+    print("After setting origin to center of mass:", obj.location)
+
     obj.location.z = center_of_mass.z - bbox_min.z
     obj.location.y = 0
     obj.location.x = 0
+    print("After adjusting location:", obj.location)
 
     bpy.context.scene.cursor.location = (0, 0, 0)
     bpy.ops.object.origin_set(type="ORIGIN_CURSOR")
+    print("After setting origin to cursor:", obj.location)
 
 
 def unparent_keep_transform(obj: bpy.types.Object) -> None:
@@ -522,14 +526,16 @@ def unparent_keep_transform(obj: bpy.types.Object) -> None:
         None
     """
     # Check if the parent object has a negative scale in the z-axis
-    if obj.parent and obj.parent.scale.z < 0:
+    # if obj.parent and obj.parent.scale.z < 0:
+    #     # Unparent the object
+    #     bpy.ops.object.parent_clear(type="CLEAR_KEEP_TRANSFORM")
+    #     # Invert the z-scale of the object to maintain its original z-scale
+    #     obj.scale.z *= -1
+    # else:
         # Unparent the object
-        bpy.ops.object.parent_clear(type="CLEAR_KEEP_TRANSFORM")
-        # Invert the z-scale of the object to maintain its original z-scale
-        obj.scale.z *= -1
-    else:
-        # Unparent the object
-        bpy.ops.object.parent_clear(type="CLEAR_KEEP_TRANSFORM")
+    print("Before unparent_keep_transform:", obj.location, obj.scale)
+    bpy.ops.object.parent_clear(type="CLEAR_KEEP_TRANSFORM")
+    print("After unparent_keep_transform:", obj.location, obj.scale)
 
 
 def delete_all_empties() -> None:
