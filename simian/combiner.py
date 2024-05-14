@@ -261,6 +261,22 @@ def generate_object_name_description_captions(combination):
     Returns:
         str: Object name and description captions.
     """
+
+
+    """
+    "name_description_relationship": [
+        "The <name> is <description>.",
+        "Name is <description>.",
+        "The <name> is described as <description>.",
+        "<name> is <description>.",
+        "<name>: <description>.",
+        "<name> = <description>.",
+        "<name> (<description>)."
+    ],
+    "scale_description_relationship": [
+        "The <name> is scalled by <scale_factor> and is <scale_name>."
+    ],
+    """
     object_name_descriptions = []
     # for each object in the scene
     for obj in combination["objects"]:
@@ -272,6 +288,7 @@ def generate_object_name_description_captions(combination):
         object_name_description_relationship = random.choice(
             object_data["name_description_relationship"]
         )
+
         object_name_description_relationship = (
             object_name_description_relationship.replace("<name>", object_name)
         )
@@ -280,7 +297,23 @@ def generate_object_name_description_captions(combination):
                 "<description>", object_description
             )
         )
+
+        # get the scale factor and scale name
+        object_scale_description = random.choice(
+            object_data["scale_description_relationship"]
+        )
+        object_scale_description = object_scale_description.replace(
+            "<name>", object_name
+        )
+        object_scale_description = object_scale_description.replace(
+            "<scale_factor>", str(obj["scale"]["factor"])
+        )
+        object_scale_description = object_scale_description.replace(
+            "<scale_name>", obj["scale"]["name_synonym"]
+        )
+
         object_name_descriptions.append(object_name_description_relationship)
+        object_name_descriptions.append(object_scale_description)
 
     # randomize order of object_descriptions
     random.shuffle(object_name_descriptions)
@@ -738,6 +771,21 @@ def generate_objects():
     number_of_objects = random.randint(1, max_number_of_objects)
 
     object_scales = object_data["scales"]
+
+    # "scales": {
+    #     "tiny": {
+    #         "names": [
+    #             "tiny",
+    #             "mini",
+    #             "miniscule",
+    #             "minature",
+    #             "petite",
+    #             "extra small"
+    #         ],
+    #         "factor": 0.4
+    #     },
+    # }
+
     keys = object_scales.keys()
 
     objects = []

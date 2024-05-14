@@ -23,6 +23,9 @@
         "<name> = <description>.",
         "<name> (<description>)."
     ],
+    "scale_description_relationship": [
+        "The <name> is scaled by <scale_factor> and is <scale_name>."
+    ],
     "relationships": {
         "to_the_left": [
             "is to the left of",
