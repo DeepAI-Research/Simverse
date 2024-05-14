@@ -3,22 +3,14 @@ import os
 import sys
 import argparse
 
-from celery import Celery, group, chord
+from celery import chord
 
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../"))
 
-from simian.utils import get_combination_objects, get_redis_values, check_imports
-from simian.worker import render_object
+from simian.utils import check_imports
+from simian.worker import render_object, notify_completion
 
 check_imports()
-
-app = Celery("tasks", broker=get_redis_values(), backend=get_redis_values())
-
-
-@app.task
-def notify_completion():
-    print("All tasks have been completed!")
-
 
 def render_objects(
     start_index,

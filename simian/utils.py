@@ -93,7 +93,7 @@ def get_redis_values(path=".env"):
     return redis_url
 
 
-def upload_outputs(output_dir, combination):
+def upload_outputs(output_dir):
     # determine if s3 or huggingface environment variables are set up
     # env_vars = get_env_vars()
     # aws_access_key_id = env_vars.get("AWS_ACCESS_KEY_ID") or os.getenv("AWS_ACCESS_KEY_ID")
@@ -106,7 +106,7 @@ def upload_outputs(output_dir, combination):
     # elif aws_access_key_id:
     #     upload_to_s3(output_dir, combination)
     # elif huggingface_token:
-    upload_to_huggingface(output_dir, combination)
+    upload_to_huggingface(output_dir)
 
 
 # def upload_to_s3(output_dir, combination):
@@ -155,7 +155,7 @@ def upload_outputs(output_dir, combination):
 #                 print(f"Failed to upload {local_path} to s3://{bucket_name}/{s3_file_path}: {e}")
 
 
-def upload_to_huggingface(output_dir, combination):
+def upload_to_huggingface(output_dir):
     """
     Uploads the rendered outputs to a Hugging Face repository.
 
@@ -166,11 +166,10 @@ def upload_to_huggingface(output_dir, combination):
     Returns:
     - None
     """
-
     env_vars = get_env_vars()
     hf_token = env_vars.get("HF_TOKEN") or os.getenv("HF_TOKEN")
-    repo_id = combination.get("repo_id", os.getenv("HF_REPO_ID")) or env_vars.get("HF_REPO_ID")
-    repo_path = combination.get("upload_path", os.getenv("HF_REPO_PATH")) or env_vars.get("HF_REPO_PATH", "")
+    repo_id = os.getenv("HF_REPO_ID") or env_vars.get("HF_REPO_ID")
+    repo_path = os.getenv("HF_PATH") or env_vars.get("HF_PATH", "")
     from huggingface_hub import HfApi
     api = HfApi(token=hf_token)
 

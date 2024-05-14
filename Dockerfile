@@ -1,4 +1,4 @@
-FROM ubuntu:24.04
+FROM --platform=linux/x86_64 ubuntu:24.04
 
 # Set the working directory in the container
 WORKDIR /app
@@ -24,6 +24,8 @@ RUN apt-get install -y software-properties-common && \
     update-alternatives --install /usr/bin/python python /usr/bin/python3.10 1 && \
     python3 -m pip install --upgrade pip
 
+RUN apt-get install libc6-dev -y
+
 # Copy the requirements file and install Python dependencies
 COPY requirements.txt .
 RUN python3 -m pip install --no-cache-dir -r requirements.txt
@@ -34,4 +36,4 @@ COPY data/ ./data/
 COPY tests/ ./tests/
 
 # Set the entrypoint to run the batch.py script with user-provided arguments
-CMD ["celery", "-A", "simian.worker", "worker", "--loglevel=info"]
+CMD ["celery", "-A", "simian.worker", "worker", "--loglevel=info", "--concurrency=1"]
