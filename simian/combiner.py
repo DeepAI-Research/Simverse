@@ -304,6 +304,7 @@ def generate_relationship_captions(combination):
     adjusted_objects = adjust_positions(
         combination["objects"], combination["orientation"]["yaw"]
     )
+
     relationships = determine_relationships(adjusted_objects, object_data)
 
     # Write relationships into the JSON file with combination["objects"]["relationships"]
@@ -472,8 +473,10 @@ def generate_caption(combination):
     caption_parts.extend(stage_captions)
 
     # Add the relationship captions
+    print("Calling generate_relationship_captions function")
     selected_relationships = generate_relationship_captions(combination)
     caption_parts.extend(selected_relationships)
+    print("Calling generate_relationship_captions function")
 
     # Randomize the caption parts order
     caption_parts = random.sample(caption_parts, len(caption_parts))
