@@ -95,64 +95,64 @@ def get_redis_values(path=".env"):
 
 def upload_outputs(output_dir, combination):
     # determine if s3 or huggingface environment variables are set up
-    env_vars = get_env_vars()
-    aws_access_key_id = env_vars.get("AWS_ACCESS_KEY_ID") or os.getenv("AWS_ACCESS_KEY_ID")
-    huggingface_token = env_vars.get("HUGGINGFACE_TOKEN") or os.getenv("HUGGINGFACE_TOKEN")
-    if aws_access_key_id and huggingface_token:
-        print("Warning: Both AWS and Hugging Face credentials are set. Defaulting to Huggingface. Remove credentials to default to AWS.")
-        upload_to_huggingface(output_dir, combination)
-    elif aws_access_key_id is None and huggingface_token is None:
-        raise ValueError("No AWS or Hugging Face credentials found. Please set one.")
-    elif aws_access_key_id:
-        upload_to_s3(output_dir, combination)
-    elif huggingface_token:
-        upload_to_huggingface(output_dir, combination)
+    # env_vars = get_env_vars()
+    # aws_access_key_id = env_vars.get("AWS_ACCESS_KEY_ID") or os.getenv("AWS_ACCESS_KEY_ID")
+    # huggingface_token = env_vars.get("HF_TOKEN") or os.getenv("HF_TOKEN")
+    # if aws_access_key_id and huggingface_token:
+    #     print("Warning: Both AWS and Hugging Face credentials are set. Defaulting to Huggingface. Remove credentials to default to AWS.")
+    #     upload_to_huggingface(output_dir, combination)
+    # elif aws_access_key_id is None and huggingface_token is None:
+    #     raise ValueError("No AWS or Hugging Face credentials found. Please set one.")
+    # elif aws_access_key_id:
+    #     upload_to_s3(output_dir, combination)
+    # elif huggingface_token:
+    upload_to_huggingface(output_dir, combination)
 
 
-def upload_to_s3(output_dir, combination):
-    """
-    Uploads the rendered outputs to an S3 bucket.
+# def upload_to_s3(output_dir, combination):
+#     """
+#     Uploads the rendered outputs to an S3 bucket.
 
-    Args:
-    - output_dir (str): The directory where the rendered outputs are saved.
-    - bucket_name (str): The name of the S3 bucket.
-    - s3_path (str): The path in the S3 bucket where files should be uploaded.
+#     Args:
+#     - output_dir (str): The directory where the rendered outputs are saved.
+#     - bucket_name (str): The name of the S3 bucket.
+#     - s3_path (str): The path in the S3 bucket where files should be uploaded.
 
-    Returns:
-    - None
-    """
-    import boto3
-    from botocore.exceptions import NoCredentialsError, PartialCredentialsError
+#     Returns:
+#     - None
+#     """
+#     import boto3
+#     from botocore.exceptions import NoCredentialsError, PartialCredentialsError
 
-    env_vars = get_env_vars()
-    aws_access_key_id = env_vars.get("AWS_ACCESS_KEY_ID") or os.getenv("AWS_ACCESS_KEY_ID")
-    aws_secret_access_key = env_vars.get("AWS_SECRET_ACCESS_KEY") or os.getenv("AWS_SECRET_ACCESS_KEY")
+#     env_vars = get_env_vars()
+#     aws_access_key_id = env_vars.get("AWS_ACCESS_KEY_ID") or os.getenv("AWS_ACCESS_KEY_ID")
+#     aws_secret_access_key = env_vars.get("AWS_SECRET_ACCESS_KEY") or os.getenv("AWS_SECRET_ACCESS_KEY")
     
-    s3_client = boto3.client(
-        "s3",
-        aws_access_key_id,
-        aws_secret_access_key
-    )
+#     s3_client = boto3.client(
+#         "s3",
+#         aws_access_key_id,
+#         aws_secret_access_key
+#     )
     
-    bucket_name = combination.get("bucket_name", os.getenv("AWS_BUCKET_NAME")) or env_vars.get("AWS_BUCKET_NAME")
-    s3_path = combination.get("upload_path", os.getenv("AWS_UPLOAD_PATH")) or env_vars.get("AWS_UPLOAD_PATH")
+#     bucket_name = combination.get("bucket_name", os.getenv("AWS_BUCKET_NAME")) or env_vars.get("AWS_BUCKET_NAME")
+#     s3_path = combination.get("upload_path", os.getenv("AWS_UPLOAD_PATH")) or env_vars.get("AWS_UPLOAD_PATH")
     
-    for root, dirs, files in os.walk(output_dir):
-        for file in files:
-            local_path = os.path.join(root, file)
-            s3_file_path = os.path.join(s3_path, file) if s3_path else file
+#     for root, dirs, files in os.walk(output_dir):
+#         for file in files:
+#             local_path = os.path.join(root, file)
+#             s3_file_path = os.path.join(s3_path, file) if s3_path else file
             
-            try:
-                s3_client.upload_file(local_path, bucket_name, s3_file_path)
-                print(f"Uploaded {local_path} to s3://{bucket_name}/{s3_file_path}")
-            except FileNotFoundError:
-                print(f"File not found: {local_path}")
-            except NoCredentialsError:
-                print("AWS credentials not found.")
-            except PartialCredentialsError:
-                print("Incomplete AWS credentials.")
-            except Exception as e:
-                print(f"Failed to upload {local_path} to s3://{bucket_name}/{s3_file_path}: {e}")
+#             try:
+#                 s3_client.upload_file(local_path, bucket_name, s3_file_path)
+#                 print(f"Uploaded {local_path} to s3://{bucket_name}/{s3_file_path}")
+#             except FileNotFoundError:
+#                 print(f"File not found: {local_path}")
+#             except NoCredentialsError:
+#                 print("AWS credentials not found.")
+#             except PartialCredentialsError:
+#                 print("Incomplete AWS credentials.")
+#             except Exception as e:
+#                 print(f"Failed to upload {local_path} to s3://{bucket_name}/{s3_file_path}: {e}")
 
 
 def upload_to_huggingface(output_dir, combination):
@@ -168,7 +168,7 @@ def upload_to_huggingface(output_dir, combination):
     """
 
     env_vars = get_env_vars()
-    hf_token = env_vars.get("HUGGINGFACE_TOKEN") or os.getenv("HUGGINGFACE_TOKEN")
+    hf_token = env_vars.get("HF_TOKEN") or os.getenv("HF_TOKEN")
     repo_id = combination.get("repo_id", os.getenv("HF_REPO_ID")) or env_vars.get("HF_REPO_ID")
     repo_path = combination.get("upload_path", os.getenv("HF_REPO_PATH")) or env_vars.get("HF_REPO_PATH", "")
     from huggingface_hub import HfApi
@@ -184,6 +184,7 @@ def upload_to_huggingface(output_dir, combination):
                     path_or_fileobj=local_path,
                     path_in_repo=path_in_repo,
                     repo_id=repo_id,
+                    token=hf_token,
                     repo_type="dataset",
                 )
                 print(f"Uploaded {local_path} to Hugging Face repo {repo_id} at {path_in_repo}")

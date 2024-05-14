@@ -14,7 +14,7 @@ ssl._create_default_https_context = ssl._create_unverified_context
 
 check_imports()
 
-app = Celery("tasks", broker=get_redis_values())
+app = Celery("tasks", broker=get_redis_values(), backend=get_redis_values())
 
 @app.task(name="render_object", acks_late=True, reject_on_worker_lost=True)
 def render_object(
@@ -48,6 +48,8 @@ def render_object(
     # escape the combination string for CLI
     combination = "\"" + combination.replace('"', '\\"') + "\""
     
+    print("output_dir is", output_dir)
+    
     os.makedirs(output_dir, exist_ok=True)
     
     args = f"--width {width} --height {height} --combination_index {combination_index}"
@@ -55,6 +57,9 @@ def render_object(
     args += f" --hdri_path {hdri_path}"
     args += f" --combination {combination}"
     args += f" --start_frame {start_frame} --end_frame {end_frame}"
+    
+    print("Args: ", args)
+    
     application_path = get_blender_path()
 
     command = f"{application_path} --background --python simian/render.py -- {args}"
