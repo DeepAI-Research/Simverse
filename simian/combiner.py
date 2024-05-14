@@ -304,7 +304,6 @@ def generate_relationship_captions(combination):
     adjusted_objects = adjust_positions(
         combination["objects"], combination["orientation"]["yaw"]
     )
-
     relationships = determine_relationships(adjusted_objects, object_data)
 
     # Write relationships into the JSON file with combination["objects"]["relationships"]
