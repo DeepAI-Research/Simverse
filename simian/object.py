@@ -526,16 +526,14 @@ def unparent_keep_transform(obj: bpy.types.Object) -> None:
         None
     """
     # Check if the parent object has a negative scale in the z-axis
-    # if obj.parent and obj.parent.scale.z < 0:
-    #     # Unparent the object
-    #     bpy.ops.object.parent_clear(type="CLEAR_KEEP_TRANSFORM")
-    #     # Invert the z-scale of the object to maintain its original z-scale
-    #     obj.scale.z *= -1
-    # else:
+    if obj.parent and obj.parent.scale.z < 0:
         # Unparent the object
-    print("Before unparent_keep_transform:", obj.location, obj.scale)
-    bpy.ops.object.parent_clear(type="CLEAR_KEEP_TRANSFORM")
-    print("After unparent_keep_transform:", obj.location, obj.scale)
+        bpy.ops.object.parent_clear(type="CLEAR_KEEP_TRANSFORM")
+        # Invert the z-scale of the object to maintain its original z-scale
+        obj.scale.z *= -1
+    else:
+        # Unparent the object
+        bpy.ops.object.parent_clear(type="CLEAR_KEEP_TRANSFORM")
 
 
 def delete_all_empties() -> None:

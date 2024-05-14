@@ -118,67 +118,23 @@ def render_scene(
         load_object(object_file)
         obj = [obj for obj in context.view_layer.objects.selected][0]
 
-        print("Before apply_and_remove_armatures:", obj.location)
         apply_and_remove_armatures()
-        print("After apply_and_remove_armatures:", obj.location)
-        if obj.location.z < 0:
-            print("Z value is negative after apply_and_remove_armatures")
-
-        print("Before apply_all_modifiers:", obj.location)
         apply_all_modifiers(obj)
-        print("After apply_all_modifiers:", obj.location)
-        if obj.location.z < 0:
-            print("Z value is negative after apply_all_modifiers")
-
-        print("Before join_objects_in_hierarchy:", obj.location)
         join_objects_in_hierarchy(obj)
-        print("After join_objects_in_hierarchy:", obj.location)
-        if obj.location.z < 0:
-            print("Z value is negative after join_objects_in_hierarchy")
-
-        print("Before optimize_meshes_in_hierarchy:", obj.location)
         optimize_meshes_in_hierarchy(obj)
-        print("After optimize_meshes_in_hierarchy:", obj.location)
-        if obj.location.z < 0:
-            print("Z value is negative after optimize_meshes_in_hierarchy")
-
-        print("Before remove_loose_meshes:", obj.location)
         remove_loose_meshes(obj)
-        print("After remove_loose_meshes:", obj.location)
-        if obj.location.z < 0:
-            print("Z value is negative after remove_loose_meshes")
 
         meshes = get_meshes_in_hierarchy(obj)
         obj = meshes[0]
-        print("After get_meshes_in_hierarchy:", obj.location)
-        if obj.location.z < 0:
-            print("Z value is negative after get_meshes_in_hierarchy")
 
         if focus_object is None:
             focus_object = obj
-
-        print("Before unparent_keep_transform:", obj.location)
+        
         unparent_keep_transform(obj)
-        print("After unparent_keep_transform:", obj.location)
-        if obj.location.z < 0:
-            print("Z value is negative after unparent_keep_transform")
-
-        print("Before set_pivot_to_bottom:", obj.location)
         set_pivot_to_bottom(obj)
-        print("After set_pivot_to_bottom:", obj.location)
-        if obj.location.z < 0:
-            print("Z value is negative after set_pivot_to_bottom")
 
         obj.scale = [object_data["scale"]["factor"] for _ in range(3)]
-        print("After setting scale:", obj.location)
-        if obj.location.z < 0:
-            print("Z value is negative after setting scale")
-
-        print("Before normalize_object_scale:", obj.location)
         normalize_object_scale(obj)
-        print("After normalize_object_scale:", obj.location)
-        if obj.location.z < 0:
-            print("Z value is negative after normalize_object_scale")
 
         obj.name = object_data["uid"]  # Set the Blender object's name to the UID
 
@@ -299,7 +255,7 @@ if __name__ == "__main__":
     # Render the images
     render_scene(
         start_frame=args.start_frame,
-        end_frame=args.end_frame,
+        end_frame=3,
         output_dir=args.output_dir,
         context=context,
         combination_file=args.combination_file,
