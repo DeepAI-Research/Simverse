@@ -496,48 +496,100 @@ def generate_animation_captions(combination):
     """
 
     """
-    "animation": {
-        "name": "tilt_down",
-        "keyframes": [
-            {
-                "Camera": {
-                    "rotation": [
-                        15,
-                        0,
-                        0
+    camera_data.json:
+    "animation_speed": {
+            "min": 0.5,
+            "max": 2.0,
+            "types": {
+                "slow": {
+                    "min": 0.5,
+                    "max": 0.75,
+                    "descriptions": [
+                        "Slow animation speed <animation_speed_value> applied.",
+                        "The scene has a slow animation speed of <animation_speed_value>.",
+                        "Animation speed of <animation_speed_value> is set to slow.",
+                        "The scene is rendered with a slow animation speed of <animation_speed_value>.",
+                        "Slow animation is used in the scene.",
+                        "The scene has a leisurely animation speed of <animation_speed_value>.",
+                        "Animation is set to slow speed of <animation_speed_value> in the scene.",
+                        "The scene is enhanced with a slow animation speed of <animation_speed_value>.",
+                        "Slow animation is present in the scene.",
+                        "The scene is rendered with a slow animation speed of <animation_speed_value>."
                     ]
-                }
-            },
-            {
-                "Camera": {
-                    "rotation": [
-                        -15,
-                        0,
-                        0
+                },
+                "medium": {
+                    "min": 0.75,
+                    "max": 1.25,
+                    "descriptions": [
+                        [
+                            "Medium animation speed of <animation_speed_value> applied.",
+                            "The scene has a moderate animation speed of <animation_speed_value>.",
+                            "Animation speed is set to medium of <animation_speed_value>.",
+                            "The scene is rendered with a moderate animation speed of <animation_speed_value>.",
+                            "Medium animation of <animation_speed_value> is used in the scene.",
+                            "The scene has a normal animation speed of <animation_speed_value>.",
+                            "Animation is set to medium speed of <animation_speed_value> in the scene.",
+                            "The scene is enhanced with a moderate animation speed of <animation_speed_value>.",
+                            "Medium animation of <animation_speed_value> is present in the scene.",
+                            "The scene is rendered with a moderate animation speed of <animation_speed_value>."
+                        ]
+                    ]
+                },
+                "fast": {
+                    "min": 1.25,
+                    "max": 1.5,
+                    "descriptions": [
+                        [
+                            "Fast animation speed of <animation_speed_value> applied.",
+                            "The scene has a fast animation speed of <animation_speed_value>.",
+                            "Animation speed is set to fast of <animation_speed_value>.",
+                            "The scene is rendered with a fast animation speed of <animation_speed_value>.",
+                            "Fast animation of <animation_speed_value> is used in the scene.",
+                            "The scene has a quick animation speed of <animation_speed_value>.",
+                            "Animation is set to fast speed of <animation_speed_value> in the scene.",
+                            "The scene is enhanced with a fast animation speed of <animation_speed_value>.",
+                            "Fast animation of <animation_speed_value> is present in the scene.",
+                            "The scene is rendered with a fast animation speed of <animation_speed_value>."
+                        ]
+                    ]
+                },
+                "faster": {
+                    "min": 1.5,
+                    "max": 2.0,
+                    "descriptions": [
+                        [
+                            "Faster animation speed of <animation_speed_value> applied.",
+                            "The scene has a faster animation speed of <animation_speed_value>.",
+                            "Animation speed is set to faster of <animation_speed_value>.",
+                            "The scene is rendered with a faster animation speed of <animation_speed_value>.",
+                            "Faster animation of <animation_speed_value> is used in the scene.",
+                            "The scene has an accelerated animation speed of <animation_speed_value>.",
+                            "Animation is set to faster speed of <animation_speed_value> in the scene.",
+                            "The scene is enhanced with a faster animation speed of <animation_speed_value>.",
+                            "Faster animation of <animation_speed_value> is present in the scene.",
+                            "The scene is rendered with a faster animation speed of <animation_speed_value>."
+                        ]
+
                     ]
                 }
             }
-        ],
-        "speed_factor": 1.2154695988360353
-    },
     """
-    animation = combination["animation"]
-    animation_name = animation["name"]
-    speed_factor = animation["speed_factor"]
+    animation_data = camera_data["animation_speed"]
+    speed_factor = combination["animation"]["speed_factor"]
 
-    animation_data = camera_data["animations"]
-    matching_animation = next(
-        (a for a in animation_data if a["name"] == animation_name), None
-    )
+    animation_type = "none"
+    for t in animation_data["types"].keys():
+        if (
+            speed_factor >= animation_data["types"][t]["min"]
+            and speed_factor <= animation_data["types"][t]["max"]
+        ):
+            animation_type = t
+            break
 
-    if matching_animation:
-        animation_description = random.choice(matching_animation["descriptions"])
-        animation_description = animation_description.replace(
-            "<speed_factor>", str(speed_factor)
-        )
-        return [animation_description]
-    
-    return []
+    animation_caption = random.choice(animation_data["types"][animation_type]["descriptions"])
+    animation_caption = animation_caption.replace("<animation_speed_value>", str(speed_factor))
+
+    return [animation_caption]
 
 
 def generate_caption(combination):
