@@ -93,6 +93,22 @@ def get_redis_values(path=".env"):
     return redis_url
 
 
+def upload_outputs(output_dir, combination):
+    # determine if s3 or huggingface environment variables are set up
+    env_vars = get_env_vars()
+    aws_access_key_id = env_vars.get("AWS_ACCESS_KEY_ID") or os.getenv("AWS_ACCESS_KEY_ID")
+    huggingface_token = env_vars.get("HUGGINGFACE_TOKEN") or os.getenv("HUGGINGFACE_TOKEN")
+    if aws_access_key_id and huggingface_token:
+        print("Warning: Both AWS and Hugging Face credentials are set. Defaulting to Huggingface. Remove credentials to default to AWS.")
+        upload_to_huggingface(output_dir, combination)
+    elif aws_access_key_id is None and huggingface_token is None:
+        raise ValueError("No AWS or Hugging Face credentials found. Please set one.")
+    elif aws_access_key_id:
+        upload_to_s3(output_dir, combination)
+    elif huggingface_token:
+        upload_to_huggingface(output_dir, combination)
+
+
 def upload_to_s3(output_dir, combination):
     """
     Uploads the rendered outputs to an S3 bucket.
@@ -137,3 +153,39 @@ def upload_to_s3(output_dir, combination):
                 print("Incomplete AWS credentials.")
             except Exception as e:
                 print(f"Failed to upload {local_path} to s3://{bucket_name}/{s3_file_path}: {e}")
+
+
+def upload_to_huggingface(output_dir, combination):
+    """
+    Uploads the rendered outputs to a Hugging Face repository.
+
+    Args:
+    - output_dir (str): The directory where the rendered outputs are saved.
+    - repo_id (str): The repository ID on Hugging Face.
+
+    Returns:
+    - None
+    """
+
+    env_vars = get_env_vars()
+    hf_token = env_vars.get("HUGGINGFACE_TOKEN") or os.getenv("HUGGINGFACE_TOKEN")
+    repo_id = combination.get("repo_id", os.getenv("HF_REPO_ID")) or env_vars.get("HF_REPO_ID")
+    repo_path = combination.get("upload_path", os.getenv("HF_REPO_PATH")) or env_vars.get("HF_REPO_PATH", "")
+    from huggingface_hub import HfApi
+    api = HfApi(token=hf_token)
+
+    for root, dirs, files in os.walk(output_dir):
+        for file in files:
+            local_path = os.path.join(root, file)
+            path_in_repo = os.path.join(repo_path, file) if repo_path else file
+            
+            try:
+                api.upload_file(
+                    path_or_fileobj=local_path,
+                    path_in_repo=path_in_repo,
+                    repo_id=repo_id,
+                    repo_type="dataset",
+                )
+                print(f"Uploaded {local_path} to Hugging Face repo {repo_id} at {path_in_repo}")
+            except Exception as e:
+                print(f"Failed to upload {local_path} to Hugging Face repo {repo_id} at {path_in_repo}: {e}")

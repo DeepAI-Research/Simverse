@@ -8,7 +8,7 @@ from celery import Celery
 
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../"))
 
-from simian.utils import check_imports, get_blender_path, get_redis_values, upload_to_s3
+from simian.utils import check_imports, get_blender_path, get_redis_values, upload_outputs
 
 ssl._create_default_https_context = ssl._create_unverified_context
 
@@ -24,6 +24,8 @@ def render_object(
     height: int,
     output_dir: str,
     hdri_path: str,
+    start_frame: int = 0,
+    end_frame: int = 65,
 ) -> None:
     """
     Renders a 3D object based on the provided combination index and settings.
@@ -52,6 +54,7 @@ def render_object(
     args += f" --output_dir {output_dir}"
     args += f" --hdri_path {hdri_path}"
     args += f" --combination {combination}"
+    args += f" --start_frame {start_frame} --end_frame {end_frame}"
     application_path = get_blender_path()
 
     command = f"{application_path} --background --python simian/render.py -- {args}"
@@ -59,6 +62,6 @@ def render_object(
     subprocess.run(["bash", "-c", command], timeout=10000, check=False)
     
     # upload the rendered outputs to s3
-    upload_to_s3(output_dir, combination)
+    upload_outputs(output_dir, combination)
     
-    os.system(f"rm -rf {output_dir}")
+    # os.system(f"rm -rf {output_dir}")
