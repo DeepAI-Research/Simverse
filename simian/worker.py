@@ -8,7 +8,7 @@ from celery import Celery
 
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../"))
 
-from simian.utils import check_imports, get_blender_path, get_redis_values
+from simian.utils import check_imports, get_blender_path, get_redis_values, upload_to_s3
 
 ssl._create_default_https_context = ssl._create_unverified_context
 
@@ -46,6 +46,8 @@ def render_object(
     # escape the combination string for CLI
     combination = "\"" + combination.replace('"', '\\"') + "\""
     
+    os.makedirs(output_dir, exist_ok=True)
+    
     args = f"--width {width} --height {height} --combination_index {combination_index}"
     args += f" --output_dir {output_dir}"
     args += f" --hdri_path {hdri_path}"
@@ -55,3 +57,8 @@ def render_object(
     command = f"{application_path} --background --python simian/render.py -- {args}"
     print("Worker running: ", command)
     subprocess.run(["bash", "-c", command], timeout=10000, check=False)
+    
+    # upload the rendered outputs to s3
+    upload_to_s3(output_dir, combination)
+    
+    os.system(f"rm -rf {output_dir}")

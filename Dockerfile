@@ -32,7 +32,6 @@ RUN python3 -m pip install --no-cache-dir -r requirements.txt
 COPY simian/ ./simian/
 COPY data/ ./data/
 COPY tests/ ./tests/
-COPY .env ./.env
 
 # Set the entrypoint to run the batch.py script with user-provided arguments
 CMD ["celery", "-A", "simian.worker", "worker", "--loglevel=info"]

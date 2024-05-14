@@ -8,3 +8,5 @@ black
 celery
 scipy
 redis
+boto3
+botocore
