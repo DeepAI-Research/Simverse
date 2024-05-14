@@ -1,8 +1,8 @@
 import json
 import os
 import sys
+import argparse
 
-import fire
 from celery import Celery
 
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../"))
@@ -31,5 +31,29 @@ def render_objects(start_index, end_index, frame_start=0, frame_end=65, width=19
         combination = combinations[i]
         render_object.delay(i, combination, width, height, output_dir, hdri_path)
 
+def main():
+    parser = argparse.ArgumentParser(description="Automate the rendering of objects using Celery.")
+    parser.add_argument("start_index", type=int, help="Starting index for rendering from the combinations list.")
+    parser.add_argument("end_index", type=int, help="Ending index for rendering from the combinations list.")
+    parser.add_argument("--frame_start", type=int, default=0, help="Starting frame number for the animation. Defaults to 0.")
+    parser.add_argument("--frame_end", type=int, default=65, help="Ending frame number for the animation. Defaults to 65.")
+    parser.add_argument("--width", type=int, default=1920, help="Width of the rendering in pixels. Defaults to 1920.")
+    parser.add_argument("--height", type=int, default=1080, help="Height of the rendering in pixels. Defaults to 1080.")
+    parser.add_argument("--output_dir", type=str, default="./renders", help="Directory to save rendered outputs. Defaults to './renders'.")
+    parser.add_argument("--hdri_path", type=str, default="./backgrounds", help="Directory containing HDRI files for rendering. Defaults to './backgrounds'.")
+
+    args = parser.parse_args()
+
+    render_objects(
+        start_index=args.start_index,
+        end_index=args.end_index,
+        frame_start=args.frame_start,
+        frame_end=args.frame_end,
+        width=args.width,
+        height=args.height,
+        output_dir=args.output_dir,
+        hdri_path=args.hdri_path
+    )
+
 if __name__ == "__main__":
-    fire.Fire(render_objects)
+    main()

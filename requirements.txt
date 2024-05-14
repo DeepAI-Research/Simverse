@@ -1,10 +1,8 @@
- requests
+requests
 pandas
 tqdm
 fsspec
 argparse
-fire
-objaverse
 numpy
 black
 celery

@@ -46,7 +46,7 @@ from simian.object import (
 )
 from simian.background import create_photosphere, set_background
 from simian.scene import apply_stage_material, create_stage, initialize_scene
-import objaverse
+import simian.vendor.objaverse
 
 
 def read_combination(combination_file: str, index: int = 0) -> dict:
@@ -117,7 +117,7 @@ def render_scene(
     focus_object = None
 
     for object_data in combination["objects"]:
-        object_file = objaverse.load_objects([object_data["uid"]])[object_data["uid"]]
+        object_file = simian.vendor.objaverse.load_objects([object_data["uid"]])[object_data["uid"]]
 
         load_object(object_file)
         obj = [obj for obj in context.view_layer.objects.selected][0]
@@ -260,7 +260,7 @@ if __name__ == "__main__":
         uid = object["uid"]
 
         # Download object with objaverse to download_dir
-        downloaded = objaverse.load_objects([uid])
+        downloaded = simian.vendor.objaverse.load_objects([uid])
 
     # Render the images
     render_scene(
