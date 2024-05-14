@@ -483,113 +483,55 @@ def generate_framing_caption(camera_data, combination):
         return ""
     
 
+def flatten_descriptions(descriptions):
+    """
+    Flatten a list of descriptions, which may contain nested lists.
+
+    Args:
+        descriptions (list): A list of descriptions which may contain nested lists.
+
+    Returns:
+        list: A flattened list of descriptions.
+    """
+    flat_list = []
+    for item in descriptions:
+        if isinstance(item, list):
+            flat_list.extend(flatten_descriptions(item))
+        else:
+            flat_list.append(item)
+    return flat_list
+
+
 def generate_animation_captions(combination):
     """
-    Generate captions for camera animations based on the combination data.
-    This is based on speed_factor
+    Generate captions for camera animations based on the combination data and speed factor.
 
     Args:
         combination (dict): Combination data.
+        camera_data (dict): Camera data containing animation descriptions and keyframes.
 
     Returns:
         list: List of animation captions.
     """
-
-    """
-    camera_data.json:
-    "animation_speed": {
-            "min": 0.5,
-            "max": 2.0,
-            "types": {
-                "slow": {
-                    "min": 0.5,
-                    "max": 0.75,
-                    "descriptions": [
-                        "Slow animation speed <animation_speed_value> applied.",
-                        "The scene has a slow animation speed of <animation_speed_value>.",
-                        "Animation speed of <animation_speed_value> is set to slow.",
-                        "The scene is rendered with a slow animation speed of <animation_speed_value>.",
-                        "Slow animation is used in the scene.",
-                        "The scene has a leisurely animation speed of <animation_speed_value>.",
-                        "Animation is set to slow speed of <animation_speed_value> in the scene.",
-                        "The scene is enhanced with a slow animation speed of <animation_speed_value>.",
-                        "Slow animation is present in the scene.",
-                        "The scene is rendered with a slow animation speed of <animation_speed_value>."
-                    ]
-                },
-                "medium": {
-                    "min": 0.75,
-                    "max": 1.25,
-                    "descriptions": [
-                        [
-                            "Medium animation speed of <animation_speed_value> applied.",
-                            "The scene has a moderate animation speed of <animation_speed_value>.",
-                            "Animation speed is set to medium of <animation_speed_value>.",
-                            "The scene is rendered with a moderate animation speed of <animation_speed_value>.",
-                            "Medium animation of <animation_speed_value> is used in the scene.",
-                            "The scene has a normal animation speed of <animation_speed_value>.",
-                            "Animation is set to medium speed of <animation_speed_value> in the scene.",
-                            "The scene is enhanced with a moderate animation speed of <animation_speed_value>.",
-                            "Medium animation of <animation_speed_value> is present in the scene.",
-                            "The scene is rendered with a moderate animation speed of <animation_speed_value>."
-                        ]
-                    ]
-                },
-                "fast": {
-                    "min": 1.25,
-                    "max": 1.5,
-                    "descriptions": [
-                        [
-                            "Fast animation speed of <animation_speed_value> applied.",
-                            "The scene has a fast animation speed of <animation_speed_value>.",
-                            "Animation speed is set to fast of <animation_speed_value>.",
-                            "The scene is rendered with a fast animation speed of <animation_speed_value>.",
-                            "Fast animation of <animation_speed_value> is used in the scene.",
-                            "The scene has a quick animation speed of <animation_speed_value>.",
-                            "Animation is set to fast speed of <animation_speed_value> in the scene.",
-                            "The scene is enhanced with a fast animation speed of <animation_speed_value>.",
-                            "Fast animation of <animation_speed_value> is present in the scene.",
-                            "The scene is rendered with a fast animation speed of <animation_speed_value>."
-                        ]
-                    ]
-                },
-                "faster": {
-                    "min": 1.5,
-                    "max": 2.0,
-                    "descriptions": [
-                        [
-                            "Faster animation speed of <animation_speed_value> applied.",
-                            "The scene has a faster animation speed of <animation_speed_value>.",
-                            "Animation speed is set to faster of <animation_speed_value>.",
-                            "The scene is rendered with a faster animation speed of <animation_speed_value>.",
-                            "Faster animation of <animation_speed_value> is used in the scene.",
-                            "The scene has an accelerated animation speed of <animation_speed_value>.",
-                            "Animation is set to faster speed of <animation_speed_value> in the scene.",
-                            "The scene is enhanced with a faster animation speed of <animation_speed_value>.",
-                            "Faster animation of <animation_speed_value> is present in the scene.",
-                            "The scene is rendered with a faster animation speed of <animation_speed_value>."
-                        ]
-
-                    ]
-                }
-            }
-    """
-    animation_data = camera_data["animation_speed"]
+    
     speed_factor = combination["animation"]["speed_factor"]
+    animation_types = camera_data["animations"][-1]["types"]
 
     animation_type = "none"
-    for t in animation_data["types"].keys():
-        if (
-            speed_factor >= animation_data["types"][t]["min"]
-            and speed_factor <= animation_data["types"][t]["max"]
-        ):
+    for t, details in animation_types.items():
+        if details["min"] <= speed_factor <= details["max"]:
             animation_type = t
             break
 
-    animation_caption = random.choice(animation_data["types"][animation_type]["descriptions"])
-    animation_caption = animation_caption.replace("<animation_speed_value>", str(speed_factor))
+    if animation_type != "none":
+        descriptions = animation_types[animation_type]["descriptions"]
+        flat_descriptions = flatten_descriptions(descriptions)
+        animation_caption = random.choice(flat_descriptions)
+        animation_caption = animation_caption.replace("<animation_speed_value>", str(speed_factor))
+        return [animation_caption]
 
-    return [animation_caption]
+    return []
+
 
 
 def generate_caption(combination):
@@ -631,25 +573,8 @@ def generate_caption(combination):
 
     animation_captions = generate_animation_captions(combination)
     caption_parts.extend(animation_captions)
-
-    # Add the relationship captions
-    selected_relationships = generate_relationship_captions(combination)
-    caption_parts.extend(selected_relationships)
-
-    # Randomize the caption parts order
-    caption_parts = random.sample(caption_parts, len(caption_parts))
-
-    # Trim the caption parts
-    caption = (
-        " ".join(caption_parts)
-        .replace("..", ".")
-        .replace("  ", " ")
-        .replace(" .", ".")
-        .replace(" ,", ",")
-        .replace(",.", ".")
-        .replace(".,", ",")
-    )
-    caption = re.sub(r"\.(?=[a-zA-Z])", ". ", caption)  # Add space after period
+    
+    caption = " ".join(caption_parts)  # Join the caption parts into a single string
     caption = caption.strip()  # Remove leading and trailing whitespace
 
     return caption
