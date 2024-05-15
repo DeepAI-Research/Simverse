@@ -42,6 +42,9 @@ def test_upload_to_huggingface():
         api = HfApi(token=hf_token)
         file_exists = api.file_exists(repo_id=repo_id, filename=os.path.join(repo_path, test_file), repo_type="dataset")
         assert file_exists, f"File {test_file} was not uploaded to the Hugging Face repository"
+        # delete the file
+        api.delete_file(repo_id=repo_id, filename=os.path.join(repo_path, test_file), repo_type="dataset")
+        assert not api.file_exists(repo_id=repo_id, filename=os.path.join(repo_path, test_file), repo_type="dataset"), f"File {test_file} was not deleted from the Hugging Face repository"
         
         
 if __name__ == "__main__":
