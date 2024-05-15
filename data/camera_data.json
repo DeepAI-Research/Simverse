@@ -1437,7 +1437,17 @@
                             "Animation is set to fast speed of <animation_speed_value> in the scene.",
                             "The scene is enhanced with a fast animation speed of <animation_speed_value>.",
                             "Fast animation of <animation_speed_value> is present in the scene.",
-                            "The scene is rendered with a fast animation speed of <animation_speed_value>."
+                            "The scene is rendered with a fast animation speed of <animation_speed_value>.",
+                            "The animation runs at a rapid pace.",
+                            "The scene features a swift animation speed.",
+                            "Animations are set to a fast tempo.",
+                            "A quick animation speed is applied.",
+                            "The scene moves with high-speed animation.",
+                            "Animations unfold rapidly in the scene.",
+                            "The pace of animation is brisk.",
+                            "The scene showcases a fast animation rate.",
+                            "High-speed animation effects are used.",
+                            "The scene transitions quickly with fast animation."
                         ]
                     ]
                 },
@@ -1455,9 +1465,18 @@
                             "Animation is set to faster speed of <animation_speed_value> in the scene.",
                             "The scene is enhanced with a faster animation speed of <animation_speed_value>.",
                             "Faster animation of <animation_speed_value> is present in the scene.",
-                            "The scene is rendered with a faster animation speed of <animation_speed_value>."
+                            "The scene is rendered with a faster animation speed of <animation_speed_value>.",
+                            "The animation speed is increased significantly.",
+                            "The scene features an enhanced animation tempo.",
+                            "Animations are set to a much faster pace.",
+                            "A highly accelerated animation speed is applied.",
+                            "The scene progresses with a rapid animation rate.",
+                            "Animations move at an expedited speed in the scene.",
+                            "The animation runs at a notably faster rate.",
+                            "The scene showcases a significantly increased animation speed.",
+                            "Animations unfold at an accelerated pace.",
+                            "The scene transitions swiftly with enhanced animation speed."
                         ]
-    
                     ]
                 }
             }
