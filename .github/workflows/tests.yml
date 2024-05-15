@@ -7,6 +7,12 @@ on:
     branches: [ main ]
 env:
     HF_TOKEN: ${{ secrets.HF_TOKEN }}
+    HF_REPO_ID: ${{ secrets.HF_REPO_ID }}
+    HF_PATH: ${{ secrets.HF_PATH }}
+    REDIS_HOST: ${{ secrets.REDIS_HOST }}
+    REDIS_PORT: ${{ secrets.REDIS_PORT }}
+    REDIS_USER: ${{ secrets.REDIS_USER }}
+    REDIS_PASSWORD: ${{ secrets.REDIS_PASSWORD }}
 
 jobs:
   run-tests:
