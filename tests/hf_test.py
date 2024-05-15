@@ -28,14 +28,8 @@ def test_upload_to_huggingface():
         assert repo_id is not None, "HF_REPO_ID is not set in .env file"
         assert repo_path is not None, "HF_PATH is not set in .env file"
 
-        # Prepare the combination dictionary
-        combination = {
-            "repo_id": repo_id,
-            "upload_path": repo_path,
-        }
-
         # Call the upload_to_huggingface function
-        upload_to_huggingface(temp_dir, combination)
+        upload_to_huggingface(temp_dir)
 
         # Check if the file exists in the Hugging Face repository
         from huggingface_hub import HfApi
@@ -43,9 +37,8 @@ def test_upload_to_huggingface():
         file_exists = api.file_exists(repo_id=repo_id, filename=os.path.join(repo_path, test_file), repo_type="dataset")
         assert file_exists, f"File {test_file} was not uploaded to the Hugging Face repository"
         # delete the file
-        api.delete_file(repo_id=repo_id, filename=os.path.join(repo_path, test_file), repo_type="dataset")
+        api.delete_file(repo_id=repo_id, path_in_repo=os.path.join(repo_path, test_file), repo_type="dataset")
         assert not api.file_exists(repo_id=repo_id, filename=os.path.join(repo_path, test_file), repo_type="dataset"), f"File {test_file} was not deleted from the Hugging Face repository"
-        
         
 if __name__ == "__main__":
     test_upload_to_huggingface()

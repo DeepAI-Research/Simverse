@@ -9,10 +9,6 @@ import sys
 # Get the directory of the currently executing script
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
-# if the directory is simian, remove that
-if current_dir.endswith("simian"):
-    current_dir = os.path.dirname(current_dir)
-
 # Append the simian directory to sys.path
 simian_path = os.path.join(current_dir)
 sys.path.append(simian_path)
