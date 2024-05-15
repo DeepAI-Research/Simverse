@@ -825,29 +825,31 @@ def generate_objects():
 
     object_scales = object_data["scales"]
 
-    # "scales": {
-    #     "tiny": {
-    #         "names": [
-    #             "tiny",
-    #             "mini",
-    #             "miniscule",
-    #             "minature",
-    #             "petite",
-    #             "extra small"
-    #         ],
-    #         "factor": 0.4
-    #     },
-    # }
-
     keys = object_scales.keys()
+
+    # scale values
+    scale_values = [scale['factor'] for scale in object_scales.values()]
+
+    # create simple triangular distribution based on scale_values
+    len_scale_values = len(scale_values)
+
+    mid_point = len_scale_values // 2
+    if len_scale_values % 2 == 0:
+        weights = [i + 1 for i in range(mid_point)] + [mid_point - i for i in range(mid_point)]
+    else:
+        weights = [i + 1 for i in range(mid_point)] + [mid_point + 1] + [mid_point - i for i in range(mid_point)]
+
+    total_weight = sum(weights)
+    normalized_weights = [w / total_weight for w in weights]
 
     objects = []
     positions_taken = set()
     for i in range(number_of_objects):
         object = random.choice(dataset_dict[chosen_dataset])
         scale_key = random.choice(list(keys))
+
         scale = {
-            "factor": object_scales[scale_key]["factor"],
+            "factor": random.choices(scale_values, weights=normalized_weights, k=1)[0],
             "name": scale_key,
             "name_synonym": object_scales[scale_key]["names"][
                 random.randint(0, len(object_scales[scale_key]["names"]) - 1)
