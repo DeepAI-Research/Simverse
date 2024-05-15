@@ -1382,7 +1382,17 @@
                         "Animation is set to slow speed of <animation_speed_value> in the scene.",
                         "The scene is enhanced with a slow animation speed of <animation_speed_value>.",
                         "Slow animation is present in the scene.",
-                        "The scene is rendered with a slow animation speed of <animation_speed_value>."
+                        "The scene is rendered with a slow animation speed of <animation_speed_value>.",
+                        "The animation runs at a slow pace.",
+                        "The scene features a gentle animation speed.",
+                        "Animations are intentionally slowed down.",
+                        "A calm and slow animation speed is applied.",
+                        "The scene moves with a relaxed animation speed.",
+                        "Animations unfold slowly in the scene.",
+                        "The pace of animation is deliberately slow.",
+                        "The scene showcases a leisurely animation speed.",
+                        "Slow-motion animation effects are used.",
+                        "The scene transitions smoothly with a slow animation speed."
                     ]
                 },
                 "medium": {
