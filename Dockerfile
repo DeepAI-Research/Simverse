@@ -1,22 +1,28 @@
 FROM --platform=linux/x86_64 ubuntu:24.04
 
-# Set the working directory in the container
-WORKDIR /app
-
-# Copy scripts and run the data retrieval script
-COPY scripts/ ./scripts/
-RUN bash scripts/get_data.sh
-
-# Install dependencies and clean up unnecessary files in a single RUN command
 RUN apt-get update && \
-    apt-get install -y wget xz-utils python3-pip && \
-    wget https://builder.blender.org/download/daily/archive/blender-4.1.1-stable+v41.e1743a0317bc-linux.x86_64-release.tar.xz && \
-    tar -xvf blender-4.1.1-stable+v41.e1743a0317bc-linux.x86_64-release.tar.xz && \
-    mv blender-4.1.1-stable+v41.e1743a0317bc-linux.x86_64-release blender && \
-    rm blender-4.1.1-stable+v41.e1743a0317bc-linux.x86_64-release.tar.xz
-
-# install python 3.10
-RUN apt-get install -y software-properties-common && \
+    apt-get install -y \
+    wget \
+    xz-utils \
+    bzip2 \
+    python3-pip \
+    python3 \
+    libglu1-mesa \
+    libc6-dev \
+    libxrender1 \
+    libsm6 \
+    libopenexr-dev \ 
+	build-essential \ 
+	zlib1g-dev \ 
+	libxmu-dev \ 
+	libxi-dev \ 
+	libxxf86vm-dev \ 
+	libfontconfig1 \ 
+    libxkbcommon-x11-0 \
+    libc6-amd64-cross && \
+    ln -s /usr/x86_64-linux-gnu/lib64/ /lib64 && \
+    LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/lib64:/usr/x86_64-linux-gnu/lib" \
+    && apt-get install -y software-properties-common && \
     add-apt-repository ppa:deadsnakes/ppa && \
     apt-get update && \
     apt-get install -y python3.10 python3.10-distutils && \
@@ -24,16 +30,21 @@ RUN apt-get install -y software-properties-common && \
     update-alternatives --install /usr/bin/python python /usr/bin/python3.10 1 && \
     python3 -m pip install --upgrade pip
 
-RUN apt-get install libc6-dev -y
+RUN wget https://builder.blender.org/download/daily/archive/blender-4.1.1-stable+v41.e1743a0317bc-linux.x86_64-release.tar.xz && \
+    tar -xvf blender-4.1.1-stable+v41.e1743a0317bc-linux.x86_64-release.tar.xz && \
+    mv blender-4.1.1-stable+v41.e1743a0317bc-linux.x86_64-release blender && \
+    rm blender-4.1.1-stable+v41.e1743a0317bc-linux.x86_64-release.tar.xz
 
-# Copy the requirements file and install Python dependencies
+COPY scripts/ ./scripts/
+RUN bash scripts/get_data.sh
+
 COPY requirements.txt .
 RUN python3 -m pip install --no-cache-dir -r requirements.txt
 
-# Copy the application code
+RUN apt-get install -y libglu1-mesa-dev
+
 COPY simian/ ./simian/
 COPY data/ ./data/
 COPY tests/ ./tests/
 
-# Set the entrypoint to run the batch.py script with user-provided arguments
 CMD ["celery", "-A", "simian.worker", "worker", "--loglevel=info", "--concurrency=1"]
