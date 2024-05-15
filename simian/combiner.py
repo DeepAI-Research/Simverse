@@ -554,6 +554,10 @@ def generate_caption(combination):
     object_scale_descriptions = generate_object_scale_description_captions(combination)
     caption_parts.append(object_scale_descriptions)
 
+    scene_relationship_description = generate_relationship_captions(combination)
+    scene_relationship_description_str = ' '.join(scene_relationship_description)
+    caption_parts.append(scene_relationship_description_str)
+
     # Add the camera orientation to the caption
     orientation_text = generate_orientation_caption(camera_data, combination)
     caption_parts.append(orientation_text)
