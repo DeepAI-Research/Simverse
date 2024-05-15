@@ -370,7 +370,7 @@ def optimize_meshes_in_hierarchy(obj: bpy.types.Object) -> None:
 
         # Set all materials to be double sided
         for slot in obj.material_slots:
-            slot.material.use_backface_culling = False
+            # slot.material.use_backface_culling = False
             if slot.material.blend_method == "BLEND":
                 slot.material.blend_method = "HASHED"
 
