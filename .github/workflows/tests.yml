@@ -28,6 +28,8 @@ jobs:
     - name: Get the data
       run: bash scripts/get_data.sh
 
+    - name: Print environment variables
+      run: echo "HF_TOKEN -> ${{ secrets.HF_TOKEN }}"
 
     - name: Generate combinations
       run: python simian/combiner.py

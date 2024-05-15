@@ -167,7 +167,7 @@ def upload_to_huggingface(output_dir):
     - None
     """
     env_vars = get_env_vars()
-    hf_token = env_vars.get("HF_TOKEN") or os.getenv("HF_TOKEN")
+    hf_token = os.getenv("HF_TOKEN") or env_vars.get("HF_TOKEN")
     repo_id = os.getenv("HF_REPO_ID") or env_vars.get("HF_REPO_ID")
     repo_path = os.getenv("HF_PATH") or env_vars.get("HF_PATH", "")
     from huggingface_hub import HfApi
