@@ -6,12 +6,7 @@ import argparse
 import re
 import sys
 
-# Get the directory of the currently executing script
-current_dir = os.path.dirname(os.path.abspath(__file__))
-
-# Append the simian directory to sys.path
-simian_path = os.path.join(current_dir)
-sys.path.append(simian_path)
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../"))
 
 from simian.transform import determine_relationships, adjust_positions
 
@@ -188,6 +183,9 @@ def generate_stage_captions(combination):
     Returns:
         list: List of stage captions.
     """
+    
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+
     stage_data_path = os.path.join(current_dir, "../data/stage_data.json")
     stage_data = read_json_file(stage_data_path)
 
