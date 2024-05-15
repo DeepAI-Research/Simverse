@@ -577,8 +577,9 @@ def generate_caption(combination):
 
     animation_captions = generate_animation_captions(combination)
     caption_parts.extend(animation_captions)
-    
+
     caption = " ".join(caption_parts)  # Join the caption parts into a single string
+    caption = caption.replace('\u00b0', ' degrees')
     caption = caption.strip()  # Remove leading and trailing whitespace
 
     return caption
