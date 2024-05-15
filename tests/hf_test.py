@@ -19,9 +19,9 @@ def test_upload_to_huggingface():
 
         # Read environment variables from .env file
         env_vars = get_env_vars()
-        hf_token = env_vars.get("HF_TOKEN")
-        repo_id = env_vars.get("HF_REPO_ID")
-        repo_path = env_vars.get("HF_PATH")
+        hf_token = env_vars.get("HF_TOKEN") or os.getenv("HF_TOKEN")
+        repo_id = env_vars.get("HF_REPO_ID") or os.getenv("HF_REPO_ID")
+        repo_path = env_vars.get("HF_PATH") or os.getenv("HF_PATH")
 
         # Check if the required environment variables are set
         assert hf_token is not None, "HF_TOKEN is not set in .env file"
