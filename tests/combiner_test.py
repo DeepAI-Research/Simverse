@@ -1,22 +1,42 @@
 import os
 import sys
 import json
+import argparse
 from unittest.mock import patch, mock_open
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
-combiner_path = os.path.join(current_dir, "../")
-sys.path.append(combiner_path)
+project_root = os.path.abspath(os.path.join(current_dir, ".."))
+sys.path.append(project_root)
 
-from simian.combiner import (
-    read_json_file, generate_caption, generate_combinations, 
-    generate_stage_captions, generate_orientation_caption,
-    generate_object_scale_description_captions, generate_object_name_description_captions,
-    generate_relationship_captions, generate_fov_caption, generate_postprocessing_caption,
-    generate_framing_caption, flatten_descriptions, generate_animation_captions,
-    generate_postprocessing, generate_orientation, generate_framing, generate_animation,
-    generate_objects, generate_background, generate_stage
-)
+# Mock arguments with absolute paths
+mock_args = {
+    'count': 2,
+    'seed': 42,
+    'max_number_of_objects': 5,
+    'camera_file_path': os.path.join(project_root, "data/camera_data.json"),
+    'object_data_path': os.path.join(project_root, "data/object_data.json"),
+    'texture_data_path': os.path.join(project_root, "datasets/texture_data.json"),
+    'datasets_path': os.path.join(project_root, "data/datasets.json"),
+    'cap3d_captions_path': os.path.join(project_root, "datasets/cap3d_captions.json"),
+    'simdata_path': os.path.join(project_root, "datasets"),
+    'output_path': os.path.join(project_root, "combinations.json"),  # Corrected path
+    'stage_data_path': os.path.join(project_root, "data/stage_data.json")
+}
 
+def mock_parse_args(*args, **kwargs):
+    return argparse.Namespace(**mock_args)
+
+# Mock parse_args globally before importing simian.combiner
+with patch('argparse.ArgumentParser.parse_args', new=mock_parse_args):
+    from simian.combiner import (
+        read_json_file, generate_caption, generate_combinations, 
+        generate_stage_captions, generate_orientation_caption,
+        generate_object_scale_description_captions, generate_object_name_description_captions,
+        generate_relationship_captions, generate_fov_caption, generate_postprocessing_caption,
+        generate_framing_caption, flatten_descriptions, generate_animation_captions,
+        generate_postprocessing, generate_orientation, generate_framing, generate_animation,
+        generate_objects, generate_background, generate_stage, flatten_descriptions
+    )
 
 def test_read_json_file():
     """
@@ -30,37 +50,86 @@ def test_read_json_file():
         print("============ Test Passed: test_read_json_file ============")
 
 
-# Paths to the JSON files
-data_dir = os.path.join(current_dir, "../data")
-object_data_path = os.path.join(data_dir, "object_data.json")
-stage_data_path = os.path.join(data_dir, "stage_data.json")
-texture_data_path = os.path.join(data_dir, "texture_data.json")
-camera_data_path = os.path.join(data_dir, "camera_data.json")
-datasets_path = os.path.join(data_dir, "datasets.json")
+data_dir = os.path.join(project_root, "data")
+datasets_dir = os.path.join(project_root, "datasets")
+
+object_data = read_json_file(os.path.join(data_dir, "object_data.json"))
+stage_data = read_json_file(os.path.join(data_dir, "stage_data.json"))
+texture_data = read_json_file(os.path.join(datasets_dir, "texture_data.json"))
+camera_data = read_json_file(os.path.join(data_dir, "camera_data.json"))
+datasets_data = read_json_file(os.path.join(data_dir, "datasets.json"))
+cap3d_captions_data = read_json_file(os.path.join(datasets_dir, "cap3d_captions.json"))
 
 
-def test_generate_caption():
-    """
-    Test the generate_caption function.
-    """
-    # Provide a sample input for generate_caption, including the 'uid' key
-    combination = {
-        "objects": [
-            {
-                "name": "Cube",
-                "description": "A simple geometric shape",
-                "uid": "12345",  # Unique identifier for the object
-            }
-        ],
-        "background": {"name": "Beach"},
-        "stage": {"material": {"name": "Sand"}},
-        "orientation": {"pitch": 15, "yaw": 30},
-    }
-    caption = generate_caption(combination)
-    assert "Cube" in caption, "Caption does not include object name."
-    assert "Beach" in caption, "Caption does not include background name."
-    assert "Sand" in caption, "Caption does not include material name."
-    print("============ Test Passed: test_generate_caption ============")
+def test_combination_caption():
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    file_path = os.path.join(current_dir, '../combinations.json')
+
+    with open(file_path, 'r') as file:
+        data = json.load(file)
+
+    first_combination = data['combinations'][0]
+
+    required_combination_fields = [
+        'index', 'objects', 'background', 'orientation', 
+        'framing', 'animation', 'stage', 'postprocessing', 'caption'
+    ]
+    
+    required_object_fields = [
+        'name', 'uid', 'description', 'placement', 
+        'from', 'scale', 'transformed_position', 'relationships'
+    ]
+    
+    required_scale_fields = ['factor', 'name', 'name_synonym']
+    
+    required_background_fields = ['name', 'url', 'id', 'from']
+    required_orientation_fields = ['yaw', 'pitch']
+    required_framing_fields = ['fov', 'coverage_factor', 'name']
+    required_animation_fields = ['name', 'keyframes', 'speed_factor']
+    required_stage_fields = ['material', 'uv_scale', 'uv_rotation']
+    required_material_fields = ['name', 'maps']
+    required_postprocessing_fields = ['bloom', 'ssao', 'ssrr', 'motionblur']
+    required_bloom_fields = ['threshold', 'intensity', 'radius', 'type']
+    required_ssao_fields = ['distance', 'factor', 'type']
+    required_ssrr_fields = ['max_roughness', 'thickness', 'type']
+    required_motionblur_fields = ['shutter_speed', 'type']
+
+    def assert_fields_exist(data, required_fields, parent_key=""):
+        for field in required_fields:
+            assert field in data, f"Missing field: {parent_key}{field}"
+    
+    # Check combination level fields
+    assert_fields_exist(first_combination, required_combination_fields)
+
+    # Check objects fields
+    for obj in first_combination['objects']:
+        assert_fields_exist(obj, required_object_fields)
+        assert_fields_exist(obj['scale'], required_scale_fields)
+    
+    # Check background fields
+    assert_fields_exist(first_combination['background'], required_background_fields)
+
+    # Check orientation fields
+    assert_fields_exist(first_combination['orientation'], required_orientation_fields)
+
+    # Check framing fields
+    assert_fields_exist(first_combination['framing'], required_framing_fields)
+
+    # Check animation fields
+    assert_fields_exist(first_combination['animation'], required_animation_fields)
+
+    # Check stage fields
+    assert_fields_exist(first_combination['stage'], required_stage_fields)
+    assert_fields_exist(first_combination['stage']['material'], required_material_fields)
+
+    # Check postprocessing fields
+    assert_fields_exist(first_combination['postprocessing'], required_postprocessing_fields)
+    assert_fields_exist(first_combination['postprocessing']['bloom'], required_bloom_fields)
+    assert_fields_exist(first_combination['postprocessing']['ssao'], required_ssao_fields)
+    assert_fields_exist(first_combination['postprocessing']['ssrr'], required_ssrr_fields)
+    assert_fields_exist(first_combination['postprocessing']['motionblur'], required_motionblur_fields)
+    
+    print("============ Test Passed: test_first_object_requirements ============")
 
  
 def test_generate_combinations():
@@ -75,14 +144,35 @@ def test_generate_combinations():
             "pitch_min": -90,
             "pitch_max": 90,
         },
-        "framings": [{"name": "wide"}],
-        "animations": [{"name": "zoom_in"}],
+        "framings": [{
+            "name": "wide",
+            "fov_min": 30,
+            "fov_max": 60,
+            "coverage_factor_min": 1,
+            "coverage_factor_max": 2,
+            "descriptions": ["Wide framing with FOV <fov> and coverage factor <coverage_factor>."]
+        }],
+        "animations": [{
+            "name": "zoom_in",
+            "types": {
+                "slow": {"min": 0.5, "max": 1.0, "descriptions": ["Slow zoom in."]},
+                "fast": {"min": 1.0, "max": 2.0, "descriptions": ["Fast zoom in."]}
+            }
+        }],
+        "postprocessing": {
+            "bloom": {"threshold_min": 0, "threshold_max": 1, "intensity_min": 0, "intensity_max": 1, "radius_min": 0, "radius_max": 10, "types": {"soft": {"intensity_min": 0, "intensity_max": 1}}},
+            "ssao": {"distance_min": 0, "distance_max": 1, "factor_min": 0, "factor_max": 1, "types": {"soft": {"factor_min": 0, "factor_max": 1}}},
+            "ssrr": {"min_max_roughness": 0, "max_max_roughness": 1, "min_thickness": 0, "max_thickness": 1, "types": {"soft": {"max_roughness_min": 0, "max_roughness_max": 1}}},
+            "motionblur": {"shutter_speed_min": 0, "shutter_speed_max": 1, "types": {"soft": {"shutter_speed_min": 0, "shutter_speed_max": 1}}}
+        }
     }
-    combinations = generate_combinations(camera_data, 2)
+    count = 2
+    seed = 42  # Add seed argument
+    combinations = generate_combinations(camera_data, count, seed)
     assert (
-        len(combinations) == 2
+        len(combinations['combinations']) == count
     ), "generate_combinations did not create the correct number of combinations."
-    for combination in combinations:
+    for combination in combinations['combinations']:
         assert (
             combination["orientation"]["yaw"] <= 180
         ), "Yaw is out of the specified range."
@@ -124,9 +214,18 @@ def test_generate_orientation_caption():
         pitch_labels = camera_data["orientation"]["labels"]["pitch"]
         yaw_labels = camera_data["orientation"]["labels"]["yaw"]
 
-        # Find the correct labels for the given pitch and yaw
-        correct_pitch_label = pitch_labels["15"]
-        correct_yaw_label = yaw_labels["90"]
+        # Ensure the correct pitch and yaw values exist in the labels
+        correct_pitch_label = pitch_labels.get("15", [])
+        correct_yaw_label = yaw_labels.get("90", [])
+
+        # Replace <degrees> placeholder with the actual yaw value
+        correct_pitch_label = [label.replace("<degrees>", str(combination["orientation"]["pitch"])) for label in correct_pitch_label]
+        correct_yaw_label = [label.replace("<degrees>", str(combination["orientation"]["yaw"])) for label in correct_yaw_label]
+
+        # Print statements for debugging
+        print("Correct pitch label:", correct_pitch_label)
+        print("Correct yaw label:", correct_yaw_label)
+        print("Generated caption:", caption)
 
         # Check if any of the correct pitch and yaw labels are in the caption
         pitch_caption_found = any(label in caption for label in correct_pitch_label)
@@ -198,6 +297,7 @@ def test_generate_relationship_captions():
     with patch('simian.combiner.adjust_positions', return_value=[{"transformed_position": [0, 0]}, {"transformed_position": [1, 0]}]):
         with patch('simian.combiner.determine_relationships', return_value=["Box is near Ball"]):
             captions = generate_relationship_captions(combination)
+            print("Generated captions:", captions)  # Add this line for debugging
             assert "Box is near Ball" in captions, "Relationship caption is incorrect."
     
     print("============ Test Passed: test_generate_relationship_captions ============")
@@ -295,21 +395,23 @@ def test_generate_animation_captions():
         "animation": {"speed_factor": 1.5}
     }
 
-    with patch('simian.combiner.read_json_file', return_value=camera_data):
-        captions = generate_animation_captions(combination, camera_data)
-        
-        # Extract the animation descriptions from the camera_data
-        animation_types = camera_data["animations"][-1]["types"]
-        expected_captions = []
-        for details in animation_types.values():
-            if details["min"] <= combination["animation"]["speed_factor"] <= details["max"]:
-                expected_captions.extend(details["descriptions"])
+    captions = generate_animation_captions(combination)
 
-        # Check if any of the expected captions are in the generated caption
-        caption_found = any(expected_caption in captions for expected_caption in expected_captions)
+    # Extract the animation descriptions from the camera_data
+    animation_types = camera_data["animations"][-1]["types"]
+    expected_captions = []
+    for details in animation_types.values():
+        if details["min"] <= combination["animation"]["speed_factor"] <= details["max"]:
+            expected_captions.extend(details["descriptions"])
 
-        assert caption_found, "Animation caption is incorrect."
-    
+    # Flatten the expected_captions list
+    flat_expected_captions = flatten_descriptions(expected_captions)
+
+    # Check if any of the expected captions are in the generated caption
+    caption_found = any(expected_caption.replace("<animation_speed_value>", str(combination["animation"]["speed_factor"])) in captions for expected_caption in flat_expected_captions)
+
+    assert caption_found, "Animation caption is incorrect."
+
     print("============ Test Passed: test_generate_animation_captions ============")
 
 
@@ -396,7 +498,7 @@ def test_generate_stage():
 
 if __name__ == "__main__":
     test_read_json_file()
-    test_generate_caption()
+    test_combination_caption()
     test_generate_combinations()
     test_generate_stage_captions()
     test_generate_orientation_caption()

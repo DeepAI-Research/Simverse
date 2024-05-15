@@ -255,7 +255,7 @@ if __name__ == "__main__":
     # Render the images
     render_scene(
         start_frame=args.start_frame,
-        end_frame=3,
+        end_frame=args.end_frame,
         output_dir=args.output_dir,
         context=context,
         combination_file=args.combination_file,

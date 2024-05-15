@@ -192,7 +192,10 @@ def generate_stage_captions(combination):
     Returns:
         list: List of stage captions.
     """
-    stage_data = read_json_file("data/stage_data.json")
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    stage_data_path = os.path.join(current_dir, "../data/stage_data.json")
+    stage_data = read_json_file(stage_data_path)
+
     background_prefix = random.choice(stage_data["background_names"])
     floor_prefix = random.choice(stage_data["material_names"])
     background_name = combination["background"]["name"]
@@ -358,9 +361,8 @@ def generate_relationship_captions(combination):
         if i < len(relationships):
             obj["relationships"] = relationships[i]
 
-    selected_relationships = []
-
-    if THRESHOLD_RELATIONSHIPS != 1:
+    selected_relationships = relationships
+    if THRESHOLD_RELATIONSHIPS < len(relationships):
         selected_relationships = random.sample(relationships, THRESHOLD_RELATIONSHIPS)
 
     return selected_relationships
@@ -531,7 +533,6 @@ def generate_animation_captions(combination):
         return [animation_caption]
 
     return []
-
 
 
 def generate_caption(combination):
