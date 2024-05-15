@@ -192,7 +192,10 @@ def generate_stage_captions(combination):
     Returns:
         list: List of stage captions.
     """
-    stage_data = read_json_file("data/stage_data.json")
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    stage_data_path = os.path.join(current_dir, "../data/stage_data.json")
+    stage_data = read_json_file(stage_data_path)
+
     background_prefix = random.choice(stage_data["background_names"])
     floor_prefix = random.choice(stage_data["material_names"])
     background_name = combination["background"]["name"]
@@ -251,6 +254,49 @@ def generate_orientation_caption(camera_data, combination):
     return orientation_text
 
 
+def generate_object_scale_description_captions(combination):
+    """
+    Generate captions for object scales based on the combination data.
+
+    Args:
+        combination (dict): Combination data.
+
+    Returns:
+        str: Object name and description captions.
+    """
+    object_scale_descriptions = []
+   
+    # for each object in the scene
+    for obj in combination["objects"]:
+        # get the object name and scale
+        object_name = obj["name"]
+        object_scale = obj["scale"]
+        scale_factor = object_scale["factor"]
+        scale_name = object_scale["name_synonym"]
+
+        # get the relationship between the object name and scale
+        object_scale_relationship = random.choice(
+            object_data["scale_description_relationship"]
+        )
+
+        object_scale_relationship = object_scale_relationship.replace("<name>", object_name)
+        object_scale_relationship = object_scale_relationship.replace(
+            "<scale_factor>", str(scale_factor)
+        )
+        object_scale_relationship = object_scale_relationship.replace(
+            "<scale_name>", scale_name
+        )
+
+        object_scale_descriptions.append(object_scale_relationship)
+    
+    # randomize order of object_descriptions
+    random.shuffle(object_scale_descriptions)
+    # join the object descriptions
+    object_scale_descriptions = " ".join(object_scale_descriptions)
+
+    return object_scale_descriptions
+
+
 def generate_object_name_description_captions(combination):
     """
     Generate captions for object names and descriptions based on the combination data.
@@ -272,6 +318,7 @@ def generate_object_name_description_captions(combination):
         object_name_description_relationship = random.choice(
             object_data["name_description_relationship"]
         )
+
         object_name_description_relationship = (
             object_name_description_relationship.replace("<name>", object_name)
         )
@@ -280,6 +327,7 @@ def generate_object_name_description_captions(combination):
                 "<description>", object_description
             )
         )
+
         object_name_descriptions.append(object_name_description_relationship)
 
     # randomize order of object_descriptions
@@ -313,9 +361,8 @@ def generate_relationship_captions(combination):
         if i < len(relationships):
             obj["relationships"] = relationships[i]
 
-    selected_relationships = []
-
-    if THRESHOLD_RELATIONSHIPS != 1:
+    selected_relationships = relationships
+    if THRESHOLD_RELATIONSHIPS < len(relationships):
         selected_relationships = random.sample(relationships, THRESHOLD_RELATIONSHIPS)
 
     return selected_relationships
@@ -436,6 +483,56 @@ def generate_framing_caption(camera_data, combination):
         return framing_description
     else:
         return ""
+    
+
+def flatten_descriptions(descriptions):
+    """
+    Flatten a list of descriptions, which may contain nested lists.
+
+    Args:
+        descriptions (list): A list of descriptions which may contain nested lists.
+
+    Returns:
+        list: A flattened list of descriptions.
+    """
+    flat_list = []
+    for item in descriptions:
+        if isinstance(item, list):
+            flat_list.extend(flatten_descriptions(item))
+        else:
+            flat_list.append(item)
+    return flat_list
+
+
+def generate_animation_captions(combination):
+    """
+    Generate captions for camera animations based on the combination data and speed factor.
+
+    Args:
+        combination (dict): Combination data.
+        camera_data (dict): Camera data containing animation descriptions and keyframes.
+
+    Returns:
+        list: List of animation captions.
+    """
+    
+    speed_factor = combination["animation"]["speed_factor"]
+    animation_types = camera_data["animations"][-1]["types"]
+
+    animation_type = "none"
+    for t, details in animation_types.items():
+        if details["min"] <= speed_factor <= details["max"]:
+            animation_type = t
+            break
+
+    if animation_type != "none":
+        descriptions = animation_types[animation_type]["descriptions"]
+        flat_descriptions = flatten_descriptions(descriptions)
+        animation_caption = random.choice(flat_descriptions)
+        animation_caption = animation_caption.replace("<animation_speed_value>", str(speed_factor))
+        return [animation_caption]
+
+    return []
 
 
 def generate_caption(combination):
@@ -454,6 +551,14 @@ def generate_caption(combination):
     object_name_descriptions = generate_object_name_description_captions(combination)
     caption_parts.append(object_name_descriptions)
 
+    # Add object scale and description captions to the caption
+    object_scale_descriptions = generate_object_scale_description_captions(combination)
+    caption_parts.append(object_scale_descriptions)
+
+    scene_relationship_description = generate_relationship_captions(combination)
+    scene_relationship_description_str = ' '.join(scene_relationship_description)
+    caption_parts.append(scene_relationship_description_str)
+
     # Add the camera orientation to the caption
     orientation_text = generate_orientation_caption(camera_data, combination)
     caption_parts.append(orientation_text)
@@ -471,24 +576,11 @@ def generate_caption(combination):
     stage_captions = generate_stage_captions(combination)
     caption_parts.extend(stage_captions)
 
-    # Add the relationship captions
-    selected_relationships = generate_relationship_captions(combination)
-    caption_parts.extend(selected_relationships)
+    animation_captions = generate_animation_captions(combination)
+    caption_parts.extend(animation_captions)
 
-    # Randomize the caption parts order
-    caption_parts = random.sample(caption_parts, len(caption_parts))
-
-    # Trim the caption parts
-    caption = (
-        " ".join(caption_parts)
-        .replace("..", ".")
-        .replace("  ", " ")
-        .replace(" .", ".")
-        .replace(" ,", ",")
-        .replace(",.", ".")
-        .replace(".,", ",")
-    )
-    caption = re.sub(r"\.(?=[a-zA-Z])", ". ", caption)  # Add space after period
+    caption = " ".join(caption_parts)  # Join the caption parts into a single string
+    caption = caption.replace('\u00b0', ' degrees')
     caption = caption.strip()  # Remove leading and trailing whitespace
 
     return caption
@@ -738,15 +830,32 @@ def generate_objects():
     number_of_objects = random.randint(1, max_number_of_objects)
 
     object_scales = object_data["scales"]
+
     keys = object_scales.keys()
+
+    # scale values
+    scale_values = [scale['factor'] for scale in object_scales.values()]
+
+    # create simple triangular distribution based on scale_values
+    len_scale_values = len(scale_values)
+
+    mid_point = len_scale_values // 2
+    if len_scale_values % 2 == 0:
+        weights = [i + 1 for i in range(mid_point)] + [mid_point - i for i in range(mid_point)]
+    else:
+        weights = [i + 1 for i in range(mid_point)] + [mid_point + 1] + [mid_point - i for i in range(mid_point)]
+
+    total_weight = sum(weights)
+    normalized_weights = [w / total_weight for w in weights]
 
     objects = []
     positions_taken = set()
     for i in range(number_of_objects):
         object = random.choice(dataset_dict[chosen_dataset])
         scale_key = random.choice(list(keys))
+
         scale = {
-            "factor": object_scales[scale_key]["factor"] * random.uniform(0.9, 1.0),
+            "factor": random.choices(scale_values, weights=normalized_weights, k=1)[0],
             "name": scale_key,
             "name_synonym": object_scales[scale_key]["names"][
                 random.randint(0, len(object_scales[scale_key]["names"]) - 1)
@@ -859,7 +968,7 @@ def generate_combinations(camera_data, count, seed):
 
         postprocessing = generate_postprocessing(camera_data)
 
-        animation = generate_animation(camera_data)
+        animation = generate_animation(camera_data) # speed is between 0.5 and 2
 
         stage = generate_stage()
 

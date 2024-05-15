@@ -23,6 +23,23 @@
         "<name> = <description>.",
         "<name> (<description>)."
     ],
+    "scale_description_relationship": [
+        "The <name> is scaled by <scale_factor> and is <scale_name>.",
+        "The <name> is uniformly scaled by a factor of <scale_factor> and is <scale_name>.",
+        "The <name> is scaled by a factor of <scale_factor>, making it <scale_name>.",
+        "The <name> is scaled by a factor of <scale_factor>, resulting in it being <scale_name>.",
+        "Scaling the <name> by <scale_factor> makes it <scale_name>.",
+        "After scaling by <scale_factor>, the <name> is now <scale_name>.",
+        "The <name> is scaled to <scale_factor> times its original size, making it <scale_name>.",
+        "With a scale factor of <scale_factor>, the <name> has become <scale_name>.",
+        "The <name> has been scaled by <scale_factor>, and is now <scale_name>.",
+        "Scaling the <name> with a factor of <scale_factor> results in it being <scale_name>.",
+        "The <name> is enlarged by a factor of <scale_factor>, making it <scale_name>.",
+        "Applying a scale factor of <scale_factor> to the <name> makes it <scale_name>.",
+        "The <name> is resized by <scale_factor>, resulting in a <scale_name> object.",
+        "When scaled by <scale_factor>, the <name> becomes <scale_name>.",
+        "The <name> is now <scale_name> after being scaled by <scale_factor>."
+    ],
     "relationships": {
         "to_the_left": [
             "is to the left of",

@@ -370,7 +370,7 @@ def optimize_meshes_in_hierarchy(obj: bpy.types.Object) -> None:
 
         # Set all materials to be double sided
         for slot in obj.material_slots:
-            slot.material.use_backface_culling = False
+            # slot.material.use_backface_culling = False
             if slot.material.blend_method == "BLEND":
                 slot.material.blend_method = "HASHED"
 
@@ -523,6 +523,8 @@ def unparent_keep_transform(obj: bpy.types.Object) -> None:
     """
     # clear the parent object, but keep the transform
     bpy.ops.object.parent_clear(type="CLEAR_KEEP_TRANSFORM")
+    # clear rotation and scale and apply
+    bpy.ops.object.transform_apply(location=False, rotation=True, scale=True)
 
 
 def delete_all_empties() -> None:
