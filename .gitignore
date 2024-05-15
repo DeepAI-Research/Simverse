@@ -20,3 +20,4 @@ sampled_df.json
 *.blend1
 *.obj
 venv/
+.env

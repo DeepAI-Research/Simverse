@@ -1,11 +1,13 @@
- requests
+requests
 pandas
 tqdm
 fsspec
 argparse
-fire
-objaverse
 numpy
 black
 celery
 scipy
+redis
+boto3
+botocore
+huggingface_hub

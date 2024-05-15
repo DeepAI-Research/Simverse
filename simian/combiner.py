@@ -192,7 +192,6 @@ def generate_stage_captions(combination):
     Returns:
         list: List of stage captions.
     """
-    current_dir = os.path.dirname(os.path.abspath(__file__))
     stage_data_path = os.path.join(current_dir, "../data/stage_data.json")
     stage_data = read_json_file(stage_data_path)
 
