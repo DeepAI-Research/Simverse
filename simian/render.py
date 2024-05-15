@@ -46,7 +46,7 @@ from simian.object import (
 )
 from simian.background import create_photosphere, set_background
 from simian.scene import apply_stage_material, create_stage, initialize_scene
-import objaverse
+import simian.vendor.objaverse
 
 
 def read_combination(combination_file: str, index: int = 0) -> dict:
@@ -73,6 +73,7 @@ def render_scene(
     start_frame: int = 1,
     end_frame: int = 65,
     combination_index=0,
+    combination=None,
     height=1080,
     width=1920,
 ) -> None:
@@ -107,13 +108,16 @@ def render_scene(
     # Lock and hide all scene objects before doing any object operations
     initial_objects = lock_all_objects()
 
-    combination = read_combination(combination_file, combination_index)
+    if combination is not None:
+        combination = json.loads(combination)
+    else:
+        combination = read_combination(combination_file, combination_index)
     all_objects = []
 
     focus_object = None
 
     for object_data in combination["objects"]:
-        object_file = objaverse.load_objects([object_data["uid"]])[object_data["uid"]]
+        object_file = simian.vendor.objaverse.load_objects([object_data["uid"]])[object_data["uid"]]
 
         load_object(object_file)
         obj = [obj for obj in context.view_layer.objects.selected][0]
@@ -228,6 +232,9 @@ if __name__ == "__main__":
     parser.add_argument(
         "--height", type=int, default=1080, help="Render output height.", required=False
     )
+    parser.add_argument(
+        "--combination", type=str, default=None, help="Combination dictionary."
+    )
 
     if "--" in sys.argv:
         argv = sys.argv[sys.argv.index("--") + 1 :]
@@ -239,8 +246,11 @@ if __name__ == "__main__":
     context = bpy.context
     scene = context.scene
     render = scene.render
-
-    combination = read_combination(args.combination_file, args.combination_index)
+    
+    if args.combination is not None:
+        combination = json.loads(args.combination)
+    else:
+        combination = read_combination(args.combination_file, args.combination_index)
 
     # get the object uid from the 'object' column, which is a dictionary
     objects_column = combination["objects"]
@@ -250,7 +260,7 @@ if __name__ == "__main__":
         uid = object["uid"]
 
         # Download object with objaverse to download_dir
-        downloaded = objaverse.load_objects([uid])
+        downloaded = simian.vendor.objaverse.load_objects([uid])
 
     # Render the images
     render_scene(
@@ -260,6 +270,7 @@ if __name__ == "__main__":
         context=context,
         combination_file=args.combination_file,
         combination_index=args.combination_index,
+        combination=args.combination,
         height=args.height,
         width=args.width,
     )

@@ -4,14 +4,13 @@ import os
 import platform
 import subprocess
 import sys
-from typing import Literal, Optional
-import fire
+import argparse
+from typing import Optional
 
 # Append Simian to sys.path before importing from package
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../"))
 
 from simian.utils import get_blender_path
-
 
 def render_objects(
     download_dir: Optional[str] = None,
@@ -86,6 +85,31 @@ def render_objects(
         # Execute the rendering command with a timeout.
         subprocess.run(["bash", "-c", command], timeout=render_timeout, check=False)
 
+def main():
+    parser = argparse.ArgumentParser(description="Automate the rendering of objects using Blender.")
+    parser.add_argument("--download_dir", type=str, default=None, help="Directory to download the objects to. Defaults to None.")
+    parser.add_argument("--processes", type=int, default=None, help="Number of processes to use for multiprocessing. Defaults to three times the number of CPU cores.")
+    parser.add_argument("--render_timeout", type=int, default=3000, help="Maximum time in seconds for a single rendering process. Defaults to 3000.")
+    parser.add_argument("--width", type=int, default=1920, help="Width of the rendering in pixels. Defaults to 1920.")
+    parser.add_argument("--height", type=int, default=1080, help="Height of the rendering in pixels. Defaults to 1080.")
+    parser.add_argument("--start_index", type=int, default=0, help="Starting index for rendering from the combinations DataFrame. Defaults to 0.")
+    parser.add_argument("--end_index", type=int, default=-1, help="Ending index for rendering from the combinations DataFrame. Defaults to -1.")
+    parser.add_argument("--start_frame", type=int, default=1, help="Starting frame number for the animation. Defaults to 1.")
+    parser.add_argument("--end_frame", type=int, default=65, help="Ending frame number for the animation. Defaults to 65.")
+
+    args = parser.parse_args()
+
+    render_objects(
+        download_dir=args.download_dir,
+        processes=args.processes,
+        render_timeout=args.render_timeout,
+        width=args.width,
+        height=args.height,
+        start_index=args.start_index,
+        end_index=args.end_index,
+        start_frame=args.start_frame,
+        end_frame=args.end_frame
+    )
 
 if __name__ == "__main__":
-    fire.Fire(render_objects)
+    main()
