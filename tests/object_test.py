@@ -14,7 +14,6 @@ from simian.object import (
     lock_all_objects,
     normalize_object_scale,
     optimize_meshes_in_hierarchy,
-    remove_loose_meshes,
     get_meshes_in_hierarchy,
     set_pivot_to_bottom,
     unlock_objects,
@@ -85,8 +84,6 @@ def test_remove_small_geometry():
     optimize_meshes_in_hierarchy(root_obj)
 
     join_objects_in_hierarchy(root_obj)
-
-    remove_loose_meshes(root_obj)
 
     meshes = get_meshes_in_hierarchy(root_obj)
     obj = meshes[0]
