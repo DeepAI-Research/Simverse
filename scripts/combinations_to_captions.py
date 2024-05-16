@@ -9,11 +9,23 @@ def main(json_file, video_folder):
 
     combinations = data.get('combinations', [])
 
+    # List and sort all .mp4 video files in the video folder based on numerical index
+    video_files = [f for f in os.listdir(video_folder) if f.endswith('.mp4')]
+    video_files.sort(key=lambda x: int(os.path.splitext(x)[0]))
+
+    # Debugging: Print video files count and sorted list
+    print(f"Found {len(video_files)} video files.")
+    print(f"Sorted video files: {video_files}")
+
     # Create an array to store the converted objects
     captions = []
 
-    # Process each combination
+    # Process each combination, ensuring we do not exceed the number of available videos
     for i, obj in enumerate(combinations):
+        if i >= len(video_files):
+            print(f"Warning: Only {len(video_files)} videos found. Stopping at video index {i}.")
+            break
+
         # Access the 'caption' field
         caption = obj.get('caption')
         
@@ -21,7 +33,7 @@ def main(json_file, video_folder):
         if caption:
             # Create a new object with the desired format
             caption_obj = {
-                'path': f'{video_folder}/{i}.mp4',
+                'path': f'{video_folder}/{video_files[i]}',
                 'cap': [caption]
             }
             captions.append(caption_obj)
