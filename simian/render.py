@@ -39,7 +39,6 @@ from simian.object import (
     lock_all_objects,
     normalize_object_scale,
     optimize_meshes_in_hierarchy,
-    remove_loose_meshes,
     set_pivot_to_bottom,
     unlock_objects,
     unparent_keep_transform,
@@ -126,7 +125,6 @@ def render_scene(
         apply_all_modifiers(obj)
         join_objects_in_hierarchy(obj)
         optimize_meshes_in_hierarchy(obj)
-        remove_loose_meshes(obj)
 
         meshes = get_meshes_in_hierarchy(obj)
         obj = meshes[0]
