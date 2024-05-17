@@ -40,7 +40,7 @@ jobs:
       run: python simian/combiner.py
 
     - name: Run tests
-      run: HF_TOKEN=${{ secrets.HF_TOKEN }} python tests/__run__.py
+      run: python tests/__run__.py
 
     - name: Check test results
       if: failure()
