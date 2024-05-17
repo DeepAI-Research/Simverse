@@ -293,17 +293,17 @@ def generate_object_name_description_captions(combination):
                 object_name_description_relationship.replace("<size>", scale_name)
             )
             
-        random_metric_m = random.choice(["meters", "m"])
+        random_metric_m = random.choice(["meters", "m", ""])
         if "<size_in_meters>" in object_name_description_relationship:
             object_name_description_relationship = (
-                object_name_description_relationship.replace(f"<size_in_meters>{random_metric_m}", meters_to_feet_rounded(scale_factor))
+                object_name_description_relationship.replace(f"<size_in_meters>{random_metric_m}", str(meters_to_feet_rounded(scale_factor)))
             )
 
 
-        random_metric_f = random.choice(["feet", "ft"])
+        random_metric_f = random.choice(["feet", "ft", ""])
         if "<size_in_feet>" in object_name_description_relationship:
             object_name_description_relationship = (
-                object_name_description_relationship.replace(f"<size_in_feet>{random_metric_f}", scale_factor)
+                object_name_description_relationship.replace(f"<size_in_feet>{random_metric_f}", str(scale_factor))
             )
 
         object_name_descriptions.append(object_name_description_relationship)
