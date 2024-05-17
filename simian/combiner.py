@@ -247,49 +247,6 @@ def generate_orientation_caption(camera_data, combination):
     return orientation_text
 
 
-def generate_object_scale_description_captions(combination):
-    """
-    Generate captions for object scales based on the combination data.
-
-    Args:
-        combination (dict): Combination data.
-
-    Returns:
-        str: Object name and description captions.
-    """
-    object_scale_descriptions = []
-   
-    # for each object in the scene
-    for obj in combination["objects"]:
-        # get the object name and scale
-        object_name = obj["name"]
-        object_scale = obj["scale"]
-        scale_factor = object_scale["factor"]
-        scale_name = object_scale["name_synonym"]
-
-        # get the relationship between the object name and scale
-        object_scale_relationship = random.choice(
-            object_data["scale_description_relationship"]
-        )
-
-        object_scale_relationship = object_scale_relationship.replace("<name>", object_name)
-        object_scale_relationship = object_scale_relationship.replace(
-            "<scale_factor>", str(scale_factor)
-        )
-        object_scale_relationship = object_scale_relationship.replace(
-            "<scale_name>", scale_name
-        )
-
-        object_scale_descriptions.append(object_scale_relationship)
-    
-    # randomize order of object_descriptions
-    random.shuffle(object_scale_descriptions)
-    # join the object descriptions
-    object_scale_descriptions = " ".join(object_scale_descriptions)
-
-    return object_scale_descriptions
-
-
 def generate_object_name_description_captions(combination):
     """
     Generate captions for object names and descriptions based on the combination data.
@@ -543,10 +500,6 @@ def generate_caption(combination):
     # Add object name and description captions to the caption
     object_name_descriptions = generate_object_name_description_captions(combination)
     caption_parts.append(object_name_descriptions)
-
-    # Add object scale and description captions to the caption
-    object_scale_descriptions = generate_object_scale_description_captions(combination)
-    caption_parts.append(object_scale_descriptions)
 
     scene_relationship_description = generate_relationship_captions(combination)
     scene_relationship_description_str = ' '.join(scene_relationship_description)

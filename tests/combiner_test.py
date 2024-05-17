@@ -30,8 +30,7 @@ def mock_parse_args(*args, **kwargs):
 with patch('argparse.ArgumentParser.parse_args', new=mock_parse_args):
     from simian.combiner import (
         read_json_file, generate_caption, generate_combinations, 
-        generate_stage_captions, generate_orientation_caption,
-        generate_object_scale_description_captions, generate_object_name_description_captions,
+        generate_stage_captions, generate_orientation_caption, generate_object_name_description_captions,
         generate_relationship_captions, generate_fov_caption, generate_postprocessing_caption,
         generate_framing_caption, flatten_descriptions, generate_animation_captions,
         generate_postprocessing, generate_orientation, generate_framing, generate_animation,
@@ -235,30 +234,6 @@ def test_generate_orientation_caption():
         assert yaw_caption_found, "Orientation caption does not include correct yaw label."
         
         print("============ Test Passed: test_generate_orientation_caption ============")
-
-
-def test_generate_object_scale_description_captions():
-    combination = {
-        "objects": [
-            {"name": "Box", "scale": {"factor": 1.0, "name_synonym": "average"}}
-        ]
-    }
-    
-    with patch('simian.combiner.read_json_file', return_value=object_data):
-        captions = generate_object_scale_description_captions(combination)
-        
-        # Extract the expected relationship template from the object_data
-        expected_relationship_templates = object_data["scale_description_relationship"]
-
-        # Construct possible expected captions
-        expected_captions = [template.replace("<name>", "Box").replace("<scale_factor>", "1.0").replace("<scale_name>", "average") for template in expected_relationship_templates]
-
-        # Check if any of the expected captions are in the generated caption
-        caption_found = any(expected_caption in captions for expected_caption in expected_captions)
-
-        assert caption_found, "Object scale description caption is incorrect."
-        
-        print("============ Test Passed: test_generate_object_scale_description_captions ============")
 
 
 def test_generate_object_name_description_captions():
@@ -502,7 +477,6 @@ if __name__ == "__main__":
     test_generate_combinations()
     test_generate_stage_captions()
     test_generate_orientation_caption()
-    test_generate_object_scale_description_captions()
     test_generate_object_name_description_captions()
     test_generate_relationship_captions()
     test_generate_fov_caption()
