@@ -247,9 +247,9 @@ def generate_orientation_caption(camera_data, combination):
     return orientation_text
 
 
-def meters_to_feet(meters):
+def meters_to_feet_rounded(meters):
     feet_per_meter = 3.28084
-    return meters * feet_per_meter
+    return round(meters * feet_per_meter)
 
 
 def generate_object_name_description_captions(combination):
@@ -272,6 +272,7 @@ def generate_object_name_description_captions(combination):
         object_description = obj["description"]
 
         object_scale = obj["scale"]
+        scale_factor = object_scale["factor"]
         scale_name = object_scale["name_synonym"]
 
         # Get the relationship between the object name and description
@@ -290,6 +291,19 @@ def generate_object_name_description_captions(combination):
         if "<size>" in object_name_description_relationship:
             object_name_description_relationship = (
                 object_name_description_relationship.replace("<size>", scale_name)
+            )
+            
+        random_metric_m = random.choice(["meters", "m"])
+        if "<size_in_meters>" in object_name_description_relationship:
+            object_name_description_relationship = (
+                object_name_description_relationship.replace(f"<size_in_meters>{random_metric_m}", meters_to_feet_rounded(scale_factor))
+            )
+
+
+        random_metric_f = random.choice(["feet", "ft"])
+        if "<size_in_feet>" in object_name_description_relationship:
+            object_name_description_relationship = (
+                object_name_description_relationship.replace(f"<size_in_feet>{random_metric_f}", scale_factor)
             )
 
         object_name_descriptions.append(object_name_description_relationship)
