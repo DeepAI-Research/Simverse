@@ -247,49 +247,6 @@ def generate_orientation_caption(camera_data, combination):
     return orientation_text
 
 
-def generate_object_scale_description_captions(combination):
-    """
-    Generate captions for object scales based on the combination data.
-
-    Args:
-        combination (dict): Combination data.
-
-    Returns:
-        str: Object name and description captions.
-    """
-    object_scale_descriptions = []
-   
-    # for each object in the scene
-    for obj in combination["objects"]:
-        # get the object name and scale
-        object_name = obj["name"]
-        object_scale = obj["scale"]
-        scale_factor = object_scale["factor"]
-        scale_name = object_scale["name_synonym"]
-
-        # get the relationship between the object name and scale
-        object_scale_relationship = random.choice(
-            object_data["scale_description_relationship"]
-        )
-
-        object_scale_relationship = object_scale_relationship.replace("<name>", object_name)
-        object_scale_relationship = object_scale_relationship.replace(
-            "<scale_factor>", str(scale_factor)
-        )
-        object_scale_relationship = object_scale_relationship.replace(
-            "<scale_name>", scale_name
-        )
-
-        object_scale_descriptions.append(object_scale_relationship)
-    
-    # randomize order of object_descriptions
-    random.shuffle(object_scale_descriptions)
-    # join the object descriptions
-    object_scale_descriptions = " ".join(object_scale_descriptions)
-
-    return object_scale_descriptions
-
-
 def generate_object_name_description_captions(combination):
     """
     Generate captions for object names and descriptions based on the combination data.
@@ -402,7 +359,7 @@ def generate_fov_caption(combination):
     fov_template = fov_template.replace("<fov>", str(fov))
 
     # Convert FOV to focal length
-    focal_length = 35 / (2 * math.tan(math.radians(fov) / 2))
+    focal_length = int(35 / (2 * math.tan(math.radians(fov) / 2)))
     fov_caption = fov_template.replace("<mm>", str(focal_length))
 
     if fov_type == "degrees":
@@ -543,10 +500,6 @@ def generate_caption(combination):
     # Add object name and description captions to the caption
     object_name_descriptions = generate_object_name_description_captions(combination)
     caption_parts.append(object_name_descriptions)
-
-    # Add object scale and description captions to the caption
-    object_scale_descriptions = generate_object_scale_description_captions(combination)
-    caption_parts.append(object_scale_descriptions)
 
     scene_relationship_description = generate_relationship_captions(combination)
     scene_relationship_description_str = ' '.join(scene_relationship_description)
@@ -746,8 +699,8 @@ def generate_orientation(camera_data, objects, background):
         )
 
     orientation = {
-        "yaw": yaw,
-        "pitch": pitch,
+        "yaw": int(yaw),
+        "pitch": int(pitch),
     }
 
     return orientation
@@ -768,7 +721,7 @@ def generate_framing(camera_data):
     fov_max = max([f["fov_max"] for f in camera_data["framings"]])
 
     # Randomly roll an FOV value between FOV_min and FOV_max
-    fov = random.uniform(fov_min, fov_max)
+    fov = int(random.uniform(fov_min, fov_max))
 
     # Find the corresponding framing
     framing = None
