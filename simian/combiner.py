@@ -389,6 +389,9 @@ def generate_fov_caption(combination):
 
     fov = combination["framing"]["fov"]
 
+    # Round the FOV to the nearest integer
+    fov = round(fov)
+
     # FOV is stored as degrees in the framing data
     fov_types = "degrees", "mm"
 
