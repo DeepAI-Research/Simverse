@@ -1,13 +1,11 @@
 import os
 import sys
-import argparse
 import requests
 import json
-from typing import Dict, List, Tuple
+from typing import Dict
 import time
 import hashlib
 import re
-import urllib.parse
 
 server_url_default = "https://console.vast.ai"
 headers = {}
@@ -222,7 +220,7 @@ def search_offers(max_price, api_key):
         'Content-Type': 'application/json',
         'Authorization': f'Bearer {api_key}'
     }
-    url = base_url+"?q={\"gpu_ram\":\">=4\"}"
+    url = base_url+"?q={\"gpu_ram\":\">=4\",\"rentable\":{\"eq\":true},\"dph_total\":{\"lte\":0.1480339514817041},\"sort_option\":{\"0\":[\"dph_total\",\"asc\"],\"1\":[\"total_flops\",\"asc\"]}}"
     
     print("url", url)
 
@@ -242,19 +240,17 @@ def create_instance(offer_id, image, env=None):
         "client_id": "me",
         "image": image,
         "env": parse_env(env),
-        "price": 0,  # Assuming a default value of 0 for price
-        "disk": 0,  # Assuming a default value of 0 for disk
-        "label": "",  # Assuming an empty string for label
-        "extra": "",
-        "onstart": "",
-        "runtype": "ssh",
-        "image_login": "",
+        "disk": 16,  # Set a non-zero value for disk
+        "onstart": "export PATH=$PATH:/ &&  cd ../ && REDIS_HOST=redis-13657.c289.us-west-1-2.ec2.redns.redis-cloud.com REDIS_PORT=13657 REDIS_USER=default REDIS_PASSWORD=NZBXFNSTvEpm4R93DrG01R3T8SlD6jBD HF_TOKEN=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 HF_REPO_ID=RaccoonResearch/simian100 HF_PATH=./ VAST_API_KEY=92bafdbdc49dc7bf051ccc58acd4a332e45f69e6c9e3fade88c0f3f51f698162 celery -A simian.worker worker --loglevel=info",
+        "runtype": "ssh ssh_proxy",
+        "image_login": None,
         "python_utf8": False,
         "lang_utf8": False,
         "use_jupyter_lab": False,
-        "jupyter_dir": "",
+        "jupyter_dir": None,
         "create_from": "",
-        "force": False
+        "template_hash_id": "250671155ccbc28d0609af524b75a80e",
+        "template_id": 108305
     }
     url = apiurl(f"/asks/{offer_id}/")
     print(f"Request URL: {url}")
@@ -265,121 +261,42 @@ def create_instance(offer_id, image, env=None):
 
 def destroy_instance(instance_id):
     url = apiurl(f"/instances/{instance_id}/")
-    response = http_del(url, headers={}, json={})
+    response = http_del(url, headers=headers, json={})
     return response.json()
 
-def execute_command(instance_id, command):
-    url = apiurl(f"/instances/command/{instance_id}/")
-    json_blob = {"command": command}
-    response = http_put(url, headers={}, json=json_blob)
-    result_url = response.json().get("result_url", None)
-    if result_url is None:
-        api_key_id_h = hashlib.md5(
-            (api_key + str(instance_id)).encode("utf-8")
-        ).hexdigest()
-        result_url = (
-            "https://s3.amazonaws.com/vast.ai/instance_logs/"
-            + api_key_id_h
-            + "C.log"
-        )
-    for i in range(30):
-        time.sleep(0.3)
-        r = requests.get(result_url)
-        if r.status_code == 200:
-            return r.text
-    return None
 
 def rent_nodes(max_price, max_nodes, image, api_key, env=None):
     offers = search_offers(max_price, api_key)
     rented_nodes = []
     for offer in offers:
-        print(f"Offer: {offer}")
         if len(rented_nodes) >= max_nodes:
             break
         try:
+            print("offer is ***")
+            print(offer)
             instance = create_instance(offer["id"], image, env)
-            rented_nodes.append(instance)
-            print(f"Rented node: {instance['id']}")
-        except Exception as e:
-            print(f"Error renting node: {offer['id']}, {str(e)}")
+            print("INSTANCE: ")
+            print(instance)
+            rented_nodes.append(offer)
+            print(f"Rented node {offer["id"]} on contract: {instance['new_contract']}")
+        except requests.exceptions.HTTPError as e:
+            if e.response.status_code == 400:
+                # print the response itself
+                print(f"Error renting node: {offer['id']}, {e.response.text}")
+                print(f"Offer {offer['id']} is unavailable. Trying next offer...")
+            else:
+                print(f"Error renting node: {offer['id']}, {str(e)}")
+                raise
     return rented_nodes
-
-def start_workers(nodes, image, env_vars=None):
-    for node in nodes:
-        try:
-            execute_command(node["id"], f"docker pull {image}")
-            env_vars_str = " ".join([f"-e {var}" for var in env_vars]) if env_vars else ""
-            execute_command(node["id"], f"docker run -d --name worker {env_vars_str} {image}")
-            print(f"Worker started on node: {node['id']}")
-        except Exception as e:
-            print(f"Error starting worker on node: {node['id']}, {str(e)}")
 
 def terminate_nodes(nodes):
     for node in nodes:
         try:
-            execute_command(node["id"], "docker stop worker")
-            execute_command(node["id"], "docker rm worker")
             destroy_instance(node["id"])
-            print(f"Node terminated: {node['id']}")
         except Exception as e:
             print(f"Error terminating node: {node['id']}, {str(e)}")
 
 def main(max_price, max_nodes, image, api_key, env=None, env_vars=None):
     nodes = rent_nodes(max_price, max_nodes, image, api_key, env)
-    start_workers(nodes, image, env_vars)
     input("Press Enter to terminate nodes...")
     terminate_nodes(nodes)
-
-
-# if __name__ == "__main__":
-#     parser = argparse.ArgumentParser()
-#     parser.add_argument("--max-price", type=float, required=True, help="Maximum price per hour")
-#     parser.add_argument("--max-nodes", type=int, required=True, help="Maximum number of nodes")
-#     parser.add_argument("--image", type=str, required=True, help="Docker image to run")
-#     parser.add_argument("--env", type=str, default=None, help="Environment variables for the container")
-#     parser.add_argument("--api-key", required=True, help="Vast.ai API key")
-#     parser.add_argument("--env-vars", type=str, default="", help="Comma-separated list of environment variables (e.g., 'VAR1=value1,VAR2=value2')")
-#     args = parser.parse_args()
-#     api_key = args.api_key
-#     headers["Authorization"] = "Bearer " + api_key
-#     env_vars = args.env_vars.split(",") if args.env_vars else None
-#     main(args.max_price, args.max_nodes, args.image, api_key, args.env, env_vars)
-
-import unittest
-import os
-import sys
-import re
-
-current_dir = os.path.dirname(os.path.abspath(__file__))
-simian_path = os.path.join(current_dir, "../")
-sys.path.append(simian_path)
-
-from simian.distributed_vast import rent_nodes, start_workers, terminate_nodes, headers
-from simian.utils import get_env_vars
-
-class TestDistributedVast(unittest.TestCase):
-    def test_rent_run_terminate(self):
-        env_vars = get_env_vars()
-        vast_api_key = os.getenv("VAST_API_KEY") or env_vars.get("VAST_API_KEY")
-        
-        # Assert that vast_api_key exists
-        self.assertIsNotNone(vast_api_key, "Vast API key not found.")
-        
-        headers["Authorization"] = "Bearer " + vast_api_key
-        
-        max_price = 0.5
-        max_nodes = 1
-        image = "arfx/simian-worker:latest"
-        env = None
-        
-        nodes = rent_nodes(max_price, max_nodes, image, vast_api_key, env)
-
-        self.assertEqual(len(nodes), 1)
-        
-        start_workers(nodes, image)
-        # Perform any additional assertions or checks here
-        
-        terminate_nodes(nodes)
-
-if __name__ == "__main__":
-    unittest.main()
