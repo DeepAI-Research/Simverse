@@ -402,7 +402,7 @@ def generate_fov_caption(combination):
     fov_template = fov_template.replace("<fov>", str(fov))
 
     # Convert FOV to focal length
-    focal_length = 35 / (2 * math.tan(math.radians(fov) / 2))
+    focal_length = int(35 / (2 * math.tan(math.radians(fov) / 2)))
     fov_caption = fov_template.replace("<mm>", str(focal_length))
 
     if fov_type == "degrees":
@@ -746,8 +746,8 @@ def generate_orientation(camera_data, objects, background):
         )
 
     orientation = {
-        "yaw": yaw,
-        "pitch": pitch,
+        "yaw": int(yaw),
+        "pitch": int(pitch),
     }
 
     return orientation
@@ -768,7 +768,7 @@ def generate_framing(camera_data):
     fov_max = max([f["fov_max"] for f in camera_data["framings"]])
 
     # Randomly roll an FOV value between FOV_min and FOV_max
-    fov = random.uniform(fov_min, fov_max)
+    fov = int(random.uniform(fov_min, fov_max))
 
     # Find the corresponding framing
     framing = None
