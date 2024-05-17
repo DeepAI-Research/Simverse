@@ -7,7 +7,7 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 simian_path = os.path.join(current_dir, "../")
 sys.path.append(simian_path)
 
-from simian.distributed_vast import rent_nodes, start_workers, terminate_nodes, headers
+from simian.distributed_vast import rent_nodes, terminate_nodes, headers
 from simian.utils import get_env_vars
 
 class TestDistributedVast(unittest.TestCase):
@@ -28,10 +28,11 @@ class TestDistributedVast(unittest.TestCase):
         nodes = rent_nodes(max_price, max_nodes, image, vast_api_key, env)
 
         self.assertEqual(len(nodes), 1)
-        
-        start_workers(nodes, image)
-        # Perform any additional assertions or checks here
-        
+
+        # sleep for 5 seconds
+        import time
+        time.sleep(3)
+
         terminate_nodes(nodes)
 
 if __name__ == "__main__":

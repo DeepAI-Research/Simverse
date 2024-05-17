@@ -22,7 +22,6 @@ def http_get(url, headers):
             print(f"Response: {response.text}")
         raise
 
-
 def apiurl(subpath: str, query_args: Dict = None, api_key: str = None) -> str:
     if query_args is None:
         query_args = {}
@@ -258,12 +257,11 @@ def create_instance(offer_id, image, env=None):
     response = http_put(url, headers=headers, json=json_blob)
     return response.json()
 
-
 def destroy_instance(instance_id):
     url = apiurl(f"/instances/{instance_id}/")
+    print(f"Terminating instance: {instance_id}")
     response = http_del(url, headers=headers, json={})
     return response.json()
-
 
 def rent_nodes(max_price, max_nodes, image, api_key, env=None):
     offers = search_offers(max_price, api_key)
@@ -277,8 +275,11 @@ def rent_nodes(max_price, max_nodes, image, api_key, env=None):
             instance = create_instance(offer["id"], image, env)
             print("INSTANCE: ")
             print(instance)
-            rented_nodes.append(offer)
-            print(f"Rented node {offer["id"]} on contract: {instance['new_contract']}")
+            rented_nodes.append({
+                "offer_id": offer["id"],
+                "instance_id": instance["new_contract"]
+            })
+            print(f"Rented node {offer['id']} on contract: {instance['new_contract']}")
         except requests.exceptions.HTTPError as e:
             if e.response.status_code == 400:
                 # print the response itself
@@ -292,11 +293,7 @@ def rent_nodes(max_price, max_nodes, image, api_key, env=None):
 def terminate_nodes(nodes):
     for node in nodes:
         try:
-            destroy_instance(node["id"])
+            time.sleep(2)  # Add a delay before terminating
+            destroy_instance(node["instance_id"])
         except Exception as e:
-            print(f"Error terminating node: {node['id']}, {str(e)}")
-
-def main(max_price, max_nodes, image, api_key, env=None, env_vars=None):
-    nodes = rent_nodes(max_price, max_nodes, image, api_key, env)
-    input("Press Enter to terminate nodes...")
-    terminate_nodes(nodes)
+            print(f"Error terminating node: {node['instance_id']}, {str(e)}")
