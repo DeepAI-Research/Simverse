@@ -247,42 +247,56 @@ def generate_orientation_caption(camera_data, combination):
     return orientation_text
 
 
+def meters_to_feet(meters):
+    feet_per_meter = 3.28084
+    return meters * feet_per_meter
+
+
 def generate_object_name_description_captions(combination):
     """
     Generate captions for object names and descriptions based on the combination data.
 
     Args:
         combination (dict): Combination data.
+        object_data (dict): Object data containing name_description_relationship and scales.
 
     Returns:
         str: Object name and description captions.
     """
+
     object_name_descriptions = []
-    # for each object in the scene
+    # For each object in the scene
     for obj in combination["objects"]:
-        # get the object name and description
+        # Get the object name, description, and scale
         object_name = obj["name"]
         object_description = obj["description"]
 
-        # get the relationship between the object name and description
+        object_scale = obj["scale"]
+        scale_name = object_scale["name_synonym"]
+
+        # Get the relationship between the object name and description
         object_name_description_relationship = random.choice(
             object_data["name_description_relationship"]
         )
 
+        # Replace placeholders with actual values
         object_name_description_relationship = (
             object_name_description_relationship.replace("<name>", object_name)
         )
         object_name_description_relationship = (
-            object_name_description_relationship.replace(
-                "<description>", object_description
-            )
+            object_name_description_relationship.replace("<description>", object_description)
         )
+
+        if "<size>" in object_name_description_relationship:
+            object_name_description_relationship = (
+                object_name_description_relationship.replace("<size>", scale_name)
+            )
 
         object_name_descriptions.append(object_name_description_relationship)
 
-    # randomize order of object_descriptions
+    # Randomize order of object descriptions
     random.shuffle(object_name_descriptions)
-    # join the object descriptions
+    # Join the object descriptions
     object_name_descriptions = " ".join(object_name_descriptions)
     return object_name_descriptions
 
