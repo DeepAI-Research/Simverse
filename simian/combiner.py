@@ -854,12 +854,12 @@ def generate_objects():
             ],
         }
 
-        placement = 5
+        placement = 4
+        positions_taken.add(placement)
         if i > 0:
             placement = random.choice(
-                [i for i in range(1, 9) if i not in positions_taken]
+                [i for i in range(0, 9) if i not in positions_taken]
             )
-        positions_taken.add(placement)
 
         object = {
             "name": object["name"],
