@@ -410,25 +410,22 @@ def generate_postprocessing_caption(combination):
     postprocessing = combination["postprocessing"]
     caption_parts = []
     
-    # Bloom
-    if postprocessing["bloom"]["type"] != "none":
-        bloom_caption = f"The bloom effect is set to {postprocessing['bloom']['type']} with a threshold of {postprocessing['bloom']['threshold']:.2f}, intensity of {postprocessing['bloom']['intensity']:.2f}, and radius of {postprocessing['bloom']['radius']:.2f}."
-        caption_parts.append(bloom_caption)
+    postprocessing_options = camera_data["postprocessing"]
 
-    # SSAO 
-    if postprocessing["ssao"]["type"] != "none":
-        ssao_caption = f"The screen space ambient occlusion (SSAO) effect is set to {postprocessing['ssao']['type']} with a distance of {postprocessing['ssao']['distance']:.2f} and factor of {postprocessing['ssao']['factor']:.2f}."
-        caption_parts.append(ssao_caption)
-
-    # SSRR
-    if postprocessing["ssrr"]["type"] != "none":
-        ssrr_caption = f"The screen space reflections (SSRR) effect is set to {postprocessing['ssrr']['type']} with a maximum roughness of {postprocessing['ssrr']['max_roughness']:.2f} and thickness of {postprocessing['ssrr']['thickness']:.2f}."
-        caption_parts.append(ssrr_caption)
-    
-    # Motion Blur
-    if postprocessing["motionblur"]["type"] != "none":
-        motionblur_caption = f"The motion blur effect is set to {postprocessing['motionblur']['type']} with a shutter speed of {postprocessing['motionblur']['shutter_speed']:.2f}."
-        caption_parts.append(motionblur_caption)
+    for key in postprocessing:
+        post_type = postprocessing[key]["type"]
+        if key == "bloom":
+            bloom_caption = random.choice(postprocessing_options['bloom']['types'][post_type]['descriptions'])
+            caption_parts.append(bloom_caption)
+        elif key == "ssao":
+            ssao_caption = random.choice(postprocessing_options['ssao']['types'][post_type]['descriptions'])
+            caption_parts.append(ssao_caption)
+        elif key == "ssrr":
+            ssrr_caption = random.choice(postprocessing_options['ssrr']['types'][post_type]['descriptions'])
+            caption_parts.append(ssrr_caption)
+        elif key == "motionblur":
+            motionblur_caption = random.choice(postprocessing_options['motionblur']['types'][post_type]['descriptions'])
+            caption_parts.append(motionblur_caption)
 
     # randomly determine how many values (1-4 inclusive) to pop
     num_to_pop = random.randint(1, len(caption_parts))
