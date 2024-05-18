@@ -488,6 +488,12 @@ def flatten_descriptions(descriptions):
     return flat_list
 
 
+def speed_factor_to_percentage(speed_factor):
+    rounded_speed_factor = round(speed_factor, 2)
+    percentage = int(rounded_speed_factor * 100)
+    return f"{percentage}%"
+
+
 def generate_animation_captions(combination):
     """
     Generate captions for camera animations based on the combination data and speed factor.
@@ -500,7 +506,13 @@ def generate_animation_captions(combination):
         list: List of animation captions.
     """
     
-    speed_factor = combination["animation"]["speed_factor"]
+    speed_factor = round(combination["animation"]["speed_factor"], 2)
+    speed_factor_str = None
+    if random.choice([True, False]):
+        speed_factor_str = speed_factor_to_percentage(speed_factor)
+    else:
+        speed_factor_str = f"{speed_factor}x"
+
     animation_types = camera_data["animations"][-1]["types"]
 
     animation_type = "none"
@@ -513,7 +525,7 @@ def generate_animation_captions(combination):
         descriptions = animation_types[animation_type]["descriptions"]
         flat_descriptions = flatten_descriptions(descriptions)
         animation_caption = random.choice(flat_descriptions)
-        animation_caption = animation_caption.replace("<animation_speed_value>", str(speed_factor))
+        animation_caption = animation_caption.replace("<animation_speed_value>", speed_factor_str)
         return [animation_caption]
 
     return []
