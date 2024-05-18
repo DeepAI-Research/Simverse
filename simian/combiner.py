@@ -412,22 +412,22 @@ def generate_postprocessing_caption(combination):
     
     # Bloom
     if postprocessing["bloom"]["type"] != "none":
-        bloom_caption = f"The bloom effect is set to {postprocessing['bloom']['type']} with a threshold of {postprocessing['bloom']['threshold']:.2f}, intensity of {postprocessing['bloom']['intensity']:.2f}, and radius of {postprocessing['bloom']['radius']:.2f}."
+        bloom_caption = random.choice(postprocessing['bloom']['type']['descriptions'])
         caption_parts.append(bloom_caption)
 
     # SSAO 
     if postprocessing["ssao"]["type"] != "none":
-        ssao_caption = f"The screen space ambient occlusion (SSAO) effect is set to {postprocessing['ssao']['type']} with a distance of {postprocessing['ssao']['distance']:.2f} and factor of {postprocessing['ssao']['factor']:.2f}."
+        ssao_caption = random.choice(postprocessing['ssao']['type']['descriptions'])
         caption_parts.append(ssao_caption)
 
     # SSRR
     if postprocessing["ssrr"]["type"] != "none":
-        ssrr_caption = f"The screen space reflections (SSRR) effect is set to {postprocessing['ssrr']['type']} with a maximum roughness of {postprocessing['ssrr']['max_roughness']:.2f} and thickness of {postprocessing['ssrr']['thickness']:.2f}."
+        ssrr_caption = random.choice(postprocessing['ssrr']['type']['descriptions'])
         caption_parts.append(ssrr_caption)
     
     # Motion Blur
     if postprocessing["motionblur"]["type"] != "none":
-        motionblur_caption = f"The motion blur effect is set to {postprocessing['motionblur']['type']} with a shutter speed of {postprocessing['motionblur']['shutter_speed']:.2f}."
+        motionblur_caption = random.choice(postprocessing['motionblur']['type']['descriptions'])
         caption_parts.append(motionblur_caption)
 
     # randomly determine how many values (1-4 inclusive) to pop
