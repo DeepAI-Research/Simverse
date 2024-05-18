@@ -407,31 +407,6 @@ def generate_postprocessing_caption(combination):
     Returns:
         str: Postprocessing caption.
     """
-
-    """
-    "postprocessing": {
-                "bloom": {
-                    "threshold": 0.8009615715216047,
-                    "intensity": 0.5262916247966855,
-                    "radius": 9.61634058929395,
-                    "type": "high"
-                },
-                "ssao": {
-                    "distance": 0.25243024211389997,
-                    "factor": 0.6162051131710639,
-                    "type": "high"
-                },
-                "ssrr": {
-                    "max_roughness": 0.9738121546535768,
-                    "thickness": 3.0782009896696256,
-                    "type": "none"
-                },
-                "motionblur": {
-                    "shutter_speed": 0.46096757751145756,
-                    "type": "medium"
-                }
-            },
-    """
     postprocessing = combination["postprocessing"]
     caption_parts = []
     
