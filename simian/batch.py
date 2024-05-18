@@ -1,26 +1,25 @@
+import json
 import multiprocessing
 import os
 import platform
 import subprocess
 import sys
-from typing import Literal, Optional
-import fire
+import argparse
+from typing import Optional
 
 # Append Simian to sys.path before importing from package
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../"))
 
 from simian.utils import get_blender_path
 
-
 def render_objects(
     download_dir: Optional[str] = None,
     processes: Optional[int] = None,
-    save_repo_format: Optional[Literal["zip", "tar", "tar.gz", "files"]] = None,
     render_timeout: int = 3000,
     width: int = 1920,
     height: int = 1080,
     start_index: int = 0,
-    end_index: int = 9,
+    end_index: int = -1,
     start_frame: int = 1,
     end_frame: int = 65,
 ) -> None:
@@ -36,8 +35,6 @@ def render_objects(
             If None, objects are not downloaded. Defaults to None.
         - processes (Optional[int]): Number of processes to use for multiprocessing.
             Defaults to three times the number of CPU cores.
-        - save_repo_format (Optional[Literal["zip", "tar", "tar.gz", "files"]]):
-            Format to save repositories after rendering. If None, no saving is performed.
         - render_timeout (int): Maximum time in seconds for a single rendering process.
         - width (int): Width of the rendering in pixels.
         - height (int): Height of the rendering in pixels.
@@ -53,12 +50,6 @@ def render_objects(
     Returns:
         None
     """
-    # Ensure download directory is specified if a save format is set.
-    if download_dir is None and save_repo_format is not None:
-        raise ValueError(
-            f"Download directory must be specified if save_repo_format is set."
-        )
-
     # Set the number of processes to three times the number of CPU cores if not specified.
     if processes is None:
         processes = multiprocessing.cpu_count() * 3
@@ -69,6 +60,16 @@ def render_objects(
 
     # make sure renders directory exists
     os.makedirs(target_directory, exist_ok=True)
+
+    if end_index == -1:
+
+        # get the length of combinations.json
+        with open(os.path.join(scripts_dir, "../", "combinations.json"), "r") as file:
+            data = json.load(file)
+            combinations_data = data["combinations"]
+            num_combinations = len(combinations_data)
+
+        end_index = num_combinations
 
     # Loop over each combination index to set up and run the rendering process.
     for i in range(start_index, end_index):
@@ -84,6 +85,31 @@ def render_objects(
         # Execute the rendering command with a timeout.
         subprocess.run(["bash", "-c", command], timeout=render_timeout, check=False)
 
+def main():
+    parser = argparse.ArgumentParser(description="Automate the rendering of objects using Blender.")
+    parser.add_argument("--download_dir", type=str, default=None, help="Directory to download the objects to. Defaults to None.")
+    parser.add_argument("--processes", type=int, default=None, help="Number of processes to use for multiprocessing. Defaults to three times the number of CPU cores.")
+    parser.add_argument("--render_timeout", type=int, default=3000, help="Maximum time in seconds for a single rendering process. Defaults to 3000.")
+    parser.add_argument("--width", type=int, default=1920, help="Width of the rendering in pixels. Defaults to 1920.")
+    parser.add_argument("--height", type=int, default=1080, help="Height of the rendering in pixels. Defaults to 1080.")
+    parser.add_argument("--start_index", type=int, default=0, help="Starting index for rendering from the combinations DataFrame. Defaults to 0.")
+    parser.add_argument("--end_index", type=int, default=-1, help="Ending index for rendering from the combinations DataFrame. Defaults to -1.")
+    parser.add_argument("--start_frame", type=int, default=1, help="Starting frame number for the animation. Defaults to 1.")
+    parser.add_argument("--end_frame", type=int, default=65, help="Ending frame number for the animation. Defaults to 65.")
+
+    args = parser.parse_args()
+
+    render_objects(
+        download_dir=args.download_dir,
+        processes=args.processes,
+        render_timeout=args.render_timeout,
+        width=args.width,
+        height=args.height,
+        start_index=args.start_index,
+        end_index=args.end_index,
+        start_frame=args.start_frame,
+        end_frame=args.end_frame
+    )
 
 if __name__ == "__main__":
-    fire.Fire(render_objects)
+    main()

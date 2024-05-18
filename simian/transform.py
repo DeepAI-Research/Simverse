@@ -3,35 +3,49 @@ import math
 import random
 import numpy as np
 import random
+import copy
 
 
 # Function Definitions
 def degrees_to_radians(deg):
     return radians(deg)
 
+
 def compute_rotation_matrix(theta):
     return [[cos(theta), -sin(theta)], [sin(theta), cos(theta)]]
+
 
 def apply_rotation(point, rotation_matrix):
     rotated_point = np.dot(rotation_matrix, np.array(point))
     # round this to integer if it is close to an integer
-    rotated_point = [round(val) if abs(val - round(val)) < 1e-9 else val for val in rotated_point]
+    rotated_point = [
+        round(val) if abs(val - round(val)) < 1e-9 else val for val in rotated_point
+    ]
 
     return rotated_point
+
 
 def adjust_positions(objects, camera_yaw):
     rotation_matrix = compute_rotation_matrix(radians(camera_yaw))
     lookup_table = {
-        0: (-1, 1), 1: (0, 1), 2: (1, 1),
-        3: (-1, 0), 4: (0, 0), 5: (1, 0),
-        6: (-1, -1), 7: (0, -1), 8: (1, -1)
+        0: (-1, 1),
+        1: (0, 1),
+        2: (1, 1),
+        3: (-1, 0),
+        4: (0, 0),
+        5: (1, 0),
+        6: (-1, -1),
+        7: (0, -1),
+        8: (1, -1),
     }
 
     empty_objs = []
     for obj in objects:
         grid_x, grid_y = lookup_table[obj["placement"]]
         empty_obj = obj
-        empty_obj["transformed_position"] = apply_rotation([grid_x, grid_y], rotation_matrix)
+        empty_obj["transformed_position"] = apply_rotation(
+            [grid_x, grid_y], rotation_matrix
+        )
         empty_objs.append(empty_obj)
     return empty_objs
 
@@ -47,8 +61,6 @@ def determine_relationships(objects, object_data):
     Returns:
         - list: List of spatial relationships between objects.
     """
-    print("Objects are")
-    print(objects)
     # Retrieve directional relationship phrases from object data
     to_the_left = object_data["relationships"]["to_the_left"]
     to_the_right = object_data["relationships"]["to_the_right"]
@@ -63,9 +75,7 @@ def determine_relationships(objects, object_data):
             if i != j:
                 # Get transformed positions
                 pos1 = obj1["transformed_position"]
-                print("pos1: ", pos1)
                 pos2 = obj2["transformed_position"]
-                print("pos2: ", pos2)
 
                 relationship = ""
 
@@ -76,15 +86,23 @@ def determine_relationships(objects, object_data):
                     relationship = random.choice(to_the_right)
 
                 # Determine the depth relationship based on x-coordinates
-                if pos2[0] > pos1[0]:  # obj2 is in front of obj1 (negative x is closer to the camera)
-                    relationship += (" and " + random.choice(in_front_of)) if relationship else random.choice(in_front_of)
+                if (
+                    pos2[0] > pos1[0]
+                ):  # obj2 is in front of obj1 (negative x is closer to the camera)
+                    relationship += (
+                        (" and " + random.choice(in_front_of))
+                        if relationship
+                        else random.choice(in_front_of)
+                    )
                 elif pos2[0] < pos1[0]:  # obj2 is behind obj1
-                    relationship += (" and " + random.choice(behind)) if relationship else random.choice(behind)
+                    relationship += (
+                        (" and " + random.choice(behind))
+                        if relationship
+                        else random.choice(behind)
+                    )
 
                 # If there is a significant relationship, add it to the list
-                if relationship is not "":
-                    print("relationship is")
-                    print(relationship)
+                if relationship != "":
                     relationships.append(
                         f"{obj1['name']} {relationship} {obj2['name']}."
                     )

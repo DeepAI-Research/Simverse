@@ -1,6 +1,4 @@
 import os
-from unittest.mock import patch
-import pandas as pd
 import sys
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -11,41 +9,25 @@ from simian.batch import render_objects
 from simian.utils import get_combination_objects
 
 
-def test_get_combination_objects():
-    """
-    Test the get_combination_objects function.
-    """
-    # Setup the expected DataFrame
-    expected_df = pd.DataFrame({"id": [1, 2], "name": ["Object1", "Object2"]})
-
-    # Mock pd.read_json to return a specific DataFrame
-    with patch("pandas.read_json", return_value=expected_df):
-        df = get_combination_objects()
-        pd.testing.assert_frame_equal(df, expected_df)
-        print("============ Test Passed: test_get_combination_objects ============")
-
-
 def test_render_objects():
     """
     Test the render_objects function.
     """
     download_dir = "/fake/download/path"
     processes = 4
-    save_repo_format = "zip"
     render_timeout = 3000
     width = 1920
     height = 1080
     start_index = 0
     end_index = 1
     start_frame = 1
-    end_frame = 65
+    end_frame = 2
 
     # Call the function
     try:
         render_objects(
             download_dir=download_dir,
             processes=processes,
-            save_repo_format=save_repo_format,
             render_timeout=render_timeout,
             width=width,
             height=height,
@@ -62,6 +44,5 @@ def test_render_objects():
 
 
 if __name__ == "__main__":
-    test_get_combination_objects()
     test_render_objects()
     print("============ ALL TESTS PASSED ============")

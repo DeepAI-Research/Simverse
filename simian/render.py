@@ -22,7 +22,12 @@ from simian.utils import check_imports
 
 check_imports()
 import pandas as pd
-from simian.camera import create_camera_rig, position_camera, set_camera_settings
+from simian.camera import (
+    create_camera_rig,
+    position_camera,
+    set_camera_animation,
+    set_camera_settings,
+)
 from simian.position import find_largest_length, place_objects_on_grid
 from simian.camera import create_camera_rig, set_camera_settings
 from simian.object import (
@@ -33,13 +38,14 @@ from simian.object import (
     load_object,
     lock_all_objects,
     normalize_object_scale,
+    optimize_meshes_in_hierarchy,
     set_pivot_to_bottom,
     unlock_objects,
     unparent_keep_transform,
 )
 from simian.background import create_photosphere, set_background
 from simian.scene import apply_stage_material, create_stage, initialize_scene
-import objaverse
+import simian.vendor.objaverse
 
 
 def read_combination(combination_file: str, index: int = 0) -> dict:
@@ -53,8 +59,10 @@ def read_combination(combination_file: str, index: int = 0) -> dict:
         None
     """
     with open(combination_file, "r") as file:
-        combinations = json.load(file)
-        return combinations[min(index, len(combinations) - 1)]
+        data = json.load(file)
+        # read the combinations from the JSON file and load as pandas dataframe
+        combinations_data = data["combinations"]
+        return combinations_data[index]
 
 
 def render_scene(
@@ -64,6 +72,7 @@ def render_scene(
     start_frame: int = 1,
     end_frame: int = 65,
     combination_index=0,
+    combination=None,
     height=1080,
     width=1920,
 ) -> None:
@@ -98,26 +107,24 @@ def render_scene(
     # Lock and hide all scene objects before doing any object operations
     initial_objects = lock_all_objects()
 
-    combination = read_combination(combination_file, combination_index)
+    if combination is not None:
+        combination = json.loads(combination)
+    else:
+        combination = read_combination(combination_file, combination_index)
     all_objects = []
 
     focus_object = None
 
     for object_data in combination["objects"]:
-        object_file = objaverse.load_objects([object_data["uid"]])[object_data["uid"]]
+        object_file = simian.vendor.objaverse.load_objects([object_data["uid"]])[object_data["uid"]]
 
         load_object(object_file)
         obj = [obj for obj in context.view_layer.objects.selected][0]
 
         apply_and_remove_armatures()
         apply_all_modifiers(obj)
-        # optimize_meshes_in_hierarchy(obj)
-
         join_objects_in_hierarchy(obj)
-
-        # optimize_meshes_in_hierarchy(obj)
-
-        # remove_loose_meshes(obj)
+        optimize_meshes_in_hierarchy(obj)
 
         meshes = get_meshes_in_hierarchy(obj)
         obj = meshes[0]
@@ -128,29 +135,21 @@ def render_scene(
         unparent_keep_transform(obj)
         set_pivot_to_bottom(obj)
 
-        # Calculate the grid cell position
-        grid_cell = object_data["placement"]
-        row = (grid_cell - 1) // 3
-        col = (grid_cell - 1) % 3
-
-        obj.location = [col - 1, row - 1, 0]
-
         obj.scale = [object_data["scale"]["factor"] for _ in range(3)]
         normalize_object_scale(obj)
 
         obj.name = object_data["uid"]  # Set the Blender object's name to the UID
 
-        all_objects.append(obj)
-
-    # Unlock and unhide the initial objects
-    unlock_objects(initial_objects)
+        all_objects.append({obj: object_data["placement"]})
 
     largest_length = find_largest_length(all_objects)
     place_objects_on_grid(all_objects, largest_length)
 
-    print("HEREERERE")
+    # Unlock and unhide the initial objects
+    unlock_objects(initial_objects)
 
     set_camera_settings(combination)
+    set_camera_animation(combination, end_frame)
     set_background(args.hdri_path, combination)
 
     create_photosphere(args.hdri_path, combination).scale = (10, 10, 10)
@@ -231,6 +230,9 @@ if __name__ == "__main__":
     parser.add_argument(
         "--height", type=int, default=1080, help="Render output height.", required=False
     )
+    parser.add_argument(
+        "--combination", type=str, default=None, help="Combination dictionary."
+    )
 
     if "--" in sys.argv:
         argv = sys.argv[sys.argv.index("--") + 1 :]
@@ -242,18 +244,21 @@ if __name__ == "__main__":
     context = bpy.context
     scene = context.scene
     render = scene.render
-
-    combinations = pd.read_json("combinations.json", orient="records")
-    combinations = combinations.iloc[args.combination_index]
+    
+    if args.combination is not None:
+        combination = json.loads(args.combination)
+    else:
+        combination = read_combination(args.combination_file, args.combination_index)
 
     # get the object uid from the 'object' column, which is a dictionary
-    objects_column = combinations["objects"]
+    objects_column = combination["objects"]
+
     download_dirs = ([],)
     for object in objects_column:
         uid = object["uid"]
 
         # Download object with objaverse to download_dir
-        downloaded = objaverse.load_objects([uid])
+        downloaded = simian.vendor.objaverse.load_objects([uid])
 
     # Render the images
     render_scene(
@@ -263,6 +268,7 @@ if __name__ == "__main__":
         context=context,
         combination_file=args.combination_file,
         combination_index=args.combination_index,
+        combination=args.combination,
         height=args.height,
         width=args.width,
     )

@@ -123,11 +123,47 @@ def set_camera_settings(combination: dict) -> None:
     camera = bpy.context.scene.objects["Camera"]
     camera_data = camera.data
 
+    postprocessing = combination.get("postprocessing", {})
+
+    # Apply bloom settings
+    bloom_settings = postprocessing.get("bloom", {})
+    threshold = bloom_settings.get("threshold", 0.8)
+    intensity = bloom_settings.get("intensity", 0.5)
+    radius = bloom_settings.get("radius", 5.0)
+    bpy.context.scene.eevee.use_bloom = True
+    bpy.context.scene.eevee.bloom_threshold = threshold
+    bpy.context.scene.eevee.bloom_intensity = intensity
+    bpy.context.scene.eevee.bloom_radius = radius
+
+    # Apply SSAO settings
+    ssao_settings = postprocessing.get("ssao", {})
+    distance = ssao_settings.get("distance", 0.2)
+    factor = ssao_settings.get("factor", 0.5)
+    bpy.context.scene.eevee.use_gtao = True
+    bpy.context.scene.eevee.gtao_distance = distance
+    bpy.context.scene.eevee.gtao_factor = factor
+
+    # Apply SSRR settings
+    ssrr_settings = postprocessing.get("ssrr", {})
+    max_roughness = ssrr_settings.get("max_roughness", 0.5)
+    thickness = ssrr_settings.get("thickness", 0.1)
+    bpy.context.scene.eevee.use_ssr = True
+    bpy.context.scene.eevee.use_ssr_refraction = True
+    bpy.context.scene.eevee.ssr_max_roughness = max_roughness
+    bpy.context.scene.eevee.ssr_thickness = thickness
+
+    # Apply motion blur settings
+    motionblur_settings = postprocessing.get("motionblur", {})
+    shutter_speed = motionblur_settings.get("shutter_speed", 0.5)
+    bpy.context.scene.eevee.use_motion_blur = True
+    bpy.context.scene.eevee.motion_blur_shutter = shutter_speed
+
     # Get the initial lens value from the combination
     initial_lens = combination["framing"]["fov"]
 
     # Get the first keyframe's angle_offset value, if available
     animation = combination["animation"]
+    print("animation", animation)
     keyframes = animation["keyframes"]
     if (
         keyframes
@@ -152,10 +188,11 @@ def set_camera_settings(combination: dict) -> None:
         orientation["pitch"] * -math.pi / 180
     )
 
-    set_camera_animation(combination)
+    # set the camera framerate to 30
+    bpy.context.scene.render.fps = 30
 
 
-def set_camera_animation(combination: dict, frame_distance: int = 120) -> None:
+def set_camera_animation(combination: dict, frame_distance: int = 65) -> None:
     """
     Applies the specified animation to the camera based on the keyframes from the camera_data.json file.
 
@@ -167,6 +204,7 @@ def set_camera_animation(combination: dict, frame_distance: int = 120) -> None:
         None
     """
     animation = combination["animation"]
+    speed_factor = animation.get("speed_factor", 1)
     keyframes = animation["keyframes"]
 
     for i, keyframe in enumerate(keyframes):
@@ -178,13 +216,17 @@ def set_camera_animation(combination: dict, frame_distance: int = 120) -> None:
             frame = i * frame_distance
             for transform_name, value in transforms.items():
                 if transform_name == "position":
-                    obj.location = value
+                    # multiply the values by the speed factor
+                    obj.location = [coord * speed_factor for coord in value]
                     obj.keyframe_insert(data_path="location", frame=frame)
                 elif transform_name == "rotation":
-                    obj.rotation_euler = [math.radians(angle) for angle in value]
+                    obj.rotation_euler = [
+                        math.radians(angle * speed_factor) for angle in value
+                    ]
                     obj.keyframe_insert(data_path="rotation_euler", frame=frame)
                 elif transform_name == "scale":
-                    obj.scale = value
+                    # multiply the values by the speed factor
+                    obj.scale = [coord * speed_factor for coord in value]
                     obj.keyframe_insert(data_path="scale", frame=frame)
                 elif transform_name == "angle_offset" and obj_name == "Camera":
                     camera_data = bpy.data.objects["Camera"].data

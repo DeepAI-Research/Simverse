@@ -370,7 +370,7 @@ def optimize_meshes_in_hierarchy(obj: bpy.types.Object) -> None:
 
         # Set all materials to be double sided
         for slot in obj.material_slots:
-            slot.material.use_backface_culling = False
+            # slot.material.use_backface_culling = False
             if slot.material.blend_method == "BLEND":
                 slot.material.blend_method = "HASHED"
 
@@ -379,60 +379,6 @@ def optimize_meshes_in_hierarchy(obj: bpy.types.Object) -> None:
 
     for child in obj.children:
         optimize_meshes_in_hierarchy(child)
-
-
-def remove_loose_meshes(obj: bpy.types.Object, min_vertex_count: int = 6) -> None:
-    """
-    Remove loose meshes with fewer vertices than specified and join remaining meshes.
-
-    Args:
-        obj (bpy.types.Object): The root object.
-        min_vertex_count (int, optional): The minimum number of vertices required to keep a mesh. Defaults to 6.
-
-    Returns:
-        None
-    """
-    meshes = get_meshes_in_hierarchy(obj)
-
-    # Check if there is only one mesh object
-    if len(meshes) == 1:
-        # Set the mesh object as active and enter edit mode
-        bpy.context.view_layer.objects.active = meshes[0]
-        bpy.ops.object.mode_set(mode="EDIT")
-
-        # Select all
-        bpy.ops.mesh.select_all(action="SELECT")
-
-        # Separate the disconnected geometry into individual mesh objects
-        bpy.ops.mesh.separate(type="LOOSE")
-
-        bpy.ops.object.mode_set(mode="OBJECT")
-
-    meshes = get_meshes_in_hierarchy(obj)
-
-    # Remove meshes with less than the specified number of vertices
-    meshes_to_remove = []
-    for mesh in meshes:
-        if len(mesh.data.vertices) < min_vertex_count:
-            meshes_to_remove.append(mesh)
-
-    for mesh in meshes_to_remove:
-        meshes.remove(mesh)
-        bpy.data.objects.remove(mesh, do_unlink=True)
-
-    meshes = get_meshes_in_hierarchy(obj)
-
-    # Join the remaining meshes back together if there are more than one
-    if len(meshes) > 1:
-        # Set the last selected mesh as active
-        bpy.context.view_layer.objects.active = meshes[-1]
-
-        # Select all the meshes
-        for mesh in meshes:
-            mesh.select_set(True)
-
-        # Join the selected meshes
-        bpy.ops.object.join()
 
 
 def join_objects_in_hierarchy(obj: bpy.types.Object) -> None:
@@ -523,6 +469,8 @@ def unparent_keep_transform(obj: bpy.types.Object) -> None:
     """
     # clear the parent object, but keep the transform
     bpy.ops.object.parent_clear(type="CLEAR_KEEP_TRANSFORM")
+    # clear rotation and scale and apply
+    bpy.ops.object.transform_apply(location=False, rotation=True, scale=True)
 
 
 def delete_all_empties() -> None:

@@ -1,5 +1,5 @@
 import bpy
-import random
+from mathutils import Vector
 
 
 def find_largest_length(objects):
@@ -12,8 +12,11 @@ def find_largest_length(objects):
     Returns:
         largest_dimension (float): The largest dimension found among all objects.
     """
+
+    # object = [{obj: [placement_x, placement_y]}]
     largest_dimension = 0
     for obj in objects:
+        obj = list(obj.keys())[0]
         # Ensure the object's current transformations are applied
         bpy.context.view_layer.update()
 
@@ -28,14 +31,137 @@ def find_largest_length(objects):
             - min(bbox_corners, key=lambda v: v[1])[1]
         )
 
-        print(f"Object: {obj.name} - Width: {width}, Height: {height}")
-
         # Calculate the maximum dimension for the current object
         current_max = max(width, height)
         largest_dimension = max(largest_dimension, current_max)
 
-    print("LARGEST DIMENSION:", largest_dimension)
     return largest_dimension
+
+
+def get_world_bounding_box_xy(obj):
+    """
+    Get the world-space bounding box of an object on the XY plane.
+    
+    Args:
+        obj: Blender object.
+    
+    Returns:
+        list: List of 4 corners of the bounding box in world coordinates on the XY plane.
+    """
+    # Transform each corner of the local bounding box to world space
+    world_bbox = [obj.matrix_world @ Vector(corner) for corner in obj.bound_box]
+    
+    # Find the min and max x and y values
+    min_x = min(corner.x for corner in world_bbox)
+    max_x = max(corner.x for corner in world_bbox)
+    min_y = min(corner.y for corner in world_bbox)
+    max_y = max(corner.y for corner in world_bbox)
+    
+    # Create the 4 corners on the XY plane
+    corners_xy = [
+        Vector((min_x, min_y, 0)),
+        Vector((max_x, min_y, 0)),
+        Vector((min_x, max_y, 0)),
+        Vector((max_x, max_y, 0))
+    ]
+    
+    # Print the corners for debugging
+    for i, corner in enumerate(corners_xy):
+        print(f"Bounding box XY corner {i}: {corner}")
+    
+    return corners_xy
+
+
+def check_overlap_xy(bbox1, bbox2, padding=0.1):
+    """
+    Check if two bounding boxes overlap on the XY plane, considering a padding.
+    
+    Args:
+        bbox1, bbox2: Lists of corners of the bounding boxes.
+        padding: Additional space to consider around each bounding box.
+    
+    Returns:
+        bool: True if the bounding boxes overlap, False otherwise.
+    """
+    min1 = Vector((min(corner.x for corner in bbox1), min(corner.y for corner in bbox1), 0))
+    max1 = Vector((max(corner.x for corner in bbox1), max(corner.y for corner in bbox1), 0))
+    
+    min2 = Vector((min(corner.x for corner in bbox2), min(corner.y for corner in bbox2), 0))
+    max2 = Vector((max(corner.x for corner in bbox2), max(corner.y for corner in bbox2), 0))
+    
+    return not (min1.x > max2.x + padding or max1.x < min2.x - padding or
+                min1.y > max2.y + padding or max1.y < min2.y - padding)
+
+
+def bring_objects_to_origin(objects):
+    """
+    Move objects towards the origin, stopping if they collide with another object.
+    
+    Args:
+        objects (list of bpy.types.Object): List of Blender objects.
+    
+    Returns:
+        None
+    """
+
+    step_size = 0.1
+
+    # Get initial bounding boxes for all objects
+    object_bboxes = []
+    for obj_dict in objects:
+        obj = list(obj_dict.keys())[0]
+        xy_corners = get_world_bounding_box_xy(obj)
+        object_bboxes.append({obj: xy_corners})
+
+    for obj_dict in objects:
+        obj = list(obj_dict.keys())[0]  # Extract the Blender object from the dictionary
+        
+        # Skip the object if it is at the center
+        if obj.location.x == 0 and obj.location.y == 0:
+            continue
+
+        direction = Vector(obj.location)
+        direction.x = -obj.location.x
+        direction.y = -obj.location.y
+        
+        # check if Vector is 0,0,0
+        if direction.length == 0:
+            continue
+        
+        direction = direction.normalized() * step_size
+        iterations = 0
+        max_iterations = 1000
+        
+        while iterations < max_iterations:
+            # # Move the object in small steps along the direction vector
+            obj.location += direction
+            bpy.context.view_layer.update()
+            
+            current_obj_bbox = get_world_bounding_box_xy(obj)
+            collision = False
+
+            for other_obj_dict in object_bboxes:
+                other_obj = list(other_obj_dict.keys())[0]
+                other_bbox = other_obj_dict[other_obj]
+                
+                if other_obj != obj and check_overlap_xy(current_obj_bbox, other_bbox):
+                    obj.location -= direction
+                    bpy.context.view_layer.update()
+                    collision = True
+                    break
+            
+            if collision or (obj.location.x == 0 and obj.location.y == 0):
+                break
+
+            iterations += 1
+
+        # Update the bounding box list with the new position
+        for bbox_dict in object_bboxes:
+            if list(bbox_dict.keys())[0] == obj:
+                bbox_dict[obj] = current_obj_bbox
+                break
+
+        print(f"Object {obj.name} final position: {obj.location}")
 
 
 def place_objects_on_grid(objects, largest_length):
@@ -49,83 +175,39 @@ def place_objects_on_grid(objects, largest_length):
     Returns:
         None
     """
-    cell_size = largest_length  # Creates grid cell size
 
+    # objects = [{obj: 1}, {obj: 1}]
     for obj in objects:
         if obj:
-            # Calculate grid cell row and column based on placement
-            placement = obj.get("placement")
-            if placement is not None:
-                cell_row = placement % 3
-                cell_col = placement // 3
-
-                """
-                    Imagine a 3x3 grid with cells numbered as follows:
-                    0 1 2
-                    3 4 5
-                    6 7 8
-
-                    Let's say that each cell is length 2
-
-                    In Blender the [4] is (0,0,0).
-                    [1] would be negative x
-                    [3] would be negative y
-
-                    (cell_col + 0.5) * cell_size
-                    The above part of the formula gets you where you would be IF 
-                    the graph was 0,0,0 at [6]
-
-                    Example:
-                        Let's say we want to go to 2 2 which is [8]
-                        And let's say the cell size is 2
-
-                        Let's start with row: 
-                        (2*0.5) * 2 = 5. Which makes intuitive sense because
-
-                        So cell is 6x6
-
-                        if this were a 0,0,0 at [0] we would have 5 which is center of row 3
-
-                        But this isn't ur typical grid and center is at [4]. In blender 4 is 0,0,0
-                        and [7] is (+)
-
-                        So we simply subtract by half the grid to get where we want to be.
-                        That's where the - (1.5 * cell_size). This is basically centering the grid at [4]
-
-                        A lot to take in but take your time here :)
-                """
+            placement = list(obj.values())[0]
+            if placement:
+                lookup_table = {
+                    0: (-1, 1),
+                    1: (0, 1),
+                    2: (1, 1),
+                    3: (-1, 0),
+                    4: (0, 0),
+                    5: (1, 0),
+                    6: (-1, -1),
+                    7: (0, -1),
+                    8: (1, -1),
+                }
+                coordinate_x, coordinate_y = lookup_table[placement]
 
                 # cell_center_x is the x-coordinate of the center of the cell (row)
-                cell_center_x = (cell_col + 0.5) * cell_size - (1.5 * cell_size)
-                cell_center_y = (cell_row + 0.5) * cell_size - (1.5 * cell_size)
+                cell_center_x = (coordinate_x) * largest_length
+                cell_center_y = (coordinate_y) * largest_length
 
-                """
-                0 1 2
-                3 4 5
-                6 7 8
-
-                How we can get objects closer to each other:
-
-                1) Get everything to move toward the center.
-                2) So if an object is at [0] we want to move it closer to [4].
-                """
-
-                # THIS IS FOR X:
-                distance_from_boundary_to_obj_x = abs(
-                    abs(obj.dimensions[0] / 2) - abs(cell_size / 2)
-                )
-                if placement in [0, 1, 2]:
-                    cell_center_x += distance_from_boundary_to_obj_x
-                elif placement in [6, 7, 8]:
-                    cell_center_x -= distance_from_boundary_to_obj_x
-
-                # THIS IS FOR Y:
-                distance_from_boundary_to_obj_y = abs(
-                    abs(obj.dimensions[1] / 2) - abs(cell_size / 2)
-                )
-                if placement in [2, 5, 8]:
-                    cell_center_y -= distance_from_boundary_to_obj_y
-                elif placement in [0, 3, 6]:
-                    cell_center_y += distance_from_boundary_to_obj_y
-
+                obj = list(obj.keys())[0]
                 obj.location = (cell_center_x, cell_center_y, 0)  # Set object location
+                # Ensure the object's current transformations are applied
+            
+    bpy.context.view_layer.update()
+    
+    # Bring objects closer to the center
+    if len(objects) > 1:
+        bring_objects_to_origin(objects)
+
+# (-1 ,1) (0, 1) (1, 1)
+# (-1, 0) (0, 0) (1, 0)
+# (-1, -1) (0, -1) (1, -1)

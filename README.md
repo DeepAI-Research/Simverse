@@ -21,6 +21,10 @@ This project is in open development phase and is not ready for public use. Many 
 
 1. Install Python 3.10. If you're on Linux, set it up with this <a href="https://gist.github.com/lalalune/986704a935d202ab2350ca90b2fc9755">gist</a>.
 
+2. Install dependences:
+```bash
+pip install -r requirements.txt
+```
 
 2. Download the datasets:
 ```bash
@@ -44,9 +48,12 @@ python3 simian/combiner.py --count 1000 --seed 42
 
 ### Generating Videos
 
+> **_NOTE:_**  Make sure you have [Blender](https://www.blender.org/download/) installed. 
+
 You can generate individually:
 ```bash
 # MacOS
+# Download Blender for MacOS
 /Applications/Blender.app/Contents/MacOS/Blender --background --python simian/render.py
 
 # Linux
@@ -70,27 +77,57 @@ python3 simian/batch.py --start_index 0 --end_index 1000 --width 1024 --height 5
 ```
 
 ### Distributed rendering
-Rendering can be distributed across multiple machines using the "distributed.py" and "worker.py" scripts.
+Rendering can be distributed across multiple machines using the "simian.py" and "worker.py" scripts.
 
-First, make sure you have Redis set up
+You will need to set up Redis and obtain Huggingface API key to use this feature.
+
+#### Set Up Redis
+You can make a free Redis account [here](https://redis.io/try-free/).
+
+For local testing and multiple local workers, you can use the following script to set up a local instance of Redis:
 ```bash
 scripts/setup_redis.sh
 ```
 
+#### Huggingface API Key
+
+You can get a Huggingface API key [here](https://huggingface.co/settings/tokens).
+
 Now, start your workers
 ```bash
+export REDIS_HOST=<myhost>.com
+export REDIS_PORT=1337
+export REDIS_USER=default
+export REDIS_PASSWORD=<somepassword>
+export HF_TOKEN=<token>
+export HF_REPO_ID=<repo_id>
 celery -A simian.worker worker --loglevel=info
 ```
 
-Now issue work to your task queue
-
+You can also build and run the worker with Docker
 ```bash
-python3 simian/distributed.py --start_index 0 --end_index 10 --width 1024 --height 576
+# build the container
+docker build -t simian-worker .
+
+# run the container with .env
+docker run --env-file .env simian-worker
+
+# run the container with environment variables
+docker run -e REDIS_HOST={myhost} -e REDIS_PORT={port} -e REDIS_USER=default -e REDIS_PASSWORD={some password} -e HF_TOKEN={token} -e HF_REPO_ID={repo_id} simian-worker
 ```
 
-If you want to use a custom or hosted Redis instance (recommended), you can add th redis details like this:
+Finally, issue work to your task queue
+
 ```bash
-EXPORT REDIS_URL=<my_redis_url>
+python3 simian/simian.py --start_index 0 --end_index 10 --width 1024 --height 576
+```
+
+If you want to use a custom or hosted Redis instance (recommended), you can add the redis details like this:
+```bash
+export REDIS_HOST=<myhost>.com
+export REDIS_PORT=1337
+export REDIS_USER=default
+export REDIS_PASSWORD=<somepassword>
 ```
 
 To run tests look into the test folder and run whichever test file you want
