@@ -1,16 +1,14 @@
 import json
 import os
+import signal
 import sys
 import argparse
-
 from celery import chord
 
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../"))
 
-from simian.utils import check_imports
+from simian.vendor.vast import rent_nodes, terminate_nodes, monitor_job_status, handle_sigint, attach_to_existing_job
 from simian.worker import render_object, notify_completion
-
-check_imports()
 
 def render_objects(
     start_index,
@@ -21,6 +19,10 @@ def render_objects(
     height=1080,
     output_dir="./renders",
     hdri_path="./backgrounds",
+    max_price=0.1,
+    max_nodes=1,
+    image="arfx/simian-worker:latest",
+    api_key=None,
 ):
     combinations = []
     # read combinations.json
@@ -50,8 +52,21 @@ def render_objects(
             )
         )
 
-    job = chord(tasks)(notify_completion.s())
-    result = job.get()
+    callback = notify_completion.s()
+    job = chord(tasks)(callback)  # Chord object is created here
+
+    # Rent nodes using distributed_vast
+    nodes = rent_nodes(max_price, max_nodes, image, api_key)
+
+    # Set up signal handler for SIGINT
+    signal.signal(signal.SIGINT, lambda sig, frame: handle_sigint(nodes))
+
+    # Monitor the job status
+    monitor_job_status(job)  # Directly pass the job
+
+    # Terminate nodes once the job is complete
+    terminate_nodes(nodes)
+
     print("All tasks have been completed!")
 
 
@@ -107,20 +122,52 @@ def main():
         default="./backgrounds",
         help="Directory containing HDRI files for rendering. Defaults to './backgrounds'.",
     )
+    parser.add_argument(
+        "--max_price",
+        type=float,
+        default=0.1,
+        help="Maximum price per hour for renting nodes. Defaults to 0.1.",
+    )
+    parser.add_argument(
+        "--max_nodes",
+        type=int,
+        default=1,
+        help="Maximum number of nodes to rent. Defaults to 1.",
+    )
+    parser.add_argument(
+        "--image",
+        type=str,
+        default="arfx/simian-worker:latest",
+        help="Docker image to use for rendering. Defaults to 'arfx/simian-worker:latest'.",
+    )
+    parser.add_argument(
+        "--api_key",
+        type=str,
+        default=None,
+        help="API key for renting nodes. Defaults to None.",
+    )
 
     args = parser.parse_args()
 
-    render_objects(
-        start_index=args.start_index,
-        end_index=args.end_index,
-        start_frame=args.start_frame,
-        end_frame=args.end_frame,
-        width=args.width,
-        height=args.height,
-        output_dir=args.output_dir,
-        hdri_path=args.hdri_path,
-    )
-
+    # Check if attaching to an existing job
+    if attach_to_existing_job():
+        # Monitor the job status
+        monitor_job_status()
+    else:
+        render_objects(
+            start_index=args.start_index,
+            end_index=args.end_index,
+            start_frame=args.start_frame,
+            end_frame=args.end_frame,
+            width=args.width,
+            height=args.height,
+            output_dir=args.output_dir,
+            hdri_path=args.hdri_path,
+            max_price=args.max_price,
+            max_nodes=args.max_nodes,
+            image=args.image,
+            api_key=args.api_key,
+        )
 
 if __name__ == "__main__":
     main()
