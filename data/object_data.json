@@ -186,13 +186,14 @@
                 "medium-large",
                 "large-medium",
                 "large-ish",
-                "larger than average",
-                "larger than usual",
-                "larger than normal",
-                "bigger than average",
-                "bigger than usual",
-                "bigger than normal",
-                "above average sized"
+                "moderate-large",
+                "mid-large",
+                "considerable",
+                "generous",
+                "expansive",
+                "sizable",
+                "hefty",
+                "bulky"
             ],
             "factor": 1.25
         },
