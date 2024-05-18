@@ -52,15 +52,3 @@ To add the job to the queue, run the following command:
 ```bash
 python3 simian/simian.py --start_index 0 --end_index 10 --width 1024 --height 576
 ```
-
-::: simian.distributed
-    :docstring:
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-::: simian.worker
-    :docstring:
-    :members:
-    :undoc-members:
-    :show-inheritance:
