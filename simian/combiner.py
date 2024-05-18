@@ -841,12 +841,13 @@ def generate_objects():
             ],
         }
 
-        placement = 4
-        positions_taken.add(placement)
-        if i > 0:
-            placement = random.choice(
-                [i for i in range(0, 9) if i not in positions_taken]
-            )
+        if i == 0:
+            placement = 4  # Ensure the first object is always placed at position 4 
+            positions_taken.add(placement)
+        else:
+            possible_positions = [pos for pos in range(0, 9) if pos not in positions_taken]
+            placement = random.choice(possible_positions)
+            positions_taken.add(placement)
 
         object = {
             "name": object["name"],
