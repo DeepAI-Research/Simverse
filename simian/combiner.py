@@ -840,14 +840,13 @@ def generate_objects():
     positions_taken = set()
     for i in range(number_of_objects):
         object = random.choice(dataset_dict[chosen_dataset])
-        scale_key = random.choice(list(keys))
+        scale_factor = random.choices(scale_values, weights=normalized_weights, k=1)[0] # generates scale factor of example: 3.0
+        scale_key = next(key for key, value in object_scales.items() if value["factor"] == scale_factor)
 
         scale = {
-            "factor": random.choices(scale_values, weights=normalized_weights, k=1)[0],
+            "factor": scale_factor,
             "name": scale_key,
-            "name_synonym": object_scales[scale_key]["names"][
-                random.randint(0, len(object_scales[scale_key]["names"]) - 1)
-            ],
+            "name_synonym": random.choice(object_scales[scale_key]["names"])
         }
 
         if i == 0:
