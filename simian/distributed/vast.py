@@ -6,9 +6,14 @@ from typing import Dict
 import time
 import hashlib
 import re
+from redis import Redis
+from simian.utils import get_env_vars, get_redis_values
+import signal
 
 server_url_default = "https://console.vast.ai"
 headers = {}
+
+redis_client = Redis.from_url(get_redis_values())
 
 def http_get(url, headers):
     try:
@@ -234,13 +239,38 @@ def search_offers(max_price, api_key):
         print(f"Response: {response.text if response else 'No response'}")
         raise
 
-def create_instance(offer_id, image, env=None):
+def create_instance(offer_id, image, env):
+    # check that the env is a dictionary and has the vars REDIS_HOST, REDIS_PORT, REDIS_USER, REDIS_PASSWORD, HF_TOKEN, HF_REPO_ID, HF_PATH, VAST_API_KEY
+    if env is None:
+        raise ValueError("env is required")
+    
+    if not isinstance(env, dict):
+        raise ValueError("env must be a dictionary")
+    
+    if not all(k in env for k in ["REDIS_HOST", "REDIS_PORT", "REDIS_USER", "REDIS_PASSWORD"]):
+        # warn about missing redis env vars
+        print("Warning: Missing Redis environment variables")
+        
+    if not all(k in env for k in ["HF_TOKEN", "HF_REPO_ID", "HF_PATH"]):
+        # warn about missing huggingface env vars
+        print("Warning: Missing Hugging Face environment variables")
+        
+    if not "VAST_API_KEY" in env:
+        # warn about missing vast api key
+        print("Warning: Missing Vast API key")
+        
+    print("Creating instance...")
+    print("VAST_API_KEY", env["VAST_API_KEY"])
+    
+    # print headers
+    print("HEADERS", headers)
+    
     json_blob = {
         "client_id": "me",
         "image": image,
-        "env": parse_env(env),
+        "env": "",
         "disk": 16,  # Set a non-zero value for disk
-        "onstart": "export PATH=$PATH:/ &&  cd ../ && REDIS_HOST=redis-13657.c289.us-west-1-2.ec2.redns.redis-cloud.com REDIS_PORT=13657 REDIS_USER=default REDIS_PASSWORD=NZBXFNSTvEpm4R93DrG01R3T8SlD6jBD HF_TOKEN=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 HF_REPO_ID=RaccoonResearch/simian100 HF_PATH=./ VAST_API_KEY=92bafdbdc49dc7bf051ccc58acd4a332e45f69e6c9e3fade88c0f3f51f698162 celery -A simian.worker worker --loglevel=info",
+        "onstart": f"export PATH=$PATH:/ &&  cd ../ && REDIS_HOST={env['REDIS_HOST']} REDIS_PORT={env['REDIS_PORT']} REDIS_USER={env['REDIS_USER']} REDIS_PASSWORD={env['REDIS_PASSWORD']} HF_TOKEN={env['HF_TOKEN']} HF_REPO_ID={env['HF_REPO_ID']} HF_PATH={env['HF_PATH']} VAST_API_KEY={env['VAST_API_KEY']} celery -A simian.worker worker --loglevel=info",
         "runtype": "ssh ssh_proxy",
         "image_login": None,
         "python_utf8": False,
@@ -254,16 +284,23 @@ def create_instance(offer_id, image, env=None):
     url = apiurl(f"/asks/{offer_id}/")
     print(f"Request URL: {url}")
     print(f"Request JSON: {json_blob}")
-    response = http_put(url, headers=headers, json=json_blob)
+    response = http_put(url, headers={
+        "Authorization": f"Bearer {env['VAST_API_KEY']}",
+        }, json=json_blob)
     return response.json()
 
 def destroy_instance(instance_id):
+    env = get_env_vars()
+    headers = {
+        'Authorization': f'Bearer {env["VAST_API_KEY"]}'
+    }
     url = apiurl(f"/instances/{instance_id}/")
     print(f"Terminating instance: {instance_id}")
     response = http_del(url, headers=headers, json={})
     return response.json()
 
-def rent_nodes(max_price, max_nodes, image, api_key, env=None):
+def rent_nodes(max_price, max_nodes, image, api_key, env=get_env_vars()):
+    env['VAST_API_KEY'] = api_key or env.get("VAST_API_KEY")
     offers = search_offers(max_price, api_key)
     rented_nodes = []
     for offer in offers:
@@ -292,8 +329,68 @@ def rent_nodes(max_price, max_nodes, image, api_key, env=None):
 
 def terminate_nodes(nodes):
     for node in nodes:
+        print("node", node)
         try:
             time.sleep(2)  # Add a delay before terminating
-            destroy_instance(node["instance_id"])
+            destroy_instance(node["offer_id"])
         except Exception as e:
-            print(f"Error terminating node: {node['instance_id']}, {str(e)}")
+            print(f"Error terminating node: {node['offer_id']}, {str(e)}")
+
+def check_job_status():
+    # Get all keys with the prefix "task_status:"
+    task_keys = redis_client.keys("task_status:*")
+    
+    # Count the number of tasks in each status
+    status_counts = {
+        "QUEUED": 0,
+        "IN_PROGRESS": 0,
+        "TIMEOUT": 0,
+        "COMPLETE": 0,
+        "FAILED": 0
+    }
+    
+    for key in task_keys:
+        status = redis_client.get(key).decode("utf-8")
+        status_counts[status] += 1
+    
+    return status_counts
+
+def monitor_job_status(job=None):
+    while True:
+        status_counts = check_job_status()
+        print(f"Job status: {status_counts}")
+
+        if status_counts["IN_PROGRESS"] == 0 and status_counts["QUEUED"] == 0:
+            break
+
+        time.sleep(10)  # Wait for 10 seconds before checking again
+
+        # Check for tasks that have been in the IN_PROGRESS state for more than 60 minutes
+        task_keys = redis_client.keys("task_status:*")
+        for key in task_keys:
+            status = redis_client.get(key).decode("utf-8")
+            if status == "IN_PROGRESS":
+                task_start_time = redis_client.get(f"task_start_time:{key.decode('utf-8').split(':')[1]}")
+                if task_start_time:
+                    task_start_time = float(task_start_time)
+                    current_time = time.time()
+                    if current_time - task_start_time > 3600:  # 60 minutes
+                        redis_client.set(key, "TIMEOUT")
+                        print(f"Task {key.decode('utf-8').split(':')[1]} marked as TIMEOUT by the manager")
+
+
+def handle_sigint(nodes):
+    print("Received SIGINT. Terminating all running workers...")
+    terminate_nodes(nodes)
+    sys.exit(0)
+
+def attach_to_existing_job():
+    # Check if there are any tasks with the status "IN_PROGRESS" or "QUEUED"
+    status_counts = check_job_status()
+    
+    if status_counts["IN_PROGRESS"] > 0 or status_counts["QUEUED"] > 0:
+        print("Attaching to an existing job...")
+        return True
+    else:
+        print("No existing job found.")
+        return False
