@@ -407,28 +407,50 @@ def generate_postprocessing_caption(combination):
     Returns:
         str: Postprocessing caption.
     """
+
+    """
+    "postprocessing": {
+                "bloom": {
+                    "threshold": 0.8009615715216047,
+                    "intensity": 0.5262916247966855,
+                    "radius": 9.61634058929395,
+                    "type": "high"
+                },
+                "ssao": {
+                    "distance": 0.25243024211389997,
+                    "factor": 0.6162051131710639,
+                    "type": "high"
+                },
+                "ssrr": {
+                    "max_roughness": 0.9738121546535768,
+                    "thickness": 3.0782009896696256,
+                    "type": "none"
+                },
+                "motionblur": {
+                    "shutter_speed": 0.46096757751145756,
+                    "type": "medium"
+                }
+            },
+    """
     postprocessing = combination["postprocessing"]
     caption_parts = []
     
-    # Bloom
-    if postprocessing["bloom"]["type"] != "none":
-        bloom_caption = random.choice(postprocessing['bloom']['type']['descriptions'])
-        caption_parts.append(bloom_caption)
+    postprocessing_options = camera_data["postprocessing"]
 
-    # SSAO 
-    if postprocessing["ssao"]["type"] != "none":
-        ssao_caption = random.choice(postprocessing['ssao']['type']['descriptions'])
-        caption_parts.append(ssao_caption)
-
-    # SSRR
-    if postprocessing["ssrr"]["type"] != "none":
-        ssrr_caption = random.choice(postprocessing['ssrr']['type']['descriptions'])
-        caption_parts.append(ssrr_caption)
-    
-    # Motion Blur
-    if postprocessing["motionblur"]["type"] != "none":
-        motionblur_caption = random.choice(postprocessing['motionblur']['type']['descriptions'])
-        caption_parts.append(motionblur_caption)
+    for key in postprocessing:
+        post_type = postprocessing[key]["type"]
+        if key == "bloom":
+            bloom_caption = random.choice(postprocessing_options['bloom']['types'][post_type]['descriptions'])
+            caption_parts.append(bloom_caption)
+        elif key == "ssao":
+            ssao_caption = random.choice(postprocessing_options['ssao']['types'][post_type]['descriptions'])
+            caption_parts.append(ssao_caption)
+        elif key == "ssrr":
+            ssrr_caption = random.choice(postprocessing_options['ssrr']['types'][post_type]['descriptions'])
+            caption_parts.append(ssrr_caption)
+        elif key == "motionblur":
+            motionblur_caption = random.choice(postprocessing_options['motionblur']['types'][post_type]['descriptions'])
+            caption_parts.append(motionblur_caption)
 
     # randomly determine how many values (1-4 inclusive) to pop
     num_to_pop = random.randint(1, len(caption_parts))
