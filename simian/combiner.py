@@ -247,42 +247,71 @@ def generate_orientation_caption(camera_data, combination):
     return orientation_text
 
 
+def meters_to_feet_rounded(meters):
+    feet_per_meter = 3.28084
+    return round(meters * feet_per_meter)
+
+
 def generate_object_name_description_captions(combination):
     """
     Generate captions for object names and descriptions based on the combination data.
 
     Args:
         combination (dict): Combination data.
+        object_data (dict): Object data containing name_description_relationship and scales.
 
     Returns:
         str: Object name and description captions.
     """
+
     object_name_descriptions = []
-    # for each object in the scene
+    # For each object in the scene
     for obj in combination["objects"]:
-        # get the object name and description
+        # Get the object name, description, and scale
         object_name = obj["name"]
         object_description = obj["description"]
 
-        # get the relationship between the object name and description
+        object_scale = obj["scale"]
+        scale_factor = object_scale["factor"]
+        scale_name = object_scale["name_synonym"]
+
+        # Get the relationship between the object name and description
         object_name_description_relationship = random.choice(
             object_data["name_description_relationship"]
         )
 
+        # Replace placeholders with actual values
         object_name_description_relationship = (
             object_name_description_relationship.replace("<name>", object_name)
         )
         object_name_description_relationship = (
-            object_name_description_relationship.replace(
-                "<description>", object_description
-            )
+            object_name_description_relationship.replace("<description>", object_description)
         )
+
+        if "<size>" in object_name_description_relationship:
+            object_name_description_relationship = (
+                object_name_description_relationship.replace("<size>", scale_name)
+            )
+            
+        random_metric_m = random.choice(["meters", "m", ""])
+        if "<size_in_meters>" in object_name_description_relationship:
+            size_in_meters = f"{scale_factor}{random_metric_m}"
+            object_name_description_relationship = (
+                object_name_description_relationship.replace("<size_in_meters>", size_in_meters)
+            )
+
+        random_metric_f = random.choice(["feet", "ft", ""])
+        if "<size_in_feet>" in object_name_description_relationship:
+            size_in_feet = f"{meters_to_feet_rounded(scale_factor)}{random_metric_f}"
+            object_name_description_relationship = (
+                object_name_description_relationship.replace("<size_in_feet>", size_in_feet)
+            )
 
         object_name_descriptions.append(object_name_description_relationship)
 
-    # randomize order of object_descriptions
+    # Randomize order of object descriptions
     random.shuffle(object_name_descriptions)
-    # join the object descriptions
+    # Join the object descriptions
     object_name_descriptions = " ".join(object_name_descriptions)
     return object_name_descriptions
 
@@ -379,15 +408,14 @@ def generate_postprocessing_caption(combination):
         str: Postprocessing caption.
     """
     postprocessing = combination["postprocessing"]
-
     caption_parts = []
-
+    
     # Bloom
     if postprocessing["bloom"]["type"] != "none":
         bloom_caption = f"The bloom effect is set to {postprocessing['bloom']['type']} with a threshold of {postprocessing['bloom']['threshold']:.2f}, intensity of {postprocessing['bloom']['intensity']:.2f}, and radius of {postprocessing['bloom']['radius']:.2f}."
         caption_parts.append(bloom_caption)
 
-    # SSAO
+    # SSAO 
     if postprocessing["ssao"]["type"] != "none":
         ssao_caption = f"The screen space ambient occlusion (SSAO) effect is set to {postprocessing['ssao']['type']} with a distance of {postprocessing['ssao']['distance']:.2f} and factor of {postprocessing['ssao']['factor']:.2f}."
         caption_parts.append(ssao_caption)
@@ -396,11 +424,17 @@ def generate_postprocessing_caption(combination):
     if postprocessing["ssrr"]["type"] != "none":
         ssrr_caption = f"The screen space reflections (SSRR) effect is set to {postprocessing['ssrr']['type']} with a maximum roughness of {postprocessing['ssrr']['max_roughness']:.2f} and thickness of {postprocessing['ssrr']['thickness']:.2f}."
         caption_parts.append(ssrr_caption)
-
+    
     # Motion Blur
     if postprocessing["motionblur"]["type"] != "none":
         motionblur_caption = f"The motion blur effect is set to {postprocessing['motionblur']['type']} with a shutter speed of {postprocessing['motionblur']['shutter_speed']:.2f}."
         caption_parts.append(motionblur_caption)
+
+    # randomly determine how many values (1-4 inclusive) to pop
+    num_to_pop = random.randint(1, len(caption_parts))
+    for _ in range(num_to_pop):
+        random_index_to_remove_from_end = random.randint(0, len(caption_parts) - 1)
+        caption_parts.pop(random_index_to_remove_from_end)
 
     return " ".join(caption_parts)
 
@@ -807,12 +841,13 @@ def generate_objects():
             ],
         }
 
-        placement = 4
-        positions_taken.add(placement)
-        if i > 0:
-            placement = random.choice(
-                [i for i in range(0, 9) if i not in positions_taken]
-            )
+        if i == 0:
+            placement = 4  # Ensure the first object is always placed at position 4 
+            positions_taken.add(placement)
+        else:
+            possible_positions = [pos for pos in range(0, 9) if pos not in positions_taken]
+            placement = random.choice(possible_positions)
+            positions_taken.add(placement)
 
         object = {
             "name": object["name"],
