@@ -11,13 +11,9 @@ A synthetic data generator for video caption pairs.
 
 Simian creates synthetic data that is usable for generative video and video captioning tasks. The data consists of videos and captions. The videos are generated using Blender, a 3D modeling software.
 
-## ⚠️ Experimental Pre-Alpha
-
-This project is in open development phase and is not ready for public use. Many things are still being actively developed for an initial release. Use at your own risk.
-
 ## 🖥️ Setup
 
-### ⚠️ IMPORTANT: Simian requires Python 3.10 or lower to run.
+> **_NOTE:_** Simian requires Python 3.10 or lower to run.
 
 1. Install Python 3.10. If you're on Linux, set it up with this <a href="https://gist.github.com/lalalune/986704a935d202ab2350ca90b2fc9755">gist</a>.
 
