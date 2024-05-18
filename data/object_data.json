@@ -1,100 +1,62 @@
 {
     "descriptions": [
-        "The subject is <objects>.",
+        "The subject is <objects>",
         "[subject: <objects>]",
-        "The focus is on <objects>.",
-        "The view is focused on <objects>.",
-        "The camera is pointed at <objects>.",
-        "The frame is centered on <objects>.",
-        "Featuring <objects>.",
-        "There are \"<objects>\" in the scene.",
-        "The scene contains \"<objects>\".",
-        "Put the objects \"<objects>\" into the scene.",
-        "Add the objects \"<objects>\" to the scene.",
-        "Focus on <objects>.",
+        "The focus is on <objects>",
+        "The view is focused on <objects>",
+        "The camera is pointed at <objects>",
+        "The frame is centered on <objects>",
+        "Featuring <objects>",
+        "There are \"<objects>\" in the scene",
+        "The scene contains \"<objects>\"",
+        "Put the objects \"<objects>\" into the scene",
+        "Add the objects \"<objects>\" to the scene",
+        "Focus on <objects>",
         "<objects>"
     ],
     "name_description_relationship": [
-        "The <name> is <description>.",
-        "Name is <description>.",
-        "The <name> is described as <description>.",
-        "<name> is <description>.",
-        "<name>: <description>.",
-        "<name> = <description>.",
-        "<name> (<description>).",
+        "There is a <name>",
 
-        "The <size> <name> is <description>.",
-        "Name is <size> <description>.",
-        "The <name> is described as <size> <description>.",
-        "<size> <name> is <description>.",
-        "<size> <name>: <description>.",
-        "<name> <size>: <description>.",
-        "<name>: <size> <description>.",
-        "<name> <size> (<description>).",
+        "The <name> is <description>",
+        "<name> is <description>",
+        "The <name> is described as <description>",
+        "<name> is <description>",
+        "<name>: <description>",
+        "<name> = <description>",
+        "<name> (<description>)",
 
-        "The <size> <description>.",
-        "<description>.",
+        "The <size> <description>",
         "<description> is <size>",
         "<size> <description>",
         "<description> of <size>",
+        "<name> is <size> and <description>",
+        "A <size> <name> is <description>",
+        "The <name>, <size>, is <description>",
 
-        "<description> is the <name>.",
+        "<name> is <size_in_feet> and <description>",
+        "A <size_in_feet> <name> is <description>",
+        "The <name>, <size_in_feet>, is <description>",
 
-        "<description>: the <name>.",
-        "<name> is defined as <description>.",
-        "<name>, which is <description>.",
-        "<description> defines the <name>.",
-        "Described as <description>, <name>.",
-        "Known as <description>, the <name>.",
-        "<name> has the characteristic of being <description>.",
-        "Described as <description>, the <name>.",
-        "The <name>, <description>.",
-        "The <size> <name> is described as <description>.",
-        "Described as <size> <description>, the <name>.",
-        "<description> of the <size> <name>.",
-        "The <name>, described as <size> <description>.",
-        "<name> described as <size> <description>.",
-        "With a size of <size>, <name> is <description>.",
-        "<name> with a size of <size> is <description>.",
-        "The <size> <name>, <description>.",
-        "Characterized as <description>, the <size> <name>.",
-        "Known for being <description>, the <size> <name>.",
-        "With a size of <size>, <description>.",
-        "<description> with a size of <size>.",
-        "Described as <size>, <description>.",
-        "The characteristic of being <size>, <description>.",
-        "Known for being <size>, <description>.",
-        "<description>, which is <size>.",
-        "Characterized as <size>, <description>.",
-        "<description>, characterized as <size>.",
-        "<description> (size: <size>).",
-        "A description of <size>: <description>.",
+        "There is a <size_in_feet> <name>, described as <description>",
+        "The <name> is <size_in_feet> <size> and <description>",
+        "<size_in_feet> <name>: <description>",
+        "<name> (height: <size_in_feet>) is <description>",
+        "[<name> - <description> - <size_in_feet>]",
+        "<description> (size: <size_in_feet>)",
 
-        "The <size_in_feet> <name> is <description>.",
-        "Name is <size_in_meters> and <description>.",
-        "The <name> is described as <size_in_feet> <size> and <description>.",
-        "A <size_in_meters> <size> <name> is <description>.",
-        "<size_in_feet> <size> <name>: <description>.",
-        "The <name>, <size_in_meters>, is <description>.",
-        "With a height of <size_in_feet>, <name> is <description>.",
-        "<name> with a <size_in_meters> <size> is <description>.",
-        "The <name>, described as <size_in_feet> and <description>.",
-        "Described as <size_in_meters>, the <name>.",
-        "<name> (height: <size_in_feet>) is <description>.",
-        "At <size_in_meters>, the <name> is <description>.",
-        "The <name>, <size_in_feet> <size>, is <description>.",
-        "A description of <size_in_meters>: <description>.",
-        "Characterized as <description>, the <size_in_meters> <name>.",
-        "Known for being <description>, the <size_in_feet> <size> <name>.",
-        "With a <size_in_feet> <size>, <description>.",
-        "<description> with a height of <size_in_meters>.",
-        "Described as <size_in_feet>, <description>.",
-        "The characteristic of being <size_in_meters> <size>, <description>.",
-        "Known for being <size_in_meters>, <description>.",
-        "<description>, which is <size_in_feet> <size>.",
-        "Characterized as <size_in_feet>, <description>.",
-        "<description>, characterized as <size_in_meters> <size>.",
-        "<description> (size: <size_in_meters>)."
+        "<name> is <size_in_meters> and <description>",
+        "A <size_in_meters> <name> is <description>",
+        "The <name>, <size_in_meters>, is <description>",
+        "There is a <size_in_meters> <name>, described as <description>",
+        "The <name> is <size_in_meters> <size> and <description>",
+        "<size_in_meters> <name>: <description>",
+        "<name> (height: <size_in_meters>) is <description>",
+        "[<name> - <description> - <size_in_meters>]",
+        "<description> (size: <size_in_meters>)",
+        
+        "There is a <description>",
+        "<description> (size: <size_in_meters>)"
+        
     ],
     "relationships": {
         "to_the_left": [
@@ -139,7 +101,7 @@
                 "petite",
                 "extra small"
             ],
-            "factor": 0.4
+            "factor": 0.25
         },
         "small": {
             "names": [
@@ -152,7 +114,7 @@
                 "undersized",
                 "smaller"
             ],
-            "factor": 0.6
+            "factor": 0.5
         },
         "small-medium": {
             "names": [
@@ -166,7 +128,7 @@
                 "shorter than normal",
                 "small-ish"
             ],
-            "factor": 0.8
+            "factor": 0.75
         },
         "medium": {
             "names": [
@@ -194,7 +156,7 @@
                 "bigger than normal",
                 "above average sized"
             ],
-            "factor": 1.25
+            "factor": 1.5
         },
         "large": {
             "names": [
@@ -205,7 +167,7 @@
                 "giant",
                 "tall"
             ],
-            "factor": 1.5
+            "factor": 2.25
         },
         "huge": {
             "names": [
@@ -224,7 +186,7 @@
                 "very large",
                 "extra large"
             ],
-            "factor": 1.75
+            "factor": 3.0
         }
     }
 }
