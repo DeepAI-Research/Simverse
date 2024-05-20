@@ -140,7 +140,7 @@ def render_scene(
 
         obj.name = object_data["uid"]  # Set the Blender object's name to the UID
 
-        all_objects.append({obj: object_data["placement"]})
+        all_objects.append({obj: object_data})
 
     largest_length = find_largest_length(all_objects)
     place_objects_on_grid(all_objects, largest_length)
@@ -263,7 +263,7 @@ if __name__ == "__main__":
     # Render the images
     render_scene(
         start_frame=args.start_frame,
-        end_frame=args.end_frame,
+        end_frame=3,
         output_dir=args.output_dir,
         context=context,
         combination_file=args.combination_file,

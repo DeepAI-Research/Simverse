@@ -34,7 +34,7 @@ with patch('argparse.ArgumentParser.parse_args', new=mock_parse_args):
         generate_relationship_captions, generate_fov_caption, generate_postprocessing_caption,
         generate_framing_caption, flatten_descriptions, generate_animation_captions,
         generate_postprocessing, generate_orientation, generate_framing, generate_animation,
-        generate_objects, generate_background, generate_stage, flatten_descriptions
+        generate_objects, generate_background, generate_stage, flatten_descriptions, speed_factor_to_percentage
     )
 
 def test_read_json_file():
@@ -370,10 +370,10 @@ def test_generate_animation_captions():
         "animation": {"speed_factor": 1.5}
     }
 
-    captions = generate_animation_captions(combination)
+    captions = generate_animation_captions(combination, camera_data)
 
     # Extract the animation descriptions from the camera_data
-    animation_types = camera_data["animations"][-1]["types"]
+    animation_types = camera_data["animation_speed"]["types"]
     expected_captions = []
     for details in animation_types.values():
         if details["min"] <= combination["animation"]["speed_factor"] <= details["max"]:
@@ -383,11 +383,14 @@ def test_generate_animation_captions():
     flat_expected_captions = flatten_descriptions(expected_captions)
 
     # Check if any of the expected captions are in the generated caption
-    caption_found = any(expected_caption.replace("<animation_speed_value>", str(combination["animation"]["speed_factor"])) in captions for expected_caption in flat_expected_captions)
+    speed_factor_str = speed_factor_to_percentage(combination["animation"]["speed_factor"])
+    caption_found = any(expected_caption.replace("<animation_speed_value>", speed_factor_str) in captions for expected_caption in flat_expected_captions) or \
+                    any(expected_caption.replace("<animation_speed_value>", f"{combination['animation']['speed_factor']}x") in captions for expected_caption in flat_expected_captions)
 
     assert caption_found, "Animation caption is incorrect."
 
     print("============ Test Passed: test_generate_animation_captions ============")
+
 
 
 def test_generate_postprocessing():

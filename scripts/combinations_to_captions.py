@@ -44,6 +44,8 @@ def main(json_file, video_folder):
     with open('captions.json', 'w') as out_f:
         json.dump(captions, out_f, indent=2)
 
+# Run the script with the required arguments
+# python scripts/combinations_to_captions.py --json_file ./combinations.json --video_folder ./renders
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Convert combinations to captions format.')
     parser.add_argument('--json_file', type=str, required=True, help='Path to combinations.json')

@@ -90,15 +90,15 @@ def determine_relationships(objects, object_data):
                     pos2[0] > pos1[0]
                 ):  # obj2 is in front of obj1 (negative x is closer to the camera)
                     relationship += (
-                        (" and " + random.choice(in_front_of))
-                        if relationship
-                        else random.choice(in_front_of)
-                    )
-                elif pos2[0] < pos1[0]:  # obj2 is behind obj1
-                    relationship += (
                         (" and " + random.choice(behind))
                         if relationship
                         else random.choice(behind)
+                    )
+                elif pos2[0] < pos1[0]:  # obj2 is behind obj1
+                    relationship += (
+                        (" and " + random.choice(in_front_of))
+                        if relationship
+                        else random.choice(in_front_of)
                     )
 
                 # If there is a significant relationship, add it to the list

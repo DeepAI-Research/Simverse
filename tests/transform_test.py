@@ -68,8 +68,8 @@ def test_determine_relationships():
     relationships = determine_relationships(objects, object_data)
     print(relationships)
     assert len(relationships) == 2
-    assert "obj1 is in front of obj2." in relationships
-    assert "obj2 is behind obj1." in relationships
+    assert "obj2 is in front of obj1." in relationships
+    assert "obj1 is behind obj2." in relationships
 
     objects = [
         {"name": "obj1", "transformed_position": [0, 0]},
@@ -114,8 +114,8 @@ def test_determine_relationships_rotated():
     relationships = determine_relationships(objects, object_data)
     print(relationships)
     assert len(relationships) == 2
-    assert "obj1 is in front of obj2." in relationships
-    assert "obj2 is behind obj1." in relationships
+    assert "obj2 is in front of obj1." in relationships
+    assert "obj1 is behind obj2." in relationships
 
     result_matrix = compute_rotation_matrix(math.radians(90))
     # Rotate the objects
