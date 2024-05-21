@@ -75,9 +75,6 @@ def test_determine_relationships():
 
     # Determine the relationships between the objects
     relationships = determine_relationships(objects, camera_yaw)
-
-    # Print the relationships
-    print(relationships)
     
     # Expected relationships
     expected_relationships = [
