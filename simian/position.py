@@ -36,7 +36,7 @@ def get_world_bounding_box_xy(obj):
     print(f"Object {obj.name} bounding box: {corners_xy}")
     return corners_xy
 
-def check_overlap_xy(bbox1, bbox2, padding=0.6):
+def check_overlap_xy(bbox1, bbox2, padding=0.08):
     min1 = Vector((min(corner.x for corner in bbox1), min(corner.y for corner in bbox1), 0))
     max1 = Vector((max(corner.x for corner in bbox1), max(corner.y for corner in bbox1), 0))
     min2 = Vector((min(corner.x for corner in bbox2), min(corner.y for corner in bbox2), 0))

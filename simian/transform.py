@@ -1,19 +1,17 @@
-from math import cos, radians, sin
-import math
-import random
+import mathutils
+from math import radians, cos, sin
 import numpy as np
 import random
-import copy
+import math
 
 
 # Function Definitions
+
 def degrees_to_radians(deg):
     return radians(deg)
 
-
 def compute_rotation_matrix(theta):
     return [[cos(theta), -sin(theta)], [sin(theta), cos(theta)]]
-
 
 def apply_rotation(point, rotation_matrix):
     rotated_point = np.dot(rotation_matrix, np.array(point))
@@ -21,9 +19,8 @@ def apply_rotation(point, rotation_matrix):
     rotated_point = [
         round(val) if abs(val - round(val)) < 1e-9 else val for val in rotated_point
     ]
-
+    print("ROTATED POINT: ", rotated_point)
     return rotated_point
-
 
 def adjust_positions(objects, camera_yaw):
     rotation_matrix = compute_rotation_matrix(radians(camera_yaw))
@@ -50,61 +47,34 @@ def adjust_positions(objects, camera_yaw):
     return empty_objs
 
 
-def determine_relationships(objects, object_data):
-    """
-    Determine the spatial relationships between objects based on their positions.
-
-    Args:
-        - objects (list): List of objects with their transformed positions.
-        - object_data (dict): Dictionary containing directional relationship phrases.
-
-    Returns:
-        - list: List of spatial relationships between objects.
-    """
-    # Retrieve directional relationship phrases from object data
-    to_the_left = object_data["relationships"]["to_the_left"]
-    to_the_right = object_data["relationships"]["to_the_right"]
-    in_front_of = object_data["relationships"]["in_front_of"]
-    behind = object_data["relationships"]["behind"]
-
+def determine_relationships(objects, camera_yaw):
+    # Inverse the rotation to transform to camera's local space
+    inverse_rotation_matrix = compute_rotation_matrix(radians(-camera_yaw))
+    
     relationships = []
-
-    # Compare each pair of objects to determine their spatial relationship
     for i, obj1 in enumerate(objects):
         for j, obj2 in enumerate(objects):
             if i != j:
-                # Get transformed positions
-                pos1 = obj1["transformed_position"]
-                pos2 = obj2["transformed_position"]
-
+                # Transform positions to camera's local coordinate system
+                pos1 = apply_rotation(obj1["transformed_position"], inverse_rotation_matrix)
+                pos2 = apply_rotation(obj2["transformed_position"], inverse_rotation_matrix)
+                
                 relationship = ""
 
-                # Determine the lateral relationship based on y-coordinates
-                if pos2[1] > pos1[1]:  # obj2 is to the left of obj1
-                    relationship = random.choice(to_the_left)
-                elif pos2[1] < pos1[1]:  # obj2 is to the right of obj1
-                    relationship = random.choice(to_the_right)
+                # Determining lateral relationship
+                if pos2[1] > pos1[1]:
+                    relationship = "to the left of"
+                elif pos2[1] < pos1[1]:
+                    relationship = "to the right of"
 
-                # Determine the depth relationship based on x-coordinates
-                if (
-                    pos2[0] > pos1[0]
-                ):  # obj2 is in front of obj1 (negative x is closer to the camera)
-                    relationship += (
-                        (" and " + random.choice(behind))
-                        if relationship
-                        else random.choice(behind)
-                    )
-                elif pos2[0] < pos1[0]:  # obj2 is behind obj1
-                    relationship += (
-                        (" and " + random.choice(in_front_of))
-                        if relationship
-                        else random.choice(in_front_of)
-                    )
+                # Determining depth relationship
+                if pos2[0] > pos1[0]:
+                    relationship += " and behind"
+                elif pos2[0] < pos1[0]:
+                    relationship += " and in front of"
 
-                # If there is a significant relationship, add it to the list
-                if relationship != "":
-                    relationships.append(
-                        f"{obj1['name']} {relationship} {obj2['name']}."
-                    )
+                if relationship:
+                    relationships.append(f"{obj1['name']} is {relationship} {obj2['name']}.")
 
     return relationships
+   
