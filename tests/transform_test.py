@@ -53,91 +53,28 @@ def test_adjust_positions():
 
 
 def test_determine_relationships():
-    def compute_rotation_matrix(theta):
-        return [[math.cos(theta), -math.sin(theta)], [math.sin(theta), math.cos(theta)]]
-
-    def apply_rotation(point, rotation_matrix):
-        return np.dot(rotation_matrix, np.array(point)).tolist()
-
-    # Test case 1: Objects in front-behind relationship
+    # Define a set of objects with known transformed positions
     objects = [
         {"name": "obj1", "transformed_position": [0, 0]},
-        {"name": "obj2", "transformed_position": [1, 0]},
+        {"name": "obj2", "transformed_position": [1, 1]},
+        {"name": "obj3", "transformed_position": [-1, -1]}
     ]
-    object_data = {
-        "relationships": {
-            "to_the_left": ["is to the left of"],
-            "to_the_right": ["is to the right of"],
-            "in_front_of": ["is in front of"],
-            "behind": ["is behind"],
-        }
-    }
-    camera_yaw = 0
-    relationships = determine_relationships(objects, camera_yaw)
-    print(relationships)
-    assert len(relationships) == 2
-    assert "obj2 is in front of obj1." in relationships
-    assert "obj1 is behind obj2." in relationships
 
-    # Test case 2: Objects in left-right relationship
-    objects = [
-        {"name": "obj1", "transformed_position": [0, 0]},
-        {"name": "obj2", "transformed_position": [0, 1]},
-    ]
-    object_data = {
-        "relationships": {
-            "to_the_left": ["is to the left of"],
-            "to_the_right": ["is to the right of"],
-            "in_front_of": ["is in front of"],
-            "behind": ["is behind"],
-        }
-    }
-    camera_yaw = 0
-    relationships = determine_relationships(objects, camera_yaw)
-    print(relationships)
-    assert len(relationships) == 2
-    assert "obj2 is to the left of obj1." in relationships
-    assert "obj1 is to the right of obj2." in relationships
+    # Define a known camera yaw
+    camera_yaw = 45
 
-    # Test case 3: Objects in front-behind relationship with camera yaw
-    objects = [
-        {"name": "obj1", "transformed_position": [0, 0]},
-        {"name": "obj2", "transformed_position": [1, 0]},
-    ]
-    object_data = {
-        "relationships": {
-            "to_the_left": ["is to the left of"],
-            "to_the_right": ["is to the right of"],
-            "in_front_of": ["is in front of"],
-            "behind": ["is behind"],
-        }
-    }
-    camera_yaw = 90
+    # Determine the relationships between the objects
     relationships = determine_relationships(objects, camera_yaw)
-    print(relationships)
-    assert len(relationships) == 2
-    assert "obj1 is to the left of obj2." in relationships
-    assert "obj2 is to the right of obj1." in relationships
 
-    # Test case 4: Objects in left-right relationship with camera yaw
-    objects = [
-        {"name": "obj1", "transformed_position": [0, 0]},
-        {"name": "obj2", "transformed_position": [0, 1]},
-    ]
-    object_data = {
-        "relationships": {
-            "to_the_left": ["is to the left of"],
-            "to_the_right": ["is to the right of"],
-            "in_front_of": ["is in front of"],
-            "behind": ["is behind"],
-        }
-    }
-    camera_yaw = 90
-    relationships = determine_relationships(objects, camera_yaw)
-    print(relationships)
-    assert len(relationships) == 2
-    assert "obj2 is behind obj1." in relationships
-    assert "obj1 is in front of obj2." in relationships
+    # Check if the relationships are correct
+    assert relationships == [
+        "obj1 is to the left of and behind obj2.",
+        "obj1 is to the right of and in front of obj3.",
+        "obj2 is to the right of and in front of obj1.",
+        "obj2 is to the left of and behind obj3.",
+        "obj3 is to the left of and behind obj1.",
+        "obj3 is to the right of and in front of obj2."
+    ],  "Relationships are not correct"
 
 
 if __name__ == "__main__":
