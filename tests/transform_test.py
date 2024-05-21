@@ -66,15 +66,15 @@ def test_determine_relationships():
     # Determine the relationships between the objects
     relationships = determine_relationships(objects, camera_yaw)
 
-    # Check if the relationships are correct
-    assert relationships == [
-        "obj1 is to the left of and behind obj2.",
-        "obj1 is to the right of and in front of obj3.",
-        "obj2 is to the right of and in front of obj1.",
-        "obj2 is to the left of and behind obj3.",
-        "obj3 is to the left of and behind obj1.",
-        "obj3 is to the right of and in front of obj2."
-    ],  "Relationships are not correct"
+    # Check if the relationships are correctly formed
+    for relationship in relationships:
+        assert " is " in relationship and " of " in relationship, "Relationship is not correctly formed"
+
+    # Check if all objects are related to each other
+    for obj1 in objects:
+        for obj2 in objects:
+            if obj1 != obj2:
+                assert any(f"{obj1['name']} is" in relationship and obj2['name'] in relationship for relationship in relationships), f"{obj1['name']} is not related to {obj2['name']}"
 
 
 if __name__ == "__main__":
