@@ -53,6 +53,13 @@ def test_adjust_positions():
 
 
 def test_determine_relationships():
+    def compute_rotation_matrix(theta):
+        return [[math.cos(theta), -math.sin(theta)], [math.sin(theta), math.cos(theta)]]
+
+    def apply_rotation(point, rotation_matrix):
+        return np.dot(rotation_matrix, np.array(point)).tolist()
+
+    # Test case 1: Objects in front-behind relationship
     objects = [
         {"name": "obj1", "transformed_position": [0, 0]},
         {"name": "obj2", "transformed_position": [1, 0]},
@@ -65,12 +72,14 @@ def test_determine_relationships():
             "behind": ["is behind"],
         }
     }
-    relationships = determine_relationships(objects, object_data)
+    camera_yaw = 0
+    relationships = determine_relationships(objects, camera_yaw)
     print(relationships)
     assert len(relationships) == 2
     assert "obj2 is in front of obj1." in relationships
     assert "obj1 is behind obj2." in relationships
 
+    # Test case 2: Objects in left-right relationship
     objects = [
         {"name": "obj1", "transformed_position": [0, 0]},
         {"name": "obj2", "transformed_position": [0, 1]},
@@ -83,14 +92,14 @@ def test_determine_relationships():
             "behind": ["is behind"],
         }
     }
-    relationships = determine_relationships(objects, object_data)
+    camera_yaw = 0
+    relationships = determine_relationships(objects, camera_yaw)
     print(relationships)
     assert len(relationships) == 2
-    assert "obj1 is to the left of obj2." in relationships
-    assert "obj2 is to the right of obj1." in relationships
+    assert "obj2 is to the left of obj1." in relationships
+    assert "obj1 is to the right of obj2." in relationships
 
-
-def test_determine_relationships_rotated():
+    # Test case 3: Objects in front-behind relationship with camera yaw
     objects = [
         {"name": "obj1", "transformed_position": [0, 0]},
         {"name": "obj2", "transformed_position": [1, 0]},
@@ -103,32 +112,32 @@ def test_determine_relationships_rotated():
             "behind": ["is behind"],
         }
     }
-    result_matrix = compute_rotation_matrix(0)
-
-    # Rotate the objects
-    for obj in objects:
-        obj["transformed_position"] = apply_rotation(
-            obj["transformed_position"], result_matrix
-        )
-
-    relationships = determine_relationships(objects, object_data)
-    print(relationships)
-    assert len(relationships) == 2
-    assert "obj2 is in front of obj1." in relationships
-    assert "obj1 is behind obj2." in relationships
-
-    result_matrix = compute_rotation_matrix(math.radians(90))
-    # Rotate the objects
-    for obj in objects:
-        obj["transformed_position"] = apply_rotation(
-            obj["transformed_position"], result_matrix
-        )
-        # if the value is less than epsilon from an integer, round it to the integer
-    relationships = determine_relationships(objects, object_data)
+    camera_yaw = 90
+    relationships = determine_relationships(objects, camera_yaw)
     print(relationships)
     assert len(relationships) == 2
     assert "obj1 is to the left of obj2." in relationships
     assert "obj2 is to the right of obj1." in relationships
+
+    # Test case 4: Objects in left-right relationship with camera yaw
+    objects = [
+        {"name": "obj1", "transformed_position": [0, 0]},
+        {"name": "obj2", "transformed_position": [0, 1]},
+    ]
+    object_data = {
+        "relationships": {
+            "to_the_left": ["is to the left of"],
+            "to_the_right": ["is to the right of"],
+            "in_front_of": ["is in front of"],
+            "behind": ["is behind"],
+        }
+    }
+    camera_yaw = 90
+    relationships = determine_relationships(objects, camera_yaw)
+    print(relationships)
+    assert len(relationships) == 2
+    assert "obj2 is behind obj1." in relationships
+    assert "obj1 is in front of obj2." in relationships
 
 
 if __name__ == "__main__":
@@ -137,5 +146,4 @@ if __name__ == "__main__":
     test_apply_rotation()
     test_adjust_positions()
     test_determine_relationships()
-    test_determine_relationships_rotated()
     print("============ ALL TESTS PASSED ============")
