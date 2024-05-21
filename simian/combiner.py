@@ -842,14 +842,14 @@ def generate_objects():
     positions_taken = set()
     for i in range(number_of_objects):
         object = random.choice(dataset_dict[chosen_dataset])
-        scale_key = random.choice(list(keys))
+        scale_choice = random.choices(list(object_scales.items()), weights=normalized_weights, k=1)[0]
+        scale_key = scale_choice[0]
+        scale_value = scale_choice[1]
 
         scale = {
-            "factor": random.choices(scale_values, weights=normalized_weights, k=1)[0],
+            "factor": scale_value["factor"],
             "name": scale_key,
-            "name_synonym": object_scales[scale_key]["names"][
-                random.randint(0, len(object_scales[scale_key]["names"]) - 1)
-            ],
+            "name_synonym": random.choice(scale_value["names"]),
         }
 
         if i == 0:
