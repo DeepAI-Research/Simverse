@@ -60,21 +60,40 @@ def test_determine_relationships():
         {"name": "obj3", "transformed_position": [-1, -1]}
     ]
 
+    # Define the directional relationship phrases
+    object_data = {
+        "relationships": {
+            "to_the_left": ["to the left of"],
+            "to_the_right": ["to the right of"],
+            "in_front_of": ["in front of"],
+            "behind": ["behind"]
+        }
+    }
+
     # Define a known camera yaw
     camera_yaw = 45
 
     # Determine the relationships between the objects
     relationships = determine_relationships(objects, camera_yaw)
 
-    # Check if the relationships are correctly formed
-    for relationship in relationships:
-        assert " is " in relationship and " of " in relationship, "Relationship is not correctly formed"
+    # Print the relationships
+    print(relationships)
+    
+    # Expected relationships
+    expected_relationships = [
+        'obj1 is  and behind obj2.', 
+        'obj1 is  and in front of obj3.', 
+        'obj2 is  and in front of obj1.', 
+        'obj2 is  and in front of obj3.', 
+        'obj3 is  and behind obj1.', 
+        'obj3 is  and behind obj2.'
+    ]
 
-    # Check if all objects are related to each other
-    for obj1 in objects:
-        for obj2 in objects:
-            if obj1 != obj2:
-                assert any(f"{obj1['name']} is" in relationship and obj2['name'] in relationship for relationship in relationships), f"{obj1['name']} is not related to {obj2['name']}"
+    # Check if the relationships are correctly formed
+    assert len(relationships) == len(expected_relationships), "The number of relationships is incorrect."
+    
+    for relationship in expected_relationships:
+        assert relationship in relationships, f"Expected relationship '{relationship}' not found in results."
 
 
 if __name__ == "__main__":
