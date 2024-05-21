@@ -1,4 +1,3 @@
-import mathutils
 from math import radians, cos, sin
 import numpy as np
 import random
@@ -19,7 +18,7 @@ def apply_rotation(point, rotation_matrix):
     rotated_point = [
         round(val) if abs(val - round(val)) < 1e-9 else val for val in rotated_point
     ]
-    print("ROTATED POINT: ", rotated_point)
+
     return rotated_point
 
 def adjust_positions(objects, camera_yaw):
