@@ -1,11 +1,15 @@
+
+import os
 import json
 import tiktoken
 from openai import OpenAI
 
+from dotenv import load_dotenv
 
 def rewrite_caption(caption_arr, context_string, current_caption_length): # caption is a string array
+    load_dotenv()
     client = OpenAI(
-        api_key="",
+        api_key=os.getenv("OPENAI_API_KEY"),
     )
         
     split_captions = [caption.split(', ') for caption in caption_arr]
@@ -75,11 +79,12 @@ def write_to_file(i, rewritten_captions):
 
         j = 0
         while j < len(rewritten_captions):
+            print("==> Rewriting caption: ", i + j)
             combinations[i + j]['caption'] = rewritten_captions[j]
             j += 1
         
         data['combinations'] = combinations
-
+        
         with open('combinations.json', 'w') as file:
             json.dump(data, file, indent=4)
     print("==== File captions rewritten, check file ====")

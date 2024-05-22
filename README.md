@@ -42,6 +42,11 @@ sudo python3 scripts/start_x_server.py start
 python3 simian/combiner.py --count 1000 --seed 42
 ```
 
+> **_NOTE:_** Create a .env file and add your OpenAI API key
+```bash
+python3 scripts/openai_rephrase.py
+```
+
 ### Generating Videos
 
 > **_NOTE:_**  Make sure you have [Blender](https://www.blender.org/download/) installed. 
