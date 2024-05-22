@@ -65,14 +65,17 @@ num_combinations = len(combinations)
 
 rewritten_captions = []
 captions_that_need_to_be_rewritten = []
+current_caption_length = 0
 
 for i in range(num_combinations):
     current_caption = combinations[i]
-    current_caption_length = len(current_caption)
+    current_caption_length += len(current_caption)
     captions_that_need_to_be_rewritten.append(current_caption)
 
     if current_caption_length > TOKEN_LIMIT:
         while current_caption_length > TOKEN_LIMIT:
-            rewritten_captions.pop()
+            current_caption_length -= len(captions_that_need_to_be_rewritten.pop())
 
     rewritten_caption = rewrite_caption(captions_that_need_to_be_rewritten, CONTEXT_STRING)
+    current_caption_length = 0
+    rewritten_captions = []
