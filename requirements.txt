@@ -11,3 +11,4 @@ redis
 boto3
 botocore
 huggingface_hub
+openai
