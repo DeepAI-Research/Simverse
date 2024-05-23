@@ -62,9 +62,9 @@ def read_combinations_and_get_array_of_just_captions():
 
 
 def write_to_file(i, rewritten_captions):
-    # i = index to start from and replacing captions, rewritten_captions = array of the captions
-    with open('combinations.json') as file:
+    with open('combinations.json', 'r+') as file:
         data = json.load(file)
+        
         combinations = data.get('combinations')
 
         j = 0
@@ -74,9 +74,11 @@ def write_to_file(i, rewritten_captions):
             j += 1
         
         data['combinations'] = combinations
-        
-        with open('combinations.json', 'w') as file:
-            json.dump(data, file, indent=4)
+
+        file.seek(0)
+        json.dump(data, file, indent=4)
+        file.truncate()
+
     print("==== File captions rewritten, check file ====")
 
 
@@ -91,7 +93,7 @@ def rewrite_captions_in_batches(combinations, context_string):
 
     context_length = estimate_tokens(context_string, encoding)
     TOKEN_LIMIT = 16385
-    NEW_TOKEN_LIMIT = (TOKEN_LIMIT - context_length)//2
+    INPUT_TOKEN_LIMIT = (TOKEN_LIMIT - context_length)//2
 
     starting_point = 0
     i = 0
@@ -104,12 +106,12 @@ def rewrite_captions_in_batches(combinations, context_string):
             current_caption = combinations[i]
             caption_length = estimate_tokens(current_caption, encoding)
 
-            if (current_caption_length + caption_length + context_length + 1000) >= NEW_TOKEN_LIMIT:
+            if (current_caption_length + caption_length + context_length + 1000) >= INPUT_TOKEN_LIMIT:
                 break
 
             captions_that_need_to_be_rewritten.append(current_caption)
             current_caption_length += caption_length
-            print(f"Current Caption Length: {current_caption_length}, TOKEN_LIMIT: {NEW_TOKEN_LIMIT - context_length}")
+            print(f"Current Caption Length: {current_caption_length}, TOKEN_LIMIT: {INPUT_TOKEN_LIMIT - context_length}")
             i += 1
 
         # Calculate the max tokens available for completion
