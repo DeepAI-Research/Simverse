@@ -6,7 +6,7 @@ from openai import OpenAI
 
 from dotenv import load_dotenv
 
-def rewrite_caption(caption_arr, context_string, current_caption_length): # caption is a string array
+def rewrite_caption(caption_arr, context_string, max_tokens_for_completion): # caption is a string array
     load_dotenv()
     client = OpenAI(
         api_key=os.getenv("OPENAI_API_KEY"),
@@ -19,23 +19,13 @@ def rewrite_caption(caption_arr, context_string, current_caption_length): # capt
         "[" + ", ".join(f"'{line}'" for line in caption) + "]" for caption in split_captions
     ) + "\n]"
 
-    """
-    captions_string: 
-    [
-    ['a tiger skull with yellow teeth. is average sized  Yaw: nearing perpendicular right', 'Pitch: tilted down slightly. The field of view is 57 degrees. (32.00 mm focal length) Zoomed out The scene is rendered with a moderate bloom effect. High ambient occlusion is used in the scene. No screen-space ray tracing effect applied. The background scene is Brown Photostudio. The stage is Aerial Beach. The scene transitions swiftly with enhanced animation speed.'],
-    ['2ft Vehicle Mine GTA2 3d remake: A green and red spaceship with a circular design and a red button. 7 LOW POLY PROPS: a pink square with a small brown box and a stick on it', 'resembling a basketball court. Modified Colt 1911 Pistol is a gun LOW POLY PROPS is to the left of and behind Modified Colt 1911 Pistol. Modified Colt 1911 Pistol is to the right of and in front of LOW POLY PROPS. Vehicle Mine GTA2 3d remake is  and in front of LOW POLY PROPS. The view is set sharply downward', 'looking 189° to the right. Set the focal length of the camera to 75 mm. Semi-close perspective  The panorama is Monbachtal Riverbank. The floor is Shell Floor. The scene transitions swiftly with enhanced animation speed.'],
-    ['Dulal Das Test File (height: 5feet) is a tan leather recliner chair and ottoman. Stylized Apple = a pink apple or peach on a plate. Stylized Apple is to the left of Dulal Das Test File. Dulal Das Test File is to the right of Stylized Apple. The lens is oriented direct right', 'with a 30 forward tilt. Set the fov of the camera to 32 degrees. (61.00 mm focal length) Standard medium.  The scenery is Limehouse. The ground material is Gravel Floor. A standard animation speed is applied to the scene.'],
-    ['Best Japanese Curry is 1 and A bowl of stew with rice and meat. Apple is 7feet and an apple. Apple is  and behind Best Japanese Curry. Best Japanese Curry is  and in front of Apple. Direct the camera sharp right back', 'set tilt to steeply angled down. The focal length is 29 mm. Taking in the whole scene. The scene has a noticeable bloom effect. Motion blur is set to medium intensity in the scene. The backdrop is Pump House. The floor texture is Wood Plank Wall. The scene moves with a relaxed animation speed.']
-    ]
-    """
-
     response = client.chat.completions.create(
         model="gpt-3.5-turbo-16k",
         messages=[
             {"role": "user", "content": f"{context_string}\n\n{captions_string}"}
         ],
         temperature=1,
-        max_tokens=current_caption_length,
+        max_tokens=max_tokens_for_completion,
         top_p=1,
         frequency_penalty=0,
         presence_penalty=0
@@ -89,11 +79,19 @@ def write_to_file(i, rewritten_captions):
             json.dump(data, file, indent=4)
     print("==== File captions rewritten, check file ====")
 
-def rewrite_captions_in_batches(combinations, context_string, token_limit):
-    num_combinations = len(combinations)
 
-    encoding = tiktoken.get_encoding("cl100k_base")
-    encoding = tiktoken.encoding_for_model("gpt-3.5-turbo")
+def estimate_tokens(text, encoding):
+    return len(encoding.encode(text))
+
+
+def rewrite_captions_in_batches(combinations, context_string):
+    num_combinations = len(combinations)
+    
+    encoding = tiktoken.encoding_for_model("gpt-3.5-turbo-16k")
+
+    context_length = estimate_tokens(context_string, encoding)
+    TOKEN_LIMIT = 16385
+    NEW_TOKEN_LIMIT = (TOKEN_LIMIT - context_length)//2
 
     starting_point = 0
     i = 0
@@ -102,17 +100,21 @@ def rewrite_captions_in_batches(combinations, context_string, token_limit):
         current_caption_length = 0
 
         # Gather captions until the token limit is reached
-        while current_caption_length < token_limit and i < num_combinations:
+        while i < num_combinations:
             current_caption = combinations[i]
+            caption_length = estimate_tokens(current_caption, encoding)
+
+            if (current_caption_length + caption_length + context_length + 1000) >= NEW_TOKEN_LIMIT:
+                break
+
             captions_that_need_to_be_rewritten.append(current_caption)
-            current_caption_length += len(encoding.encode(current_caption))
+            current_caption_length += caption_length
+            print(f"Current Caption Length: {current_caption_length}, TOKEN_LIMIT: {NEW_TOKEN_LIMIT - context_length}")
             i += 1
 
-        # Ensure the batch size does not exceed the token limit
-        while current_caption_length > token_limit:
-            current_caption_length -= len(encoding.encode(captions_that_need_to_be_rewritten.pop()))
-
-        rewritten_captions = rewrite_caption(captions_that_need_to_be_rewritten, context_string, current_caption_length)
+        # Calculate the max tokens available for completion
+        max_tokens_for_completion = TOKEN_LIMIT//2
+        rewritten_captions = rewrite_caption(captions_that_need_to_be_rewritten, context_string, max_tokens_for_completion)
         write_to_file(starting_point, rewritten_captions)
         starting_point = i
 
@@ -137,8 +139,7 @@ if __name__ == '__main__':
 
     Only return the rewritten caption for each sentence as a list/array of strings seperated by commas. Do not return anything else not even an intro just the array of the rewritten captions.
     """
-    TOKEN_LIMIT = 16000 - 2000
 
     combinations = read_combinations_and_get_array_of_just_captions()
-    rewritten_captions = rewrite_captions_in_batches(combinations, CONTEXT_STRING, TOKEN_LIMIT)
+    rewritten_captions = rewrite_captions_in_batches(combinations, CONTEXT_STRING)
 
