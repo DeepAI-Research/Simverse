@@ -331,7 +331,11 @@ def generate_relationship_captions(combination):
     adjusted_objects = adjust_positions(
         combination["objects"], combination["orientation"]["yaw"]
     )
-    relationships = determine_relationships(adjusted_objects, object_data)
+
+    camera = combination["orientation"]
+    camera_yaw = camera["yaw"]
+
+    relationships = determine_relationships(adjusted_objects, camera_yaw)
 
     # Write relationships into the JSON file with combination["objects"]["relationships"]
     for i, obj in enumerate(combination["objects"]):
@@ -484,12 +488,10 @@ def flatten_descriptions(descriptions):
             flat_list.append(item)
     return flat_list
 
-
 def speed_factor_to_percentage(speed_factor):
     rounded_speed_factor = round(speed_factor, 2)
     percentage = int(rounded_speed_factor * 100)
     return f"{percentage}%"
-
 
 def generate_animation_captions(combination):
     """
@@ -510,16 +512,16 @@ def generate_animation_captions(combination):
     else:
         speed_factor_str = f"{speed_factor}x"
 
-    animation_types = camera_data["animations"][-1]["types"]
+    animation_speeds = camera_data["animation_speed"]
 
     animation_type = "none"
-    for t, details in animation_types.items():
-        if details["min"] <= speed_factor <= details["max"]:
-            animation_type = t
+    for speed_range in animation_speeds["types"].values():
+        if speed_range["min"] <= speed_factor <= speed_range["max"]:
+            animation_type = next((t for t, details in animation_speeds["types"].items() if details == speed_range), "none")
+            descriptions = speed_range["descriptions"]
             break
 
     if animation_type != "none":
-        descriptions = animation_types[animation_type]["descriptions"]
         flat_descriptions = flatten_descriptions(descriptions)
         animation_caption = random.choice(flat_descriptions)
         animation_caption = animation_caption.replace("<animation_speed_value>", speed_factor_str)
@@ -840,13 +842,14 @@ def generate_objects():
     positions_taken = set()
     for i in range(number_of_objects):
         object = random.choice(dataset_dict[chosen_dataset])
-        scale_factor = random.choices(scale_values, weights=normalized_weights, k=1)[0] # generates scale factor of example: 3.0
-        scale_key = next(key for key, value in object_scales.items() if value["factor"] == scale_factor)
+        scale_choice = random.choices(list(object_scales.items()), weights=normalized_weights, k=1)[0]
+        scale_key = scale_choice[0]
+        scale_value = scale_choice[1]
 
         scale = {
-            "factor": scale_factor,
+            "factor": scale_value["factor"],
             "name": scale_key,
-            "name_synonym": random.choice(object_scales[scale_key]["names"])
+            "name_synonym": random.choice(scale_value["names"]),
         }
 
         if i == 0:

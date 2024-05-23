@@ -8,11 +8,9 @@ simian_path = os.path.join(current_dir, "../")
 sys.path.append(simian_path)
 
 import bpy
-from mathutils import Vector
 from simian.camera import (
     create_camera_rig,
     set_camera_settings,
-    set_camera_animation,
     position_camera,
 )
 from simian.scene import initialize_scene
@@ -129,70 +127,6 @@ def test_set_camera_settings():
         abs_tol=0.001,
     ), "Pitch is not set correctly"
     print("============ Test Passed: test_set_camera_settings ============")
-
-
-# def test_set_camera_animation():
-#     combination = {
-#         "framing": {"fov": 20, "coverage_factor": 1.0},
-#         "animation": {
-#             "keyframes": [
-#                 {
-#                     "Camera": {
-#                         "position": (0, 0, 5),
-#                         "rotation": (0, 0, 0),
-#                         "angle_offset": 5,
-#                     }
-#                 },
-#                 {
-#                     "Camera": {
-#                         "position": (5, 0, 0),
-#                         "rotation": (0, 0, 90),
-#                         "angle_offset": 10,
-#                     }
-#                 },
-#                 {
-#                     "Camera": {
-#                         "position": (0, 5, 0),
-#                         "rotation": (0, 0, 180),
-#                         "angle_offset": 15,
-#                     }
-#                 },
-#             ]
-#         },
-#     }
-#     set_camera_animation(combination)
-
-#     camera = bpy.data.objects.get("Camera")
-#     assert camera is not None, "Camera object not found"
-
-#     frame_data = [
-#         (0, (0, 0, 5), (0, 0, 0), 25),
-#         (120, (5, 0, 0), (0, 0, 1.5708), 30),  # Approximately 90 degrees in radians
-#         (240, (0, 5, 0), (0, 0, 3.14159), 35),  # Approximately 180 degrees in radians
-#     ]
-
-#     for frame, expected_pos, expected_rot, expected_lens in frame_data:
-#         bpy.context.scene.frame_set(frame)
-#         print(f"Checking frame {frame}")
-#         print("camera location", camera.location)
-#         print("expected_pos", expected_pos)
-#         magnitude = (camera.location - Vector(expected_pos)).magnitude
-#         assert magnitude < 1e-5, f"Camera position at frame {frame} is incorrect, {camera.location} != {expected_pos}"
-
-#         rotation_vector = Vector(camera.rotation_euler)
-#         print("camera rotation", rotation_vector)
-#         print("expected_rot", expected_rot)
-#         # convert camera.rotation_euler to a vector
-#         magnitude = (rotation_vector - Vector(expected_rot)).magnitude
-#         print("magnitude", magnitude)
-#         assert magnitude < 1e-5, f"Camera rotation at frame {frame} is incorrect"
-
-#         print("camera angle", camera.data.angle)
-#         print("expected_lens", expected_lens)
-#         magnitude = camera.data.angle - expected_lens
-#         assert magnitude < 1e-6, f"Camera angle at frame {frame} is incorrect"
-
-#     print("============ Test Passed: test_set_camera_animation ============")
 
 
 def test_position_camera():

@@ -140,7 +140,7 @@ def render_scene(
 
         obj.name = object_data["uid"]  # Set the Blender object's name to the UID
 
-        all_objects.append({obj: object_data["placement"]})
+        all_objects.append({obj: object_data})
 
     largest_length = find_largest_length(all_objects)
     place_objects_on_grid(all_objects, largest_length)

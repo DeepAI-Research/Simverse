@@ -624,6 +624,122 @@
             ]
         }
     ],
+    "animation_speed": { 
+        "min": 0.5,
+        "max": 2.0,
+        "types": {
+            "slow": {
+                "min": 0.5,
+                "max": 0.75,
+                "descriptions": [
+                    "Slow animation speed <animation_speed_value> applied.",
+                    "The scene has a slow animation speed of <animation_speed_value>.",
+                    "Animation speed of <animation_speed_value> is set to slow.",
+                    "The scene is rendered with a slow animation speed of <animation_speed_value>.",
+                    "Slow animation is used in the scene.",
+                    "The scene has a leisurely animation speed of <animation_speed_value>.",
+                    "Animation is set to slow speed of <animation_speed_value> in the scene.",
+                    "The scene is enhanced with a slow animation speed of <animation_speed_value>.",
+                    "Slow animation is present in the scene.",
+                    "The scene is rendered with a slow animation speed of <animation_speed_value>.",
+                    "The animation runs at a slow pace.",
+                    "The scene features a gentle animation speed.",
+                    "Animations are intentionally slowed down.",
+                    "A calm and slow animation speed is applied.",
+                    "The scene moves with a relaxed animation speed.",
+                    "Animations unfold slowly in the scene.",
+                    "The pace of animation is deliberately slow.",
+                    "The scene showcases a leisurely animation speed.",
+                    "Slow-motion animation effects are used.",
+                    "The scene transitions smoothly with a slow animation speed."
+                ]
+            },
+            "medium": {
+                "min": 0.75,
+                "max": 1.25,
+                "descriptions": [
+                    [
+                        "Medium animation speed of <animation_speed_value> applied.",
+                        "The scene has a moderate animation speed of <animation_speed_value>.",
+                        "Animation speed is set to medium of <animation_speed_value>.",
+                        "The scene is rendered with a moderate animation speed of <animation_speed_value>.",
+                        "Medium animation of <animation_speed_value> is used in the scene.",
+                        "The scene has a normal animation speed of <animation_speed_value>.",
+                        "Animation is set to medium speed of <animation_speed_value> in the scene.",
+                        "The scene is enhanced with a moderate animation speed of <animation_speed_value>.",
+                        "Medium animation of <animation_speed_value> is present in the scene.",
+                        "The scene is rendered with a moderate animation speed of <animation_speed_value>.",
+                        "The animation speed is set to a balanced pace.",
+                        "The scene features a moderate animation tempo.",
+                        "Animations operate at a medium speed.",
+                        "A standard animation speed is applied to the scene.",
+                        "The scene progresses with a medium-paced animation.",
+                        "Animations move at a steady speed in the scene.",
+                        "The animation runs at a moderate rate.",
+                        "The scene has a typical animation speed.",
+                        "Animations flow at a medium speed in the scene.",
+                        "The scene transitions at a moderate animation speed."
+                    ]
+                ]
+            },
+            "fast": {
+                "min": 1.25,
+                "max": 1.5,
+                "descriptions": [
+                    [
+                        "Fast animation speed of <animation_speed_value> applied.",
+                        "The scene has a fast animation speed of <animation_speed_value>.",
+                        "Animation speed is set to fast of <animation_speed_value>.",
+                        "The scene is rendered with a fast animation speed of <animation_speed_value>.",
+                        "Fast animation of <animation_speed_value> is used in the scene.",
+                        "The scene has a quick animation speed of <animation_speed_value>.",
+                        "Animation is set to fast speed of <animation_speed_value> in the scene.",
+                        "The scene is enhanced with a fast animation speed of <animation_speed_value>.",
+                        "Fast animation of <animation_speed_value> is present in the scene.",
+                        "The scene is rendered with a fast animation speed of <animation_speed_value>.",
+                        "The animation runs at a rapid pace.",
+                        "The scene features a swift animation speed.",
+                        "Animations are set to a fast tempo.",
+                        "A quick animation speed is applied.",
+                        "The scene moves with high-speed animation.",
+                        "Animations unfold rapidly in the scene.",
+                        "The pace of animation is brisk.",
+                        "The scene showcases a fast animation rate.",
+                        "High-speed animation effects are used.",
+                        "The scene transitions quickly with fast animation."
+                    ]
+                ]
+            },
+            "faster": {
+                "min": 1.5,
+                "max": 2.0,
+                "descriptions": [
+                    [
+                        "Faster animation speed of <animation_speed_value> applied.",
+                        "The scene has a faster animation speed of <animation_speed_value>.",
+                        "Animation speed is set to faster of <animation_speed_value>.",
+                        "The scene is rendered with a faster animation speed of <animation_speed_value>.",
+                        "Faster animation of <animation_speed_value> is used in the scene.",
+                        "The scene has an accelerated animation speed of <animation_speed_value>.",
+                        "Animation is set to faster speed of <animation_speed_value> in the scene.",
+                        "The scene is enhanced with a faster animation speed of <animation_speed_value>.",
+                        "Faster animation of <animation_speed_value> is present in the scene.",
+                        "The scene is rendered with a faster animation speed of <animation_speed_value>.",
+                        "The animation speed is increased significantly.",
+                        "The scene features an enhanced animation tempo.",
+                        "Animations are set to a much faster pace.",
+                        "A highly accelerated animation speed is applied.",
+                        "The scene progresses with a rapid animation rate.",
+                        "Animations move at an expedited speed in the scene.",
+                        "The animation runs at a notably faster rate.",
+                        "The scene showcases a significantly increased animation speed.",
+                        "Animations unfold at an accelerated pace.",
+                        "The scene transitions swiftly with enhanced animation speed."
+                    ]
+                ]
+            }
+        }
+    },
     "animations": [        
         {
             "name": "static",
@@ -1364,122 +1480,6 @@
                     }
                 }
             ]
-        },
-        { 
-            "min": 0.5,
-            "max": 2.0,
-            "types": {
-                "slow": {
-                    "min": 0.5,
-                    "max": 0.75,
-                    "descriptions": [
-                        "Slow animation speed <animation_speed_value> applied.",
-                        "The scene has a slow animation speed of <animation_speed_value>.",
-                        "Animation speed of <animation_speed_value> is set to slow.",
-                        "The scene is rendered with a slow animation speed of <animation_speed_value>.",
-                        "Slow animation is used in the scene.",
-                        "The scene has a leisurely animation speed of <animation_speed_value>.",
-                        "Animation is set to slow speed of <animation_speed_value> in the scene.",
-                        "The scene is enhanced with a slow animation speed of <animation_speed_value>.",
-                        "Slow animation is present in the scene.",
-                        "The scene is rendered with a slow animation speed of <animation_speed_value>.",
-                        "The animation runs at a slow pace.",
-                        "The scene features a gentle animation speed.",
-                        "Animations are intentionally slowed down.",
-                        "A calm and slow animation speed is applied.",
-                        "The scene moves with a relaxed animation speed.",
-                        "Animations unfold slowly in the scene.",
-                        "The pace of animation is deliberately slow.",
-                        "The scene showcases a leisurely animation speed.",
-                        "Slow-motion animation effects are used.",
-                        "The scene transitions smoothly with a slow animation speed."
-                    ]
-                },
-                "medium": {
-                    "min": 0.75,
-                    "max": 1.25,
-                    "descriptions": [
-                        [
-                            "Medium animation speed of <animation_speed_value> applied.",
-                            "The scene has a moderate animation speed of <animation_speed_value>.",
-                            "Animation speed is set to medium of <animation_speed_value>.",
-                            "The scene is rendered with a moderate animation speed of <animation_speed_value>.",
-                            "Medium animation of <animation_speed_value> is used in the scene.",
-                            "The scene has a normal animation speed of <animation_speed_value>.",
-                            "Animation is set to medium speed of <animation_speed_value> in the scene.",
-                            "The scene is enhanced with a moderate animation speed of <animation_speed_value>.",
-                            "Medium animation of <animation_speed_value> is present in the scene.",
-                            "The scene is rendered with a moderate animation speed of <animation_speed_value>.",
-                            "The animation speed is set to a balanced pace.",
-                            "The scene features a moderate animation tempo.",
-                            "Animations operate at a medium speed.",
-                            "A standard animation speed is applied to the scene.",
-                            "The scene progresses with a medium-paced animation.",
-                            "Animations move at a steady speed in the scene.",
-                            "The animation runs at a moderate rate.",
-                            "The scene has a typical animation speed.",
-                            "Animations flow at a medium speed in the scene.",
-                            "The scene transitions at a moderate animation speed."
-                        ]
-                    ]
-                },
-                "fast": {
-                    "min": 1.25,
-                    "max": 1.5,
-                    "descriptions": [
-                        [
-                            "Fast animation speed of <animation_speed_value> applied.",
-                            "The scene has a fast animation speed of <animation_speed_value>.",
-                            "Animation speed is set to fast of <animation_speed_value>.",
-                            "The scene is rendered with a fast animation speed of <animation_speed_value>.",
-                            "Fast animation of <animation_speed_value> is used in the scene.",
-                            "The scene has a quick animation speed of <animation_speed_value>.",
-                            "Animation is set to fast speed of <animation_speed_value> in the scene.",
-                            "The scene is enhanced with a fast animation speed of <animation_speed_value>.",
-                            "Fast animation of <animation_speed_value> is present in the scene.",
-                            "The scene is rendered with a fast animation speed of <animation_speed_value>.",
-                            "The animation runs at a rapid pace.",
-                            "The scene features a swift animation speed.",
-                            "Animations are set to a fast tempo.",
-                            "A quick animation speed is applied.",
-                            "The scene moves with high-speed animation.",
-                            "Animations unfold rapidly in the scene.",
-                            "The pace of animation is brisk.",
-                            "The scene showcases a fast animation rate.",
-                            "High-speed animation effects are used.",
-                            "The scene transitions quickly with fast animation."
-                        ]
-                    ]
-                },
-                "faster": {
-                    "min": 1.5,
-                    "max": 2.0,
-                    "descriptions": [
-                        [
-                            "Faster animation speed of <animation_speed_value> applied.",
-                            "The scene has a faster animation speed of <animation_speed_value>.",
-                            "Animation speed is set to faster of <animation_speed_value>.",
-                            "The scene is rendered with a faster animation speed of <animation_speed_value>.",
-                            "Faster animation of <animation_speed_value> is used in the scene.",
-                            "The scene has an accelerated animation speed of <animation_speed_value>.",
-                            "Animation is set to faster speed of <animation_speed_value> in the scene.",
-                            "The scene is enhanced with a faster animation speed of <animation_speed_value>.",
-                            "Faster animation of <animation_speed_value> is present in the scene.",
-                            "The scene is rendered with a faster animation speed of <animation_speed_value>.",
-                            "The animation speed is increased significantly.",
-                            "The scene features an enhanced animation tempo.",
-                            "Animations are set to a much faster pace.",
-                            "A highly accelerated animation speed is applied.",
-                            "The scene progresses with a rapid animation rate.",
-                            "Animations move at an expedited speed in the scene.",
-                            "The animation runs at a notably faster rate.",
-                            "The scene showcases a significantly increased animation speed.",
-                            "Animations unfold at an accelerated pace.",
-                            "The scene transitions swiftly with enhanced animation speed."
-                        ]
-                    ]
-                }
-            }
         }
     ],
     "postprocessing": {
