@@ -13,16 +13,12 @@ def rewrite_caption(caption_arr, context_string, max_tokens_for_completion): # c
     )
         
     split_captions = [caption.split(', ') for caption in caption_arr]
-
-    # Convert the list of lists into a string that maintains the structure
-    captions_string = "[\n" + ",\n".join(
-        "[" + ", ".join(f"'{line}'" for line in caption) + "]" for caption in split_captions
-    ) + "\n]"
+    caption_string = json.dumps(split_captions)
 
     response = client.chat.completions.create(
         model="gpt-3.5-turbo-16k",
         messages=[
-            {"role": "user", "content": f"{context_string}\n\n{captions_string}"}
+            {"role": "user", "content": f"{context_string}\n\n{caption_string}"}
         ],
         temperature=1,
         max_tokens=max_tokens_for_completion,
@@ -32,17 +28,10 @@ def rewrite_caption(caption_arr, context_string, max_tokens_for_completion): # c
     )
 
     # Strip the surrounding brackets and commas from the string
-    captions_content = response.choices[0].message.content.replace('[', '').replace(']', '').replace("',", '')
+    captions_content = response.choices[0].message.content
+    cleaned_captions_content = captions_content.replace('\n', '')
+    rewritten_captions_content = json.loads(cleaned_captions_content)
 
-    # Split the string into a list of captions
-    rewritten_captions_content = captions_content.split('\n')
-
-    # Remove any empty strings from the list
-    rewritten_captions_content = [caption for caption in rewritten_captions_content if caption]
-
-    # Remove the double '' from the start and end of each caption
-    rewritten_captions_content = [caption.strip("'") for caption in rewritten_captions_content]
-    
     print("==== Captions rewritten by OpenAI ====")
     return rewritten_captions_content
 
@@ -123,14 +112,9 @@ def rewrite_captions_in_batches(combinations, context_string):
 
 if __name__ == '__main__':
     CONTEXT_STRING = """
-    Go through array of captions and make it sound more human. Chagne "directory" words like "bloom" or "pitch".
-    Feel free to change/remove exact values like degrees. Instead of 32 degrees left you can say slightly to the left.
-    Use synonyms/words to use. You can even remove some words/sentences. Rewritten caption should be at least 
-    shorter by an entire sentence.
-
     examples:
     Before: "2ft Vehicle Mine GTA2 3d remake: A green and red spaceship with a circular design and a red button. 7 LOW POLY PROPS: a pink square with a small brown box and a stick on it, resembling a basketball court. Modified Colt 1911 Pistol is a gun LOW POLY PROPS is to the left of and behind Modified Colt 1911 Pistol. Modified Colt 1911 Pistol is to the right of and in front of LOW POLY PROPS. Vehicle Mine GTA2 3d remake is  and in front of LOW POLY PROPS. The view is set sharply downward, looking 189\u00b0 to the right. Set the focal length of the camera to 75 mm. Semi-close perspective  The panorama is Monbachtal Riverbank. The floor is Shell Floor. The scene transitions swiftly with enhanced animation speed."
-    After: "Vehicle Mine GTA2 3d remake is a green and red spaceship with a circular design and a red button. 7 LOW POLY PROPS: a pink square with a small brown box and a stick on it, resembling a basketball court. Modified Colt 1911 Pistol is a gun LOW POLY PROPS is to the left of and behind Modified Colt 1911 Pistol. Modified Colt 1911 Pistol is to the right of and in front of LOW POLY PROPS. Vehicle Mine GTA2 3d remake is  and in front of LOW POLY PROPS. The view is set sharply downward, looking 189 degrees to the right. Semi-close perspective. The floor is Shell Floor. Scene transitions swiftly with enhanced animation speed."
+    After: "Vehicle Mine GTA2 3d remake is a green and red spaceship with a circular design and a red button. LOW POLY PROPS is pink square with a small brown box and a stick on it, resembling a basketball court. Modified Colt 1911 Pistol is a gun LOW POLY PROPS is to the left of and behind Modified Colt 1911 Pistol. Modified Colt 1911 Pistol is to the right of and in front of LOW POLY PROPS. Vehicle Mine GTA2 3d remake is  and in front of LOW POLY PROPS. The view is set sharply downward, looking 189 degrees to the right. Semi-close perspective. The floor is Shell Floor. Scene transitions swiftly with enhanced animation speed."
 
     Before: "Dulal Das Test File (height: 5feet) is a tan leather recliner chair and ottoman. Stylized Apple = a pink apple or peach on a plate. Stylized Apple is to the left of Dulal Das Test File. Dulal Das Test File is to the right of Stylized Apple. The lens is oriented direct right, with a 30 forward tilt. Set the fov of the camera to 32 degrees. (61.00 mm focal length) Standard medium.  The scenery is Limehouse. The ground material is Gravel Floor. A standard animation speed is applied to the scene."
     After: "Dulal Das Test File is a tan leather recliner chair and ottoman. Stylized Apple is pink apple or peach on a plate. Stylized Apple is of Dulal Das Test File. Dulal Das Test File is right of Stylized Apple. The lens is oriented direct right, with a 30 forward tilt. Set the fov of the camera to 32 degrees. The scenery is Limehouse with ground material of Gravel Floor. A standard animation speed is applied to the scene."
@@ -139,7 +123,12 @@ if __name__ == '__main__':
     Before: "Best Japanese Curry is 1 and A bowl of stew with rice and meat. Apple is 7feet and an apple. Apple is  and behind Best Japanese Curry. Best Japanese Curry is  and in front of Apple. Direct the camera sharp right back, set tilt to steeply angled down. The focal length is 29 mm. Taking in the whole scene. The scene has a noticeable bloom effect. Motion blur is set to medium intensity in the scene. The backdrop is Pump House. The floor texture is Wood Plank Wall. The scene moves with a relaxed animation speed."
     After: "Best Japanese Curry is a bowl of stew with rice and meat. Apple is an apple placed behind Best Japanese Curry. Best Japanese Curry is in front of Apple. The camera is sharply angled right and steeply downward, capture the whole scene. Subtle bloom effect, and the motion blur is set to medium intensity. Background is Pump House with a wood plank floor. Relaxed animation speed."
 
-    Only return the rewritten caption for each sentence as a list/array of strings seperated by commas. Do not return anything else not even an intro just the array of the rewritten captions.
+    Above are caption example before and after. Go through array of captions and make it sound more human. Change complex words like "bloom" or "pitch" to synonyms that are easier to understand.
+    Feel free to change/remove exact values like degrees. Instead of 32 degrees left you can say slightly to the left.
+    Use synonyms/words to use. You can even remove some words/sentences. Rewritten caption should be at least 
+    shorter by an entire sentence. Make captions MUCH shorter.
+
+    Return an array of rewritten captions. DO NOT wrap the strings in quotes in the array and return in format: [caption1, caption2, caption3]
     """
 
     combinations = read_combinations_and_get_array_of_just_captions()
