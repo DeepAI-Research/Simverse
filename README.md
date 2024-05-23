@@ -72,6 +72,15 @@ Or generate all or part of the combination set using the `batch.py` script:
 python3 simian/batch.py --start_index 0 --end_index 1000 --width 1024 --height 576 --start_frame 1 --end_frame 65
 ```
 
+### Clean up Captions
+
+Make captions more prompt friendly.
+
+> **_NOTE:_** Create a .env file and add your OpenAI API key
+```bash
+python3 scripts/openai_rephrase.py
+```
+
 ### Distributed rendering
 Rendering can be distributed across multiple machines using the "simian.py" and "worker.py" scripts.
 
