@@ -23,7 +23,7 @@ with open(os.path.join(file_path, "requirements.txt"), "r") as fh:
     ]
 
 setup(
-    name="simian",
+    name="simian3d",
     version="0.0.1",
     description="A synthetic data generator for video caption pairs.",
     long_description=long_description,
