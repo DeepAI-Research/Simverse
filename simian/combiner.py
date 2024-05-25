@@ -183,7 +183,7 @@ def generate_stage_captions(combination):
     Returns:
         list: List of stage captions.
     """
-    
+
     current_dir = os.path.dirname(os.path.abspath(__file__))
 
     stage_data_path = os.path.join(current_dir, "../data/stage_data.json")
@@ -285,26 +285,32 @@ def generate_object_name_description_captions(combination):
             object_name_description_relationship.replace("<name>", object_name)
         )
         object_name_description_relationship = (
-            object_name_description_relationship.replace("<description>", object_description)
+            object_name_description_relationship.replace(
+                "<description>", object_description
+            )
         )
 
         if "<size>" in object_name_description_relationship:
             object_name_description_relationship = (
                 object_name_description_relationship.replace("<size>", scale_name)
             )
-            
+
         random_metric_m = random.choice(["meters", "m", ""])
         if "<size_in_meters>" in object_name_description_relationship:
             size_in_meters = f"{scale_factor}{random_metric_m}"
             object_name_description_relationship = (
-                object_name_description_relationship.replace("<size_in_meters>", size_in_meters)
+                object_name_description_relationship.replace(
+                    "<size_in_meters>", size_in_meters
+                )
             )
 
         random_metric_f = random.choice(["feet", "ft", ""])
         if "<size_in_feet>" in object_name_description_relationship:
             size_in_feet = f"{meters_to_feet_rounded(scale_factor)}{random_metric_f}"
             object_name_description_relationship = (
-                object_name_description_relationship.replace("<size_in_feet>", size_in_feet)
+                object_name_description_relationship.replace(
+                    "<size_in_feet>", size_in_feet
+                )
             )
 
         object_name_descriptions.append(object_name_description_relationship)
@@ -413,22 +419,30 @@ def generate_postprocessing_caption(combination):
     """
     postprocessing = combination["postprocessing"]
     caption_parts = []
-    
+
     postprocessing_options = camera_data["postprocessing"]
 
     for key in postprocessing:
         post_type = postprocessing[key]["type"]
         if key == "bloom":
-            bloom_caption = random.choice(postprocessing_options['bloom']['types'][post_type]['descriptions'])
+            bloom_caption = random.choice(
+                postprocessing_options["bloom"]["types"][post_type]["descriptions"]
+            )
             caption_parts.append(bloom_caption)
         elif key == "ssao":
-            ssao_caption = random.choice(postprocessing_options['ssao']['types'][post_type]['descriptions'])
+            ssao_caption = random.choice(
+                postprocessing_options["ssao"]["types"][post_type]["descriptions"]
+            )
             caption_parts.append(ssao_caption)
         elif key == "ssrr":
-            ssrr_caption = random.choice(postprocessing_options['ssrr']['types'][post_type]['descriptions'])
+            ssrr_caption = random.choice(
+                postprocessing_options["ssrr"]["types"][post_type]["descriptions"]
+            )
             caption_parts.append(ssrr_caption)
         elif key == "motionblur":
-            motionblur_caption = random.choice(postprocessing_options['motionblur']['types'][post_type]['descriptions'])
+            motionblur_caption = random.choice(
+                postprocessing_options["motionblur"]["types"][post_type]["descriptions"]
+            )
             caption_parts.append(motionblur_caption)
 
     # randomly determine how many values (1-4 inclusive) to pop
@@ -468,7 +482,7 @@ def generate_framing_caption(camera_data, combination):
         return framing_description
     else:
         return ""
-    
+
 
 def flatten_descriptions(descriptions):
     """
@@ -488,10 +502,12 @@ def flatten_descriptions(descriptions):
             flat_list.append(item)
     return flat_list
 
+
 def speed_factor_to_percentage(speed_factor):
     rounded_speed_factor = round(speed_factor, 2)
     percentage = int(rounded_speed_factor * 100)
     return f"{percentage}%"
+
 
 def generate_animation_captions(combination):
     """
@@ -504,7 +520,7 @@ def generate_animation_captions(combination):
     Returns:
         list: List of animation captions.
     """
-    
+
     speed_factor = round(combination["animation"]["speed_factor"], 2)
     speed_factor_str = None
     if random.choice([True, False]):
@@ -517,14 +533,23 @@ def generate_animation_captions(combination):
     animation_type = "none"
     for speed_range in animation_speeds["types"].values():
         if speed_range["min"] <= speed_factor <= speed_range["max"]:
-            animation_type = next((t for t, details in animation_speeds["types"].items() if details == speed_range), "none")
+            animation_type = next(
+                (
+                    t
+                    for t, details in animation_speeds["types"].items()
+                    if details == speed_range
+                ),
+                "none",
+            )
             descriptions = speed_range["descriptions"]
             break
 
     if animation_type != "none":
         flat_descriptions = flatten_descriptions(descriptions)
         animation_caption = random.choice(flat_descriptions)
-        animation_caption = animation_caption.replace("<animation_speed_value>", speed_factor_str)
+        animation_caption = animation_caption.replace(
+            "<animation_speed_value>", speed_factor_str
+        )
         return [animation_caption]
 
     return []
@@ -547,7 +572,7 @@ def generate_caption(combination):
     caption_parts.append(object_name_descriptions)
 
     scene_relationship_description = generate_relationship_captions(combination)
-    scene_relationship_description_str = ' '.join(scene_relationship_description)
+    scene_relationship_description_str = " ".join(scene_relationship_description)
     caption_parts.append(scene_relationship_description_str)
 
     # Add the camera orientation to the caption
@@ -824,16 +849,22 @@ def generate_objects():
     keys = object_scales.keys()
 
     # scale values
-    scale_values = [scale['factor'] for scale in object_scales.values()]
+    scale_values = [scale["factor"] for scale in object_scales.values()]
 
     # create simple triangular distribution based on scale_values
     len_scale_values = len(scale_values)
 
     mid_point = len_scale_values // 2
     if len_scale_values % 2 == 0:
-        weights = [i + 1 for i in range(mid_point)] + [mid_point - i for i in range(mid_point)]
+        weights = [i + 1 for i in range(mid_point)] + [
+            mid_point - i for i in range(mid_point)
+        ]
     else:
-        weights = [i + 1 for i in range(mid_point)] + [mid_point + 1] + [mid_point - i for i in range(mid_point)]
+        weights = (
+            [i + 1 for i in range(mid_point)]
+            + [mid_point + 1]
+            + [mid_point - i for i in range(mid_point)]
+        )
 
     total_weight = sum(weights)
     normalized_weights = [w / total_weight for w in weights]
@@ -842,7 +873,9 @@ def generate_objects():
     positions_taken = set()
     for i in range(number_of_objects):
         object = random.choice(dataset_dict[chosen_dataset])
-        scale_choice = random.choices(list(object_scales.items()), weights=normalized_weights, k=1)[0]
+        scale_choice = random.choices(
+            list(object_scales.items()), weights=normalized_weights, k=1
+        )[0]
         scale_key = scale_choice[0]
         scale_value = scale_choice[1]
 
@@ -853,10 +886,12 @@ def generate_objects():
         }
 
         if i == 0:
-            placement = 4  # Ensure the first object is always placed at position 4 
+            placement = 4  # Ensure the first object is always placed at position 4
             positions_taken.add(placement)
         else:
-            possible_positions = [pos for pos in range(0, 9) if pos not in positions_taken]
+            possible_positions = [
+                pos for pos in range(0, 9) if pos not in positions_taken
+            ]
             placement = random.choice(possible_positions)
             positions_taken.add(placement)
 
@@ -959,7 +994,7 @@ def generate_combinations(camera_data, count, seed):
 
         postprocessing = generate_postprocessing(camera_data)
 
-        animation = generate_animation(camera_data) # speed is between 0.5 and 2
+        animation = generate_animation(camera_data)  # speed is between 0.5 and 2
 
         stage = generate_stage()
 

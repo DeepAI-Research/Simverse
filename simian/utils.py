@@ -6,6 +6,7 @@ import re
 import subprocess
 import sys
 
+
 def check_imports() -> None:
     """
     Checks and installs required Python packages specified in the requirements.txt file.
@@ -44,17 +45,18 @@ def check_imports() -> None:
 
 check_imports()
 
+
 def get_combination_objects(file="combinations.json") -> dict:
     """
     Fetches an array containing the combinations of objects to render.
-    
+
     Args:
     - file (str): The path to the JSON file containing the combinations.
-    
+
     Returns:
     - dict: A dictionary containing the combinations.
     """
-    with open('combinations.json', 'r') as file:
+    with open("combinations.json", "r") as file:
         combinations = json.load(file)
     return combinations["combinations"]
 
@@ -69,6 +71,7 @@ def get_blender_path():
         raise FileNotFoundError(f"Blender not found at {application_path}.")
     return application_path
 
+
 def get_env_vars(path=".env"):
     env_vars = {}
     if not os.path.exists(path):
@@ -79,9 +82,10 @@ def get_env_vars(path=".env"):
             env_vars[key] = value
     return env_vars
 
+
 def get_redis_values(path=".env"):
     env_vars = get_env_vars(path)
-    
+
     host = env_vars.get("REDIS_HOST", os.getenv("REDIS_HOST", "localhost"))
     password = env_vars.get("REDIS_PASSWORD", os.getenv("REDIS_PASSWORD", None))
     port = env_vars.get("REDIS_PORT", os.getenv("REDIS_PORT", 6379))
@@ -127,21 +131,21 @@ def upload_outputs(output_dir):
 #     env_vars = get_env_vars()
 #     aws_access_key_id = env_vars.get("AWS_ACCESS_KEY_ID") or os.getenv("AWS_ACCESS_KEY_ID")
 #     aws_secret_access_key = env_vars.get("AWS_SECRET_ACCESS_KEY") or os.getenv("AWS_SECRET_ACCESS_KEY")
-    
+
 #     s3_client = boto3.client(
 #         "s3",
 #         aws_access_key_id,
 #         aws_secret_access_key
 #     )
-    
+
 #     bucket_name = combination.get("bucket_name", os.getenv("AWS_BUCKET_NAME")) or env_vars.get("AWS_BUCKET_NAME")
 #     s3_path = combination.get("upload_path", os.getenv("AWS_UPLOAD_PATH")) or env_vars.get("AWS_UPLOAD_PATH")
-    
+
 #     for root, dirs, files in os.walk(output_dir):
 #         for file in files:
 #             local_path = os.path.join(root, file)
 #             s3_file_path = os.path.join(s3_path, file) if s3_path else file
-            
+
 #             try:
 #                 s3_client.upload_file(local_path, bucket_name, s3_file_path)
 #                 print(f"Uploaded {local_path} to s3://{bucket_name}/{s3_file_path}")
@@ -171,13 +175,14 @@ def upload_to_huggingface(output_dir):
     repo_id = os.getenv("HF_REPO_ID") or env_vars.get("HF_REPO_ID")
     repo_path = os.getenv("HF_PATH") or env_vars.get("HF_PATH", "")
     from huggingface_hub import HfApi
+
     api = HfApi(token=hf_token)
 
     for root, dirs, files in os.walk(output_dir):
         for file in files:
             local_path = os.path.join(root, file)
             path_in_repo = os.path.join(repo_path, file) if repo_path else file
-            
+
             try:
                 api.upload_file(
                     path_or_fileobj=local_path,
@@ -186,6 +191,10 @@ def upload_to_huggingface(output_dir):
                     token=hf_token,
                     repo_type="dataset",
                 )
-                print(f"Uploaded {local_path} to Hugging Face repo {repo_id} at {path_in_repo}")
+                print(
+                    f"Uploaded {local_path} to Hugging Face repo {repo_id} at {path_in_repo}"
+                )
             except Exception as e:
-                print(f"Failed to upload {local_path} to Hugging Face repo {repo_id} at {path_in_repo}: {e}")
+                print(
+                    f"Failed to upload {local_path} to Hugging Face repo {repo_id} at {path_in_repo}: {e}"
+                )

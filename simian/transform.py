@@ -6,11 +6,14 @@ import math
 
 # Function Definitions
 
+
 def degrees_to_radians(deg):
     return radians(deg)
 
+
 def compute_rotation_matrix(theta):
     return [[cos(theta), -sin(theta)], [sin(theta), cos(theta)]]
+
 
 def apply_rotation(point, rotation_matrix):
     rotated_point = np.dot(rotation_matrix, np.array(point))
@@ -20,6 +23,7 @@ def apply_rotation(point, rotation_matrix):
     ]
 
     return rotated_point
+
 
 def adjust_positions(objects, camera_yaw):
     rotation_matrix = compute_rotation_matrix(radians(camera_yaw))
@@ -49,15 +53,19 @@ def adjust_positions(objects, camera_yaw):
 def determine_relationships(objects, camera_yaw):
     # Inverse the rotation to transform to camera's local space
     inverse_rotation_matrix = compute_rotation_matrix(radians(-camera_yaw))
-    
+
     relationships = []
     for i, obj1 in enumerate(objects):
         for j, obj2 in enumerate(objects):
             if i != j:
                 # Transform positions to camera's local coordinate system
-                pos1 = apply_rotation(obj1["transformed_position"], inverse_rotation_matrix)
-                pos2 = apply_rotation(obj2["transformed_position"], inverse_rotation_matrix)
-                
+                pos1 = apply_rotation(
+                    obj1["transformed_position"], inverse_rotation_matrix
+                )
+                pos2 = apply_rotation(
+                    obj2["transformed_position"], inverse_rotation_matrix
+                )
+
                 relationship = ""
 
                 # Determining lateral relationship
@@ -73,7 +81,8 @@ def determine_relationships(objects, camera_yaw):
                     relationship += " and in front of"
 
                 if relationship:
-                    relationships.append(f"{obj1['name']} is {relationship} {obj2['name']}.")
+                    relationships.append(
+                        f"{obj1['name']} is {relationship} {obj2['name']}."
+                    )
 
     return relationships
-   

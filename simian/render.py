@@ -116,7 +116,9 @@ def render_scene(
     focus_object = None
 
     for object_data in combination["objects"]:
-        object_file = simian.vendor.objaverse.load_objects([object_data["uid"]])[object_data["uid"]]
+        object_file = simian.vendor.objaverse.load_objects([object_data["uid"]])[
+            object_data["uid"]
+        ]
 
         load_object(object_file)
         obj = [obj for obj in context.view_layer.objects.selected][0]
@@ -244,7 +246,7 @@ if __name__ == "__main__":
     context = bpy.context
     scene = context.scene
     render = scene.render
-    
+
     if args.combination is not None:
         combination = json.loads(args.combination)
     else:
