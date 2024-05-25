@@ -5,6 +5,8 @@ A synthetic data generator for video caption pairs.
 
 ![docs](https://github.com/RaccoonResearch/simian/actions/workflows/mkdocs.yml/badge.svg)
 ![tests](https://github.com/RaccoonResearch/simian/actions/workflows/tests.yml/badge.svg)
+![docker](https://github.com/RaccoonResearch/simian/actions/workflows/dockerhub.yml/badge.svg)
+[![PyPI version](https://badge.fury.io/py/simian3d.svg)](https://badge.fury.io/py/simian3d)
 [![License](https://img.shields.io/badge/License-MIT-blue)](https://github.com/RaccoonResearch/simian/blob/main/LICENSE)
 [![stars](https://img.shields.io/github/stars/RaccoonResearch/simian?style=social)](https://github.com/RaccoonResearch/simian)
 [![forks](https://img.shields.io/github/forks/RaccoonResearch/simian?style=social)](https://github.com/RaccoonResearch/simian)
