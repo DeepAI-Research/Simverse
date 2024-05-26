@@ -1,4 +1,7 @@
-FROM --platform=linux/x86_64 ubuntu:24.04
+FROM ubuntu:24.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=UTC
 
 RUN apt-get update && \
     apt-get install -y \
