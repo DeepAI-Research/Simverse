@@ -13,7 +13,6 @@ def test_render_objects():
     """
     Test the render_objects function.
     """
-    download_dir = "/fake/download/path"
     processes = 4
     render_timeout = 3000
     width = 1920
@@ -26,7 +25,6 @@ def test_render_objects():
     # Call the function
     try:
         render_objects(
-            download_dir=download_dir,
             processes=processes,
             render_timeout=render_timeout,
             width=width,

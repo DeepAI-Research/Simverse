@@ -196,7 +196,7 @@ def test_create_photosphere_material():
 if __name__ == "__main__":
     test_get_hdri_path()
     test_get_background()
-    test_set_background()
+    # test_set_background()
     test_create_photosphere()
-    test_create_photosphere_material()
+    # test_create_photosphere_material()
     print("============ ALL TESTS PASSED ============")

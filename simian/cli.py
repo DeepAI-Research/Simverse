@@ -23,12 +23,14 @@ from distributaur.vast import rent_nodes, terminate_nodes, handle_signal
 
 from simian.worker import run_job
 
+
 def get_settings(args):
     env_vars = get_env_vars(".env")
 
     settings = {
         "start_index": args.start_index or int(env_vars.get("START_INDEX", 0)),
-        "combinations_file": args.combinations_file or env_vars.get("COMBINATIONS_FILE", "combinations.json"),
+        "combinations_file": args.combinations_file
+        or env_vars.get("COMBINATIONS_FILE", "combinations.json"),
         "end_index": args.end_index or int(env_vars.get("END_INDEX", 100)),
         "start_frame": args.start_frame or int(env_vars.get("START_FRAME", 0)),
         "end_frame": args.end_frame or int(env_vars.get("END_FRAME", 65)),
@@ -38,7 +40,8 @@ def get_settings(args):
         "hdri_path": args.hdri_path or env_vars.get("HDRI_PATH", "./backgrounds"),
         "max_price": args.max_price or float(env_vars.get("MAX_PRICE", 0.1)),
         "max_nodes": args.max_nodes or int(env_vars.get("MAX_NODES", 1)),
-        "image": args.image or env_vars.get("DOCKER_IMAGE", "arfx/simian-worker:latest"),
+        "image": args.image
+        or env_vars.get("DOCKER_IMAGE", "arfx/simian-worker:latest"),
         "api_key": args.api_key or env_vars.get("VAST_API_KEY", ""),
         "redis_host": args.redis_host or env_vars.get("REDIS_HOST", "localhost"),
         "redis_port": args.redis_port or int(env_vars.get("REDIS_PORT", 6379)),
@@ -55,6 +58,7 @@ def get_settings(args):
         settings["combinations"] = combinations["combinations"]
 
     return settings
+
 
 def setup_and_run(job_config):
     tasks = []
@@ -97,7 +101,7 @@ def start_new_job(args):
     os.environ["HF_REPO_ID"] = args.hf_repo_id or settings["hf_repo_id"]
     os.environ["HF_PATH"] = args.hf_path or settings["hf_path"]
 
-    print ("Renting nodes on Vast.ai...")
+    print("Renting nodes on Vast.ai...")
     # Rent nodes from vast.ai
     nodes = rent_nodes(
         max_price=settings["max_price"],
@@ -150,7 +154,9 @@ def main():
     parser.add_argument("action", choices=["start", "list"], help="Action to perform")
     parser.add_argument("--job-id", help="Unique job ID")
     parser.add_argument("--start-index", type=int, help="Starting index for rendering")
-    parser.add_argument("--combinations-file", help="Path to the combinations JSON file")
+    parser.add_argument(
+        "--combinations-file", help="Path to the combinations JSON file"
+    )
     parser.add_argument("--end-index", type=int, help="Ending index for rendering")
     parser.add_argument("--start-frame", type=int, help="Starting frame number")
     parser.add_argument("--end-frame", type=int, help="Ending frame number")

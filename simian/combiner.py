@@ -5,13 +5,14 @@ import random
 import argparse
 import re
 import sys
+from typing import Any, Dict, List, Optional
 
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../"))
 
 from simian.transform import determine_relationships, adjust_positions
 
 
-def read_json_file(file_path):
+def read_json_file(file_path: str) -> Dict[str, Any]:
     """
     Read a JSON file and return the data as a dictionary.
 
@@ -19,13 +20,13 @@ def read_json_file(file_path):
         file_path (str): Path to the JSON file.
 
     Returns:
-        dict: Data from the JSON file.
+        Dict[str, Any]: Data from the JSON file.
     """
     with open(file_path, "r") as file:
         return json.load(file)
 
 
-def parse_args():
+def parse_args() -> argparse.Namespace:
     """
     Parse command line arguments using argparse.
 
@@ -138,14 +139,10 @@ for dataset in models:
         print(f"Dataset file {dataset_path} not found")
 
 # count the total length of all entries
-total_length = 0
-
-for dataset in dataset_dict:
-    total_length += len(dataset_dict[dataset])
+total_length = sum(len(dataset_dict[dataset]) for dataset in dataset_dict)
 print(f"Total number of objects: {total_length}")
 
 backgrounds = datasets["backgrounds"]
-background_data = {}
 background_dict = {}
 
 for background in backgrounds:
@@ -161,9 +158,7 @@ for background in backgrounds:
     else:
         print(f"Dataset file {hdri_path} not found")
 
-total_length = 0
-for background in background_dict:
-    total_length += len(background_dict[background])
+total_length = sum(len(background_dict[background]) for background in background_dict)
 print(f"Total number of backgrounds: {total_length}")
 
 dataset_names = list(dataset_dict.keys())
@@ -173,17 +168,16 @@ background_names = list(background_dict.keys())
 background_weights = [len(background_dict[name]) for name in background_names]
 
 
-def generate_stage_captions(combination):
+def generate_stage_captions(combination: Dict[str, Any]) -> List[str]:
     """
     Generate captions for the stage based on the combination data.
 
     Args:
-        combination (dict): Combination data.
+        combination (Dict[str, Any]): Combination data.
 
     Returns:
-        list: List of stage captions.
+        List[str]: List of stage captions.
     """
-
     current_dir = os.path.dirname(os.path.abspath(__file__))
 
     stage_data_path = os.path.join(current_dir, "../data/stage_data.json")
@@ -206,19 +200,22 @@ def generate_stage_captions(combination):
         .replace("(", "")
         .replace(")", "")
     )
-    caption_parts = []
-    caption_parts.append(f"The {background_prefix} is {background_name}.")
-    caption_parts.append(f"The {floor_prefix} is {floor_material_name}.")
+    caption_parts = [
+        f"The {background_prefix} is {background_name}.",
+        f"The {floor_prefix} is {floor_material_name}.",
+    ]
     return caption_parts
 
 
-def generate_orientation_caption(camera_data, combination):
+def generate_orientation_caption(
+    camera_data: Dict[str, Any], combination: Dict[str, Any]
+) -> str:
     """
     Generate a caption for the camera orientation based on the combination data.
 
     Args:
-        camera_data (dict): Camera data.
-        combination (dict): Combination data.
+        camera_data (Dict[str, Any]): Camera data.
+        combination (Dict[str, Any]): Combination data.
 
     Returns:
         str: Orientation caption.
@@ -237,37 +234,46 @@ def generate_orientation_caption(camera_data, combination):
 
     # Replace the placeholders in the camera text with the closest matching labels
     orientation_text = random.choice(camera_data["orientation"]["descriptions"])
-    orientation_text = orientation_text.replace(
-        "<pitch>", random.choice(pitch_labels[closest_pitch_label])
-    ).replace("<degrees>", str(combination["orientation"]["pitch"]))
-    orientation_text = orientation_text.replace(
-        "<yaw>", random.choice(yaw_labels[closest_yaw_label])
-    ).replace("<degrees>", str(combination["orientation"]["yaw"]))
+    orientation_text = (
+        orientation_text.replace(
+            "<pitch>", random.choice(pitch_labels[closest_pitch_label])
+        )
+        .replace("<degrees>", str(combination["orientation"]["pitch"]))
+        .replace("<yaw>", random.choice(yaw_labels[closest_yaw_label]))
+        .replace("<degrees>", str(combination["orientation"]["yaw"]))
+    )
 
     return orientation_text
 
 
-def meters_to_feet_rounded(meters):
+def meters_to_feet_rounded(meters: float) -> int:
+    """
+    Convert meters to feet and round the result.
+
+    Args:
+        meters (float): Distance in meters.
+
+    Returns:
+        int: Distance in feet (rounded).
+    """
     feet_per_meter = 3.28084
     return round(meters * feet_per_meter)
 
 
-def generate_object_name_description_captions(combination):
+def generate_object_name_description_captions(combination: Dict[str, Any]) -> str:
     """
     Generate captions for object names and descriptions based on the combination data.
 
     Args:
-        combination (dict): Combination data.
-        object_data (dict): Object data containing name_description_relationship and scales.
+        combination (Dict[str, Any]): Combination data.
 
     Returns:
         str: Object name and description captions.
     """
-
     object_name_descriptions = []
-    # For each object in the scene
     for obj in combination["objects"]:
-        # Get the object name, description, and scale
+        print("obj")
+        print(obj)
         object_name = obj["name"]
         object_description = obj["description"]
 
@@ -275,7 +281,6 @@ def generate_object_name_description_captions(combination):
         scale_factor = object_scale["factor"]
         scale_name = object_scale["name_synonym"]
 
-        # Get the relationship between the object name and description
         object_name_description_relationship = random.choice(
             object_data["name_description_relationship"]
         )
@@ -283,35 +288,25 @@ def generate_object_name_description_captions(combination):
         # Replace placeholders with actual values
         object_name_description_relationship = (
             object_name_description_relationship.replace("<name>", object_name)
+            .replace("<description>", object_description)
+            .replace("<size>", scale_name, 1)
         )
-        object_name_description_relationship = (
-            object_name_description_relationship.replace(
-                "<description>", object_description
-            )
-        )
-
-        if "<size>" in object_name_description_relationship:
-            object_name_description_relationship = (
-                object_name_description_relationship.replace("<size>", scale_name)
-            )
 
         random_metric_m = random.choice(["meters", "m", ""])
-        if "<size_in_meters>" in object_name_description_relationship:
-            size_in_meters = f"{scale_factor}{random_metric_m}"
-            object_name_description_relationship = (
-                object_name_description_relationship.replace(
-                    "<size_in_meters>", size_in_meters
-                )
+        size_in_meters = f"{scale_factor}{random_metric_m}"
+        object_name_description_relationship = (
+            object_name_description_relationship.replace(
+                "<size_in_meters>", size_in_meters, 1
             )
+        )
 
         random_metric_f = random.choice(["feet", "ft", ""])
-        if "<size_in_feet>" in object_name_description_relationship:
-            size_in_feet = f"{meters_to_feet_rounded(scale_factor)}{random_metric_f}"
-            object_name_description_relationship = (
-                object_name_description_relationship.replace(
-                    "<size_in_feet>", size_in_feet
-                )
+        size_in_feet = f"{meters_to_feet_rounded(scale_factor)}{random_metric_f}"
+        object_name_description_relationship = (
+            object_name_description_relationship.replace(
+                "<size_in_feet>", size_in_feet, 1
             )
+        )
 
         object_name_descriptions.append(object_name_description_relationship)
 
@@ -322,47 +317,45 @@ def generate_object_name_description_captions(combination):
     return object_name_descriptions
 
 
-def generate_relationship_captions(combination):
+def generate_relationship_captions(combination: Dict[str, Any]) -> List[str]:
     """
     Generate captions for object relationships based on the combination data.
 
     Args:
-        combination (dict): Combination data.
+        combination (Dict[str, Any]): Combination data.
 
     Returns:
-        list: List of relationship captions.
+        List[str]: List of relationship captions.
     """
-    THRESHOLD_RELATIONSHIPS = len(combination["objects"])
+    threshold_relationships = len(combination["objects"])
 
     adjusted_objects = adjust_positions(
         combination["objects"], combination["orientation"]["yaw"]
     )
 
-    camera = combination["orientation"]
-    camera_yaw = camera["yaw"]
+    camera_yaw = combination["orientation"]["yaw"]
 
     relationships = determine_relationships(adjusted_objects, camera_yaw)
 
     # Write relationships into the JSON file with combination["objects"]["relationships"]
     for i, obj in enumerate(combination["objects"]):
-        if "relationships" not in obj:
-            obj["relationships"] = []
+        obj.setdefault("relationships", [])
         if i < len(relationships):
             obj["relationships"] = relationships[i]
 
     selected_relationships = relationships
-    if THRESHOLD_RELATIONSHIPS < len(relationships):
-        selected_relationships = random.sample(relationships, THRESHOLD_RELATIONSHIPS)
+    if threshold_relationships < len(relationships):
+        selected_relationships = random.sample(relationships, threshold_relationships)
 
     return selected_relationships
 
 
-def generate_fov_caption(combination):
+def generate_fov_caption(combination: Dict[str, Any]) -> str:
     """
     Generate a caption for the field of view (FOV) based on the combination data.
 
     Args:
-        combination (dict): Combination data.
+        combination (Dict[str, Any]): Combination data.
 
     Returns:
         str: FOV caption.
@@ -376,7 +369,6 @@ def generate_fov_caption(combination):
             "Set the FOV of the camera to <fov>°",
         ],
         "mm": [
-            "The camera has a <mm> mm focal length.",
             "The camera has a <mm> mm focal length.",
             "The focal length is <mm> mm.",
             "Set the focal length of the camera to <mm> mm.",
@@ -407,12 +399,12 @@ def generate_fov_caption(combination):
     return fov_caption
 
 
-def generate_postprocessing_caption(combination):
+def generate_postprocessing_caption(combination: Dict[str, Any]) -> str:
     """
     Generate a caption for postprocessing based on the combination data.
 
     Args:
-        combination (dict): Combination data.
+        combination (Dict[str, Any]): Combination data.
 
     Returns:
         str: Postprocessing caption.
@@ -450,17 +442,17 @@ def generate_postprocessing_caption(combination):
     for _ in range(num_to_pop):
         random_index_to_remove_from_end = random.randint(0, len(caption_parts) - 1)
         caption_parts.pop(random_index_to_remove_from_end)
-
     return " ".join(caption_parts)
 
 
-def generate_framing_caption(camera_data, combination):
+def generate_framing_caption(
+    camera_data: Dict[str, Any], combination: Dict[str, Any]
+) -> str:
     """
     Generate a caption for framing based on the camera data and combination data.
-
-    Args:
-        camera_data (dict): Camera data.
-        combination (dict): Combination data.
+    Copy codeArgs:
+        camera_data (Dict[str, Any]): Camera data.
+        combination (Dict[str, Any]): Combination data.
 
     Returns:
         str: Framing caption.
@@ -475,24 +467,22 @@ def generate_framing_caption(camera_data, combination):
 
     if matching_framing:
         framing_description = random.choice(matching_framing["descriptions"])
-        framing_description = framing_description.replace("<fov>", str(framing["fov"]))
         framing_description = framing_description.replace(
-            "<coverage_factor>", str(framing["coverage_factor"])
-        )
+            "<fov>", str(framing["fov"])
+        ).replace("<coverage_factor>", str(framing["coverage_factor"]))
         return framing_description
     else:
         return ""
 
 
-def flatten_descriptions(descriptions):
+def flatten_descriptions(descriptions: List[Any]) -> List[str]:
     """
     Flatten a list of descriptions, which may contain nested lists.
-
-    Args:
-        descriptions (list): A list of descriptions which may contain nested lists.
+    Copy codeArgs:
+        descriptions (List[Any]): A list of descriptions which may contain nested lists.
 
     Returns:
-        list: A flattened list of descriptions.
+        List[str]: A flattened list of descriptions.
     """
     flat_list = []
     for item in descriptions:
@@ -503,30 +493,35 @@ def flatten_descriptions(descriptions):
     return flat_list
 
 
-def speed_factor_to_percentage(speed_factor):
+def speed_factor_to_percentage(speed_factor: float) -> str:
+    """
+    Convert speed factor to a percentage string.
+    Copy codeArgs:
+        speed_factor (float): Speed factor value.
+
+    Returns:
+        str: Speed factor as a percentage string.
+    """
     rounded_speed_factor = round(speed_factor, 2)
     percentage = int(rounded_speed_factor * 100)
     return f"{percentage}%"
 
 
-def generate_animation_captions(combination):
+def generate_animation_captions(combination: Dict[str, Any]) -> List[str]:
     """
     Generate captions for camera animations based on the combination data and speed factor.
-
-    Args:
-        combination (dict): Combination data.
-        camera_data (dict): Camera data containing animation descriptions and keyframes.
+    Copy codeArgs:
+        combination (Dict[str, Any]): Combination data.
 
     Returns:
-        list: List of animation captions.
+        List[str]: List of animation captions.
     """
-
     speed_factor = round(combination["animation"]["speed_factor"], 2)
-    speed_factor_str = None
-    if random.choice([True, False]):
-        speed_factor_str = speed_factor_to_percentage(speed_factor)
-    else:
-        speed_factor_str = f"{speed_factor}x"
+    speed_factor_str = (
+        speed_factor_to_percentage(speed_factor)
+        if random.choice([True, False])
+        else f"{speed_factor}x"
+    )
 
     animation_speeds = camera_data["animation_speed"]
 
@@ -555,12 +550,11 @@ def generate_animation_captions(combination):
     return []
 
 
-def generate_caption(combination):
+def generate_caption(combination: Dict[str, Any]) -> str:
     """
     Generate a complete caption based on the combination data.
-
-    Args:
-        combination (dict): Combination data.
+    Copy codeArgs:
+        combination (Dict[str, Any]): Combination data.
 
     Returns:
         str: Complete caption.
@@ -601,15 +595,14 @@ def generate_caption(combination):
     return caption
 
 
-def generate_postprocessing(camera_data):
+def generate_postprocessing(camera_data: Dict[str, Any]) -> Dict[str, Any]:
     """
     Generate postprocessing settings based on the camera data.
-
-    Args:
-        camera_data (dict): Camera data.
+    Copy codeArgs:
+        camera_data (Dict[str, Any]): Camera data.
 
     Returns:
-        dict: Postprocessing settings.
+        Dict[str, Any]: Postprocessing settings.
     """
     postprocessing = {}
 
@@ -704,17 +697,20 @@ def generate_postprocessing(camera_data):
     return postprocessing
 
 
-def generate_orientation(camera_data, objects, background):
+def generate_orientation(
+    camera_data: Dict[str, Any],
+    objects: List[Dict[str, Any]],
+    background: Dict[str, Any],
+) -> Dict[str, int]:
     """
     Generate camera orientation based on the camera data, objects, and background.
-
-    Args:
-        camera_data (dict): Camera data.
-        objects (list): List of objects in the scene.
-        background (dict): Background information.
+    Copy codeArgs:
+        camera_data (Dict[str, Any]): Camera data.
+        objects (List[Dict[str, Any]]): List of objects in the scene.
+        background (Dict[str, Any]): Background information.
 
     Returns:
-        dict: Camera orientation.
+        Dict[str, int]: Camera orientation.
     """
     orientation_data = camera_data["orientation"]
 
@@ -737,7 +733,7 @@ def generate_orientation(camera_data, objects, background):
             # get the position of the object
             object_position = obj["transformed_position"]
 
-            # normalize the object position, account for divisino by 0
+            # normalize the object position, account for division by 0
             object_position = [
                 a / max(1e-6, sum([b**2 for b in object_position])) ** 0.5
                 for a in object_position
@@ -752,7 +748,7 @@ def generate_orientation(camera_data, objects, background):
 
             # calculate an angle padding on both sides of the object to use as a threshold
             angle = math.radians(15)
-            # set the theshold to the dot product - cos of the angle
+            # set the threshold to the dot product - cos of the angle
             threshold = math.cos(angle)
 
             if dot_product > threshold:
@@ -776,15 +772,14 @@ def generate_orientation(camera_data, objects, background):
     return orientation
 
 
-def generate_framing(camera_data):
+def generate_framing(camera_data: Dict[str, Any]) -> Dict[str, Any]:
     """
     Generate camera framing based on the camera data.
-
-    Args:
-        camera_data (dict): Camera data.
+    Copy codeArgs:
+        camera_data (Dict[str, Any]): Camera data.
 
     Returns:
-        dict: Camera framing.
+        Dict[str, Any]: Camera framing.
     """
     # Get the min_fov and max_fov across all framings
     fov_min = min([f["fov_min"] for f in camera_data["framings"]])
@@ -796,7 +791,7 @@ def generate_framing(camera_data):
     # Find the corresponding framing
     framing = None
     for f in camera_data["framings"]:
-        if fov >= f["fov_min"] and fov <= f["fov_max"]:
+        if f["fov_min"] <= fov <= f["fov_max"]:
             framing = f
             break
 
@@ -813,15 +808,14 @@ def generate_framing(camera_data):
     return framing
 
 
-def generate_animation(camera_data):
+def generate_animation(camera_data: Dict[str, Any]) -> Dict[str, Any]:
     """
     Generate camera animation based on the camera data.
-
-    Args:
-        camera_data (dict): Camera data.
+    Copy codeArgs:
+        camera_data (Dict[str, Any]): Camera data.
 
     Returns:
-        dict: Camera animation.
+        Dict[str, Any]: Camera animation.
     """
     animation = random.choice(camera_data["animations"])
     animation = animation.copy()
@@ -831,12 +825,12 @@ def generate_animation(camera_data):
     return animation
 
 
-def generate_objects():
+def generate_objects() -> List[Dict[str, Any]]:
     """
     Generate a list of random objects.
 
     Returns:
-        list: List of generated objects.
+        List[Dict[str, Any]]: List of generated objects.
     """
     chosen_dataset = random.choices(dataset_names, weights=dataset_weights)[0]
 
@@ -845,8 +839,6 @@ def generate_objects():
     number_of_objects = random.randint(1, max_number_of_objects)
 
     object_scales = object_data["scales"]
-
-    keys = object_scales.keys()
 
     # scale values
     scale_values = [scale["factor"] for scale in object_scales.values()]
@@ -913,12 +905,12 @@ def generate_objects():
     return objects
 
 
-def generate_background():
+def generate_background() -> Dict[str, Any]:
     """
     Generate a random background.
 
     Returns:
-        dict: Generated background.
+        Dict[str, Any]: Generated background.
     """
     chosen_background = random.choices(background_names, weights=background_weights)[0]
     # Get the keys from the chosen background
@@ -936,12 +928,12 @@ def generate_background():
     return background
 
 
-def generate_stage():
+def generate_stage() -> Dict[str, Any]:
     """
     Generate a random stage.
 
     Returns:
-        dict: Generated stage.
+        Dict[str, Any]: Generated stage.
     """
     texture_names = list(texture_data.keys())
     texture_weights = [len(texture_data[name]["maps"]) for name in texture_names]
@@ -960,17 +952,19 @@ def generate_stage():
     return stage
 
 
-def generate_combinations(camera_data, count, seed):
+def generate_combinations(
+    camera_data: Dict[str, Any], count: int, seed: Optional[int]
+) -> Dict[str, Any]:
     """
     Generate random combinations of camera settings, objects, background, and stage.
 
     Args:
-        camera_data (dict): Camera data.
+        camera_data (Dict[str, Any]): Camera data.
         count (int): Number of combinations to generate.
-        seed (int): Seed for the random number generator.
+        seed (Optional[int]): Seed for the random number generator.
 
     Returns:
-        dict: Generated combinations data.
+        Dict[str, Any]: Generated combinations data.
     """
     if seed is None:
         seed = -1

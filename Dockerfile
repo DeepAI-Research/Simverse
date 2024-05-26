@@ -30,16 +30,12 @@ RUN apt-get update && \
     update-alternatives --install /usr/bin/python python /usr/bin/python3.10 1 && \
     python3 -m pip install --upgrade pip
 
-RUN wget https://builder.blender.org/download/daily/archive/blender-4.1.1-stable+v41.e1743a0317bc-linux.x86_64-release.tar.xz && \
-    tar -xvf blender-4.1.1-stable+v41.e1743a0317bc-linux.x86_64-release.tar.xz && \
-    mv blender-4.1.1-stable+v41.e1743a0317bc-linux.x86_64-release blender && \
-    rm blender-4.1.1-stable+v41.e1743a0317bc-linux.x86_64-release.tar.xz
-
 COPY scripts/ ./scripts/
 RUN bash scripts/get_data.sh
 
 COPY requirements.txt .
 RUN python3 -m pip install --no-cache-dir -r requirements.txt
+RUN python3 -m pip install bpy
 
 RUN apt-get install -y libglu1-mesa-dev
 

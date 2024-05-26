@@ -141,9 +141,6 @@ def test_optimal_distance():
         # Remove the cube after rendering to prepare for the next one
         bpy.data.objects.remove(cube, do_unlink=True)
 
-    # Save the Blender scene
-    bpy.ops.wm.save_as_mainfile(filepath="test.blend")
-
     print("Test completed.")
 
 
