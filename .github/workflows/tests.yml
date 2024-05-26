@@ -30,8 +30,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-    - name: Run install_blender_linux.sh
-      run: bash scripts/install_blender_linux.sh
+        pip install bpy
 
     - name: Get the data
       run: bash scripts/get_data.sh
