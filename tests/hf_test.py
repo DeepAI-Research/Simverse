@@ -58,4 +58,5 @@ def test_upload_to_huggingface():
 
 
 if __name__ == "__main__":
-    test_upload_to_huggingface()
+    # test_upload_to_huggingface()
+    pass
