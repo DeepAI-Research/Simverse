@@ -77,14 +77,14 @@ def render_scene(
     Renders a scene with specified parameters.
 
     Args:
-        - output_dir (str): Path to the directory where the rendered video will be saved.
-        - context (bpy.types.Context): Blender context.
-        - combination_file (str): Path to the JSON file containing camera combinations.
-        - start_frame (int): Start frame of the animation. Defaults to 1.
-        - end_frame (int): End frame of the animation. Defaults to 65.
-        - combination_index (int): Index of the camera combination to use from the JSON file. Defaults to 0.
-        - height (int): Render output height. Defaults to 1080.
-        - width (int): Render output width. Defaults to 1920.
+        output_dir (str): Path to the directory where the rendered video will be saved.
+        context (bpy.types.Context): Blender context.
+        combination_file (str): Path to the JSON file containing camera combinations.
+        start_frame (int): Start frame of the animation. Defaults to 1.
+        end_frame (int): End frame of the animation. Defaults to 65.
+        combination_index (int): Index of the camera combination to use from the JSON file. Defaults to 0.
+        height (int): Render output height. Defaults to 1080.
+        width (int): Render output width. Defaults to 1920.
 
     Returns:
         None

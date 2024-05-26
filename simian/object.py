@@ -154,8 +154,8 @@ def remove_small_geometry(
     deleting small ones, and re-joining them.
 
     Args:
-        - obj (bpy.types.Object): The object to process.
-        - min_vertex_count (int, optional): Minimum number of vertices required to keep a part of the mesh. Default is 10.
+        obj (bpy.types.Object): The object to process.
+        min_vertex_count (int, optional): Minimum number of vertices required to keep a part of the mesh. Default is 10.
 
     Returns:
         bpy.types.Object or None: The processed object if successful, None otherwise.
@@ -210,8 +210,8 @@ def normalize_object_scale(
     Scales the object by a factor.
 
     Args:
-        - obj (bpy.types.Object): The object to scale.
-        - scale_factor (float, optional): The factor to scale the object by. Defaults to 1.0.
+        obj (bpy.types.Object): The object to scale.
+        scale_factor (float, optional): The factor to scale the object by. Defaults to 1.0.
 
     Returns:
         bpy.types.Object: The scaled object.

@@ -29,19 +29,19 @@ def render_objects(
     use of specific GPU devices, and selection of frames for animation sequences.
 
     Args:
-        - processes (Optional[int]): Number of processes to use for multiprocessing.
+        processes (Optional[int]): Number of processes to use for multiprocessing.
             Defaults to three times the number of CPU cores.
-        - render_timeout (int): Maximum time in seconds for a single rendering process.
-        - width (int): Width of the rendering in pixels.
-        - height (int): Height of the rendering in pixels.
-        - start_index (int): Starting index for rendering from the combinations DataFrame.
-        - end_index (int): Ending index for rendering from the combinations DataFrame.
-        - start_frame (int): Starting frame number for the animation.
-        - end_frame (int): Ending frame number for the animation.
+        render_timeout (int): Maximum time in seconds for a single rendering process.
+        width (int): Width of the rendering in pixels.
+        height (int): Height of the rendering in pixels.
+        start_index (int): Starting index for rendering from the combinations DataFrame.
+        end_index (int): Ending index for rendering from the combinations DataFrame.
+        start_frame (int): Starting frame number for the animation.
+        end_frame (int): Ending frame number for the animation.
 
     Raises:
-        - NotImplementedError: If the operating system is not supported.
-        - FileNotFoundError: If Blender is not found at the specified path.
+        NotImplementedError: If the operating system is not supported.
+        FileNotFoundError: If Blender is not found at the specified path.
 
     Returns:
         None
