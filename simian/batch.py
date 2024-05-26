@@ -12,7 +12,6 @@ sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../"))
 
 
 def render_objects(
-    download_dir: Optional[str] = None,
     processes: Optional[int] = None,
     render_timeout: int = 3000,
     width: int = 1920,
@@ -30,8 +29,6 @@ def render_objects(
     use of specific GPU devices, and selection of frames for animation sequences.
 
     Args:
-        - download_dir (Optional[str]): Directory to download the objects to.
-            If None, objects are not downloaded. Defaults to None.
         - processes (Optional[int]): Number of processes to use for multiprocessing.
             Defaults to three times the number of CPU cores.
         - render_timeout (int): Maximum time in seconds for a single rendering process.
@@ -88,12 +85,6 @@ def main():
         description="Automate the rendering of objects using Blender."
     )
     parser.add_argument(
-        "--download_dir",
-        type=str,
-        default=None,
-        help="Directory to download the objects to. Defaults to None.",
-    )
-    parser.add_argument(
         "--processes",
         type=int,
         default=None,
@@ -145,7 +136,6 @@ def main():
     args = parser.parse_args()
 
     render_objects(
-        download_dir=args.download_dir,
         processes=args.processes,
         render_timeout=args.render_timeout,
         width=args.width,

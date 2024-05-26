@@ -252,11 +252,9 @@ if __name__ == "__main__":
     # get the object uid from the 'object' column, which is a dictionary
     objects_column = combination["objects"]
 
-    download_dirs = ([],)
     for object in objects_column:
         uid = object["uid"]
 
-        # Download object with objaverse to download_dir
         downloaded = simian.vendor.objaverse.load_objects([uid])
 
     # Render the images
