@@ -8,6 +8,7 @@ sys.path.append(combiner_path)
 
 from simian.utils import upload_to_huggingface, get_env_vars
 
+
 def test_upload_to_huggingface():
     # Create a temporary directory for testing
     with tempfile.TemporaryDirectory() as temp_dir:
@@ -33,12 +34,28 @@ def test_upload_to_huggingface():
 
         # Check if the file exists in the Hugging Face repository
         from huggingface_hub import HfApi
+
         api = HfApi(token=hf_token)
-        file_exists = api.file_exists(repo_id=repo_id, filename=os.path.join(repo_path, test_file), repo_type="dataset")
-        assert file_exists, f"File {test_file} was not uploaded to the Hugging Face repository"
+        file_exists = api.file_exists(
+            repo_id=repo_id,
+            filename=os.path.join(repo_path, test_file),
+            repo_type="dataset",
+        )
+        assert (
+            file_exists
+        ), f"File {test_file} was not uploaded to the Hugging Face repository"
         # delete the file
-        api.delete_file(repo_id=repo_id, path_in_repo=os.path.join(repo_path, test_file), repo_type="dataset")
-        assert not api.file_exists(repo_id=repo_id, filename=os.path.join(repo_path, test_file), repo_type="dataset"), f"File {test_file} was not deleted from the Hugging Face repository"
-        
+        api.delete_file(
+            repo_id=repo_id,
+            path_in_repo=os.path.join(repo_path, test_file),
+            repo_type="dataset",
+        )
+        assert not api.file_exists(
+            repo_id=repo_id,
+            filename=os.path.join(repo_path, test_file),
+            repo_type="dataset",
+        ), f"File {test_file} was not deleted from the Hugging Face repository"
+
+
 if __name__ == "__main__":
     test_upload_to_huggingface()

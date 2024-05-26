@@ -12,6 +12,7 @@ from simian.utils import upload_outputs
 
 celery = app
 
+
 def run_job(
     combination_index: int,
     combination: Dict[str, Any],
@@ -63,5 +64,6 @@ def run_job(
                 os.unlink(file_path)
         except Exception as e:
             print(e)
+
 
 register_function(run_job)

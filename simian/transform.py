@@ -30,7 +30,9 @@ def compute_rotation_matrix(theta: float) -> List[List[float]]:
     return [[cos(theta), -sin(theta)], [sin(theta), cos(theta)]]
 
 
-def apply_rotation(point: List[float], rotation_matrix: List[List[float]]) -> List[Union[int, float]]:
+def apply_rotation(
+    point: List[float], rotation_matrix: List[List[float]]
+) -> List[Union[int, float]]:
     """Apply rotation matrix to a point and round to integer if close.
 
     Args:
@@ -41,7 +43,9 @@ def apply_rotation(point: List[float], rotation_matrix: List[List[float]]) -> Li
         List[Union[int, float]]: Rotated point with rounded coordinates.
     """
     rotated_point = np.dot(rotation_matrix, np.array(point))
-    return [round(val) if abs(val - round(val)) < 1e-9 else val for val in rotated_point]
+    return [
+        round(val) if abs(val - round(val)) < 1e-9 else val for val in rotated_point
+    ]
 
 
 def adjust_positions(objects: List[Dict], camera_yaw: float) -> List[Dict]:
@@ -71,7 +75,9 @@ def adjust_positions(objects: List[Dict], camera_yaw: float) -> List[Dict]:
     for obj in objects:
         grid_x, grid_y = lookup_table[obj["placement"]]
         empty_obj = obj.copy()
-        empty_obj["transformed_position"] = apply_rotation([grid_x, grid_y], rotation_matrix)
+        empty_obj["transformed_position"] = apply_rotation(
+            [grid_x, grid_y], rotation_matrix
+        )
         empty_objs.append(empty_obj)
     return empty_objs
 
@@ -92,8 +98,12 @@ def determine_relationships(objects: List[Dict], camera_yaw: float) -> List[str]
     for i, obj1 in enumerate(objects):
         for j, obj2 in enumerate(objects):
             if i != j:
-                pos1 = apply_rotation(obj1["transformed_position"], inverse_rotation_matrix)
-                pos2 = apply_rotation(obj2["transformed_position"], inverse_rotation_matrix)
+                pos1 = apply_rotation(
+                    obj1["transformed_position"], inverse_rotation_matrix
+                )
+                pos2 = apply_rotation(
+                    obj2["transformed_position"], inverse_rotation_matrix
+                )
 
                 relationship = ""
 
@@ -108,7 +118,9 @@ def determine_relationships(objects: List[Dict], camera_yaw: float) -> List[str]
                     relationship += " and in front of"
 
                 if relationship:
-                    relationships.append(f"{obj1['name']} is {relationship} {obj2['name']}.")
+                    relationships.append(
+                        f"{obj1['name']} is {relationship} {obj2['name']}."
+                    )
 
     return relationships
 
@@ -127,8 +139,14 @@ def find_largest_length(objects: List[Dict[bpy.types.Object, Dict]]) -> float:
         obj = list(obj_dict.keys())[0]
         bpy.context.view_layer.update()
         bbox_corners = obj.bound_box
-        width = max(bbox_corners, key=lambda v: v[0])[0] - min(bbox_corners, key=lambda v: v[0])[0]
-        height = max(bbox_corners, key=lambda v: v[1])[1] - min(bbox_corners, key=lambda v: v[1])[1]
+        width = (
+            max(bbox_corners, key=lambda v: v[0])[0]
+            - min(bbox_corners, key=lambda v: v[0])[0]
+        )
+        height = (
+            max(bbox_corners, key=lambda v: v[1])[1]
+            - min(bbox_corners, key=lambda v: v[1])[1]
+        )
         current_max = max(width, height)
         largest_dimension = max(largest_dimension, current_max)
 
@@ -160,7 +178,9 @@ def get_world_bounding_box_xy(obj: bpy.types.Object) -> List[Vector]:
     return corners_xy
 
 
-def check_overlap_xy(bbox1: List[Vector], bbox2: List[Vector], padding: float = 0.08) -> bool:
+def check_overlap_xy(
+    bbox1: List[Vector], bbox2: List[Vector], padding: float = 0.08
+) -> bool:
     """Check if two 2D bounding boxes overlap with optional padding.
 
     Args:
@@ -171,17 +191,27 @@ def check_overlap_xy(bbox1: List[Vector], bbox2: List[Vector], padding: float = 
     Returns:
         bool: True if the bounding boxes overlap, False otherwise.
     """
-    min1 = Vector((min(corner.x for corner in bbox1), min(corner.y for corner in bbox1), 0))
-    max1 = Vector((max(corner.x for corner in bbox1), max(corner.y for corner in bbox1), 0))
-    min2 = Vector((min(corner.x for corner in bbox2), min(corner.y for corner in bbox2), 0))
-    max2 = Vector((max(corner.x for corner in bbox2), max(corner.y for corner in bbox2), 0))
+    min1 = Vector(
+        (min(corner.x for corner in bbox1), min(corner.y for corner in bbox1), 0)
+    )
+    max1 = Vector(
+        (max(corner.x for corner in bbox1), max(corner.y for corner in bbox1), 0)
+    )
+    min2 = Vector(
+        (min(corner.x for corner in bbox2), min(corner.y for corner in bbox2), 0)
+    )
+    max2 = Vector(
+        (max(corner.x for corner in bbox2), max(corner.y for corner in bbox2), 0)
+    )
     overlap = not (
         min1.x > max2.x + padding
         or max1.x < min2.x - padding
         or min1.y > max2.y + padding
         or max1.y < min2.y - padding
     )
-    print(f"Checking overlap between {bbox1} and {bbox2} with padding {padding}: {overlap}")
+    print(
+        f"Checking overlap between {bbox1} and {bbox2} with padding {padding}: {overlap}"
+    )
     return overlap
 
 
@@ -224,16 +254,22 @@ def bring_objects_to_origin(objects: List[Dict[bpy.types.Object, Dict]]) -> None
                     collision = True
                     break
 
-            print(f"Object {obj.name} position: {obj.location}, Collision: {collision}, Iterations: {iterations}")
+            print(
+                f"Object {obj.name} position: {obj.location}, Collision: {collision}, Iterations: {iterations}"
+            )
 
             if collision or (obj.location.x == 0 and obj.location.y == 0):
                 break
 
             iterations += 1
             distance_to_origin = obj.location.length
-            step_size = min(distance_to_origin / 10, 0.5)  # Update step size dynamically
+            step_size = min(
+                distance_to_origin / 10, 0.5
+            )  # Update step size dynamically
 
-        print(f"Final position of {obj.name}: {obj.location} after {iterations} iterations")
+        print(
+            f"Final position of {obj.name}: {obj.location} after {iterations} iterations"
+        )
 
         for bbox_dict in object_bboxes:
             if list(bbox_dict.keys())[0] == obj:
@@ -241,7 +277,9 @@ def bring_objects_to_origin(objects: List[Dict[bpy.types.Object, Dict]]) -> None
                 break
 
 
-def place_objects_on_grid(objects: List[Dict[bpy.types.Object, Dict]], largest_length: float) -> None:
+def place_objects_on_grid(
+    objects: List[Dict[bpy.types.Object, Dict]], largest_length: float
+) -> None:
     """Place objects on a grid based on their transformed positions.
 
     Args:
@@ -251,11 +289,13 @@ def place_objects_on_grid(objects: List[Dict[bpy.types.Object, Dict]], largest_l
     for obj_dict in objects:
         obj = list(obj_dict.keys())[0]
         transformed_position = obj_dict[obj]["transformed_position"]
-        obj.location = Vector((
-            transformed_position[0] * largest_length,
-            transformed_position[1] * largest_length,
-            0,
-        ))
+        obj.location = Vector(
+            (
+                transformed_position[0] * largest_length,
+                transformed_position[1] * largest_length,
+                0,
+            )
+        )
         print(f"Placed object {obj.name} at {obj.location}")
 
     bpy.context.view_layer.update()

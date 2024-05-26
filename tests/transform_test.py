@@ -57,7 +57,7 @@ def test_determine_relationships():
     objects = [
         {"name": "obj1", "transformed_position": [0, 0]},
         {"name": "obj2", "transformed_position": [1, 1]},
-        {"name": "obj3", "transformed_position": [-1, -1]}
+        {"name": "obj3", "transformed_position": [-1, -1]},
     ]
 
     # Define the directional relationship phrases
@@ -66,7 +66,7 @@ def test_determine_relationships():
             "to_the_left": ["to the left of"],
             "to_the_right": ["to the right of"],
             "in_front_of": ["in front of"],
-            "behind": ["behind"]
+            "behind": ["behind"],
         }
     }
 
@@ -75,22 +75,26 @@ def test_determine_relationships():
 
     # Determine the relationships between the objects
     relationships = determine_relationships(objects, camera_yaw)
-    
+
     # Expected relationships
     expected_relationships = [
-        'obj1 is  and behind obj2.', 
-        'obj1 is  and in front of obj3.', 
-        'obj2 is  and in front of obj1.', 
-        'obj2 is  and in front of obj3.', 
-        'obj3 is  and behind obj1.', 
-        'obj3 is  and behind obj2.'
+        "obj1 is  and behind obj2.",
+        "obj1 is  and in front of obj3.",
+        "obj2 is  and in front of obj1.",
+        "obj2 is  and in front of obj3.",
+        "obj3 is  and behind obj1.",
+        "obj3 is  and behind obj2.",
     ]
 
     # Check if the relationships are correctly formed
-    assert len(relationships) == len(expected_relationships), "The number of relationships is incorrect."
-    
+    assert len(relationships) == len(
+        expected_relationships
+    ), "The number of relationships is incorrect."
+
     for relationship in expected_relationships:
-        assert relationship in relationships, f"Expected relationship '{relationship}' not found in results."
+        assert (
+            relationship in relationships
+        ), f"Expected relationship '{relationship}' not found in results."
 
 
 if __name__ == "__main__":
