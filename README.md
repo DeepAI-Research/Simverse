@@ -23,12 +23,27 @@ Simian creates synthetic data that is usable for generative video and video capt
 pip install -r requirements.txt
 ```
 
-2. Download the datasets:
+3.  Install Blenderpy dependency. On a Mac, this is complicated because Blenderpy has some issues. Easier on Linux.
+```bash
+# Linux
+python3.10 -m pip install bpy
+
+# On a mac, this is complicated:
+python3.10 -m pip install --force-reinstall https://files.pythonhosted.org/packages/6c/04/0772035e24928d4f0c1a12e1f2088420621ea8f5af00e480abc0c1f4433b/bpy-4.0.0-cp310-cp310-macosx_11_0_arm64.whl
+# Note, you need python 3.10 installed on your mac
+If you want to use python 3.11, you need this:
+wget https://files.pythonhosted.org/packages/43/99/8c71bb21b62c5a6c22d166f24d0b47b53f0850959f60731df7cc76c52177/bpy-4.1.0-cp311-cp311-macosx_11_2_arm64.whl
+# rename file to fix install error
+mv bpy-4.1.0-cp311-cp311-macosx_11_2_arm64.whl bpy-4.1.0-cp311-cp311-macosx_11_0_arm64.whl
+python3.11 -m pip install --force-reinstall bpy-4.1.0-cp311-cp311-macosx_11_0_arm64.whl
+```
+
+4. Download the datasets:
 ```bash
 ./scripts/get_data.sh
 ```
 
-3. [OPTIONAL] If you're on a headless Linux server, install Xorg and start it:
+1. [OPTIONAL] If you're on a headless Linux server, install Xorg and start it:
 
 ```bash
 sudo apt-get install xserver-xorg -y && \
@@ -51,13 +66,13 @@ You can generate individually:
 ```bash
 # MacOS
 # Download Blender for MacOS
-/Applications/Blender.app/Contents/MacOS/Blender --background --python simian/render.py
+python simian/render.py
 
 # Linux
-blender --background --python simian/render.py
+python simian/render.py
 
 ## Kitchen sink
-blender --background --python simian/render.py -- --width 1920 --height 1080 --combination_index 0 --output_dir ./renders --hdri_path ./backgrounds --start_frame 1 --end_frame 65
+python simian/render.py -- --width 1920 --height 1080 --combination_index 0 --output_dir ./renders --hdri_path ./backgrounds --start_frame 1 --end_frame 65
 ```
 
 Configure the flags as needed:
@@ -139,7 +154,7 @@ export REDIS_PASSWORD=<somepassword>
 To run tests look into the test folder and run whichever test file you want
 
 ```bash
-/Applications/Blender.app/Contents/MacOS/Blender --background --python object_test.py
+python object_test.py
 ```
 
 ## 📁 Datasets

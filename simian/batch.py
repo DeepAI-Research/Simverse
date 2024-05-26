@@ -10,8 +10,6 @@ from typing import Optional
 # Append Simian to sys.path before importing from package
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../"))
 
-from simian.utils import get_blender_path
-
 
 def render_objects(
     download_dir: Optional[str] = None,
@@ -76,10 +74,8 @@ def render_objects(
     for i in range(start_index, end_index):
         args = f"--width {width} --height {height} --combination_index {i} --start_frame {start_frame} --end_frame {end_frame} --output_dir {target_directory} --hdri_path {hdri_path}"
 
-        application_path = get_blender_path()
-
         # Construct and print the Blender command line.
-        command = f"{application_path} --background --python simian/render.py -- {args}"
+        command = f"{sys.executable} simian/render.py -- {args}"
 
         print("This is the command: ", command)
 

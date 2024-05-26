@@ -35,10 +35,10 @@ python3 simian/combiner.py --count 1000 --seed 42
 You can generate individually:
 ```bash
 # MacOS
-/Applications/Blender.app/Contents/MacOS/Blender --background --python simian/render.py -- --width 1920 --height 1080 --combination_index 0 --output_dir ./renders --hdri_path ./backgrounds
+python simian/render.py -- --width 1920 --height 1080 --combination_index 0 --output_dir ./renders --hdri_path ./backgrounds
 
 # Linux
-blender --background --python simian/render.py -- --width 1920 --height 1080 --combination_index 0 --output_dir ./renders --hdri_path ./backgrounds
+python simian/render.py -- --width 1920 --height 1080 --combination_index 0 --output_dir ./renders --hdri_path ./backgrounds
 ```
 
 Or generate all or part of the combination set using the `batch.py` script:

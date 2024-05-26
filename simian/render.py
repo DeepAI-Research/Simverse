@@ -14,21 +14,18 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 if current_dir.endswith("simian"):
     current_dir = os.path.dirname(current_dir)
 
-# Append the simian directory to sys.path
-simian_path = os.path.join(current_dir)
-sys.path.append(simian_path)
+sys.path.append(os.path.join(current_dir))
 
 from simian.utils import check_imports
 
 check_imports()
-import pandas as pd
 from simian.camera import (
     create_camera_rig,
     position_camera,
     set_camera_animation,
     set_camera_settings,
 )
-from simian.position import find_largest_length, place_objects_on_grid
+from simian.transform import find_largest_length, place_objects_on_grid
 from simian.camera import create_camera_rig, set_camera_settings
 from simian.object import (
     apply_all_modifiers,

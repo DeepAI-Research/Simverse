@@ -2,17 +2,19 @@ import json
 import os
 import sys
 import subprocess
+from typing import Any, List, Dict, Optional
+
 from distributaur.core import register_function, app
 
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../"))
 
-from simian.utils import get_blender_path, upload_outputs
+from simian.utils import upload_outputs
 
 celery = app
 
 def run_job(
     combination_index: int,
-    combination: list,
+    combination: Dict[str, Any],
     width: int,
     height: int,
     output_dir: str,
@@ -20,6 +22,22 @@ def run_job(
     start_frame: int = 0,
     end_frame: int = 65,
 ) -> None:
+    """
+    Run a rendering job with the specified combination index and settings.
+
+    Args:
+        combination_index (int): The index of the combination to render.
+        combination (Dict[str, Any]): The combination dictionary.
+        width (int): The width of the rendered output.
+        height (int): The height of the rendered output.
+        output_dir (str): The directory to save the rendered output.
+        hdri_path (str): The path to the HDRI file.
+        start_frame (int, optional): The starting frame number. Defaults to 0.
+        end_frame (int, optional): The ending frame number. Defaults to 65.
+
+    Returns:
+        None
+    """
     combination = json.dumps(combination)
     combination = '"' + combination.replace('"', '\\"') + '"'
 
@@ -31,11 +49,7 @@ def run_job(
     args += f" --start_frame {start_frame} --end_frame {end_frame}"
     args += f" --combination {combination}"
 
-    print("Args: ", args)
-
-    application_path = get_blender_path()
-
-    command = f"{application_path} --background --python simian/render.py -- {args}"
+    command = f"{sys.executable} simian/render.py -- {args}"
     print("Worker running: ", command)
 
     subprocess.run(["bash", "-c", command], check=False)
