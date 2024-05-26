@@ -24,13 +24,17 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
-        python-version: 3.x
+        python-version: 3.11
 
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-        pip install bpy
+    
+    - name: Install bpy
+      run: |
+        wget https://files.pythonhosted.org/packages/62/ab/7fc880b03a72771c82d650d431d3a2411094115f33f1a188ca18cf152084/bpy-4.1.0-cp311-cp311-win_amd64.whl
+        pip install bpy-4.1.0-cp311-cp311-win_amd64.whl
 
     - name: Get the data
       run: bash scripts/get_data.sh
