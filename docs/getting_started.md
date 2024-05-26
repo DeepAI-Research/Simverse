@@ -4,18 +4,36 @@ Below are some quick notes to get you up and running. Please read through the re
 
 ## 🖥️ Setup
 
-1. Download Blender. If you're on Linux, set it up with this script:
+> **_NOTE:_** Simian requires Python 3.10 or 3.11.
 
+1. Install Python 3.10. If you're on Linux, set it up with this <a href="https://gist.github.com/lalalune/986704a935d202ab2350ca90b2fc9755">gist</a>.
+
+2. Install dependences:
 ```bash
-bash scripts/install_blender_linux.sh
+pip install -r requirements.txt
 ```
 
-2. Download the datasets:
+1.  Install Blenderpy dependency. On a Mac, this is complicated because Blenderpy has some issues. Easier on Linux. Here are instructions for installing and running on Mac with Python 3.10.
+```bash
+# Linux
+python3.10 -m pip install bpy
+
+# On a mac, this is complicated:
+python3.10 -m pip install --force-reinstall https://files.pythonhosted.org/packages/6c/04/0772035e24928d4f0c1a12e1f2088420621ea8f5af00e480abc0c1f4433b/bpy-4.0.0-cp310-cp310-macosx_11_0_arm64.whl
+# Note, you need python 3.10 installed on your mac
+If you want to use python 3.11, you need this:
+wget https://files.pythonhosted.org/packages/43/99/8c71bb21b62c5a6c22d166f24d0b47b53f0850959f60731df7cc76c52177/bpy-4.1.0-cp311-cp311-macosx_11_2_arm64.whl
+# rename file to fix install error
+mv bpy-4.1.0-cp311-cp311-macosx_11_2_arm64.whl bpy-4.1.0-cp311-cp311-macosx_11_0_arm64.whl
+python3.11 -m pip install --force-reinstall bpy-4.1.0-cp311-cp311-macosx_11_0_arm64.whl
+```
+
+4. Download the datasets:
 ```bash
 ./scripts/get_data.sh
 ```
 
-3. If you're on a headless Linux server, install Xorg and start it:
+1. [OPTIONAL] If you're on a headless Linux server, install Xorg and start it:
 
 ```bash
 sudo apt-get install xserver-xorg -y && \
@@ -24,44 +42,104 @@ sudo python3 scripts/start_x_server.py start
 
 ## 📸 Usage
 
-## Generating Combinations
+### Generating Combinations
 
 ```bash
 python3 simian/combiner.py --count 1000 --seed 42
 ```
 
-## Generating Videos
+### Generating Videos
 
 You can generate individually:
 ```bash
 # MacOS
-python simian/render.py -- --width 1920 --height 1080 --combination_index 0 --output_dir ./renders --hdri_path ./backgrounds
+python simian/render.py
 
 # Linux
-python simian/render.py -- --width 1920 --height 1080 --combination_index 0 --output_dir ./renders --hdri_path ./backgrounds
+python simian/render.py
+
+## Kitchen sink
+python simian/render.py -- --width 1920 --height 1080 --combination_index 0 --output_dir ./renders --hdri_path ./backgrounds --start_frame 1 --end_frame 65
 ```
+
+Configure the flags as needed:
+- `--width` and `--height` are the resolution of the video.
+- `--combination_index` is the index of the combination to render.
+- `--output_dir` is the directory to save the rendered video.
+- `--hdri_path` is the directory containing the background images.
+- `--start_frame` and `--end_frame` are the start and end frames of the video.
 
 Or generate all or part of the combination set using the `batch.py` script:
 
 ```bash
-python3 simian/batch.py --start_index 0 --end_index 1000 --width 1024 --height 576
+python3 simian/batch.py --start_index 0 --end_index 1000 --width 1024 --height 576 --start_frame 1 --end_frame 65
 ```
 
-## Distributed rendering
+### Clean up Captions
+
+Make captions more prompt friendly.
+
+> **_NOTE:_** Create a .env file and add your OpenAI API key
+```bash
+python3 scripts/openai_rephrase.py
+```
+
+### Distributed rendering
 Rendering can be distributed across multiple machines using the "simian.py" and "worker.py" scripts.
 
-First, make sure you have Redis set up
+You will need to set up Redis and obtain Huggingface API key to use this feature.
+
+#### Set Up Redis
+You can make a free Redis account [here](https://redis.io/try-free/).
+
+For local testing and multiple local workers, you can use the following script to set up a local instance of Redis:
 ```bash
 scripts/setup_redis.sh
 ```
 
+#### Huggingface API Key
+
+You can get a Huggingface API key [here](https://huggingface.co/settings/tokens).
+
 Now, start your workers
 ```bash
+export REDIS_HOST=<myhost>.com
+export REDIS_PORT=1337
+export REDIS_USER=default
+export REDIS_PASSWORD=<somepassword>
+export HF_TOKEN=<token>
+export HF_REPO_ID=<repo_id>
 celery -A simian.worker worker --loglevel=info
 ```
 
-Now issue work to your task queue
+You can also build and run the worker with Docker
+```bash
+# build the container
+docker build -t simian-worker .
+
+# run the container with .env
+docker run --env-file .env simian-worker
+
+# run the container with environment variables
+docker run -e REDIS_HOST={myhost} -e REDIS_PORT={port} -e REDIS_USER=default -e REDIS_PASSWORD={some password} -e HF_TOKEN={token} -e HF_REPO_ID={repo_id} simian-worker
+```
+
+Finally, issue work to your task queue
 
 ```bash
 python3 simian/simian.py --start_index 0 --end_index 10 --width 1024 --height 576
+```
+
+If you want to use a custom or hosted Redis instance (recommended), you can add the redis details like this:
+```bash
+export REDIS_HOST=<myhost>.com
+export REDIS_PORT=1337
+export REDIS_USER=default
+export REDIS_PASSWORD=<somepassword>
+```
+
+To run tests look into the test folder and run whichever test file you want
+
+```bash
+python object_test.py
 ```

@@ -14,7 +14,7 @@ Simian creates synthetic data that is usable for generative video and video capt
 
 ## 🖥️ Setup
 
-> **_NOTE:_** Simian requires Python 3.10 or lower to run.
+> **_NOTE:_** Simian requires Python 3.10 or 3.11.
 
 1. Install Python 3.10. If you're on Linux, set it up with this <a href="https://gist.github.com/lalalune/986704a935d202ab2350ca90b2fc9755">gist</a>.
 
@@ -23,7 +23,7 @@ Simian creates synthetic data that is usable for generative video and video capt
 pip install -r requirements.txt
 ```
 
-3.  Install Blenderpy dependency. On a Mac, this is complicated because Blenderpy has some issues. Easier on Linux.
+1.  Install Blenderpy dependency. On a Mac, this is complicated because Blenderpy has some issues. Easier on Linux. Here are instructions for installing and running on Mac with Python 3.10.
 ```bash
 # Linux
 python3.10 -m pip install bpy
@@ -63,7 +63,6 @@ python3 simian/combiner.py --count 1000 --seed 42
 You can generate individually:
 ```bash
 # MacOS
-# Download Blender for MacOS
 python simian/render.py
 
 # Linux
