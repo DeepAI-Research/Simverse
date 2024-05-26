@@ -28,6 +28,10 @@ pip install -r requirements.txt
 # Linux
 python3.10 -m pip install bpy
 
+# If you have issues on Linux, you can do this:
+wget https://files.pythonhosted.org/packages/62/ab/7fc880b03a72771c82d650d431d3a2411094115f33f1a188ca18cf152084/bpy-4.1.0-cp311-cp311-win_amd64.whl
+pip install bpy-4.1.0-cp311-cp311-win_amd64.whl
+
 # On a mac, this is complicated:
 python3.10 -m pip install --force-reinstall https://files.pythonhosted.org/packages/6c/04/0772035e24928d4f0c1a12e1f2088420621ea8f5af00e480abc0c1f4433b/bpy-4.0.0-cp310-cp310-macosx_11_0_arm64.whl
 # Note, you need python 3.10 installed on your mac
