@@ -24,7 +24,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
-        python-version: 3.11
+        python-version: 3.10
 
     - name: Install dependencies
       run: |
@@ -33,17 +33,17 @@ jobs:
     
     - name: Install bpy
       run: |
-        wget https://files.pythonhosted.org/packages/62/ab/7fc880b03a72771c82d650d431d3a2411094115f33f1a188ca18cf152084/bpy-4.1.0-cp311-cp311-win_amd64.whl
-        pip install bpy-4.1.0-cp311-cp311-win_amd64.whl
+        wget https://files.pythonhosted.org/packages/4a/ca/e85e628105c2f80412231436ff0644f7dc96630520f4a7c4eb2b3a6085f2/bpy-4.0.0-cp310-cp310-manylinux_2_28_x86_64.whl
+        python3.10 -m pip install bpy-4.0.0-cp310-cp310-manylinux_2_28_x86_64.whl 
 
     - name: Get the data
       run: bash scripts/get_data.sh
 
     - name: Generate combinations
-      run: python simian/combiner.py
+      run: python3.10 simian/combiner.py
 
     - name: Run tests
-      run: python tests/__run__.py
+      run: python3.10 tests/__run__.py
 
     - name: Check test results
       if: failure()
