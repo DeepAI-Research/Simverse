@@ -60,8 +60,6 @@ python3 simian/combiner.py --count 1000 --seed 42
 
 ### Generating Videos
 
-> **_NOTE:_**  Make sure you have [Blender](https://www.blender.org/download/) installed. 
-
 You can generate individually:
 ```bash
 # MacOS
