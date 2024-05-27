@@ -7,7 +7,8 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 combiner_path = os.path.join(current_dir, "../")
 sys.path.append(combiner_path)
 
-from simian.worker import upload_to_huggingface, get_env_vars
+from simian.worker import get_env_vars, upload_to_huggingface
+
 
 def test_upload_to_huggingface():
     # Create a temporary directory for testing
@@ -22,7 +23,7 @@ def test_upload_to_huggingface():
         env_vars = get_env_vars()
         hf_token = env_vars.get("HF_TOKEN") or os.getenv("HF_TOKEN")
         repo_id = env_vars.get("HF_REPO_ID") or os.getenv("HF_REPO_ID")
-        repo_path = env_vars.get("HF_PATH") or os.getenv("HF_PATH")
+        repo_path = env_vars.get("HF_PATH") or os.getenv("HF_PATH") or "data"
 
         # Check if the required environment variables are set
         assert hf_token is not None, "HF_TOKEN is not set in .env file"
@@ -30,19 +31,31 @@ def test_upload_to_huggingface():
         assert repo_path is not None, "HF_PATH is not set in .env file"
 
         # Call the upload_to_huggingface function
-        upload_to_huggingface(temp_dir)
+        upload_to_huggingface(temp_dir, repo_path)
 
         # Check if the file exists in the Hugging Face repository
         api = HfApi()
-        repo_files = api.list_repo_files(repo_id=repo_id, repo_type="dataset", token=hf_token)
-        file_path = os.path.join(repo_path, test_file)
-        assert test_file in repo_files, f"File {test_file} was not uploaded to the Hugging Face repository"
+        repo_files = api.list_repo_files(
+            repo_id=repo_id, repo_type="dataset", token=hf_token
+        )
+        assert (
+            os.path.join(repo_path, test_file) in repo_files
+        ), f"File {os.path.join(repo_path, test_file)} was not uploaded to the Hugging Face repository"
 
         # Delete the file
-        api.delete_file(repo_id=repo_id, path_in_repo=file_path, repo_type="dataset", token=hf_token)
+        api.delete_file(
+            repo_id=repo_id,
+            path_in_repo=os.path.join(repo_path, test_file),
+            repo_type="dataset",
+            token=hf_token,
+        )
         # Verify the file has been deleted
-        repo_files = api.list_repo_files(repo_id=repo_id, repo_type="dataset", token=hf_token)
-        assert file_path not in repo_files, f"File {test_file} was not deleted from the Hugging Face repository"
+        repo_files = api.list_repo_files(
+            repo_id=repo_id, repo_type="dataset", token=hf_token
+        )
+        assert (
+            os.path.join(repo_path, test_file) not in repo_files
+        ), f"File {os.path.join(repo_path, test_file)} was not deleted from the Hugging Face repository"
 
 
 if __name__ == "__main__":

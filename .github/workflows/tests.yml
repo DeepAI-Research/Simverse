@@ -24,7 +24,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
-        python-version: 3.10.14
+        python-version: 3.11.9
 
     - name: Install dependencies
       run: |
@@ -35,10 +35,10 @@ jobs:
       run: bash scripts/get_data.sh
 
     - name: Generate combinations
-      run: python3.10 simian/combiner.py
+      run: python3.11 simian/combiner.py
 
     - name: Run tests
-      run: python3.10 tests/__run__.py
+      run: python3.11 tests/__run__.py
 
     - name: Check test results
       if: failure()

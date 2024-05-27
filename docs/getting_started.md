@@ -4,21 +4,19 @@ Below are some quick notes to get you up and running. Please read through the re
 
 ## 🖥️ Setup
 
-> **_NOTE:_** Simian requires Python 3.10 or 3.11.
+> **_NOTE:_** Simian requires Python 3.11.
 
-1. Install Python 3.10. If you're on Linux, set it up with this <a href="https://gist.github.com/lalalune/986704a935d202ab2350ca90b2fc9755">gist</a>.
-
-2. Install dependences:
+1. Install dependences:
 ```bash
 pip install -r requirements.txt
 ```
 
-3. Download the datasets:
+2. Download the datasets:
 ```bash
 ./scripts/get_data.sh
 ```
 
-4. [OPTIONAL] If you're on a headless Linux server, install Xorg and start it:
+3. [OPTIONAL] If you're on a headless Linux server, install Xorg and start it:
 
 ```bash
 sudo apt-get install xserver-xorg -y && \

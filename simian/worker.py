@@ -30,28 +30,24 @@ def get_env_vars(path: str = ".env") -> Dict[str, str]:
     return env_vars
 
 
-def upload_to_huggingface(output_dir: str) -> None:
-    """Upload the rendered outputs to a Hugging Face repository.
-
-    Args:
-        output_dir (str): The directory where the rendered outputs are saved.
-    """
-    from huggingface_hub import HfApi
-
+def upload_to_huggingface(output_dir: str, repo_dir: str) -> None:
+    """Upload the rendered outputs to a Hugging Face repository."""
     env_vars = get_env_vars()
     hf_token = os.getenv("HF_TOKEN") or env_vars.get("HF_TOKEN")
     repo_id = os.getenv("HF_REPO_ID") or env_vars.get("HF_REPO_ID")
-    repo_path = os.getenv("HF_PATH") or env_vars.get("HF_PATH", "")
+    from huggingface_hub import HfApi
 
     api = HfApi(token=hf_token)
 
     for root, dirs, files in os.walk(output_dir):
         for file in files:
             local_path = os.path.join(root, file)
-            path_in_repo = os.path.join(repo_path, file) if repo_path else file
+            path_in_repo = os.path.join(repo_dir, file) if repo_dir else file
 
             try:
-                print(f"Uploading {local_path} to Hugging Face repo {repo_id} at {path_in_repo}")
+                print(
+                    f"Uploading {local_path} to Hugging Face repo {repo_id} at {path_in_repo}"
+                )
                 api.upload_file(
                     path_or_fileobj=local_path,
                     path_in_repo=path_in_repo,

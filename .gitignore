@@ -19,3 +19,5 @@ sampled_df.json
 *.obj
 venv/
 .env
+version.txt
+dist

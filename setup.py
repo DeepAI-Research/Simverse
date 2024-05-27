@@ -13,8 +13,9 @@ with open(os.path.join(file_path, "README.md"), "r") as fh:
     long_description = "\n".join(long_description)
 
 with open(os.path.join(file_path, "version.txt"), "r") as fh:
-    print(fh.read())
-    version = fh.read()
+    version_content = fh.read()
+    print("Content from version.txt:", version_content)
+    version = version_content.split("\n")[0].strip()
 
 with open(os.path.join(file_path, "requirements.txt"), "r") as fh:
     install_requires = fh.read()
