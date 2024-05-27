@@ -1,4 +1,5 @@
 from setuptools import setup
+import sys
 import os
 
 # get the cwd where the setup.py file is located
@@ -24,11 +25,11 @@ with open(os.path.join(file_path, "requirements.txt"), "r") as fh:
 
 setup(
     name="simian3d",
-    version="0.0.1",
+    version=version,
     description="A synthetic data generator for video caption pairs.",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/RaccoonResearch/simian",
+    url="https://github.com/RaccoonResearch/Simian",
     author="Raccoon Research",
     author_email="shawmakesmagic@gmail.com",
     license="MIT",
