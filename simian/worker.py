@@ -51,6 +51,7 @@ def upload_to_huggingface(output_dir: str) -> None:
             path_in_repo = os.path.join(repo_path, file) if repo_path else file
 
             try:
+                print(f"Uploading {local_path} to Hugging Face repo {repo_id} at {path_in_repo}")
                 api.upload_file(
                     path_or_fileobj=local_path,
                     path_in_repo=path_in_repo,
