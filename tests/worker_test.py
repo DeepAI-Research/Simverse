@@ -6,7 +6,7 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 combiner_path = os.path.join(current_dir, "../")
 sys.path.append(combiner_path)
 
-from simian.utils import upload_to_huggingface, get_env_vars
+from simian.worker import upload_to_huggingface, get_env_vars
 
 
 def test_upload_to_huggingface():
@@ -58,5 +58,5 @@ def test_upload_to_huggingface():
 
 
 if __name__ == "__main__":
-    # test_upload_to_huggingface()
+    test_upload_to_huggingface()
     pass

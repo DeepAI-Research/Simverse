@@ -1,5 +1,6 @@
 import json
 
+
 def find_duplicate_placements(combinations):
     """
     Find combinations with duplicate placements.
@@ -20,12 +21,12 @@ def find_duplicate_placements(combinations):
 
     return indices_with_duplicates
 
+
 # Load combinations.json file
-with open('combinations.json', 'r') as file:  # Adjust the path as needed
+with open("combinations.json", "r") as file:  # Adjust the path as needed
     data = json.load(file)
 
 # Find indices with duplicate placements
 duplicates = find_duplicate_placements(data["combinations"])
 
 print("Indices with duplicate placements:", duplicates)
-

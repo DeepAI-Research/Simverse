@@ -16,9 +16,6 @@ if current_dir.endswith("simian"):
 
 sys.path.append(os.path.join(current_dir))
 
-from simian.utils import check_imports
-
-check_imports()
 from simian.camera import (
     create_camera_rig,
     position_camera,

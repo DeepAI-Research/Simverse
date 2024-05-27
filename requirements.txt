@@ -14,3 +14,4 @@ huggingface_hub
 openai
 tiktoken
 distributaur
+bpy
