@@ -38,7 +38,6 @@ RUN bash scripts/get_data.sh
 
 COPY requirements.txt .
 RUN python3 -m pip install --no-cache-dir -r requirements.txt
-RUN python3 -m pip install bpy
 
 RUN apt-get install -y libglu1-mesa-dev
 

@@ -6,7 +6,6 @@ simian_path = os.path.join(current_dir, "../")
 sys.path.append(simian_path)
 
 from simian.batch import render_objects
-from simian.utils import get_combination_objects
 
 
 def test_render_objects():

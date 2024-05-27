@@ -2,15 +2,69 @@ import json
 import os
 import sys
 import subprocess
-from typing import Any, List, Dict, Optional
+from typing import Any, Dict
 
 from distributaur.core import register_function, app
 
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../"))
 
-from simian.utils import upload_outputs
-
 celery = app
+
+
+def get_env_vars(path: str = ".env") -> Dict[str, str]:
+    """Get the environment variables from the specified file.
+
+    Args:
+        path (str): The path to the file containing the environment variables. Defaults to ".env".
+
+    Returns:
+        Dict[str, str]: A dictionary containing the environment variables.
+    """
+    env_vars = {}
+    if not os.path.exists(path):
+        return env_vars
+    with open(path, "r") as f:
+        for line in f:
+            key, value = line.strip().split("=")
+            env_vars[key] = value
+    return env_vars
+
+
+def upload_to_huggingface(output_dir: str) -> None:
+    """Upload the rendered outputs to a Hugging Face repository.
+
+    Args:
+        output_dir (str): The directory where the rendered outputs are saved.
+    """
+    from huggingface_hub import HfApi
+
+    env_vars = get_env_vars()
+    hf_token = os.getenv("HF_TOKEN") or env_vars.get("HF_TOKEN")
+    repo_id = os.getenv("HF_REPO_ID") or env_vars.get("HF_REPO_ID")
+    repo_path = os.getenv("HF_PATH") or env_vars.get("HF_PATH", "")
+
+    api = HfApi(token=hf_token)
+
+    for root, dirs, files in os.walk(output_dir):
+        for file in files:
+            local_path = os.path.join(root, file)
+            path_in_repo = os.path.join(repo_path, file) if repo_path else file
+
+            try:
+                api.upload_file(
+                    path_or_fileobj=local_path,
+                    path_in_repo=path_in_repo,
+                    repo_id=repo_id,
+                    token=hf_token,
+                    repo_type="dataset",
+                )
+                print(
+                    f"Uploaded {local_path} to Hugging Face repo {repo_id} at {path_in_repo}"
+                )
+            except Exception as e:
+                print(
+                    f"Failed to upload {local_path} to Hugging Face repo {repo_id} at {path_in_repo}: {e}"
+                )
 
 
 def run_job(
@@ -55,7 +109,7 @@ def run_job(
 
     subprocess.run(["bash", "-c", command], check=False)
 
-    upload_outputs(output_dir)
+    upload_to_huggingface(output_dir)
 
     for file in os.listdir(output_dir):
         file_path = os.path.join(output_dir, file)

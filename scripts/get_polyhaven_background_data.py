@@ -42,7 +42,7 @@ for id, asset_data in data.items():
         "url": hdr_url,
         "name": name,
         "categories": categories,
-        "tags": tags
+        "tags": tags,
     }
 
     # Save the updated dictionary to the JSON file

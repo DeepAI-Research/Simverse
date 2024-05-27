@@ -2,10 +2,6 @@ import math
 import bpy
 from mathutils import Vector
 
-from simian.utils import check_imports
-
-check_imports()
-
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 

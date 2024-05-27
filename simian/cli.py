@@ -4,6 +4,7 @@ import signal
 import sys
 import time
 import json
+from typing import Dict
 
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../"))
 
@@ -21,7 +22,26 @@ from distributaur.core import (
 
 from distributaur.vast import rent_nodes, terminate_nodes, handle_signal
 
-from simian.worker import run_job
+from simian.worker import *
+
+
+def get_env_vars(path: str = ".env") -> Dict[str, str]:
+    """Get the environment variables from the specified file.
+
+    Args:
+        path (str): The path to the file containing the environment variables. Defaults to ".env".
+
+    Returns:
+        Dict[str, str]: A dictionary containing the environment variables.
+    """
+    env_vars = {}
+    if not os.path.exists(path):
+        return env_vars
+    with open(path, "r") as f:
+        for line in f:
+            key, value = line.strip().split("=")
+            env_vars[key] = value
+    return env_vars
 
 
 def get_settings(args):

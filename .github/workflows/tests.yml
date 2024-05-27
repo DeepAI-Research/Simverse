@@ -30,11 +30,6 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-    
-    - name: Install bpy
-      run: |
-        wget https://files.pythonhosted.org/packages/4a/ca/e85e628105c2f80412231436ff0644f7dc96630520f4a7c4eb2b3a6085f2/bpy-4.0.0-cp310-cp310-manylinux_2_28_x86_64.whl
-        python3.10 -m pip install bpy-4.0.0-cp310-cp310-manylinux_2_28_x86_64.whl 
 
     - name: Get the data
       run: bash scripts/get_data.sh
