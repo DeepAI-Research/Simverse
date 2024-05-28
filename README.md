@@ -131,12 +131,6 @@ export REDIS_USER=default
 export REDIS_PASSWORD=<somepassword>
 ```
 
-To run tests look into the test folder and run whichever test file you want
-
-```bash
-python object_test.py
-```
-
 ## 📁 Datasets
 
 We are currently using the following datasets:
