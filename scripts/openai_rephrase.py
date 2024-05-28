@@ -15,6 +15,22 @@ def rewrite_caption(caption_arr, context_string, max_tokens_for_completion): # c
     split_captions = [caption.split(', ') for caption in caption_arr]
 
     """
+    sometimes we get this:
+    [['2feet シナイモツゴ 雑種 ♂ Topmouth Gudgeon', "P. pumila x parva: a fish next to a Rubik's cube. A 0.5meters Dragon Zok - Herculoids is a yellow dragon with wings and horns. The Mokey is 0.5meters short and a black and white Mickey Mouse teddy bear. Horse = a horse Horse is to the left of and behind Mokey. Horse is to the left of and in front of Dragon Zok - Herculoids. シナイモツゴ 雑種 ♂ Topmouth Gudgeon", 'P. pumila x parva is to the left of and behind Mokey. シナイモツゴ 雑種 ♂ Topmouth Gudgeon', 'P. pumila x parva is  and in front of Dragon Zok - Herculoids. The lens is oriented greatly to the right front', 'with a slightly downward tilt. The camera has a 87 degree FOV. (18.00 mm focal length) Extremely zoomed out  The view is Studio Small. The flooring material is Rock Pitted Mossy. A highly accelerated animation speed is applied.']
+    
+    We want to turn it into this: 
+    We want all of these strings within each sub-array to be joined into a single string 
+    ["2feet シナイモツゴ 雑種 ♂ Topmouth Gudgeon: P. pumila x parva is a fish next to a Rubik's cube. Dragon Zok - Herculoids is a yellow dragon with wings and horns. Mokey is a black and white Mickey Mouse teddy bear. Horse is to the left of and behind Mokey. Horse is to the left of and in front of Dragon Zok - Herculoids. P. pumila x parva is to the left of and behind Mokey. P. pumila x parva is in front of Dragon Zok - Herculoids. The camera is oriented greatly to the right front with a slightly downward tilt. The camera has a 87 degree field of view. The view is Studio Small with Rock Pitted Mossy flooring. The scene has a highly accelerated animation speed."]   
+    """
+
+    # we have an array like this [["caption1"], ["caption2"], ["caption3"]]
+    # but sometimes within each ["caption1"] there are multiple strings, we want to join them
+    split_captions = [', '.join(caption) for caption in split_captions]
+    
+
+    print("THESE ARE THE SPLIT CAPTIONS: ", split_captions)
+
+    """
     split_captions = [
         ["A green and red spaceship with a circular design and a red button is a 2ft Vehicle Mine GTA2 3d remake."],
         ["LOW POLY PROPS is a pink square with a small brown box and a stick on it", "resembling a basketball court."],
@@ -49,16 +65,50 @@ def rewrite_caption(caption_arr, context_string, max_tokens_for_completion): # c
     We want to turn it into this ["caption1", "caption2", "caption3"]
     """
 
-    if "],\n" in captions_content:
-        # turn it into an array of [[], [], []]
-        cleaned_captions_content = captions_content.replace('\n', '')
-        rewritten_captions_content = json.loads(cleaned_captions_content)
+    # if "],\n[" in captions_content:
+    #     # turn it into an array of [[], [], []]
+    #     cleaned_captions_content = captions_content.replace('\n', '')
+    #     rewritten_captions_content = json.loads(cleaned_captions_content)
 
-        # then turn it into ["caption1", "caption2", "caption3"]
-        rewritten_captions_content = [caption[0] for caption in rewritten_captions_content]
-    else:
-        cleaned_captions_content = captions_content.replace('\n', '')
+    #     # then turn it into ["caption1", "caption2", "caption3"]
+    #     rewritten_captions_content = [caption[0] for caption in rewritten_captions_content]
+    # else:
+    #     cleaned_captions_content = captions_content.replace('\n', '')
+    #     rewritten_captions_content = json.loads(cleaned_captions_content)
+
+    # Cleaning the response content
+    captions_content = captions_content.strip()
+
+    # Check if the response is a single valid JSON array
+    try:
+        # Ensure the response is a single valid JSON array
+        if captions_content.startswith('[') and captions_content.endswith(']'):
+            # Remove trailing commas and square brackets from nested arrays
+            captions_content = captions_content.replace('],\n[', '],[')
+            cleaned_captions_content = captions_content
+        else:
+            # Add brackets to make it a JSON array
+            cleaned_captions_content = f"[{captions_content}]"
+        
+        """
+        Problematic content: ["Painters Dance is a man in a black and white suit and also depicted as a robot. The view is sharply downward, looking rear left. Camera has a focal length of 82 mm. Up-close perspective with strong glow effect. No screen-space ray tracing. Low motion blur. Background is Belvedere with Aerial Rocks flooring. Faster animation speed.",
+        "The Liquid Container is a beverage holder with various items. Wooden Rocking Chair is a modern chair with a wooden couch/sofa/bench nearby. Liquid Container is behind Wooden Rocking Chair. Antique Sofa is left of Wooden Rocking Chair. Camera angle is deep right and slightly forward. Wide shot with moderate glow effect. Medium occlusion effect. No ray tracing. Kloofendal d Misty Pure Sky view with Rock Wall flooring. Medium animation speed.",
+        ]
+        """
+
+        # remove "," if it is right before a ]
+        cleaned_captions_content = cleaned_captions_content.replace('",\n]', '"\n]')
+        
         rewritten_captions_content = json.loads(cleaned_captions_content)
+        
+        # Check if we have nested lists and flatten if necessary
+        if isinstance(rewritten_captions_content[0], list):
+            rewritten_captions_content = [item for sublist in rewritten_captions_content for item in sublist]
+
+    except json.JSONDecodeError as e:
+        print("JSONDecodeError:", e)
+        print("Problematic content:", captions_content)
+        rewritten_captions_content = []
 
     print("==== Captions rewritten by OpenAI ====")
     return rewritten_captions_content
