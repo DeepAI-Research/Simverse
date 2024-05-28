@@ -1,3 +1,4 @@
+
 import os
 import json
 import tiktoken
@@ -5,63 +6,91 @@ from openai import OpenAI
 
 from dotenv import load_dotenv
 
-
-def rewrite_caption(
-    caption_arr, context_string, max_tokens_for_completion
-):  # caption is a string array
+def rewrite_caption(caption_arr, context_string, max_tokens_for_completion): # caption is a string array
     load_dotenv()
     client = OpenAI(
         api_key=os.getenv("OPENAI_API_KEY"),
     )
+        
+    split_captions = [caption.split(', ') for caption in caption_arr]
 
-    split_captions = [caption.split(", ") for caption in caption_arr]
-    caption_string = json.dumps(split_captions)
+    """
+    split_captions = [
+        ["A green and red spaceship with a circular design and a red button is a 2ft Vehicle Mine GTA2 3d remake."],
+        ["LOW POLY PROPS is a pink square with a small brown box and a stick on it", "resembling a basketball court."],
+        ["Modified Colt 1911 Pistol is a gun."]
+    ]
+    """
 
     response = client.chat.completions.create(
-        model="gpt-3.5-turbo-16k",
-        messages=[{"role": "user", "content": f"{context_string}\n\n{caption_string}"}],
+        model="gpt-3.5-turbo-0125",
+        messages=[
+            {"role": "user", "content": f"{context_string}\n\n{split_captions}"}
+        ],
         temperature=1,
         max_tokens=max_tokens_for_completion,
         top_p=1,
         frequency_penalty=0,
-        presence_penalty=0,
+        presence_penalty=0
     )
 
     # Strip the surrounding brackets and commas from the string
     captions_content = response.choices[0].message.content
-    cleaned_captions_content = captions_content.replace("\n", "")
-    rewritten_captions_content = json.loads(cleaned_captions_content)
+
+    print(captions_content)
+    """
+    sometimes the captions_content will look like this:
+    ["The Box is a small wooden and metal chest with a lock, a hinged lid, a key, and a map on it. Incensário de Gato is a cat sitting on a hanging green leaf. Low Poly Bedroom Set includes a couch, a pink and blue chair, a bed with a laptop, a furniture set, a row of blocks, multicolored paper pieces, and a flying plane. Low Poly Bedroom Set is positioned to the right of Incensário de Gato and Incensário de Gato is positioned to the left of Low Poly Bedroom Set. The Box is positioned to the left of Low Poly Bedroom Set and behind it. The camera is tilted slightly downward and rotated to the left. The scene is set in Orbita with a wood plank wall floor. The animation speed is medium."],
+    ["The scene includes a rusty tank and a train engine. The camera is positioned facing downward and slightly to the left but towards the back. The scene features a subtle bloom effect, a subtle screen-space ray tracing effect, and a medium motion blur. The background view is Skidpan, and the ground material is Wood Stone Pathway. The animation speed is medium."],
+    ["The HELL ARENA is composed of a dragon head, a lava-filled volcano, and a spiked lava bowl with a large flaming rock. The camera is tilted downward and looking slightly to the right. The scene is set in Belfast Open Field with a rock stage material. The animation speed is fast."],
+    ["The scene features a rock with various objects like a piece of bread, a ruler, and a credit card. Ship's Telegraph Single Handled is a clock tower with a brass meter and a gas meter on a pedestal. Female Doctor [LowPoly] Asset is a person flying a blue kite. Female Doctor [LowPoly] Asset is positioned to the right of Fracture Surface - Location D, and Fracture Surface - Location D is positioned to the left of Female Doctor [LowPoly] Asset. The camera is angled left forward with a downward tilt. The scene is set in Air Museum Playground with a Worn Corrugated Iron stage texture. The animation speed is rapid."],
+    ["The Zombie Virus (Fictional) is represented by a Coronavirus - Preview No. 1. The camera is angled downward and flat to the left, capturing a broad viewpoint. The scene features a high bloom effect, a medium ambient occlusion effect, and no screen-space ray tracing effect. The background environment is Adams Place Bridge with a Grooved Concrete Driveway ground. The animation speed is medium."]
+
+    We want to turn it into this ["caption1", "caption2", "caption3"]
+    """
+
+    if "],\n" in captions_content:
+        # turn it into an array of [[], [], []]
+        cleaned_captions_content = captions_content.replace('\n', '')
+        rewritten_captions_content = json.loads(cleaned_captions_content)
+
+        # then turn it into ["caption1", "caption2", "caption3"]
+        rewritten_captions_content = [caption[0] for caption in rewritten_captions_content]
+    else:
+        cleaned_captions_content = captions_content.replace('\n', '')
+        rewritten_captions_content = json.loads(cleaned_captions_content)
 
     print("==== Captions rewritten by OpenAI ====")
     return rewritten_captions_content
 
 
+
 def read_combinations_and_get_array_of_just_captions():
     # we want just the caption text and store in array
-    with open("combinations.json") as file:
+    with open('combinations.json') as file:
         data = json.load(file)
-        combinations = data.get("combinations")
+        combinations = data.get('combinations')
         captions = []
         for obj in combinations:
-            caption = obj.get("caption")
+            caption = obj.get('caption')
             captions.append(caption)
         print("==== File read, captions extracted ====")
         return captions
 
 
 def write_to_file(i, rewritten_captions):
-    with open("combinations.json", "r+") as file:
+    with open('combinations.json', 'r+') as file:
         data = json.load(file)
-
-        combinations = data.get("combinations")
+        
+        combinations = data.get('combinations')
 
         j = 0
         while j < len(rewritten_captions):
             print("==> Rewriting caption: ", i + j)
-            combinations[i + j]["caption"] = rewritten_captions[j]
+            combinations[i + j]['caption'] = rewritten_captions[j]
             j += 1
-
-        data["combinations"] = combinations
+        
+        data['combinations'] = combinations
 
         file.seek(0)
         json.dump(data, file, indent=4)
@@ -76,12 +105,13 @@ def estimate_tokens(text, encoding):
 
 def rewrite_captions_in_batches(combinations, context_string):
     num_combinations = len(combinations)
-
+    
     encoding = tiktoken.encoding_for_model("gpt-3.5-turbo-16k")
 
     context_length = estimate_tokens(context_string, encoding)
-    TOKEN_LIMIT = 16385
-    INPUT_TOKEN_LIMIT = (TOKEN_LIMIT - context_length) // 2
+    # TOKEN_LIMIT = 32000
+    TOKEN_LIMIT_OUTPUT = 4096
+    INPUT_TOKEN_LIMIT = 4096 - context_length
 
     starting_point = 0
     i = 0
@@ -94,30 +124,21 @@ def rewrite_captions_in_batches(combinations, context_string):
             current_caption = combinations[i]
             caption_length = estimate_tokens(current_caption, encoding)
 
-            if (
-                current_caption_length + caption_length + context_length + 1000
-            ) >= INPUT_TOKEN_LIMIT:
+            if (current_caption_length + caption_length + context_length + 1000) >= INPUT_TOKEN_LIMIT:
                 break
 
             captions_that_need_to_be_rewritten.append(current_caption)
             current_caption_length += caption_length
-            print(
-                f"Current Caption Length: {current_caption_length}, TOKEN_LIMIT: {INPUT_TOKEN_LIMIT - context_length}"
-            )
+            print(f"Current Caption Length: {current_caption_length}, TOKEN_LIMIT: {INPUT_TOKEN_LIMIT - context_length}")
             i += 1
 
         # Calculate the max tokens available for completion
-        max_tokens_for_completion = TOKEN_LIMIT // 2
-        rewritten_captions = rewrite_caption(
-            captions_that_need_to_be_rewritten,
-            context_string,
-            max_tokens_for_completion,
-        )
+        rewritten_captions = rewrite_caption(captions_that_need_to_be_rewritten, context_string, TOKEN_LIMIT_OUTPUT)
         write_to_file(starting_point, rewritten_captions)
         starting_point = i
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     CONTEXT_STRING = """
     examples:
     Before: "2ft Vehicle Mine GTA2 3d remake: A green and red spaceship with a circular design and a red button. 7 LOW POLY PROPS: a pink square with a small brown box and a stick on it, resembling a basketball court. Modified Colt 1911 Pistol is a gun LOW POLY PROPS is to the left of and behind Modified Colt 1911 Pistol. Modified Colt 1911 Pistol is to the right of and in front of LOW POLY PROPS. Vehicle Mine GTA2 3d remake is  and in front of LOW POLY PROPS. The view is set sharply downward, looking 189\u00b0 to the right. Set the focal length of the camera to 75 mm. Semi-close perspective  The panorama is Monbachtal Riverbank. The floor is Shell Floor. The scene transitions swiftly with enhanced animation speed."
@@ -129,12 +150,26 @@ if __name__ == "__main__":
     Before: "Best Japanese Curry is 1 and A bowl of stew with rice and meat. Apple is 7feet and an apple. Apple is  and behind Best Japanese Curry. Best Japanese Curry is  and in front of Apple. Direct the camera sharp right back, set tilt to steeply angled down. The focal length is 29 mm. Taking in the whole scene. The scene has a noticeable bloom effect. Motion blur is set to medium intensity in the scene. The backdrop is Pump House. The floor texture is Wood Plank Wall. The scene moves with a relaxed animation speed."
     After: "Best Japanese Curry is a bowl of stew with rice and meat. Apple is an apple placed behind Best Japanese Curry. Best Japanese Curry is in front of Apple. The camera is very angled right and very down, make sure to capture whole scene. Subtle glow effect, and medium blur when movement. Background is Pump House with a wood plank floor. Slow animation speed maybe"
 
-    Above are caption example before and after. Go through array of captions and make it sound more human. Change complex director-like words like "bloom" or "pitch", change them to synonyms that are easier to understand and that any person would most likely use.
-    Feel free to change/remove exact values like degrees. Instead of 32 degrees left you can say slightly to the left. Combine sentences maybe.
-    Use synonyms/words to use. You can even remove some words/sentences but capture some of the holistic important details.
+    Above are caption example before and after. Change complex director-like words like "bloom" or "pitch" to more common synonyms.
+    Feel free to change/remove exact values like degrees. Instead of 32 degrees left you can say slightly to the left. 
 
-    Below are captions that NEED to be shortened/simplified, and more human-like. Return an array of rewritten captions. DO NOT wrap the strings in quotes in the array and return in format: [caption1, caption2, caption3]
+    Do the following: 
+    - REDUCE the complexity of the captions. 
+    - REDUCE the number of too specific values in the captions (29mm or 50 degrees, that type of stuff we don't need to include every time). 
+    - Use more common synonyms of words (replace bloom, inclusion, those complex words with everyday words).
+    - each caption must be shorter than it's original.
+    - Ensure that there are no unnecesaary quotes or square brackets in the captions.
+
+    Below are captions that NEED to be SHORTENED/SIMPLIFIED and human prompted-like. Return an array of rewritten captions.
+    You will be give an array of captions something like this: [["caption1"], ["caption2"], ["caption3"]]
+    PLEASE REWRITE THE CAPTIONS BASED ON EXAMPLES AND INSTRUCTIONS ABOVE AND FORMAT YOUR RESPONSE EXACTLY THIS: ["caption1",\n "caption2",\n "caption3"].
+
+    So like this (please wrap the captions in "" NOT ''):
+    ["A blue and yellow cylinder resembling a grasshopper, a beetle, and a cicada. A wooden stick and a business card. A small white dragon with pink wings. The wooden stick and business card are in front of the cylinder. The cylinder is behind the wooden stick and business card.",
+    "A vending machine with purple lights and a wooden cabinet featuring a glass top and a sign. The camera is angled sharply downward and rotated 173°. The camera has a 22 mm focal length. It captures an extremely wide landscape. The scene is rendered with a moderate bloom effect.",
+    "A woman with long red hair wearing a red hooded hat. The camera is angled slightly downward and rotated 173°. The camera has a 22 mm focal length. It captures an extremely wide landscape. The setting is Medieval Cafe. The flooring texture is Double Brick Floor. The scene features an enhanced animation tempo."]
     """
 
     combinations = read_combinations_and_get_array_of_just_captions()
     rewritten_captions = rewrite_captions_in_batches(combinations, CONTEXT_STRING)
+
