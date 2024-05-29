@@ -56,32 +56,82 @@ with patch("argparse.ArgumentParser.parse_args", new=mock_parse_args):
 
 
 def test_generate_postprocessing_caption():
+    """
+    Test the generate_postprocessing_caption function.
+    """
     combination = {
-            "postprocessing": {
-                "bloom": {"type": "medium"},
-                "ssao": {"type": "high"},
-                "ssrr": {"type": "none"},
-                "motionblur": {"type": "medium"},
+        "postprocessing": {
+            "bloom": {"type": "medium"},
+            "ssao": {"type": "high"},
+            "ssrr": {"type": "none"},
+            "motionblur": {"type": "medium"},
+        }
+    }
+
+    mock_camera_data = {
+        "postprocessing": {
+            "bloom": {
+                "types": {
+                    "medium": {
+                        "descriptions": [
+                            "medium bloom effect",
+                            "moderate bloom effect"
+                        ]
+                    }
+                }
+            },
+            "ssao": {
+                "types": {
+                    "high": {
+                        "descriptions": [
+                            "high ssao effect",
+                            "intense ssao"
+                        ]
+                    }
+                }
+            },
+            "ssrr": {
+                "types": {
+                    "none": {
+                        "descriptions": [
+                            "no ssrr effect",
+                            "ssrr disabled"
+                        ]
+                    }
+                }
+            },
+            "motionblur": {
+                "types": {
+                    "medium": {
+                        "descriptions": [
+                            "medium motion blur",
+                            "moderate motion blur"
+                        ]
+                    }
+                }
             }
         }
+    }
 
-    # Run the function with the mock data
-    actual_caption = generate_postprocessing_caption(combination)
-    
-    # Since the function pops random elements, the exact order might vary.
-    # We will test if the caption contains all expected parts.
-    expected_parts = [
+    with patch('random.choice', side_effect=[
         "moderate bloom effect",
         "intense ssao",
         "ssrr disabled",
         "moderate motion blur"
-    ]
+    ]), patch('random.randint', side_effect=[1, 0, 1]), patch('simian.combiner.camera_data', mock_camera_data):
+        actual_caption = generate_postprocessing_caption(combination)
+        
+        expected_parts = [
+            "moderate bloom effect",
+            "intense ssao",
+            "ssrr disabled",
+            "moderate motion blur"
+        ]
 
-    # Ensure each expected part is in the actual caption
-    for part in expected_parts:
-        assert part in actual_caption, f"Missing expected part in caption: {part}"
+        for part in expected_parts:
+            assert part in actual_caption, f"Missing expected part in caption: {part}"
     
-    print("============ Test Passed: test_generate_postprocessing_caption ============")
+        print("============ Test Passed: test_generate_postprocessing_caption ============")
 
 
 def test_read_json_file():
