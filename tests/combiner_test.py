@@ -4,6 +4,7 @@ import json
 import argparse
 import math
 from unittest.mock import patch, mock_open
+import random
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 project_root = os.path.abspath(os.path.join(current_dir, ".."))
@@ -55,10 +56,8 @@ with patch("argparse.ArgumentParser.parse_args", new=mock_parse_args):
     )
 
 
+# Test function for generate_postprocessing_caption
 def test_generate_postprocessing_caption():
-    """
-    Test the generate_postprocessing_caption function.
-    """
     combination = {
         "postprocessing": {
             "bloom": {"type": "medium"},
@@ -68,70 +67,45 @@ def test_generate_postprocessing_caption():
         }
     }
 
-    mock_camera_data = {
-        "postprocessing": {
-            "bloom": {
-                "types": {
-                    "medium": {
-                        "descriptions": [
-                            "medium bloom effect",
-                            "moderate bloom effect"
-                        ]
-                    }
-                }
-            },
-            "ssao": {
-                "types": {
-                    "high": {
-                        "descriptions": [
-                            "high ssao effect",
-                            "intense ssao"
-                        ]
-                    }
-                }
-            },
-            "ssrr": {
-                "types": {
-                    "none": {
-                        "descriptions": [
-                            "no ssrr effect",
-                            "ssrr disabled"
-                        ]
-                    }
-                }
-            },
-            "motionblur": {
-                "types": {
-                    "medium": {
-                        "descriptions": [
-                            "medium motion blur",
-                            "moderate motion blur"
-                        ]
-                    }
-                }
-            }
-        }
-    }
+    # Read the camera data from the file
+    with open(mock_args["camera_file_path"], "r") as file:
+        camera_data = json.load(file)
 
-    with patch('random.choice', side_effect=[
-        "moderate bloom effect",
-        "intense ssao",
-        "ssrr disabled",
-        "moderate motion blur"
-    ]), patch('random.randint', return_value=0), patch('combiner.camera_data', mock_camera_data):
-        actual_caption = generate_postprocessing_caption(combination)
-        
+    # Mock the random.choice function to return predefined descriptions
+    random_choices = [
+        "medium bloom effect",
+        "high ssao effect",
+        "no ssrr effect",
+        "medium motion blur"
+    ]
+
+    # Patch random.choice to return values from random_choices
+    original_random_choice = random.choice
+    random.choice = lambda x: random_choices.pop(0)
+
+    # Patch random.randint to return specific values for predictable output
+    original_random_randint = random.randint
+    random.randint = lambda a, b: 0 if a == 1 and b == 4 else 3
+
+    try:
+        actual_caption = generate_postprocessing_caption(combination, camera_data)
+
+        # Since the patched randint will pop 0 items, all parts should be in the actual caption
         expected_parts = [
-            "moderate bloom effect",
-            "intense ssao",
-            "ssrr disabled",
-            "moderate motion blur"
+            "medium bloom effect",
+            "high ssao effect",
+            "no ssrr effect",
+            "medium motion blur"
         ]
 
         for part in expected_parts:
             assert part in actual_caption, f"Missing expected part in caption: {part}"
-    
+
         print("============ Test Passed: test_generate_postprocessing_caption ============")
+    finally:
+        # Restore the original random functions
+        random.choice = original_random_choice
+        random.randint = original_random_randint
 
 
 def test_read_json_file():
