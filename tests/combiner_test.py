@@ -677,16 +677,20 @@ def test_generate_animation():
 
 
 def test_generate_objects():
-    with patch("simian.combiner.random.choices", return_value=["dataset1"]):
-        with patch("simian.combiner.random.randint", return_value=1):
-            with patch(
-                "simian.combiner.dataset_dict",
-                {"dataset1": [{"name": "Box", "uid": "123", "description": "A box"}]},
-            ):
-                with patch("simian.combiner.captions_data", {"123": "A simple box"}):
-                    objects = generate_objects()
-                    assert len(objects) == 1, "Objects generation is incorrect."
-                    assert objects[0]["name"] == "Box", "Object name is incorrect."
+    objects = generate_objects()
+    
+    # Ensure the function generates the correct number of objects
+    assert len(objects) > 0, "Objects generation should create more than 1 object."
+    
+    # Ensure at least one object has placement 4
+    assert any(obj["placement"] == 4 for obj in objects), "There should be at least one object with placement 4."
+    
+    # Ensure all objects have the required fields
+    required_fields = ["name", "uid", "description", "placement", "from", "scale"]
+    for obj in objects:
+        for field in required_fields:
+            assert field in obj, f"Missing field: {field}"
+    
     print("============ Test Passed: test_generate_objects ============")
 
 
