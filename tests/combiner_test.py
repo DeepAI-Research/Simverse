@@ -118,7 +118,7 @@ def test_generate_postprocessing_caption():
         "intense ssao",
         "ssrr disabled",
         "moderate motion blur"
-    ]), patch('random.randint', return_value=4), patch('combiner.camera_data', mock_camera_data):
+    ]), patch('random.randint', return_value=0), patch('combiner.camera_data', mock_camera_data):
         actual_caption = generate_postprocessing_caption(combination)
         
         expected_parts = [
