@@ -57,17 +57,29 @@ with patch("argparse.ArgumentParser.parse_args", new=mock_parse_args):
 
 def test_generate_postprocessing_caption():
     combination = {
-        "postprocessing": {
-            "bloom": {"type": "medium"},
-            "ssao": {"type": "high"},
-            "ssrr": {"type": "none"},
-            "motionblur": {"type": "medium"},
+            "postprocessing": {
+                "bloom": {"type": "medium"},
+                "ssao": {"type": "high"},
+                "ssrr": {"type": "none"},
+                "motionblur": {"type": "medium"},
+            }
         }
-    }
 
-    expected_caption = "medium bloom high ssao no ssrr"
+    # Run the function with the mock data
     actual_caption = generate_postprocessing_caption(combination)
-    assert actual_caption == expected_caption
+    
+    # Since the function pops random elements, the exact order might vary.
+    # We will test if the caption contains all expected parts.
+    expected_parts = [
+        "moderate bloom effect",
+        "intense ssao",
+        "ssrr disabled",
+        "moderate motion blur"
+    ]
+
+    # Ensure each expected part is in the actual caption
+    for part in expected_parts:
+        assert part in actual_caption, f"Missing expected part in caption: {part}"
     
     print("============ Test Passed: test_generate_postprocessing_caption ============")
 
