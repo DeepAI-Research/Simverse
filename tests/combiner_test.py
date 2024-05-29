@@ -58,43 +58,17 @@ with patch("argparse.ArgumentParser.parse_args", new=mock_parse_args):
 def test_generate_postprocessing_caption():
     combination = {
         "postprocessing": {
-            "bloom": {"type": "type1"},
-            "ssao": {"type": "type1"},
-            "ssrr": {"type": "type1"},
-            "motionblur": {"type": "type1"},
+            "bloom": {"type": "medium"},
+            "ssao": {"type": "high"},
+            "ssrr": {"type": "none"},
+            "motionblur": {"type": "medium"},
         }
     }
 
-    camera_data = {
-        "postprocessing": {
-            "bloom": {
-                "types": {
-                    "type1": {"descriptions": ["bloom description 1", "bloom description 2"]},
-                },
-            },
-            "ssao": {
-                "types": {
-                    "type1": {"descriptions": ["ssao description 1", "ssao description 2"]},
-                },
-            },
-            "ssrr": {
-                "types": {
-                    "type1": {"descriptions": ["ssrr description 1", "ssrr description 2"]},
-                },
-            },
-            "motionblur": {
-                "types": {
-                    "type1": {"descriptions": ["motionblur description 1", "motionblur description 2"]},
-                },
-            },
-        }
-    }
-
-    with patch("random.choice", side_effect=["bloom description 1", "ssao description 1", "ssrr description 1", "motionblur description 1"]), \
-         patch("random.randint", side_effect=[1, 0]):
-        caption = generate_postprocessing_caption(combination)
-
-        assert caption == "bloom description 1 ssao description 1 ssrr description 1"
+    expected_caption = "medium bloom high ssao no ssrr"
+    actual_caption = generate_postprocessing_caption(combination)
+    assert actual_caption == expected_caption
+    
     print("============ Test Passed: test_generate_postprocessing_caption ============")
 
 
