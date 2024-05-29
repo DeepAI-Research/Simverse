@@ -394,7 +394,7 @@ def test_generate_relationship_captions():
 def test_generate_fov_caption():
     combination = {"framing": {"fov": 45}}
 
-    with patch("simian.combiner.math.tan", return_value=1):
+    with patch("random.choice", side_effect=["degrees", "The camera has a <fov> degree field of view."]):
         caption = generate_fov_caption(combination)
 
         # Extract the FOV templates from the function (hardcoded here for simplicity)
@@ -407,7 +407,6 @@ def test_generate_fov_caption():
         ]
         fov_templates_mm = [
             "The camera has a <mm> mm focal length.",
-            "The camera has a <mm> mm focal length.",
             "The focal length is <mm> mm.",
             "Set the focal length of the camera to <mm> mm.",
         ]
@@ -416,13 +415,10 @@ def test_generate_fov_caption():
         expected_captions_degrees = [
             template.replace("<fov>", "45") for template in fov_templates_degrees
         ]
-        focal_length = 35 / (2 * 1)  # Since math.tan is mocked to return 1
+        focal_length = 35 / (2 * math.tan(math.radians(45) / 2))  # Calculate the focal length
         expected_captions_mm = [
             template.replace("<mm>", str(focal_length)) for template in fov_templates_mm
         ]
-
-        print("caption")
-        print(caption)
 
         # Check if any of the expected captions are in the generated caption
         caption_found_degrees = any(
@@ -434,29 +430,38 @@ def test_generate_fov_caption():
         )
 
         assert caption_found_degrees or caption_found_mm, "FOV caption is incorrect."
-
     print("============ Test Passed: test_generate_fov_caption ============")
 
 
-def test_generate_postprocessing_caption():
-    combination = {
+def test_generate_postprocessing():
+    camera_data = {
         "postprocessing": {
-            "bloom": {"type": "low", "threshold": 1.0, "intensity": 0.8, "radius": 5.0},
-            "ssao": {"type": "none", "distance": 0, "factor": 0},
-            "ssrr": {"type": "none", "max_roughness": 0, "thickness": 0},
-            "motionblur": {"type": "none", "shutter_speed": 0},
+            "bloom": {
+                "threshold_min": 0.1,
+                "threshold_max": 0.9,
+                "intensity_min": 0.1,
+                "intensity_max": 0.9,
+                "radius_min": 0.1,
+                "radius_max": 0.9,
+                "types": {
+                    "type1": {"intensity_min": 0.1, "intensity_max": 0.5},
+                    "type2": {"intensity_min": 0.6, "intensity_max": 0.9},
+                },
+            },
+            # Add similar data for ssao, ssrr, and motionblur
         }
     }
 
-    caption = generate_postprocessing_caption(combination)
+    with patch("random.uniform", side_effect=[0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4]):
+        postprocessing = generate_postprocessing(camera_data)
 
-    # Construct possible expected captions for the bloom effect
-    bloom_caption = f"The bloom effect is set to low with a threshold of 1.00, intensity of 0.80, and radius of 5.00."
+        assert postprocessing["bloom"]["threshold"] == 0.3
+        assert postprocessing["bloom"]["intensity"] == 0.4
+        assert postprocessing["bloom"]["radius"] == 0.5
+        assert postprocessing["bloom"]["type"] == "type1"
 
-    # Check if the expected bloom caption is in the generated caption
-    assert bloom_caption in caption, "Postprocessing caption is incorrect."
-
-    print("============ Test Passed: test_generate_postprocessing_caption ============")
+        # Add similar assertions for ssao, ssrr, and motionblur
+    print("============ Test Passed: test_generate_postprocessing ============")
 
 
 def test_generate_framing_caption():
