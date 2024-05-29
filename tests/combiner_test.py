@@ -32,7 +32,6 @@ def mock_parse_args(*args, **kwargs):
 with patch("argparse.ArgumentParser.parse_args", new=mock_parse_args):
     from simian.combiner import (
         read_json_file,
-        generate_caption,
         generate_combinations,
         generate_stage_captions,
         generate_orientation_caption,
@@ -53,6 +52,49 @@ with patch("argparse.ArgumentParser.parse_args", new=mock_parse_args):
         flatten_descriptions,
         speed_factor_to_percentage,
     )
+
+
+def test_generate_postprocessing_caption():
+    combination = {
+        "postprocessing": {
+            "bloom": {"type": "type1"},
+            "ssao": {"type": "type1"},
+            "ssrr": {"type": "type1"},
+            "motionblur": {"type": "type1"},
+        }
+    }
+
+    camera_data = {
+        "postprocessing": {
+            "bloom": {
+                "types": {
+                    "type1": {"descriptions": ["bloom description 1", "bloom description 2"]},
+                },
+            },
+            "ssao": {
+                "types": {
+                    "type1": {"descriptions": ["ssao description 1", "ssao description 2"]},
+                },
+            },
+            "ssrr": {
+                "types": {
+                    "type1": {"descriptions": ["ssrr description 1", "ssrr description 2"]},
+                },
+            },
+            "motionblur": {
+                "types": {
+                    "type1": {"descriptions": ["motionblur description 1", "motionblur description 2"]},
+                },
+            },
+        }
+    }
+
+    with patch("random.choice", side_effect=["bloom description 1", "ssao description 1", "ssrr description 1", "motionblur description 1"]), \
+         patch("random.randint", side_effect=[1, 0]):
+        caption = generate_postprocessing_caption(combination)
+
+        assert caption == "bloom description 1 ssao description 1 ssrr description 1"
+    print("============ Test Passed: test_generate_postprocessing_caption ============")
 
 
 def test_read_json_file():
@@ -673,11 +715,11 @@ if __name__ == "__main__":
     test_generate_object_name_description_captions()
     test_generate_relationship_captions()
     test_generate_fov_caption()
-    test_generate_postprocessing_caption()
     test_generate_framing_caption()
     test_flatten_descriptions()
     test_generate_animation_captions()
     test_generate_postprocessing()
+    test_generate_postprocessing_caption()
     test_generate_orientation()
     test_generate_framing()
     test_generate_animation()
