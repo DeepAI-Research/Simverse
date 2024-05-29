@@ -88,7 +88,7 @@ def test_generate_postprocessing_caption():
     random.randint = lambda a, b: 0 if a == 1 and b == 4 else 3
 
     try:
-        actual_caption = generate_postprocessing_caption(combination, camera_data)
+        actual_caption = generate_postprocessing_caption(combination)
 
         # Since the patched randint will pop 0 items, all parts should be in the actual caption
         expected_parts = [
