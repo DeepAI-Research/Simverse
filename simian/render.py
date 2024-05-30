@@ -1,3 +1,5 @@
+print("Hello from render.py 1")
+
 import argparse
 import sys
 import json
@@ -23,7 +25,6 @@ from simian.camera import (
     set_camera_settings,
 )
 from simian.transform import find_largest_length, place_objects_on_grid
-from simian.camera import create_camera_rig, set_camera_settings
 from simian.object import (
     apply_all_modifiers,
     apply_and_remove_armatures,
@@ -43,18 +44,8 @@ import simian.vendor.objaverse
 
 
 def read_combination(combination_file: str, index: int = 0) -> dict:
-    """
-    Reads a specified camera combination from a JSON file.
-
-    Args:
-        None
-
-    Returns:
-        None
-    """
     with open(combination_file, "r") as file:
         data = json.load(file)
-        # read the combinations from the JSON file and load as pandas dataframe
         combinations_data = data["combinations"]
         return combinations_data[index]
 
@@ -70,23 +61,6 @@ def render_scene(
     height=1080,
     width=1920,
 ) -> None:
-    """
-    Renders a scene with specified parameters.
-
-    Args:
-        output_dir (str): Path to the directory where the rendered video will be saved.
-        context (bpy.types.Context): Blender context.
-        combination_file (str): Path to the JSON file containing camera combinations.
-        start_frame (int): Start frame of the animation. Defaults to 1.
-        end_frame (int): End frame of the animation. Defaults to 65.
-        combination_index (int): Index of the camera combination to use from the JSON file. Defaults to 0.
-        height (int): Render output height. Defaults to 1080.
-        width (int): Render output width. Defaults to 1920.
-
-    Returns:
-        None
-    """
-
     print(f"Rendering scene with combination {combination_index}")
 
     os.makedirs(output_dir, exist_ok=True)
@@ -98,7 +72,6 @@ def render_scene(
     context.scene.frame_start = start_frame
     context.scene.frame_end = end_frame
 
-    # Lock and hide all scene objects before doing any object operations
     initial_objects = lock_all_objects()
 
     if combination is not None:
@@ -134,14 +107,13 @@ def render_scene(
         obj.scale = [object_data["scale"]["factor"] for _ in range(3)]
         normalize_object_scale(obj)
 
-        obj.name = object_data["uid"]  # Set the Blender object's name to the UID
+        obj.name = object_data["uid"]
 
         all_objects.append({obj: object_data})
 
     largest_length = find_largest_length(all_objects)
     place_objects_on_grid(all_objects, largest_length)
 
-    # Unlock and unhide the initial objects
     unlock_objects(initial_objects)
 
     set_camera_settings(combination)
@@ -153,12 +125,10 @@ def render_scene(
     stage = create_stage(combination)
     apply_stage_material(stage, combination)
 
-    # Set height and width of rendered output
     scene.render.resolution_x = width
     scene.render.resolution_y = height
     scene.render.resolution_percentage = 100
 
-    # Set the render type to H264, visually lossless
     scene.render.image_settings.file_format = "FFMPEG"
     scene.render.ffmpeg.format = "MPEG4"
     scene.render.ffmpeg.codec = "H264"
@@ -167,7 +137,6 @@ def render_scene(
 
     position_camera(combination, focus_object)
 
-    # Set output path and start rendering
     render_path = os.path.join(output_dir, f"{combination_index}.mp4")
 
     scene.render.filepath = render_path
@@ -179,6 +148,7 @@ def render_scene(
 
 
 if __name__ == "__main__":
+    print("Hello from render.py 2")
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--output_dir",
@@ -230,12 +200,7 @@ if __name__ == "__main__":
         "--combination", type=str, default=None, help="Combination dictionary."
     )
 
-    if "--" in sys.argv:
-        argv = sys.argv[sys.argv.index("--") + 1 :]
-    else:
-        argv = []
-
-    args = parser.parse_args(argv)
+    args = parser.parse_args()
 
     context = bpy.context
     scene = context.scene
@@ -246,7 +211,6 @@ if __name__ == "__main__":
     else:
         combination = read_combination(args.combination_file, args.combination_index)
 
-    # get the object uid from the 'object' column, which is a dictionary
     objects_column = combination["objects"]
 
     for object in objects_column:
@@ -254,7 +218,6 @@ if __name__ == "__main__":
 
         downloaded = simian.vendor.objaverse.load_objects([uid])
 
-    # Render the images
     render_scene(
         start_frame=args.start_frame,
         end_frame=args.end_frame,

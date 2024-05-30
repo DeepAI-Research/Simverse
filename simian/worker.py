@@ -4,11 +4,17 @@ import sys
 import subprocess
 from typing import Any, Dict
 
-from distributaur.core import register_function, app
+
+# Check if Redis environment variables are set
+if os.getenv("REDIS_URL") and os.getenv("REDIS_PORT"):
+    from distributaur.core import register_function, app
+    celery = app
+else:
+    register_function = None
+    celery = None
 
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../"))
 
-celery = app
 
 
 def get_env_vars(path: str = ".env") -> Dict[str, str]:
@@ -117,4 +123,5 @@ def run_job(
             print(e)
 
 
-register_function(run_job)
+if register_function:
+    register_function(run_job)
