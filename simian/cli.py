@@ -8,21 +8,39 @@ from typing import Dict
 
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../"))
 
-from distributaur.core import (
-    configure,
-    execute_function,
-    register_function,
-    get_env_vars,
-    config,
-    redis_client,
-    check_job_status,
-    attach_to_existing_job,
-    monitor_job_status,
-)
+# from distributaur.core import (
+#     configure,
+#     execute_function,
+#     register_function,
+#     get_env_vars,
+#     config,
+#     redis_client,
+#     check_job_status,
+#     attach_to_existing_job,
+#     monitor_job_status,
+# )
 
-from distributaur.vast import rent_nodes, terminate_nodes, handle_signal
+# from distributaur.vast import rent_nodes, terminate_nodes, handle_signal
 
-from simian.worker import *
+
+redis_configured = False
+if os.getenv("USE_REDIS", "false").lower() == "true":
+    try:
+        from distributaur.core import (
+            configure, execute_function, register_function, get_env_vars, 
+            config, redis_client, check_job_status, attach_to_existing_job, monitor_job_status
+        )
+        from distributaur.vast import rent_nodes, terminate_nodes, handle_signal
+        from simian.worker import *
+        redis_host = os.getenv("REDIS_HOST", "localhost")
+        redis_port = int(os.getenv("REDIS_PORT", 6379))
+        configure(redis_host=redis_host, redis_port=redis_port)
+        redis_configured = True
+        print("Redis configured successfully.")
+    except Exception as e:
+        print(f"Failed to configure Redis: {e}")
+else:
+    print("Redis is not configured. Some functionalities will be unavailable.")
 
 
 def get_env_vars(path: str = ".env") -> Dict[str, str]:
