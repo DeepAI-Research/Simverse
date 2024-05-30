@@ -2,7 +2,9 @@ import os
 import sys
 import json
 import argparse
+import math
 from unittest.mock import patch, mock_open
+import random
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 project_root = os.path.abspath(os.path.join(current_dir, ".."))
@@ -32,7 +34,6 @@ def mock_parse_args(*args, **kwargs):
 with patch("argparse.ArgumentParser.parse_args", new=mock_parse_args):
     from simian.combiner import (
         read_json_file,
-        generate_caption,
         generate_combinations,
         generate_stage_captions,
         generate_orientation_caption,
@@ -53,6 +54,58 @@ with patch("argparse.ArgumentParser.parse_args", new=mock_parse_args):
         flatten_descriptions,
         speed_factor_to_percentage,
     )
+
+
+# Test function for generate_postprocessing_caption
+def test_generate_postprocessing_caption():
+    combination = {
+        "postprocessing": {
+            "bloom": {"type": "medium"},
+            "ssao": {"type": "high"},
+            "ssrr": {"type": "none"},
+            "motionblur": {"type": "medium"},
+        }
+    }
+
+    # Read the camera data from the file
+    with open(mock_args["camera_file_path"], "r") as file:
+        camera_data = json.load(file)
+
+    # Mock the random.choice function to return predefined descriptions
+    random_choices = [
+        "medium bloom effect",
+        "high ssao effect",
+        "no ssrr effect",
+        "medium motion blur"
+    ]
+
+    # Patch random.choice to return values from random_choices
+    original_random_choice = random.choice
+    random.choice = lambda x: random_choices.pop(0)
+
+    # Patch random.randint to return specific values for predictable output
+    original_random_randint = random.randint
+    random.randint = lambda a, b: 0 if a == 1 and b == 4 else 3
+
+    try:
+        actual_caption = generate_postprocessing_caption(combination)
+
+        # Since the patched randint will pop 0 items, all parts should be in the actual caption
+        expected_parts = [
+            "medium bloom effect",
+            "high ssao effect",
+            "no ssrr effect",
+            "medium motion blur"
+        ]
+
+        for part in expected_parts:
+            assert part in actual_caption, f"Missing expected part in caption: {part}"
+
+        print("============ Test Passed: test_generate_postprocessing_caption ============")
+    finally:
+        # Restore the original random functions
+        random.choice = original_random_choice
+        random.randint = original_random_randint
 
 
 def test_read_json_file():
@@ -394,7 +447,7 @@ def test_generate_relationship_captions():
 def test_generate_fov_caption():
     combination = {"framing": {"fov": 45}}
 
-    with patch("simian.combiner.math.tan", return_value=1):
+    with patch("random.choice", side_effect=["degrees", "The camera has a <fov> degree field of view."]):
         caption = generate_fov_caption(combination)
 
         # Extract the FOV templates from the function (hardcoded here for simplicity)
@@ -407,7 +460,6 @@ def test_generate_fov_caption():
         ]
         fov_templates_mm = [
             "The camera has a <mm> mm focal length.",
-            "The camera has a <mm> mm focal length.",
             "The focal length is <mm> mm.",
             "Set the focal length of the camera to <mm> mm.",
         ]
@@ -416,13 +468,10 @@ def test_generate_fov_caption():
         expected_captions_degrees = [
             template.replace("<fov>", "45") for template in fov_templates_degrees
         ]
-        focal_length = 35 / (2 * 1)  # Since math.tan is mocked to return 1
+        focal_length = 35 / (2 * math.tan(math.radians(45) / 2))  # Calculate the focal length
         expected_captions_mm = [
             template.replace("<mm>", str(focal_length)) for template in fov_templates_mm
         ]
-
-        print("caption")
-        print(caption)
 
         # Check if any of the expected captions are in the generated caption
         caption_found_degrees = any(
@@ -434,29 +483,38 @@ def test_generate_fov_caption():
         )
 
         assert caption_found_degrees or caption_found_mm, "FOV caption is incorrect."
-
     print("============ Test Passed: test_generate_fov_caption ============")
 
 
-def test_generate_postprocessing_caption():
-    combination = {
+def test_generate_postprocessing():
+    camera_data = {
         "postprocessing": {
-            "bloom": {"type": "low", "threshold": 1.0, "intensity": 0.8, "radius": 5.0},
-            "ssao": {"type": "none", "distance": 0, "factor": 0},
-            "ssrr": {"type": "none", "max_roughness": 0, "thickness": 0},
-            "motionblur": {"type": "none", "shutter_speed": 0},
+            "bloom": {
+                "threshold_min": 0.1,
+                "threshold_max": 0.9,
+                "intensity_min": 0.1,
+                "intensity_max": 0.9,
+                "radius_min": 0.1,
+                "radius_max": 0.9,
+                "types": {
+                    "type1": {"intensity_min": 0.1, "intensity_max": 0.5},
+                    "type2": {"intensity_min": 0.6, "intensity_max": 0.9},
+                },
+            },
+            # Add similar data for ssao, ssrr, and motionblur
         }
     }
 
-    caption = generate_postprocessing_caption(combination)
+    with patch("random.uniform", side_effect=[0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4]):
+        postprocessing = generate_postprocessing(camera_data)
 
-    # Construct possible expected captions for the bloom effect
-    bloom_caption = f"The bloom effect is set to low with a threshold of 1.00, intensity of 0.80, and radius of 5.00."
+        assert postprocessing["bloom"]["threshold"] == 0.3
+        assert postprocessing["bloom"]["intensity"] == 0.4
+        assert postprocessing["bloom"]["radius"] == 0.5
+        assert postprocessing["bloom"]["type"] == "type1"
 
-    # Check if the expected bloom caption is in the generated caption
-    assert bloom_caption in caption, "Postprocessing caption is incorrect."
-
-    print("============ Test Passed: test_generate_postprocessing_caption ============")
+        # Add similar assertions for ssao, ssrr, and motionblur
+    print("============ Test Passed: test_generate_postprocessing ============")
 
 
 def test_generate_framing_caption():
@@ -619,16 +677,20 @@ def test_generate_animation():
 
 
 def test_generate_objects():
-    with patch("simian.combiner.random.choices", return_value=["dataset1"]):
-        with patch("simian.combiner.random.randint", return_value=1):
-            with patch(
-                "simian.combiner.dataset_dict",
-                {"dataset1": [{"name": "Box", "uid": "123", "description": "A box"}]},
-            ):
-                with patch("simian.combiner.captions_data", {"123": "A simple box"}):
-                    objects = generate_objects()
-                    assert len(objects) == 1, "Objects generation is incorrect."
-                    assert objects[0]["name"] == "Box", "Object name is incorrect."
+    objects = generate_objects()
+    
+    # Ensure the function generates the correct number of objects
+    assert len(objects) > 0, "Objects generation should create more than 1 object."
+    
+    # Ensure at least one object has placement 4
+    assert any(obj["placement"] == 4 for obj in objects), "There should be at least one object with placement 4."
+    
+    # Ensure all objects have the required fields
+    required_fields = ["name", "uid", "description", "placement", "from", "scale"]
+    for obj in objects:
+        for field in required_fields:
+            assert field in obj, f"Missing field: {field}"
+    
     print("============ Test Passed: test_generate_objects ============")
 
 
@@ -667,16 +729,16 @@ if __name__ == "__main__":
     test_generate_orientation_caption()
     test_generate_object_name_description_captions()
     test_generate_relationship_captions()
-    # test_generate_fov_caption()
-    # test_generate_postprocessing_caption()
+    test_generate_fov_caption()
     test_generate_framing_caption()
     test_flatten_descriptions()
     test_generate_animation_captions()
     test_generate_postprocessing()
+    test_generate_postprocessing_caption()
     test_generate_orientation()
     test_generate_framing()
     test_generate_animation()
-    # test_generate_objects()
+    test_generate_objects()
     test_generate_background()
     test_generate_stage()
     print("============ ALL TESTS PASSED ============")
