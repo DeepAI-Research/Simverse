@@ -753,7 +753,7 @@ def generate_animation(camera_data: Dict[str, Any]) -> Dict[str, Any]:
     return animation
 
 
-def generate_objects() -> List[Dict[str, Any]]:
+def generate_objects(dataset_names) -> List[Dict[str, Any]]:
     """
     Generate a list of random objects.
 
@@ -881,7 +881,7 @@ def generate_stage() -> Dict[str, Any]:
 
 
 def generate_combinations(
-    camera_data: Dict[str, Any], count: int, seed: Optional[int]
+    camera_data: Dict[str, Any], count: int, seed: Optional[int], dataset_names: List[str]
 ) -> Dict[str, Any]:
     """
     Generate random combinations of camera settings, objects, background, and stage.
@@ -902,7 +902,7 @@ def generate_combinations(
 
     # Generate combinations on the fly up to the specified count
     for i in range(count):
-        objects = generate_objects()
+        objects = generate_objects(dataset_names)
         background = generate_background()
 
         # Calculate the transformed positions of the objects
@@ -1016,7 +1016,7 @@ if __name__ == "__main__":
     background_weights = [len(background_dict[name]) for name in background_names]
 
     # Generate combinations
-    combinations = generate_combinations(camera_data, args.count, args.seed)
+    combinations = generate_combinations(camera_data, args.count, args.seed, dataset_names)
 
     # Write to JSON file
     with open(args.output_path, "w") as f:
