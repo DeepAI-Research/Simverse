@@ -3,7 +3,6 @@ import math
 import os
 import random
 import argparse
-import re
 import sys
 from typing import Any, Dict, List, Optional
 
@@ -95,77 +94,6 @@ def parse_args() -> argparse.Namespace:
         help="Path to the JSON file containing stage data",
     )
     return parser.parse_args()
-
-
-datasets = read_json_file(parse_args().datasets_path)
-object_data = read_json_file(parse_args().object_data_path)
-captions_data = read_json_file(parse_args().cap3d_captions_path)
-stage_data = read_json_file(parse_args().stage_data_path)
-texture_data = read_json_file(parse_args().texture_data_path)
-camera_data = read_json_file(parse_args().camera_file_path)
-
-models = datasets["models"]
-dataset_dict = {}
-object_map = {}
-category_map = {}
-
-for dataset in models:
-    current_path = os.path.dirname(os.path.realpath(__file__))
-    dataset_path = os.path.join(parse_args().simdata_path, dataset + ".json")
-    dataset_full_path = os.path.join(current_path, "../", dataset_path)
-    print(f"Loading {dataset_full_path}")
-    if os.path.exists(dataset_full_path):
-        dataset_data = read_json_file(dataset_full_path)
-        local_count = 0
-
-        for object in dataset_data:
-            object_id = object["uid"]
-            categories = object["categories"]
-
-            if object_id not in object_map:
-                object_map[object_id] = object
-                local_count += 1
-
-            for category in categories:
-                if category not in category_map:
-                    category_map[category] = set()
-                category_map[category].add(object_id)
-
-        print(
-            f"Loaded {local_count} unique entries out of {len(dataset_data)} from {dataset}"
-        )
-        dataset_dict[dataset] = dataset_data
-    else:
-        print(f"Dataset file {dataset_path} not found")
-
-# count the total length of all entries
-total_length = sum(len(dataset_dict[dataset]) for dataset in dataset_dict)
-print(f"Total number of objects: {total_length}")
-
-backgrounds = datasets["backgrounds"]
-background_dict = {}
-
-for background in backgrounds:
-    # get the current path of this file
-    current_path = os.path.dirname(os.path.realpath(__file__))
-    hdri_path = os.path.join(parse_args().simdata_path, background + ".json")
-    background_full_path = os.path.join(current_path, "../", hdri_path)
-    print(f"Loading {background_full_path}")
-    if os.path.exists(background_full_path):
-        background_data = read_json_file(background_full_path)
-        print(f"Loaded {len(background_data)} from {background}")
-        background_dict[background] = background_data
-    else:
-        print(f"Dataset file {hdri_path} not found")
-
-total_length = sum(len(background_dict[background]) for background in background_dict)
-print(f"Total number of backgrounds: {total_length}")
-
-dataset_names = list(dataset_dict.keys())
-dataset_weights = [len(dataset_dict[name]) for name in dataset_names]
-
-background_names = list(background_dict.keys())
-background_weights = [len(background_dict[name]) for name in background_names]
 
 
 def generate_stage_captions(combination: Dict[str, Any]) -> List[str]:
@@ -1012,11 +940,86 @@ def generate_combinations(
     return data
 
 
-# Generate combinations
-combinations = generate_combinations(camera_data, parse_args().count, parse_args().seed)
+if __name__ == "__main__":
+    args = parse_args()
 
-# Write to JSON file
-with open(parse_args().output_path, "w") as f:
-    json.dump(combinations, f, indent=4)
+    datasets = read_json_file(args.datasets_path)
+    object_data = read_json_file(args.object_data_path)
+    captions_data = read_json_file(args.cap3d_captions_path)
+    stage_data = read_json_file(args.stage_data_path)
+    texture_data = read_json_file(args.texture_data_path)
+    camera_data = read_json_file(args.camera_file_path)
 
-print(f"Combinations have been successfully written to {parse_args().output_path}")
+    models = datasets["models"]
+    dataset_dict = {}
+    object_map = {}
+    category_map = {}
+
+    for dataset in models:
+        current_path = os.path.dirname(os.path.realpath(__file__))
+        dataset_path = os.path.join(args.simdata_path, dataset + ".json")
+        dataset_full_path = os.path.join(current_path, "../", dataset_path)
+        print(f"Loading {dataset_full_path}")
+        if os.path.exists(dataset_full_path):
+            dataset_data = read_json_file(dataset_full_path)
+            local_count = 0
+
+            for object in dataset_data:
+                object_id = object["uid"]
+                categories = object["categories"]
+
+                if object_id not in object_map:
+                    object_map[object_id] = object
+                    local_count += 1
+
+                for category in categories:
+                    if category not in category_map:
+                        category_map[category] = set()
+                    category_map[category].add(object_id)
+
+            print(
+                f"Loaded {local_count} unique entries out of {len(dataset_data)} from {dataset}"
+            )
+            dataset_dict[dataset] = dataset_data
+        else:
+            print(f"Dataset file {dataset_path} not found")
+
+    # count the total length of all entries
+    total_length = sum(len(dataset_dict[dataset]) for dataset in dataset_dict)
+    print(f"Total number of objects: {total_length}")
+
+    backgrounds = datasets["backgrounds"]
+    background_dict = {}
+
+    for background in backgrounds:
+        # get the current path of this file
+        current_path = os.path.dirname(os.path.realpath(__file__))
+        hdri_path = os.path.join(args.simdata_path, background + ".json")
+        background_full_path = os.path.join(current_path, "../", hdri_path)
+        print(f"Loading {background_full_path}")
+        if os.path.exists(background_full_path):
+            background_data = read_json_file(background_full_path)
+            print(f"Loaded {len(background_data)} from {background}")
+            background_dict[background] = background_data
+        else:
+            print(f"Dataset file {hdri_path} not found")
+
+    total_length = sum(
+        len(background_dict[background]) for background in background_dict
+    )
+    print(f"Total number of backgrounds: {total_length}")
+
+    dataset_names = list(dataset_dict.keys())
+    dataset_weights = [len(dataset_dict[name]) for name in dataset_names]
+
+    background_names = list(background_dict.keys())
+    background_weights = [len(background_dict[name]) for name in background_names]
+
+    # Generate combinations
+    combinations = generate_combinations(camera_data, args.count, args.seed)
+
+    # Write to JSON file
+    with open(args.output_path, "w") as f:
+        json.dump(combinations, f, indent=4)
+
+    print(f"Combinations have been successfully written to {args.output_path}")

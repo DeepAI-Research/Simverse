@@ -9,11 +9,8 @@ from typing import Dict
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../"))
 
 from distributaur.core import (
-    configure,
     execute_function,
-    register_function,
     get_env_vars,
-    config,
     redis_client,
     check_job_status,
     attach_to_existing_job,
@@ -82,7 +79,9 @@ def get_settings(args):
 
 def setup_and_run(job_config):
     tasks = []
-    for combination_index in range(job_config["start_index"], job_config["end_index"]):
+    # combination_index should be max of the length of the combinations and the end index
+    end_index = min(len(job_config["combinations"]), job_config["end_index"])
+    for combination_index in range(job_config["start_index"], end_index):
         task = execute_function(
             "run_job",
             {
@@ -137,6 +136,9 @@ def start_new_job(args):
 
     print("Configuring distributaur...")
 
+    print('settings["combinations"]')
+    print(settings["combinations"])
+
     job_config = {
         "job_id": job_id,
         "max_price": settings["max_price"],
@@ -171,36 +173,39 @@ def start_new_job(args):
 
 def main():
     parser = argparse.ArgumentParser(description="Simian CLI")
-    parser.add_argument("action", choices=["start", "list"], help="Action to perform")
+    # boolean
+    parser.add_argument("--list", action="store_true", help="List existing jobs")
     parser.add_argument("--job-id", help="Unique job ID")
     parser.add_argument("--start-index", type=int, help="Starting index for rendering")
     parser.add_argument(
         "--combinations-file", help="Path to the combinations JSON file"
     )
-    parser.add_argument("--end-index", type=int, help="Ending index for rendering")
-    parser.add_argument("--start-frame", type=int, help="Starting frame number")
-    parser.add_argument("--end-frame", type=int, help="Ending frame number")
+    parser.add_argument("--end_index", type=int, help="Ending index for rendering")
+    parser.add_argument("--start_frame", type=int, help="Starting frame number")
+    parser.add_argument("--end_frame", type=int, help="Ending frame number")
     parser.add_argument("--width", type=int, help="Rendering width in pixels")
     parser.add_argument("--height", type=int, help="Rendering height in pixels")
-    parser.add_argument("--output-dir", help="Output directory")
+    parser.add_argument("--output_dir", help="Output directory")
     parser.add_argument("--hdri-path", help="HDRI path")
-    parser.add_argument("--max-price", type=float, help="Maximum price per hour")
-    parser.add_argument("--max-nodes", type=int, help="Maximum number of nodes")
+    parser.add_argument("--max_price", type=float, help="Maximum price per hour")
+    parser.add_argument("--max_nodes", type=int, help="Maximum number of nodes")
     parser.add_argument("--image", help="Docker image")
-    parser.add_argument("--api-key", help="Vast.ai API key")
-    parser.add_argument("--redis-host", help="Redis host")
-    parser.add_argument("--redis-port", type=int, help="Redis port")
-    parser.add_argument("--redis-user", help="Redis user")
-    parser.add_argument("--redis-password", help="Redis password")
-    parser.add_argument("--hf-token", help="Hugging Face token")
-    parser.add_argument("--hf-repo-id", help="Hugging Face repository ID")
-    parser.add_argument("--hf-path", help="Hugging Face path")
+    parser.add_argument("--api_key", help="Vast.ai API key")
+    parser.add_argument("--redis_host", help="Redis host")
+    parser.add_argument("--redis_port", type=int, help="Redis port")
+    parser.add_argument("--redis_user", help="Redis user")
+    parser.add_argument("--redis_password", help="Redis password")
+    parser.add_argument("--hf_token", help="Hugging Face token")
+    parser.add_argument("--hf_repo_id", help="Hugging Face repository ID")
+    parser.add_argument("--hf_path", help="Hugging Face path")
     args = parser.parse_args()
+    print("args")
+    print(args)
 
-    if args.action == "start":
-        start_new_job(args)
-    elif args.action == "list":
+    if args.list is True:
         list_jobs()
+    else:
+        start_new_job(args)
 
 
 def list_jobs():
