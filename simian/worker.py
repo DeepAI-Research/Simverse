@@ -10,6 +10,8 @@ if __name__ == "__main__":
 
     sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../"))
 
+    celery = app
+
     def get_env_vars(path: str = ".env") -> Dict[str, str]:
         """Get the environment variables from the specified file.
 
@@ -115,4 +117,4 @@ if __name__ == "__main__":
             except Exception as e:
                 print(e)
 
-    register_function(run_job)
+        register_function(run_job)
