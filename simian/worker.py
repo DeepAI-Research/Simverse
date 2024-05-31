@@ -4,11 +4,17 @@ import sys
 import subprocess
 from typing import Any, Dict
 
-from distributaur.core import register_function, app
 
-sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../"))
+distributaur_imported = False
+celery = None
 
-celery = app
+if os.getenv("USE_REDIS", "false").lower() == "true":
+    try:
+        from distributaur.core import register_function, app
+        distributaur_imported = True
+        celery = app
+    except ImportError:
+        print("Failed to import distributaur. Some functionalities may be unavailable.")
 
 
 def get_env_vars(path: str = ".env") -> Dict[str, str]:
@@ -116,5 +122,5 @@ def run_job(
         except Exception as e:
             print(e)
 
-
-register_function(run_job)
+if distributaur_imported:
+    register_function(run_job)
