@@ -188,7 +188,7 @@ def meters_to_feet_rounded(meters: float) -> int:
     return round(meters * feet_per_meter)
 
 
-def generate_object_name_description_captions(combination: Dict[str, Any]) -> str:
+def generate_object_name_description_captions(combination: Dict[str, Any], object_data) -> str:
     """
     Generate captions for object names and descriptions based on the combination data.
 
@@ -327,7 +327,7 @@ def generate_fov_caption(combination: Dict[str, Any]) -> str:
     return fov_caption
 
 
-def generate_postprocessing_caption(combination: Dict[str, Any]) -> str:
+def generate_postprocessing_caption(combination: Dict[str, Any], camera_data) -> str:
     """
     Generate a caption for postprocessing based on the combination data.
 
@@ -435,7 +435,7 @@ def speed_factor_to_percentage(speed_factor: float) -> str:
     return f"{percentage}%"
 
 
-def generate_animation_captions(combination: Dict[str, Any]) -> List[str]:
+def generate_animation_captions(combination: Dict[str, Any], camera_data) -> List[str]:
     """
     Generate captions for camera animations based on the combination data and speed factor.
     Copy codeArgs:
@@ -478,7 +478,7 @@ def generate_animation_captions(combination: Dict[str, Any]) -> List[str]:
     return []
 
 
-def generate_caption(combination: Dict[str, Any]) -> str:
+def generate_caption(combination: Dict[str, Any], object_data, camera_data) -> str:
     """
     Generate a complete caption based on the combination data.
     Copy codeArgs:
@@ -490,7 +490,7 @@ def generate_caption(combination: Dict[str, Any]) -> str:
     caption_parts = []
 
     # Add object name and description captions to the caption
-    object_name_descriptions = generate_object_name_description_captions(combination)
+    object_name_descriptions = generate_object_name_description_captions(combination, object_data)
     caption_parts.append(object_name_descriptions)
 
     scene_relationship_description = generate_relationship_captions(combination)
@@ -507,14 +507,14 @@ def generate_caption(combination: Dict[str, Any]) -> str:
     framing_caption = generate_framing_caption(camera_data, combination)
     caption_parts.append(framing_caption)
 
-    postprocessing_caption = generate_postprocessing_caption(combination)
+    postprocessing_caption = generate_postprocessing_caption(combination, camera_data)
     caption_parts.append(postprocessing_caption)
 
     # Add the stage caption
     stage_captions = generate_stage_captions(combination)
     caption_parts.extend(stage_captions)
 
-    animation_captions = generate_animation_captions(combination)
+    animation_captions = generate_animation_captions(combination, camera_data)
     caption_parts.extend(animation_captions)
 
     caption = " ".join(caption_parts)  # Join the caption parts into a single string
@@ -753,7 +753,7 @@ def generate_animation(camera_data: Dict[str, Any]) -> Dict[str, Any]:
     return animation
 
 
-def generate_objects() -> List[Dict[str, Any]]:
+def generate_objects(object_data, dataset_names, dataset_weights, dataset_dict, captions_data) -> List[Dict[str, Any]]:
     """
     Generate a list of random objects.
 
@@ -833,7 +833,7 @@ def generate_objects() -> List[Dict[str, Any]]:
     return objects
 
 
-def generate_background() -> Dict[str, Any]:
+def generate_background(background_dict, background_names, background_weights) -> Dict[str, Any]:
     """
     Generate a random background.
 
@@ -856,7 +856,7 @@ def generate_background() -> Dict[str, Any]:
     return background
 
 
-def generate_stage() -> Dict[str, Any]:
+def generate_stage(texture_data) -> Dict[str, Any]:
     """
     Generate a random stage.
 
@@ -881,7 +881,17 @@ def generate_stage() -> Dict[str, Any]:
 
 
 def generate_combinations(
-    camera_data: Dict[str, Any], count: int, seed: Optional[int]
+    camera_data: Dict[str, Any], 
+    count: int, seed: Optional[int], 
+    dataset_names: List[str], 
+    dataset_weights: List[int], 
+    object_data: Dict[str, Any], 
+    dataset_dict: Dict[str, Any], 
+    captions_data: Dict[str, Any],
+    background_dict: Dict[str, Any],
+    background_names: List[str],
+    background_weights: List[int],
+    texture_data: Dict[str, Any],
 ) -> Dict[str, Any]:
     """
     Generate random combinations of camera settings, objects, background, and stage.
@@ -902,8 +912,8 @@ def generate_combinations(
 
     # Generate combinations on the fly up to the specified count
     for i in range(count):
-        objects = generate_objects()
-        background = generate_background()
+        objects = generate_objects(object_data, dataset_names, dataset_weights, dataset_dict, captions_data)
+        background = generate_background(background_dict, background_names, background_weights)
 
         # Calculate the transformed positions of the objects
         adjusted_objects = adjust_positions(objects, random.randint(0, 360))
@@ -918,7 +928,7 @@ def generate_combinations(
 
         animation = generate_animation(camera_data)  # speed is between 0.5 and 2
 
-        stage = generate_stage()
+        stage = generate_stage(texture_data)
 
         combination = {
             "index": i,
@@ -931,7 +941,7 @@ def generate_combinations(
             "postprocessing": postprocessing,
         }
 
-        combination["caption"] = generate_caption(combination)
+        combination["caption"] = generate_caption(combination, object_data, camera_data)
 
         combinations.append(combination)
 
@@ -1016,7 +1026,18 @@ if __name__ == "__main__":
     background_weights = [len(background_dict[name]) for name in background_names]
 
     # Generate combinations
-    combinations = generate_combinations(camera_data, args.count, args.seed)
+    combinations = generate_combinations(camera_data, 
+                                         args.count, 
+                                         args.seed, 
+                                         dataset_names, 
+                                         dataset_weights, 
+                                         object_data, 
+                                         dataset_dict, 
+                                         captions_data, 
+                                         background_dict,
+                                         background_names, 
+                                         background_weights,
+                                         texture_data)
 
     # Write to JSON file
     with open(args.output_path, "w") as f:

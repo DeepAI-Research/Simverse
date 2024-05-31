@@ -56,7 +56,6 @@ with patch("argparse.ArgumentParser.parse_args", new=mock_parse_args):
     )
 
 
-# Test function for generate_postprocessing_caption
 def test_generate_postprocessing_caption():
     combination = {
         "postprocessing": {
@@ -67,9 +66,31 @@ def test_generate_postprocessing_caption():
         }
     }
 
-    # Read the camera data from the file
-    with open(mock_args["camera_file_path"], "r") as file:
-        camera_data = json.load(file)
+    # Mock camera data for the test
+    camera_data = {
+        "postprocessing": {
+            "bloom": {
+                "types": {
+                    "medium": {"descriptions": ["medium bloom effect"]}
+                }
+            },
+            "ssao": {
+                "types": {
+                    "high": {"descriptions": ["high ssao effect"]}
+                }
+            },
+            "ssrr": {
+                "types": {
+                    "none": {"descriptions": ["no ssrr effect"]}
+                }
+            },
+            "motionblur": {
+                "types": {
+                    "medium": {"descriptions": ["medium motion blur"]}
+                }
+            }
+        }
+    }
 
     # Mock the random.choice function to return predefined descriptions
     random_choices = [
@@ -88,7 +109,7 @@ def test_generate_postprocessing_caption():
     random.randint = lambda a, b: 0 if a == 1 and b == 4 else 3
 
     try:
-        actual_caption = generate_postprocessing_caption(combination)
+        actual_caption = generate_postprocessing_caption(combination, camera_data)
 
         # Since the patched randint will pop 0 items, all parts should be in the actual caption
         expected_parts = [
@@ -238,6 +259,13 @@ def test_generate_combinations():
             "yaw_max": 180,
             "pitch_min": -90,
             "pitch_max": 90,
+            "labels": {
+                "pitch": {"0": ["neutral", "level"], "45": ["upward"]},
+                "yaw": {"0": ["front"], "180": ["back"]}
+            },
+            "descriptions": [
+                "The camera is oriented at a <pitch> angle and facing <yaw>."
+            ],
         },
         "framings": [
             {
@@ -268,32 +296,128 @@ def test_generate_combinations():
                 "intensity_max": 1,
                 "radius_min": 0,
                 "radius_max": 10,
-                "types": {"low": {"intensity_min": 0, "intensity_max": 1}},
+                "types": {
+                    "low": {
+                        "intensity_min": 0,
+                        "intensity_max": 1,
+                        "descriptions": ["Low bloom effect."]
+                    }
+                },
             },
             "ssao": {
                 "distance_min": 0,
                 "distance_max": 1,
                 "factor_min": 0,
                 "factor_max": 1,
-                "types": {"low": {"factor_min": 0, "factor_max": 1}},
+                "types": {
+                    "low": {
+                        "factor_min": 0,
+                        "factor_max": 1,
+                        "descriptions": ["Low SSAO effect."]
+                    }
+                },
             },
             "ssrr": {
                 "min_max_roughness": 0,
                 "max_max_roughness": 1,
                 "min_thickness": 0,
                 "max_thickness": 1,
-                "types": {"low": {"max_roughness_min": 0, "max_roughness_max": 1}},
+                "types": {
+                    "low": {
+                        "max_roughness_min": 0,
+                        "max_roughness_max": 1,
+                        "descriptions": ["Low SSRR effect."]
+                    }
+                },
             },
             "motionblur": {
                 "shutter_speed_min": 0,
                 "shutter_speed_max": 1,
-                "types": {"low": {"shutter_speed_min": 0, "shutter_speed_max": 1}},
+                "types": {
+                    "low": {
+                        "shutter_speed_min": 0,
+                        "shutter_speed_max": 1,
+                        "descriptions": ["Low motion blur effect."]
+                    }
+                },
             },
         },
+        "animation_speed": {
+            "types": {
+                "slow": {"min": 0.5, "max": 1.0, "descriptions": ["Slow animation."]},
+                "fast": {"min": 1.0, "max": 2.0, "descriptions": ["Fast animation."]},
+            }
+        }
     }
     count = 2
     seed = 42  # Add seed argument
-    combinations = generate_combinations(camera_data, count, seed)
+
+    # Prepare mock data for dataset_names and dataset_weights
+    dataset_names = ["dataset1", "dataset2", "dataset3"]
+    dataset_weights = [1, 1, 1]
+
+    # Mock dataset_dict for generate_objects
+    global dataset_dict, object_data, captions_data, background_names, background_weights, background_dict
+    dataset_dict = {
+        "dataset1": [{"name": "Object1", "uid": "1", "description": "Desc1"}],
+        "dataset2": [{"name": "Object2", "uid": "2", "description": "Desc2"}],
+        "dataset3": [{"name": "Object3", "uid": "3", "description": "Desc3"}],
+    }
+    
+    # Mock object_data for generate_objects
+    object_data = {
+        "scales": {
+            "small": {"factor": 0.5, "names": ["tiny", "mini"]},
+            "medium": {"factor": 1.0, "names": ["regular", "normal"]},
+            "large": {"factor": 1.5, "names": ["big", "huge"]}
+        },
+        "name_description_relationship": [
+            "<name> is a <size> object. <description>"
+        ]
+    }
+
+    # Mock captions_data for generate_objects
+    captions_data = {
+        "1": "This is a caption for Object1.",
+        "2": "This is a caption for Object2.",
+        "3": "This is a caption for Object3.",
+    }
+
+    # Mock background names and weights
+    background_names = ["background1", "background2"]
+    background_weights = [1, 1]
+
+    # Mock background_dict
+    background_dict = {
+        "background1": {
+            "1": {"name": "Sky", "url": "http://example.com/sky"},
+            "2": {"name": "Mountains", "url": "http://example.com/mountains"},
+        },
+        "background2": {
+            "1": {"name": "Forest", "url": "http://example.com/forest"},
+            "2": {"name": "Beach", "url": "http://example.com/beach"},
+        }
+    }
+
+    # Mock texture_data
+    texture_data = {
+        "texture1": {"name": "Wood", "maps": ["diffuse", "normal"]},
+        "texture2": {"name": "Metal", "maps": ["diffuse", "normal", "specular"]}
+    }
+
+    combinations = generate_combinations(camera_data, 
+                                         count, 
+                                         seed, 
+                                         dataset_names, 
+                                         dataset_weights, 
+                                         object_data, 
+                                         dataset_dict, 
+                                         captions_data, 
+                                         background_dict,
+                                         background_names, 
+                                         background_weights,
+                                         texture_data)
+    
     assert (
         len(combinations["combinations"]) == count
     ), "generate_combinations did not create the correct number of combinations."
@@ -305,7 +429,7 @@ def test_generate_combinations():
             combination["orientation"]["pitch"] <= 90
         ), "Pitch is out of the specified range."
         print("============ Test Passed: test_generate_combinations ============")
-
+    
 
 def test_generate_stage_captions():
     combination = {
@@ -397,28 +521,38 @@ def test_generate_object_name_description_captions():
         ]
     }
 
-    with patch("simian.combiner.read_json_file", return_value=object_data):
-        captions = generate_object_name_description_captions(combination)
-
-        # Extract the expected relationship template from the object_data
-        expected_relationship_templates = object_data["name_description_relationship"]
-
-        # Construct possible expected captions
-        expected_captions = [
-            template.replace("<name>", "Box").replace("<description>", "A simple box")
-            for template in expected_relationship_templates
+    object_data = {
+        "scales": {
+            "small": {"factor": 0.5, "names": ["tiny", "mini"]},
+            "medium": {"factor": 1.0, "names": ["regular", "normal"]},
+            "large": {"factor": 1.5, "names": ["big", "huge"]}
+        },
+        "name_description_relationship": [
+            "<name> is a <size> object. <description>"
         ]
+    }
 
-        # Check if any of the expected captions are in the generated caption
-        caption_found = any(
-            expected_caption in captions for expected_caption in expected_captions
-        )
+    captions = generate_object_name_description_captions(combination, object_data)
 
-        assert caption_found, "Object name description caption is incorrect."
+    # Extract the expected relationship template from the object_data
+    expected_relationship_templates = object_data["name_description_relationship"]
 
-        print(
-            "============ Test Passed: test_generate_object_name_description_captions ============"
-        )
+    # Construct possible expected captions
+    expected_captions = [
+        template.replace("<name>", "Box").replace("<description>", "A simple box").replace("<size>", "medium-small")
+        for template in expected_relationship_templates
+    ]
+
+    # Check if any of the expected captions are in the generated caption
+    caption_found = any(
+        expected_caption in captions for expected_caption in expected_captions
+    )
+
+    assert caption_found, "Object name description caption is incorrect."
+
+    print(
+        "============ Test Passed: test_generate_object_name_description_captions ============"
+    )
 
 
 def test_generate_relationship_captions():
@@ -560,7 +694,16 @@ def test_flatten_descriptions():
 def test_generate_animation_captions():
     combination = {"animation": {"speed_factor": 1.5}}
 
-    captions = generate_animation_captions(combination)
+    camera_data = {
+        "animation_speed": {
+            "types": {
+                "slow": {"min": 0.5, "max": 1.0, "descriptions": ["Slow zoom in."]},
+                "fast": {"min": 1.0, "max": 2.0, "descriptions": ["Fast zoom in."]}
+            }
+        }
+    }
+
+    captions = generate_animation_captions(combination, camera_data)
 
     # Extract the animation descriptions from the camera_data
     animation_types = camera_data["animation_speed"]["types"]
@@ -677,7 +820,41 @@ def test_generate_animation():
 
 
 def test_generate_objects():
-    objects = generate_objects()
+    # Prepare mock data for the required arguments
+    object_data = {
+        "scales": {
+            "small": {"factor": 0.5, "names": ["tiny", "mini"]},
+            "medium": {"factor": 1.0, "names": ["regular", "normal"]},
+            "large": {"factor": 1.5, "names": ["big", "huge"]}
+        },
+        "name_description_relationship": [
+            "<name> is a <size> object. <description>"
+        ]
+    }
+    
+    dataset_names = ["dataset1", "dataset2"]
+    dataset_weights = [1, 1]
+    
+    dataset_dict = {
+        "dataset1": [
+            {"name": "Object1", "uid": "1", "description": "Description1"},
+            {"name": "Object2", "uid": "2", "description": "Description2"}
+        ],
+        "dataset2": [
+            {"name": "Object3", "uid": "3", "description": "Description3"},
+            {"name": "Object4", "uid": "4", "description": "Description4"}
+        ]
+    }
+    
+    captions_data = {
+        "1": "Caption for Object1",
+        "2": "Caption for Object2",
+        "3": "Caption for Object3",
+        "4": "Caption for Object4"
+    }
+    
+    # Generate objects
+    objects = generate_objects(object_data, dataset_names, dataset_weights, dataset_dict, captions_data)
     
     # Ensure the function generates the correct number of objects
     assert len(objects) > 0, "Objects generation should create more than 1 object."
@@ -695,29 +872,35 @@ def test_generate_objects():
 
 
 def test_generate_background():
+    background_dict = {
+        "background1": {
+            "id1": {"name": "Sky", "url": "sky_url"}
+        }
+    }
+    background_names = ["background1"]
+    background_weights = [1]
+
     with patch("simian.combiner.random.choices", return_value=["background1"]):
-        with patch(
-            "simian.combiner.background_dict",
-            {"background1": {"id1": {"name": "Sky", "url": "sky_url"}}},
-        ):
-            background = generate_background()
+        with patch("simian.combiner.random.choice", return_value="id1"):
+            background = generate_background(background_dict, background_names, background_weights)
             assert background["name"] == "Sky", "Background name is incorrect."
             assert background["url"] == "sky_url", "Background url is incorrect."
+    
     print("============ Test Passed: test_generate_background ============")
 
 
 def test_generate_stage():
+    texture_data = {
+        "texture1": {"name": "Brick", "maps": {"diffuse": "brick_diffuse"}}
+    }
+    
     with patch("simian.combiner.random.choices", return_value=["texture1"]):
-        with patch(
-            "simian.combiner.texture_data",
-            {"texture1": {"name": "Brick", "maps": {"diffuse": "brick_diffuse"}}},
-        ):
-            stage = generate_stage()
-            assert (
-                stage["material"]["name"] == "Brick"
-            ), "Stage material name is incorrect."
+        with patch("simian.combiner.random.choice", return_value="diffuse"):
+            stage = generate_stage(texture_data)
+            assert stage["material"]["name"] == "Brick", "Stage material name is incorrect."
             assert "uv_scale" in stage, "Stage uv_scale is missing."
             assert "uv_rotation" in stage, "Stage uv_rotation is missing."
+    
     print("============ Test Passed: test_generate_stage ============")
 
 

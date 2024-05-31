@@ -4,30 +4,24 @@ import sys
 import subprocess
 from typing import Any, Dict
 
-from distributaur.core import register_function, app
-
-sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../"))
-
-celery = app
-
 
 def get_env_vars(path: str = ".env") -> Dict[str, str]:
-    """Get the environment variables from the specified file.
+        """Get the environment variables from the specified file.
 
-    Args:
-        path (str): The path to the file containing the environment variables. Defaults to ".env".
+        Args:
+            path (str): The path to the file containing the environment variables. Defaults to ".env".
 
-    Returns:
-        Dict[str, str]: A dictionary containing the environment variables.
-    """
-    env_vars = {}
-    if not os.path.exists(path):
+        Returns:
+            Dict[str, str]: A dictionary containing the environment variables.
+        """
+        env_vars = {}
+        if not os.path.exists(path):
+            return env_vars
+        with open(path, "r") as f:
+            for line in f:
+                key, value = line.strip().split("=")
+                env_vars[key] = value
         return env_vars
-    with open(path, "r") as f:
-        for line in f:
-            key, value = line.strip().split("=")
-            env_vars[key] = value
-    return env_vars
 
 
 def upload_to_huggingface(output_dir: str, repo_dir: str) -> None:
@@ -117,4 +111,12 @@ def run_job(
             print(e)
 
 
-register_function(run_job)
+if __name__ == "__main__":
+
+    from distributaur.core import register_function, app
+
+    sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../"))
+
+    celery = app
+
+    register_function(run_job)
