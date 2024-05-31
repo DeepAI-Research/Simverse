@@ -1,9 +1,10 @@
 import argparse
-import sys
 import json
 import os
 import ssl
+import sys
 import bpy
+import random
 
 ssl._create_default_https_context = ssl._create_unverified_context
 
@@ -23,7 +24,6 @@ from simian.camera import (
     set_camera_settings,
 )
 from simian.transform import find_largest_length, place_objects_on_grid
-from simian.camera import create_camera_rig, set_camera_settings
 from simian.object import (
     apply_all_modifiers,
     apply_and_remove_armatures,
@@ -67,8 +67,7 @@ def render_scene(
     end_frame: int = 65,
     combination_index=0,
     combination=None,
-    height=1080,
-    width=1920,
+    render_images=False
 ) -> None:
     """
     Renders a scene with specified parameters.
@@ -80,8 +79,7 @@ def render_scene(
         start_frame (int): Start frame of the animation. Defaults to 1.
         end_frame (int): End frame of the animation. Defaults to 65.
         combination_index (int): Index of the camera combination to use from the JSON file. Defaults to 0.
-        height (int): Render output height. Defaults to 1080.
-        width (int): Render output width. Defaults to 1920.
+        render_images (bool): Flag to indicate if images should be rendered instead of videos.
 
     Returns:
         None
@@ -153,29 +151,46 @@ def render_scene(
     stage = create_stage(combination)
     apply_stage_material(stage, combination)
 
-    # Set height and width of rendered output
-    scene.render.resolution_x = width
-    scene.render.resolution_y = height
-    scene.render.resolution_percentage = 100
+    # Randomize image sizes
+    # Randomize image sizes
+    sizes = [
+        (1920, 1080),
+        (1024, 1024),
+        (512, 512),
+        (320, 512),
+        (224, 224)
+    ]
 
-    # Set the render type to H264, visually lossless
-    scene.render.image_settings.file_format = "FFMPEG"
-    scene.render.ffmpeg.format = "MPEG4"
-    scene.render.ffmpeg.codec = "H264"
-    scene.render.ffmpeg.constant_rate_factor = "PERC_LOSSLESS"
-    scene.render.ffmpeg.ffmpeg_preset = "BEST"
-
-    position_camera(combination, focus_object)
-
-    # Set output path and start rendering
-    render_path = os.path.join(output_dir, f"{combination_index}.mp4")
-
-    scene.render.filepath = render_path
-    bpy.ops.render.render(animation=True)
-    bpy.ops.wm.save_as_mainfile(
-        filepath=os.path.join(output_dir, f"{combination_index}.blend")
-    )
-    print(f"Rendered video saved to {render_path}")
+    if render_images:
+        # Render specific frames as images with random sizes
+        frames = random.sample(range(start_frame, end_frame + 1), len(sizes))
+        for size, frame in zip(sizes, frames):
+            scene.frame_set(frame)
+            scene.render.resolution_x = size[0]
+            scene.render.resolution_y = size[1]
+            scene.render.resolution_percentage = 100
+            render_path = os.path.join(output_dir, f"{combination_index}_frame_{frame}_{size[0]}x{size[1]}.png")
+            scene.render.filepath = render_path
+            bpy.ops.render.render(write_still=True)
+            print(f"Rendered image saved to {render_path}")
+    else:
+        # Render the entire animation as a video
+        scene.render.resolution_x = 1920
+        scene.render.resolution_y = 1080
+        scene.render.resolution_percentage = 100
+        scene.render.image_settings.file_format = "FFMPEG"
+        scene.render.ffmpeg.format = "MPEG4"
+        scene.render.ffmpeg.codec = "H264"
+        scene.render.ffmpeg.constant_rate_factor = "PERC_LOSSLESS"
+        scene.render.ffmpeg.ffmpeg_preset = "BEST"
+        position_camera(combination, focus_object)
+        render_path = os.path.join(output_dir, f"{combination_index}.mp4")
+        scene.render.filepath = render_path
+        bpy.ops.render.render(animation=True)
+        bpy.ops.wm.save_as_mainfile(
+            filepath=os.path.join(output_dir, f"{combination_index}.blend")
+        )
+        print(f"Rendered video saved to {render_path}")
 
 
 if __name__ == "__main__":
@@ -185,7 +200,7 @@ if __name__ == "__main__":
         type=str,
         default="renders",
         required=False,
-        help="Path to the directory where the rendered video will be saved.",
+        help="Path to the directory where the rendered video or images will be saved.",
     )
     parser.add_argument(
         "--combination_file",
@@ -229,6 +244,11 @@ if __name__ == "__main__":
     parser.add_argument(
         "--combination", type=str, default=None, help="Combination dictionary."
     )
+    parser.add_argument(
+        "--images",
+        action='store_true',
+        help="Generate images instead of videos.",
+    )
 
     if "--" in sys.argv:
         argv = sys.argv[sys.argv.index("--") + 1 :]
@@ -263,6 +283,5 @@ if __name__ == "__main__":
         combination_file=args.combination_file,
         combination_index=args.combination_index,
         combination=args.combination,
-        height=args.height,
-        width=args.width,
+        render_images=args.images
     )
