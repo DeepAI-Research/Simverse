@@ -188,6 +188,8 @@ def set_camera_settings(combination: dict) -> None:
     bpy.context.scene.render.fps = 30
 
 
+
+
 def set_camera_animation(combination: dict, animation_length: int) -> None:
     """
     Applies the specified animation to the camera based on the keyframes from the camera_data.json file.
@@ -195,13 +197,13 @@ def set_camera_animation(combination: dict, animation_length: int) -> None:
 
     Args:
         combination (dict): The combination dictionary containing animation data.
-        total_animation_frames (int): Total number of frames for the entire animation.
+        animation_length (int): Total number of frames for the entire animation.
 
     Returns:
         None
     """
-
     animation = combination["animation"]
+    speed_factor = animation.get("speed_factor", 1)
     keyframes = animation["keyframes"]
     frame_interval = animation_length
 
@@ -213,17 +215,21 @@ def set_camera_animation(combination: dict, animation_length: int) -> None:
             frame = int(i * frame_interval)
             for transform_name, value in transforms.items():
                 if transform_name == "position":
-                    obj.location = value
+                    obj.location = [coord * speed_factor for coord in value]
                     obj.keyframe_insert(data_path="location", frame=frame)
                 elif transform_name == "rotation":
-                    obj.rotation_euler = [math.radians(angle) for angle in value]
+                    obj.rotation_euler = [
+                        math.radians(angle * speed_factor) for angle in value
+                    ]
                     obj.keyframe_insert(data_path="rotation_euler", frame=frame)
                 elif transform_name == "scale":
-                    obj.scale = value
+                    obj.scale = [coord * speed_factor for coord in value]
                     obj.keyframe_insert(data_path="scale", frame=frame)
                 elif transform_name == "angle_offset" and obj_name == "Camera":
                     camera_data = bpy.data.objects["Camera"].data
-                    camera_data.angle = math.radians(combination["framing"]["fov"] + value)
+                    camera_data.angle = math.radians(
+                        combination["framing"]["fov"] + value
+                    )
                     camera_data.keyframe_insert(data_path="lens", frame=frame)
 
     bpy.context.scene.frame_set(0)
