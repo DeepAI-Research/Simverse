@@ -65,6 +65,7 @@ def render_scene(
     combination_file,
     start_frame: int = 1,
     end_frame: int = 65,
+    animation_length : int = 300,
     combination_index=0,
     combination=None,
     render_images=False
@@ -93,8 +94,8 @@ def render_scene(
     create_camera_rig()
 
     scene = context.scene
-    context.scene.frame_start = start_frame
-    context.scene.frame_end = end_frame
+    context.scene.frame_start = animation_length-end_frame
+    context.scene.frame_end = animation_length
 
     # Lock and hide all scene objects before doing any object operations
     initial_objects = lock_all_objects()
@@ -143,7 +144,9 @@ def render_scene(
     unlock_objects(initial_objects)
 
     set_camera_settings(combination)
-    set_camera_animation(combination, end_frame)
+    
+    set_camera_animation(combination, animation_length)
+
     set_background(args.hdri_path, combination)
 
     create_photosphere(args.hdri_path, combination).scale = (10, 10, 10)
@@ -224,14 +227,21 @@ if __name__ == "__main__":
     parser.add_argument(
         "--start_frame",
         type=int,
-        default=1,
+        default=61,
         help="Start frame of the animation.",
         required=False,
     )
     parser.add_argument(
         "--end_frame",
         type=int,
-        default=65,
+        default=120,
+        help="End frame of the animation.",
+        required=False,
+    )
+    parser.add_argument(
+        "--animation_length",
+        type=int,
+        default=120,
         help="End frame of the animation.",
         required=False,
     )
@@ -276,6 +286,7 @@ if __name__ == "__main__":
 
     # Render the images
     render_scene(
+        animation_length=args.animation_length,
         start_frame=args.start_frame,
         end_frame=args.end_frame,
         output_dir=args.output_dir,
