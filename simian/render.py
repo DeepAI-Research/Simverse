@@ -65,10 +65,10 @@ def render_scene(
     combination_file,
     start_frame: int = 1,
     end_frame: int = 65,
-    animation_length : int = 300,
+    animation_length: int = 300,
     combination_index=0,
     combination=None,
-    render_images=False
+    render_images=False,
 ) -> None:
     """
     Renders a scene with specified parameters.
@@ -79,6 +79,7 @@ def render_scene(
         combination_file (str): Path to the JSON file containing camera combinations.
         start_frame (int): Start frame of the animation. Defaults to 1.
         end_frame (int): End frame of the animation. Defaults to 65.
+        animation_length (int): Length of the animation. Defaults to 300.
         combination_index (int): Index of the camera combination to use from the JSON file. Defaults to 0.
         render_images (bool): Flag to indicate if images should be rendered instead of videos.
 
@@ -94,8 +95,9 @@ def render_scene(
     create_camera_rig()
 
     scene = context.scene
-    context.scene.frame_start = animation_length-end_frame
-    context.scene.frame_end = animation_length
+
+    scene.frame_start = animation_length - (end_frame - start_frame)
+    scene.frame_end = animation_length
 
     # Lock and hide all scene objects before doing any object operations
     initial_objects = lock_all_objects()
@@ -144,7 +146,7 @@ def render_scene(
     unlock_objects(initial_objects)
 
     set_camera_settings(combination)
-    
+
     set_camera_animation(combination, animation_length)
 
     set_background(args.hdri_path, combination)
@@ -155,27 +157,28 @@ def render_scene(
     apply_stage_material(stage, combination)
 
     # Randomize image sizes
-    # Randomize image sizes
     sizes = [
         (1920, 1080),
         (1024, 1024),
         (512, 512),
-        (320, 512),
-        (224, 224)
     ]
 
     if render_images:
-        # Render specific frames as images with random sizes
-        frames = random.sample(range(start_frame, end_frame + 1), len(sizes))
-        for size, frame in zip(sizes, frames):
-            scene.frame_set(frame)
-            scene.render.resolution_x = size[0]
-            scene.render.resolution_y = size[1]
-            scene.render.resolution_percentage = 100
-            render_path = os.path.join(output_dir, f"{combination_index}_frame_{frame}_{size[0]}x{size[1]}.png")
-            scene.render.filepath = render_path
-            bpy.ops.render.render(write_still=True)
-            print(f"Rendered image saved to {render_path}")
+        # Render a specific frame as an image with a random size
+        middle_frame = (scene.frame_start + scene.frame_end) // 2
+        size = random.choice(sizes)
+        scene.frame_set(middle_frame)
+        scene.render.resolution_x = size[0]
+        scene.render.resolution_y = size[1]
+        scene.render.resolution_percentage = 100
+        position_camera(combination, focus_object)
+        render_path = os.path.join(
+            output_dir,
+            f"{combination_index}_frame_{middle_frame}_{size[0]}x{size[1]}.png",
+        )
+        scene.render.filepath = render_path
+        bpy.ops.render.render(write_still=True)
+        print(f"Rendered image saved to {render_path}")
     else:
         # Render the entire animation as a video
         scene.render.resolution_x = 1920
@@ -227,14 +230,14 @@ if __name__ == "__main__":
     parser.add_argument(
         "--start_frame",
         type=int,
-        default=61,
+        default=1,
         help="Start frame of the animation.",
         required=False,
     )
     parser.add_argument(
         "--end_frame",
         type=int,
-        default=120,
+        default=65,
         help="End frame of the animation.",
         required=False,
     )
@@ -256,7 +259,7 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--images",
-        action='store_true',
+        action="store_true",
         help="Generate images instead of videos.",
     )
 
@@ -294,5 +297,5 @@ if __name__ == "__main__":
         combination_file=args.combination_file,
         combination_index=args.combination_index,
         combination=args.combination,
-        render_images=args.images
+        render_images=args.images,
     )

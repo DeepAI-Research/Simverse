@@ -186,9 +186,7 @@ def set_camera_settings(combination: dict) -> None:
 
     # set the camera framerate to 30
     bpy.context.scene.render.fps = 30
-
-
-
+ 
 
 def set_camera_animation(combination: dict, animation_length: int) -> None:
     """
