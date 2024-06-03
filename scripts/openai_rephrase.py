@@ -1,19 +1,14 @@
 import os
 import json
-import tiktoken
 from openai import OpenAI
 
 from dotenv import load_dotenv
 
 MODEL = "gpt-4o"
 
-def rewrite_caption(
-    caption_arr, context_string, max_tokens_for_completion
-):  # caption is a string array
+def rewrite_caption(caption_arr, context_string, max_tokens_for_completion):
     load_dotenv()
-    client = OpenAI(
-        api_key=os.getenv("OPENAI_API_KEY"),
-    )
+    client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
     split_captions = [caption.split(", ") for caption in caption_arr]
     caption_string = json.dumps(split_captions)
@@ -28,10 +23,18 @@ def rewrite_caption(
         presence_penalty=0,
     )
 
-    # Strip the surrounding brackets and commas from the string
-    captions_content = response.choices[0].message.content
-    cleaned_captions_content = captions_content.replace("\n", "")
-    rewritten_captions_content = json.loads(cleaned_captions_content)
+    captions_content = response.choices[0].message.content.strip()
+    print("API Response:", captions_content)  # Debug print
+
+    try:
+        # Try parsing the response as a JSON list
+        rewritten_captions_content = json.loads(captions_content)
+        if not isinstance(rewritten_captions_content, list):
+            raise ValueError("Parsed JSON is not a list")
+    except (json.JSONDecodeError, ValueError) as e:
+        print("JSON Decode Error or Value Error:", e)
+        # Fallback to splitting the response by newlines, assuming each line is a caption
+        rewritten_captions_content = captions_content.split("\n")
 
     print("==== Captions rewritten by OpenAI ====")
     return rewritten_captions_content
@@ -56,11 +59,9 @@ def write_to_file(i, rewritten_captions):
 
         combinations = data.get("combinations")
 
-        j = 0
-        while j < len(rewritten_captions):
+        for j in range(len(rewritten_captions)):
             print("==> Rewriting caption: ", i + j)
             combinations[i + j]["caption"] = rewritten_captions[j]
-            j += 1
 
         data["combinations"] = combinations
 
@@ -71,51 +72,15 @@ def write_to_file(i, rewritten_captions):
     print("==== File captions rewritten, check file ====")
 
 
-def estimate_tokens(text, encoding):
-    return len(encoding.encode(text))
-
-
 def rewrite_captions_in_batches(combinations, context_string):
+    batch_size = 5
     num_combinations = len(combinations)
 
-    encoding = tiktoken.encoding_for_model(MODEL)
-
-    context_length = estimate_tokens(context_string, encoding)
-    TOKEN_LIMIT = 8000
-    INPUT_TOKEN_LIMIT = (TOKEN_LIMIT - context_length) // 2
-
-    starting_point = 0
-    i = 0
-    while i < num_combinations:
-        captions_that_need_to_be_rewritten = []
-        current_caption_length = 0
-
-        # Gather captions until the token limit is reached
-        while i < num_combinations:
-            current_caption = combinations[i]
-            caption_length = estimate_tokens(current_caption, encoding)
-
-            if (
-                current_caption_length + caption_length + context_length + 1000
-            ) >= INPUT_TOKEN_LIMIT:
-                break
-
-            captions_that_need_to_be_rewritten.append(current_caption)
-            current_caption_length += caption_length
-            print(
-                f"Current Caption Length: {current_caption_length}, TOKEN_LIMIT: {INPUT_TOKEN_LIMIT - context_length}"
-            )
-            i += 1
-
-        # Calculate the max tokens available for completion
-        max_tokens_for_completion = TOKEN_LIMIT // 2
-        rewritten_captions = rewrite_caption(
-            captions_that_need_to_be_rewritten,
-            context_string,
-            max_tokens_for_completion,
-        )
-        write_to_file(starting_point, rewritten_captions)
-        starting_point = i
+    for i in range(0, num_combinations, batch_size):
+        captions_batch = combinations[i:i + batch_size]
+        max_tokens_for_completion = 8000 // 2  # Adjust as needed based on your specific token limit
+        rewritten_captions = rewrite_caption(captions_batch, context_string, max_tokens_for_completion)
+        write_to_file(i, rewritten_captions)
 
 
 if __name__ == "__main__":
@@ -134,8 +99,8 @@ if __name__ == "__main__":
     Feel free to change/remove exact values like degrees. Instead of 32 degrees left you can say slightly to the left. Combine sentences maybe.
     Use synonyms/words to use. You can even remove some words/sentences but capture some of the holistic important details.
 
-    Below are captions that NEED to be shortened/simplified, and more human-like. Return an array of rewritten captions. DO NOT wrap the strings in quotes in the array and return in format: [caption1, caption2, caption3]
+    Below are captions that NEED to be shortened/simplified, and more human-like. Return an array of rewritten captions. DO NOT wrap the strings in quotes in the array and return in format: ["caption1", "caption2", "caption3"]
     """
 
     combinations = read_combinations_and_get_array_of_just_captions()
-    rewritten_captions = rewrite_captions_in_batches(combinations, CONTEXT_STRING)
+    rewrite_captions_in_batches(combinations, CONTEXT_STRING)
