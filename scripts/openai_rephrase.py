@@ -5,6 +5,7 @@ from openai import OpenAI
 
 from dotenv import load_dotenv
 
+MODEL = "gpt-4o"
 
 def rewrite_caption(
     caption_arr, context_string, max_tokens_for_completion
@@ -18,7 +19,7 @@ def rewrite_caption(
     caption_string = json.dumps(split_captions)
 
     response = client.chat.completions.create(
-        model="gpt-3.5-turbo-16k",
+        model=MODEL,
         messages=[{"role": "user", "content": f"{context_string}\n\n{caption_string}"}],
         temperature=1,
         max_tokens=max_tokens_for_completion,
@@ -77,10 +78,10 @@ def estimate_tokens(text, encoding):
 def rewrite_captions_in_batches(combinations, context_string):
     num_combinations = len(combinations)
 
-    encoding = tiktoken.encoding_for_model("gpt-3.5-turbo-16k")
+    encoding = tiktoken.encoding_for_model(MODEL)
 
     context_length = estimate_tokens(context_string, encoding)
-    TOKEN_LIMIT = 16385
+    TOKEN_LIMIT = 8000
     INPUT_TOKEN_LIMIT = (TOKEN_LIMIT - context_length) // 2
 
     starting_point = 0
