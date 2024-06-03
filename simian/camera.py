@@ -186,15 +186,16 @@ def set_camera_settings(combination: dict) -> None:
 
     # set the camera framerate to 30
     bpy.context.scene.render.fps = 30
+ 
 
-
-def set_camera_animation(combination: dict, frame_distance: int = 65) -> None:
+def set_camera_animation(combination: dict, animation_length: int) -> None:
     """
     Applies the specified animation to the camera based on the keyframes from the camera_data.json file.
+    The total animation frames are fixed to ensure consistent speed.
 
     Args:
         combination (dict): The combination dictionary containing animation data.
-        frame_distance (int): The distance between frames for keyframe placement.
+        animation_length (int): Total number of frames for the entire animation.
 
     Returns:
         None
@@ -202,17 +203,16 @@ def set_camera_animation(combination: dict, frame_distance: int = 65) -> None:
     animation = combination["animation"]
     speed_factor = animation.get("speed_factor", 1)
     keyframes = animation["keyframes"]
+    frame_interval = animation_length
 
     for i, keyframe in enumerate(keyframes):
         for obj_name, transforms in keyframe.items():
             obj = bpy.data.objects.get(obj_name)
             if obj is None:
                 raise ValueError(f"Object {obj_name} not found in the scene")
-            original_location = obj.location.copy()
-            frame = i * frame_distance
+            frame = int(i * frame_interval)
             for transform_name, value in transforms.items():
                 if transform_name == "position":
-                    # multiply the values by the speed factor
                     obj.location = [coord * speed_factor for coord in value]
                     obj.keyframe_insert(data_path="location", frame=frame)
                 elif transform_name == "rotation":
@@ -221,7 +221,6 @@ def set_camera_animation(combination: dict, frame_distance: int = 65) -> None:
                     ]
                     obj.keyframe_insert(data_path="rotation_euler", frame=frame)
                 elif transform_name == "scale":
-                    # multiply the values by the speed factor
                     obj.scale = [coord * speed_factor for coord in value]
                     obj.keyframe_insert(data_path="scale", frame=frame)
                 elif transform_name == "angle_offset" and obj_name == "Camera":
@@ -230,7 +229,6 @@ def set_camera_animation(combination: dict, frame_distance: int = 65) -> None:
                         combination["framing"]["fov"] + value
                     )
                     camera_data.keyframe_insert(data_path="lens", frame=frame)
-            obj.location = original_location
 
     bpy.context.scene.frame_set(0)
 
