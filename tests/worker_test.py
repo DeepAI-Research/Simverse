@@ -45,4 +45,5 @@ def test_run_job(mock_subprocess_run):
 
 
 if __name__ == "__main__":
-    test_run_job()
+    # test_run_job()
+    pass
