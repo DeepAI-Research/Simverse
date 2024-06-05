@@ -1,9 +1,13 @@
+import logging
 from math import radians, cos, sin
 from typing import Dict, List, Union
 import numpy as np
 
 import bpy
 from mathutils import Vector
+
+logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
+logger = logging.getLogger(__name__)
 
 
 def degrees_to_radians(deg: float) -> float:
@@ -150,7 +154,6 @@ def find_largest_length(objects: List[Dict[bpy.types.Object, Dict]]) -> float:
         current_max = max(width, height)
         largest_dimension = max(largest_dimension, current_max)
 
-    print("THIS IS THE LARGEST DIMENSION: ", largest_dimension)
     return largest_dimension
 
 
@@ -174,7 +177,7 @@ def get_world_bounding_box_xy(obj: bpy.types.Object) -> List[Vector]:
         Vector((min_x, max_y, 0)),
         Vector((max_x, max_y, 0)),
     ]
-    print(f"Object {obj.name} bounding box: {corners_xy}")
+    logger.info(f"Object {obj.name} bounding box: {corners_xy}")
     return corners_xy
 
 
@@ -209,7 +212,7 @@ def check_overlap_xy(
         or min1.y > max2.y + padding
         or max1.y < min2.y - padding
     )
-    print(
+    logger.info(
         f"Checking overlap between {bbox1} and {bbox2} with padding {padding}: {overlap}"
     )
     return overlap
@@ -254,7 +257,7 @@ def bring_objects_to_origin(objects: List[Dict[bpy.types.Object, Dict]]) -> None
                     collision = True
                     break
 
-            print(
+            logger.info(
                 f"Object {obj.name} position: {obj.location}, Collision: {collision}, Iterations: {iterations}"
             )
 
@@ -267,7 +270,7 @@ def bring_objects_to_origin(objects: List[Dict[bpy.types.Object, Dict]]) -> None
                 distance_to_origin / 10, 0.5
             )  # Update step size dynamically
 
-        print(
+        logger.info(
             f"Final position of {obj.name}: {obj.location} after {iterations} iterations"
         )
 
@@ -296,7 +299,7 @@ def place_objects_on_grid(
                 0,
             )
         )
-        print(f"Placed object {obj.name} at {obj.location}")
+        logger.info(f"Placed object {obj.name} at {obj.location}")
 
     bpy.context.view_layer.update()
     if len(objects) > 1:

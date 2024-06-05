@@ -78,7 +78,6 @@ def render_objects(
             args = f"--width {width} --height {height} --combination_index {i} --start_frame {start_frame} --end_frame {end_frame} --output_dir {target_directory} --hdri_path {hdri_path} --animation_length {animation_length}"
 
         command = f"{sys.executable} simian/render.py -- {args}"
-        print("This is the command: ", command)
         subprocess.run(["bash", "-c", command], timeout=render_timeout, check=False)
 
 
@@ -136,7 +135,7 @@ def main():
     )
     parser.add_argument(
         "--images",
-        action='store_true',
+        action="store_true",
         help="Generate images instead of videos.",
     )
     parser.add_argument(
@@ -159,7 +158,7 @@ def main():
         end_index=args.end_index,
         start_frame=args.start_frame,
         end_frame=args.end_frame,
-        images=args.images
+        images=args.images,
     )
 
 

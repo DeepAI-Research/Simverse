@@ -1,10 +1,14 @@
 import argparse
 import json
+import logging
 import os
 import ssl
 import sys
 import bpy
 import random
+
+logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
+logger = logging.getLogger(__name__)
 
 ssl._create_default_https_context = ssl._create_unverified_context
 
@@ -87,7 +91,7 @@ def render_scene(
         None
     """
 
-    print(f"Rendering scene with combination {combination_index}")
+    logger.info(f"Rendering scene with combination {combination_index}")
 
     os.makedirs(output_dir, exist_ok=True)
 
@@ -178,7 +182,7 @@ def render_scene(
         )
         scene.render.filepath = render_path
         bpy.ops.render.render(write_still=True)
-        print(f"Rendered image saved to {render_path}")
+        logger.info(f"Rendered image saved to {render_path}")
     else:
         # Render the entire animation as a video
         scene.render.resolution_x = 1920
@@ -196,7 +200,7 @@ def render_scene(
         bpy.ops.wm.save_as_mainfile(
             filepath=os.path.join(output_dir, f"{combination_index}.blend")
         )
-        print(f"Rendered video saved to {render_path}")
+        logger.info(f"Rendered video saved to {render_path}")
 
 
 if __name__ == "__main__":
