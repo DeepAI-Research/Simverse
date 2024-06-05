@@ -14,9 +14,14 @@ def rewrite_caption(caption_arr, context_string):
     split_captions = [caption.split(", ") for caption in caption_arr]
     caption_string = json.dumps(split_captions)
 
+    content = f"{context_string}\n\n{caption_string}"
+
+    print("Caption context:")
+    print(content)
+
     response = client.chat.completions.create(
         model=MODEL,
-        messages=[{"role": "user", "content": f"{context_string}\n\n{caption_string}"}],
+        messages=[{"role": "user", "content": content}],
         temperature=0.5,
         top_p=0.8,
         frequency_penalty=0,
@@ -24,7 +29,7 @@ def rewrite_caption(caption_arr, context_string):
     )
 
     captions_content = response.choices[0].message.content.strip()
-    print("API Response:", captions_content)  # Debug print
+    print("API Response:\n", captions_content)  # Debug print
 
     try:
         # Try parsing the response as a JSON list
