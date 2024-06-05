@@ -62,6 +62,20 @@ def read_combination(combination_file: str, index: int = 0) -> dict:
         return combinations_data[index]
 
 
+def load_user_blend_file(user_blend_file):
+    if not os.path.exists(user_blend_file):
+        logger.error(f"Blender file {user_blend_file} does not exist.")
+        return False
+    
+    try:
+        bpy.ops.wm.open_mainfile(filepath=user_blend_file)
+        logger.info(f"Opened user-specified Blender file {user_blend_file} as the base scene.")
+        return True
+    except Exception as e:
+        logger.error(f"Failed to load Blender file {user_blend_file}: {e}")
+        return False
+    
+
 def render_scene(
     output_dir: str,
     context: bpy.types.Context,
@@ -96,7 +110,9 @@ def render_scene(
     os.makedirs(output_dir, exist_ok=True)
 
     if user_blend_file:
-        bpy.ops.wm.open_mainfile(filepath=user_blend_file)
+        if not load_user_blend_file(user_blend_file):
+            logger.error(f"Unable to load user-specified Blender file: {user_blend_file}")
+            return  # Exit the function if the file could not be loaded
     else:
         initialize_scene()
 
@@ -312,4 +328,5 @@ if __name__ == "__main__":
         combination_index=args.combination_index,
         combination=args.combination,
         render_images=args.images,
+        user_blend_file=args.blend,
     )

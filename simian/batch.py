@@ -1,4 +1,5 @@
 import json
+import logging
 import multiprocessing
 import os
 import platform
@@ -7,10 +8,11 @@ import subprocess
 import sys
 import argparse
 from typing import Optional
-
 # Append Simian to sys.path before importing from package
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../"))
 
+logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
+logger = logging.getLogger(__name__)
 
 def render_objects(
     processes: Optional[int] = None,
@@ -22,7 +24,8 @@ def render_objects(
     start_frame: int = 1,
     end_frame: int = 65,
     images: bool = False,
-    animation_length: int = 120,
+    animation_length: Optional[int] = 120,
+    blend_file: Optional[str] = None,
 ) -> None:
     """
     Automates the rendering of objects using Blender based on predefined combinations.
@@ -41,6 +44,9 @@ def render_objects(
         end_index (int): Ending index for rendering from the combinations DataFrame.
         start_frame (int): Starting frame number for the animation.
         end_frame (int): Ending frame number for the animation.
+        images (bool): Generate images instead of videos.
+        animation_length (Optional[int]): Control the length of the animation thus controlling the speed of the animation.
+        blend_file (Optional[str]): Path to the user-specified Blender file to use as the base scene.
 
     Raises:
         NotImplementedError: If the operating system is not supported.
@@ -73,9 +79,9 @@ def render_objects(
     # Loop over each combination index to set up and run the rendering process.
     for i in range(start_index, end_index):
         if images:
-            args = f"--width {width} --height {height} --combination_index {i} --start_frame {start_frame} --end_frame {end_frame} --output_dir {target_directory} --hdri_path {hdri_path} --animation_length {animation_length} --images"
+            args = f"--width {width} --height {height} --combination_index {i} --start_frame {start_frame} --end_frame {end_frame} --output_dir {target_directory} --hdri_path {hdri_path} --animation_length {animation_length} --blend {blend_file} --images"
         else:
-            args = f"--width {width} --height {height} --combination_index {i} --start_frame {start_frame} --end_frame {end_frame} --output_dir {target_directory} --hdri_path {hdri_path} --animation_length {animation_length}"
+            args = f"--width {width} --height {height} --combination_index {i} --start_frame {start_frame} --end_frame {end_frame} --output_dir {target_directory} --hdri_path {hdri_path} --animation_length {animation_length} --blend {blend_file}"
 
         command = f"{sys.executable} simian/render.py -- {args}"
         subprocess.run(["bash", "-c", command], timeout=render_timeout, check=False)
@@ -165,6 +171,7 @@ def main():
         start_frame=args.start_frame,
         end_frame=args.end_frame,
         images=args.images,
+        blend_file=args.blend,
     )
 
 
