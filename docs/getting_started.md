@@ -64,7 +64,7 @@ Make captions more prompt friendly.
 
 > **_NOTE:_** Create a .env file and add your OpenAI API key
 ```bash
-python3 scripts/openai_rephrase.py
+python3 scripts/rewrite_captions.py
 ```
 
 ### Distributed rendering
