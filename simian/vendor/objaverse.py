@@ -9,8 +9,6 @@ import urllib.request
 import warnings
 from typing import Any, Dict, List, Optional, Tuple
 
-from tqdm import tqdm
-
 BASE_PATH = os.path.join(os.path.expanduser("~"), ".objaverse")
 
 __version__ = "0.1.7"
@@ -34,8 +32,6 @@ def load_annotations(uids: Optional[List[str]] = None) -> Dict[str, Any]:
         if uids is not None
         else [f"{i // 1000:03d}-{i % 1000:03d}" for i in range(160)]
     )
-    if len(dir_ids) > 10:
-        dir_ids = tqdm(dir_ids)
     out = {}
     for i_id in dir_ids:
         json_file = f"{i_id}.json.gz"

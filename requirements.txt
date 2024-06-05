@@ -1,11 +1,8 @@
-wcwidth==0.2.13
 requests
-tqdm
 argparse
 numpy
 black
 scipy
-redis
 huggingface_hub
 distributaur
 bpy
