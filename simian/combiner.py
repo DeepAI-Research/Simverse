@@ -188,7 +188,9 @@ def meters_to_feet_rounded(meters: float) -> int:
     return round(meters * feet_per_meter)
 
 
-def generate_object_name_description_captions(combination: Dict[str, Any], object_data) -> str:
+def generate_object_name_description_captions(
+    combination: Dict[str, Any], object_data
+) -> str:
     """
     Generate captions for object names and descriptions based on the combination data.
 
@@ -490,7 +492,9 @@ def generate_caption(combination: Dict[str, Any], object_data, camera_data) -> s
     caption_parts = []
 
     # Add object name and description captions to the caption
-    object_name_descriptions = generate_object_name_description_captions(combination, object_data)
+    object_name_descriptions = generate_object_name_description_captions(
+        combination, object_data
+    )
     caption_parts.append(object_name_descriptions)
 
     scene_relationship_description = generate_relationship_captions(combination)
@@ -753,7 +757,9 @@ def generate_animation(camera_data: Dict[str, Any]) -> Dict[str, Any]:
     return animation
 
 
-def generate_objects(object_data, dataset_names, dataset_weights, dataset_dict, captions_data) -> List[Dict[str, Any]]:
+def generate_objects(
+    object_data, dataset_names, dataset_weights, dataset_dict, captions_data
+) -> List[Dict[str, Any]]:
     """
     Generate a list of random objects.
 
@@ -833,7 +839,9 @@ def generate_objects(object_data, dataset_names, dataset_weights, dataset_dict, 
     return objects
 
 
-def generate_background(background_dict, background_names, background_weights) -> Dict[str, Any]:
+def generate_background(
+    background_dict, background_names, background_weights
+) -> Dict[str, Any]:
     """
     Generate a random background.
 
@@ -881,12 +889,13 @@ def generate_stage(texture_data) -> Dict[str, Any]:
 
 
 def generate_combinations(
-    camera_data: Dict[str, Any], 
-    count: int, seed: Optional[int], 
-    dataset_names: List[str], 
-    dataset_weights: List[int], 
-    object_data: Dict[str, Any], 
-    dataset_dict: Dict[str, Any], 
+    camera_data: Dict[str, Any],
+    count: int,
+    seed: Optional[int],
+    dataset_names: List[str],
+    dataset_weights: List[int],
+    object_data: Dict[str, Any],
+    dataset_dict: Dict[str, Any],
     captions_data: Dict[str, Any],
     background_dict: Dict[str, Any],
     background_names: List[str],
@@ -912,8 +921,12 @@ def generate_combinations(
 
     # Generate combinations on the fly up to the specified count
     for i in range(count):
-        objects = generate_objects(object_data, dataset_names, dataset_weights, dataset_dict, captions_data)
-        background = generate_background(background_dict, background_names, background_weights)
+        objects = generate_objects(
+            object_data, dataset_names, dataset_weights, dataset_dict, captions_data
+        )
+        background = generate_background(
+            background_dict, background_names, background_weights
+        )
 
         # Calculate the transformed positions of the objects
         adjusted_objects = adjust_positions(objects, random.randint(0, 360))
@@ -1026,18 +1039,20 @@ if __name__ == "__main__":
     background_weights = [len(background_dict[name]) for name in background_names]
 
     # Generate combinations
-    combinations = generate_combinations(camera_data, 
-                                         args.count, 
-                                         args.seed, 
-                                         dataset_names, 
-                                         dataset_weights, 
-                                         object_data, 
-                                         dataset_dict, 
-                                         captions_data, 
-                                         background_dict,
-                                         background_names, 
-                                         background_weights,
-                                         texture_data)
+    combinations = generate_combinations(
+        camera_data,
+        args.count,
+        args.seed,
+        dataset_names,
+        dataset_weights,
+        object_data,
+        dataset_dict,
+        captions_data,
+        background_dict,
+        background_names,
+        background_weights,
+        texture_data,
+    )
 
     # Write to JSON file
     with open(args.output_path, "w") as f:

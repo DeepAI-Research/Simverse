@@ -136,7 +136,7 @@ def main():
     )
     parser.add_argument(
         "--images",
-        action='store_true',
+        action="store_true",
         help="Generate images instead of videos.",
     )
     parser.add_argument(
@@ -159,7 +159,7 @@ def main():
         end_index=args.end_index,
         start_frame=args.start_frame,
         end_frame=args.end_frame,
-        images=args.images
+        images=args.images,
     )
 
 

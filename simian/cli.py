@@ -23,7 +23,6 @@ if __name__ == "__main__":
 
     from simian.worker import *
 
-
     def get_env_vars(path: str = ".env") -> Dict[str, str]:
         """Get the environment variables from the specified file.
 
@@ -41,7 +40,6 @@ if __name__ == "__main__":
                 key, value = line.strip().split("=")
                 env_vars[key] = value
         return env_vars
-
 
     def get_settings(args):
         env_vars = get_env_vars(".env")
@@ -78,7 +76,6 @@ if __name__ == "__main__":
 
         return settings
 
-
     def setup_and_run(job_config):
         tasks = []
         # combination_index should be max of the length of the combinations and the end index
@@ -106,7 +103,6 @@ if __name__ == "__main__":
             time.sleep(1)
 
         print("All tasks have been completed!")
-
 
     def start_new_job(args):
         print("Starting a new job...")
@@ -172,13 +168,14 @@ if __name__ == "__main__":
         # Terminate the rented nodes
         terminate_nodes(nodes)
 
-
     def main():
         parser = argparse.ArgumentParser(description="Simian CLI")
         # boolean
         parser.add_argument("--list", action="store_true", help="List existing jobs")
         parser.add_argument("--job-id", help="Unique job ID")
-        parser.add_argument("--start-index", type=int, help="Starting index for rendering")
+        parser.add_argument(
+            "--start-index", type=int, help="Starting index for rendering"
+        )
         parser.add_argument(
             "--combinations-file", help="Path to the combinations JSON file"
         )
@@ -208,7 +205,6 @@ if __name__ == "__main__":
             list_jobs()
         else:
             start_new_job(args)
-
 
     def list_jobs():
         job_keys = redis_client.keys("celery-task-meta-*")
@@ -255,6 +251,5 @@ if __name__ == "__main__":
                 break
             else:
                 print("Invalid selection.")
-
 
     main()
