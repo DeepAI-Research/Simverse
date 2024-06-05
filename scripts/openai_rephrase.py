@@ -6,7 +6,8 @@ from dotenv import load_dotenv
 
 MODEL = "gpt-4o"
 
-def rewrite_caption(caption_arr, context_string, max_tokens_for_completion):
+
+def rewrite_caption(caption_arr, context_string):
     load_dotenv()
     client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
@@ -16,9 +17,8 @@ def rewrite_caption(caption_arr, context_string, max_tokens_for_completion):
     response = client.chat.completions.create(
         model=MODEL,
         messages=[{"role": "user", "content": f"{context_string}\n\n{caption_string}"}],
-        temperature=1,
-        max_tokens=max_tokens_for_completion,
-        top_p=1,
+        temperature=0.5,
+        top_p=0.8,
         frequency_penalty=0,
         presence_penalty=0,
     )
@@ -73,13 +73,12 @@ def write_to_file(i, rewritten_captions):
 
 
 def rewrite_captions_in_batches(combinations, context_string):
-    batch_size = 5
+    batch_size = 10
     num_combinations = len(combinations)
 
     for i in range(0, num_combinations, batch_size):
-        captions_batch = combinations[i:i + batch_size]
-        max_tokens_for_completion = 8000 // 2  # Adjust as needed based on your specific token limit
-        rewritten_captions = rewrite_caption(captions_batch, context_string, max_tokens_for_completion)
+        captions_batch = combinations[i : i + batch_size]
+        rewritten_captions = rewrite_caption(captions_batch, context_string)
         write_to_file(i, rewritten_captions)
 
 
