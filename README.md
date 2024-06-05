@@ -41,19 +41,7 @@ sudo python3 scripts/start_x_server.py start
 python3 simian/combiner.py --count 1000 --seed 42
 ```
 
-### Generating Videos
-
-You can generate individually:
-```bash
-# MacOS
-python simian/render.py
-
-# Linux
-python simian/render.py
-
-## Kitchen sink
-python simian/render.py -- --width 1920 --height 1080 --combination_index 0 --output_dir ./renders --hdri_path ./backgrounds --start_frame 1 --end_frame 65
-```
+### Generating Videos or Images
 
 Configure the flags as needed:
 - `--width` and `--height` are the resolution of the video.
@@ -61,12 +49,24 @@ Configure the flags as needed:
 - `--output_dir` is the directory to save the rendered video.
 - `--hdri_path` is the directory containing the background images.
 - `--start_frame` and `--end_frame` are the start and end frames of the video.
+- `--animation_length` is the total number of frames, this as a result controls the how fast the animation will appear.
+- `--images` adding this will output images instead of video at random frames. Creates multiple images per combination of varying sizes
 
 Or generate all or part of the combination set using the `batch.py` script:
 
+
+### Generating Videos or Images
+
+To generate a video(s): 
 ```bash
-python3 simian/batch.py --start_index 0 --end_index 1000 --width 1024 --height 576 --start_frame 1 --end_frame 65
+python3 simian/batch.py --start_index 0 --end_index 1000 --width 1024 --height 576 --start_frame 1 --end_frame 65 --animation_length 120
 ```
+
+To generate an image(s):
+```bash
+python3 simian/batch.py --start_index 0 --end_index 1000 --width 1024 --height 576 --start_frame 1 --end_frame 65 --animation_length 120 --images
+```
+
 
 ### Clean up Captions
 
@@ -74,7 +74,7 @@ Make captions more prompt friendly.
 
 > **_NOTE:_** Create a .env file and add your OpenAI API key
 ```bash
-python3 scripts/openai_rephrase.py
+python3 scripts/rewrite_captions.py
 ```
 
 ### Distributed rendering

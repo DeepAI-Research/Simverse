@@ -1,9 +1,14 @@
+import logging
 import math
+
 import bpy
 from mathutils import Vector
 
 import numpy as np
 from scipy.spatial.transform import Rotation as R
+
+logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
+logger = logging.getLogger(__name__)
 
 
 def rotate_points(points, angles):
@@ -159,7 +164,7 @@ def set_camera_settings(combination: dict) -> None:
 
     # Get the first keyframe's angle_offset value, if available
     animation = combination["animation"]
-    print("animation", animation)
+    logger.info("animation", animation)
     keyframes = animation["keyframes"]
     if (
         keyframes
@@ -188,13 +193,14 @@ def set_camera_settings(combination: dict) -> None:
     bpy.context.scene.render.fps = 30
 
 
-def set_camera_animation(combination: dict, frame_distance: int = 65) -> None:
+def set_camera_animation(combination: dict, animation_length: int) -> None:
     """
     Applies the specified animation to the camera based on the keyframes from the camera_data.json file.
+    The total animation frames are fixed to ensure consistent speed.
 
     Args:
         combination (dict): The combination dictionary containing animation data.
-        frame_distance (int): The distance between frames for keyframe placement.
+        animation_length (int): Total number of frames for the entire animation.
 
     Returns:
         None
@@ -202,17 +208,16 @@ def set_camera_animation(combination: dict, frame_distance: int = 65) -> None:
     animation = combination["animation"]
     speed_factor = animation.get("speed_factor", 1)
     keyframes = animation["keyframes"]
+    frame_interval = animation_length
 
     for i, keyframe in enumerate(keyframes):
         for obj_name, transforms in keyframe.items():
             obj = bpy.data.objects.get(obj_name)
             if obj is None:
                 raise ValueError(f"Object {obj_name} not found in the scene")
-            original_location = obj.location.copy()
-            frame = i * frame_distance
+            frame = int(i * frame_interval)
             for transform_name, value in transforms.items():
                 if transform_name == "position":
-                    # multiply the values by the speed factor
                     obj.location = [coord * speed_factor for coord in value]
                     obj.keyframe_insert(data_path="location", frame=frame)
                 elif transform_name == "rotation":
@@ -221,7 +226,6 @@ def set_camera_animation(combination: dict, frame_distance: int = 65) -> None:
                     ]
                     obj.keyframe_insert(data_path="rotation_euler", frame=frame)
                 elif transform_name == "scale":
-                    # multiply the values by the speed factor
                     obj.scale = [coord * speed_factor for coord in value]
                     obj.keyframe_insert(data_path="scale", frame=frame)
                 elif transform_name == "angle_offset" and obj_name == "Camera":
@@ -230,7 +234,6 @@ def set_camera_animation(combination: dict, frame_distance: int = 65) -> None:
                         combination["framing"]["fov"] + value
                     )
                     camera_data.keyframe_insert(data_path="lens", frame=frame)
-            obj.location = original_location
 
     bpy.context.scene.frame_set(0)
 
@@ -247,7 +250,7 @@ def position_camera(combination: dict, focus_object: bpy.types.Object) -> None:
     """
     camera = bpy.context.scene.objects["Camera"]
 
-    print(f"Focus object: {focus_object.name}")
+    logger.info(f"Focus object: {focus_object.name}")
 
     # Get the bounding box of the focus object in world space
     bpy.context.view_layer.update()
@@ -261,8 +264,8 @@ def position_camera(combination: dict, focus_object: bpy.types.Object) -> None:
     rotation_angles = (45, 45, 45)  # Example rotation angles
     rotated_points = rotate_points(bbox_points, rotation_angles)
 
-    print("combination")
-    print(combination)
+    logger.info("combination")
+    logger.info(combination)
 
     # scale rotated_points by combination["framing"]["coverage_factor"]
     rotated_points *= combination["framing"]["coverage_factor"]
@@ -274,7 +277,7 @@ def position_camera(combination: dict, focus_object: bpy.types.Object) -> None:
     aspect_ratio = (
         bpy.context.scene.render.resolution_x / bpy.context.scene.render.resolution_y
     )
-    print("aspect_ratio", aspect_ratio)
+    logger.info("aspect_ratio", aspect_ratio)
     camera_distance, centroid, radius = compute_camera_distance(
         rotated_points, fov_deg / aspect_ratio
     )

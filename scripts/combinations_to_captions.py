@@ -13,19 +13,24 @@ def main(json_file, video_folder=None):
     captions = []
 
     if video_folder:
-        # List and sort all .mp4 video files in the video folder based on numerical index
+        # List and sort all .mp4 and .png files in the video folder based on numerical index
         video_files = [f for f in os.listdir(video_folder) if f.endswith(".mp4")]
-        video_files.sort(key=lambda x: int(os.path.splitext(x)[0]))
+        image_files = [f for f in os.listdir(video_folder) if f.endswith(".png")]
 
-        # Debugging: Print video files count and sorted list
+        video_files.sort(key=lambda x: int(os.path.splitext(x)[0].split("_")[0]))
+        image_files.sort(key=lambda x: int(os.path.splitext(x)[0].split("_")[0]))
+
+        # Debugging: Print files count and sorted lists
         print(f"Found {len(video_files)} video files.")
         print(f"Sorted video files: {video_files}")
+        print(f"Found {len(image_files)} image files.")
+        print(f"Sorted image files: {image_files}")
 
-        # Process each combination, ensuring we do not exceed the number of available videos
+        # Process each combination, ensuring we do not exceed the number of available videos or images
         for i, obj in enumerate(combinations):
-            if i >= len(video_files):
+            if i >= len(video_files) and i >= len(image_files):
                 print(
-                    f"Warning: Only {len(video_files)} videos found. Stopping at video index {i}."
+                    f"Warning: Only {len(video_files)} videos and {len(image_files)} images found. Stopping at index {i}."
                 )
                 break
 
@@ -36,15 +41,19 @@ def main(json_file, video_folder=None):
             if caption:
                 # Create a new object with the desired format
                 caption_obj = {
-                    "path": f"{video_folder}/{video_files[i]}",
                     "cap": [caption],
                 }
+                if i < len(video_files):
+                    caption_obj["path"] = f"{video_folder}/{video_files[i]}"
+                if i < len(image_files):
+                    caption_obj["path"] = f"{video_folder}/{image_files[i]}"
+
                 captions.append(caption_obj)
             else:
                 print(f"Missing caption in combination at index {i}: {obj}")
 
     else:
-        # Process each combination without video paths
+        # Process each combination without video or image paths
         for i, obj in enumerate(combinations):
             # Access the 'caption' field
             caption = obj.get("caption")

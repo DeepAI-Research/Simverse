@@ -1,8 +1,7 @@
 requests
-tqdm
 argparse
 numpy
-celery
+black
 scipy
 distributaur
 bpy

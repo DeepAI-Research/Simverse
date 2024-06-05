@@ -1,10 +1,14 @@
 import argparse
+import logging
 import os
 import signal
 import sys
 import time
 import json
 from typing import Dict
+
+logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
+logger = logging.getLogger(__name__)
 
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../"))
 
@@ -23,7 +27,6 @@ if __name__ == "__main__":
 
     from simian.worker import *
 
-
     def get_env_vars(path: str = ".env") -> Dict[str, str]:
         """Get the environment variables from the specified file.
 
@@ -41,7 +44,6 @@ if __name__ == "__main__":
                 key, value = line.strip().split("=")
                 env_vars[key] = value
         return env_vars
-
 
     def get_settings(args):
         env_vars = get_env_vars(".env")
@@ -78,7 +80,6 @@ if __name__ == "__main__":
 
         return settings
 
-
     def setup_and_run(job_config):
         tasks = []
         # combination_index should be max of the length of the combinations and the end index
@@ -100,16 +101,15 @@ if __name__ == "__main__":
             tasks.append(task)
 
         for task in tasks:
-            print(f"Task {task.id} dispatched.")
+            logger.info(f"Task {task.id} dispatched.")
 
         while not all(task.ready() for task in tasks):
             time.sleep(1)
 
-        print("All tasks have been completed!")
-
+        logger.info("All tasks have been completed!")
 
     def start_new_job(args):
-        print("Starting a new job...")
+        logger.info("Starting a new job...")
         settings = get_settings(args)
         job_id = args.job_id or input("Enter a unique job ID: ")
 
@@ -122,7 +122,7 @@ if __name__ == "__main__":
         os.environ["HF_REPO_ID"] = args.hf_repo_id or settings["hf_repo_id"]
         os.environ["HF_PATH"] = args.hf_path or settings["hf_path"]
 
-        print("Renting nodes on Vast.ai...")
+        logger.info("Renting nodes on Vast.ai...")
         # Rent nodes from vast.ai
         nodes = rent_nodes(
             max_price=settings["max_price"],
@@ -130,16 +130,16 @@ if __name__ == "__main__":
             image=settings["image"],
             api_key=settings["api_key"],
         )
-        print("Nodes rented successfully!")
+        logger.info("Nodes rented successfully!")
 
         # Set up signal handler for graceful shutdown
         signal_handler = handle_signal(nodes)
         signal.signal(signal.SIGINT, signal_handler)
 
-        print("Configuring distributaur...")
+        logger.info("Configuring distributaur...")
 
-        print('settings["combinations"]')
-        print(settings["combinations"])
+        logger.info('settings["combinations"]')
+        logger.info(settings["combinations"])
 
         job_config = {
             "job_id": job_id,
@@ -159,26 +159,27 @@ if __name__ == "__main__":
 
         # Check if the job is already running
         if attach_to_existing_job(job_id):
-            print("Attaching to an existing job...")
+            logger.info("Attaching to an existing job...")
             # Monitor job status and handle success/failure conditions
             monitor_job_status(job_id)
         else:
-            print("Setting up and running the job...")
+            logger.info("Setting up and running the job...")
             # Run the job
             setup_and_run(job_config)
             # Monitor job status and handle success/failure conditions
             monitor_job_status(job_id)
-        print("Job completed!")
+        logger.info("Job completed!")
         # Terminate the rented nodes
         terminate_nodes(nodes)
-
 
     def main():
         parser = argparse.ArgumentParser(description="Simian CLI")
         # boolean
         parser.add_argument("--list", action="store_true", help="List existing jobs")
         parser.add_argument("--job-id", help="Unique job ID")
-        parser.add_argument("--start-index", type=int, help="Starting index for rendering")
+        parser.add_argument(
+            "--start-index", type=int, help="Starting index for rendering"
+        )
         parser.add_argument(
             "--combinations-file", help="Path to the combinations JSON file"
         )
@@ -201,14 +202,13 @@ if __name__ == "__main__":
         parser.add_argument("--hf_repo_id", help="Hugging Face repository ID")
         parser.add_argument("--hf_path", help="Hugging Face path")
         args = parser.parse_args()
-        print("args")
-        print(args)
+        logger.info("args")
+        logger.info(args)
 
         if args.list is True:
             list_jobs()
         else:
             start_new_job(args)
-
 
     def list_jobs():
         job_keys = redis_client.keys("celery-task-meta-*")
@@ -219,14 +219,14 @@ if __name__ == "__main__":
                 jobs[job_id] = check_job_status(job_id)
 
         if not jobs:
-            print("No existing jobs found.")
+            logger.info("No existing jobs found.")
             return
 
-        print("Existing jobs:")
+        logger.info("Existing jobs:")
         for job_id, status_counts in jobs.items():
-            print(f"Job ID: {job_id}")
-            print(f"  Status: {status_counts}")
-            print()
+            logger.info(f"Job ID: {job_id}")
+            logger.info(f"  Status: {status_counts}")
+            logger.info()
 
         while True:
             selection = input(
@@ -238,7 +238,7 @@ if __name__ == "__main__":
                 confirm = input("Are you sure you want to clear all jobs? (y/n): ")
                 if confirm.lower() == "y":
                     redis_client.flushdb()
-                    print("All jobs cleared.")
+                    logger.info("All jobs cleared.")
                 break
             elif selection == "d":
                 job_id = input("Enter the job ID to delete: ")
@@ -246,15 +246,14 @@ if __name__ == "__main__":
                     keys = redis_client.keys(f"celery-task-meta-*{job_id}")
                     for key in keys:
                         redis_client.delete(key)
-                    print(f"Job {job_id} deleted.")
+                    logger.info(f"Job {job_id} deleted.")
                 else:
-                    print(f"Job {job_id} not found.")
+                    logger.info(f"Job {job_id} not found.")
             elif selection in jobs:
-                print(f"Attaching to job {selection}...")
+                logger.info(f"Attaching to job {selection}...")
                 sys.argv = [sys.argv[0], "--job-id", selection]
                 break
             else:
-                print("Invalid selection.")
-
+                logger.info("Invalid selection.")
 
     main()

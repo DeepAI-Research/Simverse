@@ -1,10 +1,12 @@
 import json
+import logging
 import os
 import sys
 import subprocess
 from typing import Any, Dict
 
 from distributaur.huggingface import upload_directory
+
 
 def run_job(
     combination_index: int,
@@ -44,7 +46,7 @@ def run_job(
     args += f" --combination {combination}"
 
     command = f"{sys.executable} simian/render.py -- {args}"
-    print("Worker running: ", command)
+    logger.info("Worker running: ", command)
 
     subprocess.run(["bash", "-c", command], check=False)
 
@@ -56,7 +58,7 @@ def run_job(
             if os.path.isfile(file_path):
                 os.unlink(file_path)
         except Exception as e:
-            print(e)
+            logger.info(e)
 
 
 if __name__ == "__main__":

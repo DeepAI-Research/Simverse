@@ -2,6 +2,7 @@ import json
 import multiprocessing
 import os
 import platform
+import random
 import subprocess
 import sys
 import argparse
@@ -20,6 +21,8 @@ def render_objects(
     end_index: int = -1,
     start_frame: int = 1,
     end_frame: int = 65,
+    images: bool = False,
+    animation_length: int = 120,
 ) -> None:
     """
     Automates the rendering of objects using Blender based on predefined combinations.
@@ -69,14 +72,12 @@ def render_objects(
 
     # Loop over each combination index to set up and run the rendering process.
     for i in range(start_index, end_index):
-        args = f"--width {width} --height {height} --combination_index {i} --start_frame {start_frame} --end_frame {end_frame} --output_dir {target_directory} --hdri_path {hdri_path}"
+        if images:
+            args = f"--width {width} --height {height} --combination_index {i} --start_frame {start_frame} --end_frame {end_frame} --output_dir {target_directory} --hdri_path {hdri_path} --animation_length {animation_length} --images"
+        else:
+            args = f"--width {width} --height {height} --combination_index {i} --start_frame {start_frame} --end_frame {end_frame} --output_dir {target_directory} --hdri_path {hdri_path} --animation_length {animation_length}"
 
-        # Construct and print the Blender command line.
         command = f"{sys.executable} simian/render.py -- {args}"
-
-        print("This is the command: ", command)
-
-        # Execute the rendering command with a timeout.
         subprocess.run(["bash", "-c", command], timeout=render_timeout, check=False)
 
 
@@ -132,10 +133,23 @@ def main():
         default=65,
         help="Ending frame number for the animation. Defaults to 65.",
     )
+    parser.add_argument(
+        "--images",
+        action="store_true",
+        help="Generate images instead of videos.",
+    )
+    parser.add_argument(
+        "--animation_length",
+        type=int,
+        default=120,
+        help="End frame of the animation.",
+        required=False,
+    )
 
     args = parser.parse_args()
 
     render_objects(
+        animation_length=args.animation_length,
         processes=args.processes,
         render_timeout=args.render_timeout,
         width=args.width,
@@ -144,6 +158,7 @@ def main():
         end_index=args.end_index,
         start_frame=args.start_frame,
         end_frame=args.end_frame,
+        images=args.images,
     )
 
 
