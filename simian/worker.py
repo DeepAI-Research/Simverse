@@ -5,7 +5,8 @@ import sys
 import subprocess
 from typing import Any, Dict
 
-from distributaur.huggingface import upload_directory
+logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
+logger = logging.getLogger(__name__)
 
 
 def run_job(
@@ -50,7 +51,8 @@ def run_job(
 
     subprocess.run(["bash", "-c", command], check=False)
 
-    upload_directory(output_dir)
+    # TODO: Make sure directory is uploaded
+    # upload_directory(output_dir)
 
     for file in os.listdir(output_dir):
         file_path = os.path.join(output_dir, file)
