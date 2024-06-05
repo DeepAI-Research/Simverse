@@ -2,6 +2,7 @@ import json
 import os
 import argparse
 
+
 def main(json_file, video_folder=None):
     # Load the combinations.json file
     with open(json_file, "r") as f:
@@ -16,8 +17,8 @@ def main(json_file, video_folder=None):
         video_files = [f for f in os.listdir(video_folder) if f.endswith(".mp4")]
         image_files = [f for f in os.listdir(video_folder) if f.endswith(".png")]
 
-        video_files.sort(key=lambda x: int(os.path.splitext(x)[0].split('_')[0]))
-        image_files.sort(key=lambda x: int(os.path.splitext(x)[0].split('_')[0]))
+        video_files.sort(key=lambda x: int(os.path.splitext(x)[0].split("_")[0]))
+        image_files.sort(key=lambda x: int(os.path.splitext(x)[0].split("_")[0]))
 
         # Debugging: Print files count and sorted lists
         print(f"Found {len(video_files)} video files.")
@@ -68,6 +69,7 @@ def main(json_file, video_folder=None):
     # Write the captions array to captions.json file
     with open("captions.json", "w") as out_f:
         json.dump(captions, out_f, indent=2)
+
 
 # Run the script with the required arguments
 # python scripts/combinations_to_captions.py --json_file ./combinations.json [--video_folder ./renders]

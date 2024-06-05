@@ -58,7 +58,7 @@ def read_combination(combination_file: str, index: int = 0) -> dict:
     """
     with open(combination_file, "r") as file:
         data = json.load(file)
-        # read the combinations from the JSON file and load as pandas dataframe
+        # read the combinations from the JSON file and load as json dataframe
         combinations_data = data["combinations"]
         return combinations_data[index]
 
