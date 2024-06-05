@@ -1,8 +1,12 @@
 import json
+import logging
 import os
 import sys
 import subprocess
 from typing import Any, Dict
+
+logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
+logger = logging.getLogger(__name__)
 
 
 def get_env_vars(path: str = ".env") -> Dict[str, str]:
@@ -39,7 +43,7 @@ def upload_to_huggingface(output_dir: str, repo_dir: str) -> None:
             path_in_repo = os.path.join(repo_dir, file) if repo_dir else file
 
             try:
-                print(
+                logger.info(
                     f"Uploading {local_path} to Hugging Face repo {repo_id} at {path_in_repo}"
                 )
                 api.upload_file(
@@ -49,11 +53,11 @@ def upload_to_huggingface(output_dir: str, repo_dir: str) -> None:
                     token=hf_token,
                     repo_type="dataset",
                 )
-                print(
+                logger.info(
                     f"Uploaded {local_path} to Hugging Face repo {repo_id} at {path_in_repo}"
                 )
             except Exception as e:
-                print(
+                logger.info(
                     f"Failed to upload {local_path} to Hugging Face repo {repo_id} at {path_in_repo}: {e}"
                 )
 
@@ -96,7 +100,7 @@ def run_job(
     args += f" --combination {combination}"
 
     command = f"{sys.executable} simian/render.py -- {args}"
-    print("Worker running: ", command)
+    logger.info("Worker running: ", command)
 
     subprocess.run(["bash", "-c", command], check=False)
 
@@ -108,7 +112,7 @@ def run_job(
             if os.path.isfile(file_path):
                 os.unlink(file_path)
         except Exception as e:
-            print(e)
+            logger.info(e)
 
 
 if __name__ == "__main__":

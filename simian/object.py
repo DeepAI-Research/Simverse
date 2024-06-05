@@ -1,6 +1,10 @@
+import logging
 from typing import List, Optional, Callable, Dict
 import bpy
 from mathutils import Vector
+
+logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
+logger = logging.getLogger(__name__)
 
 """
 A dictionary mapping file extensions to Blender's import functions.
@@ -162,7 +166,7 @@ def remove_small_geometry(
     """
     # Ensure the object is a mesh
     if obj is not None and obj.type != "MESH":
-        print("Object is not a mesh.")
+        logger.info("Object is not a mesh.")
         return None
 
     # Make sure the object is active and we're in object mode
@@ -195,10 +199,8 @@ def remove_small_geometry(
     bpy.ops.object.select_all(action="SELECT")
     bpy.ops.object.join()
     bpy.ops.object.mode_set(mode="OBJECT")
-    print(
-        "Processed geometry, removing parts with fewer than",
-        min_vertex_count,
-        "vertices.",
+    logger.info(
+        f"Processed geometry, removing parts with fewer than {min_vertex_count} vertices.",
     )
     return obj
 
@@ -320,7 +322,7 @@ def apply_and_remove_armatures():
                     try:
                         remove_blendshapes_from_hierarchy(obj)
                     except:
-                        print("Error removing blendshapes from object.")
+                        logger.info("Error removing blendshapes from object.")
                         # write a log file with the error
                         with open("error_log.txt", "a") as f:
                             f.write("Error removing blendshapes from object.\n")
@@ -448,13 +450,13 @@ def join_objects_in_hierarchy(obj: bpy.types.Object) -> None:
                 # Join meshes using the bpy.ops.object.join() operator with a custom context override
                 if len(meshes) > 1:
                     bpy.ops.object.join()
-                    print("Joined", len(meshes), "meshes.")
+                    logger.info("Joined", len(meshes), "meshes.")
                 else:
-                    print("Not enough meshes to join.")
+                    logger.info("Not enough meshes to join.")
         else:
-            print("Active object is not a valid mesh.")
+            logger.info("Active object is not a valid mesh.")
     else:
-        print("No meshes found to set as active.")
+        logger.info("No meshes found to set as active.")
 
 
 def set_pivot_to_bottom(obj: bpy.types.Object) -> None:

@@ -3,11 +3,16 @@
 import glob
 import gzip
 import json
+import logging
 import multiprocessing
 import os
 import urllib.request
 import warnings
 from typing import Any, Dict, List, Optional, Tuple
+
+logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
+logger = logging.getLogger(__name__)
+
 
 BASE_PATH = os.path.join(os.path.expanduser("~"), ".objaverse")
 
@@ -96,7 +101,6 @@ def _download_object(
     Returns:
         The local path of where the object was downloaded.
     """
-    # print(f"downloading {uid}")
     local_path = os.path.join(_VERSIONED_PATH, object_path)
     tmp_local_path = os.path.join(_VERSIONED_PATH, object_path + ".tmp")
     hf_url = (
@@ -109,12 +113,8 @@ def _download_object(
     os.rename(tmp_local_path, local_path)
 
     files = glob.glob(os.path.join(_VERSIONED_PATH, "glbs", "*", "*.glb"))
-    print(
-        "Downloaded",
-        len(files) - start_file_count,
-        "/",
-        total_downloads,
-        "objects",
+    logger.info(
+        f"Downloaded {len(files) - start_file_count}/{total_downloads} objects",
     )
 
     return uid, local_path
@@ -175,7 +175,7 @@ def load_objects(uids: List[str], download_processes: int = 1) -> Dict[str, str]
                 out[uid] = local_path
         if len(args) == 0:
             return out
-        print(
+        logger.info(
             f"starting download of {len(args)} objects with {download_processes} processes"
         )
         start_file_count = len(

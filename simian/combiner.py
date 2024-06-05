@@ -1,3 +1,4 @@
+import logging
 import json
 import math
 import os
@@ -9,6 +10,9 @@ from typing import Any, Dict, List, Optional
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../"))
 
 from simian.transform import determine_relationships, adjust_positions
+
+logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
+logger = logging.getLogger(__name__)
 
 
 def read_json_file(file_path: str) -> Dict[str, Any]:
@@ -202,8 +206,6 @@ def generate_object_name_description_captions(
     """
     object_name_descriptions = []
     for obj in combination["objects"]:
-        print("obj")
-        print(obj)
         object_name = obj["name"]
         object_description = obj["description"]
 
@@ -753,7 +755,6 @@ def generate_animation(camera_data: Dict[str, Any]) -> Dict[str, Any]:
     animation = animation.copy()
     animation["speed_factor"] = random.uniform(0.5, 2.0)
     animation.pop("descriptions", None)
-    print(animation)
     return animation
 
 
@@ -982,7 +983,7 @@ if __name__ == "__main__":
         current_path = os.path.dirname(os.path.realpath(__file__))
         dataset_path = os.path.join(args.simdata_path, dataset + ".json")
         dataset_full_path = os.path.join(current_path, "../", dataset_path)
-        print(f"Loading {dataset_full_path}")
+        logger.info(f"Loading {dataset_full_path}")
         if os.path.exists(dataset_full_path):
             dataset_data = read_json_file(dataset_full_path)
             local_count = 0
@@ -1000,16 +1001,16 @@ if __name__ == "__main__":
                         category_map[category] = set()
                     category_map[category].add(object_id)
 
-            print(
+            logger.info(
                 f"Loaded {local_count} unique entries out of {len(dataset_data)} from {dataset}"
             )
             dataset_dict[dataset] = dataset_data
         else:
-            print(f"Dataset file {dataset_path} not found")
+            logger.info(f"Dataset file {dataset_path} not found")
 
     # count the total length of all entries
     total_length = sum(len(dataset_dict[dataset]) for dataset in dataset_dict)
-    print(f"Total number of objects: {total_length}")
+    logger.info(f"Total number of objects: {total_length}")
 
     backgrounds = datasets["backgrounds"]
     background_dict = {}
@@ -1019,18 +1020,18 @@ if __name__ == "__main__":
         current_path = os.path.dirname(os.path.realpath(__file__))
         hdri_path = os.path.join(args.simdata_path, background + ".json")
         background_full_path = os.path.join(current_path, "../", hdri_path)
-        print(f"Loading {background_full_path}")
+        logger.info(f"Loading {background_full_path}")
         if os.path.exists(background_full_path):
             background_data = read_json_file(background_full_path)
-            print(f"Loaded {len(background_data)} from {background}")
+            logger.info(f"Loaded {len(background_data)} from {background}")
             background_dict[background] = background_data
         else:
-            print(f"Dataset file {hdri_path} not found")
+            logger.info(f"Dataset file {hdri_path} not found")
 
     total_length = sum(
         len(background_dict[background]) for background in background_dict
     )
-    print(f"Total number of backgrounds: {total_length}")
+    logger.info(f"Total number of backgrounds: {total_length}")
 
     dataset_names = list(dataset_dict.keys())
     dataset_weights = [len(dataset_dict[name]) for name in dataset_names]
@@ -1058,4 +1059,4 @@ if __name__ == "__main__":
     with open(args.output_path, "w") as f:
         json.dump(combinations, f, indent=4)
 
-    print(f"Combinations have been successfully written to {args.output_path}")
+    logger.info(f"Combinations have been successfully written to {args.output_path}")

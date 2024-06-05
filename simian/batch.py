@@ -78,7 +78,6 @@ def render_objects(
             args = f"--width {width} --height {height} --combination_index {i} --start_frame {start_frame} --end_frame {end_frame} --output_dir {target_directory} --hdri_path {hdri_path} --animation_length {animation_length}"
 
         command = f"{sys.executable} simian/render.py -- {args}"
-        print("This is the command: ", command)
         subprocess.run(["bash", "-c", command], timeout=render_timeout, check=False)
 
 
