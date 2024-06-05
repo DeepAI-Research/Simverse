@@ -1,17 +1,11 @@
 wcwidth==0.2.13
 requests
-pandas
 tqdm
-fsspec
 argparse
 numpy
 black
-celery
 scipy
 redis
-boto3
-botocore
 huggingface_hub
-openai
 distributaur
 bpy

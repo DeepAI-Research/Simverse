@@ -1,16 +1,11 @@
 import os
 import json
-from openai import OpenAI
-
-from dotenv import load_dotenv
+import requests
 
 MODEL = "gpt-4o"
 
 
 def rewrite_caption(caption_arr, context_string):
-    load_dotenv()
-    client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-
     split_captions = [caption.split(", ") for caption in caption_arr]
     caption_string = json.dumps(split_captions)
 
@@ -19,30 +14,44 @@ def rewrite_caption(caption_arr, context_string):
     print("Caption context:")
     print(content)
 
-    response = client.chat.completions.create(
-        model=MODEL,
-        messages=[{"role": "user", "content": content}],
-        temperature=0.5,
-        top_p=0.8,
-        frequency_penalty=0,
-        presence_penalty=0,
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {os.getenv('OPENAI_API_KEY')}",
+    }
+
+    data = {
+        "model": MODEL,
+        "messages": [{"role": "user", "content": content}],
+        "temperature": 0.5,
+        "top_p": 0.8,
+        "frequency_penalty": 0,
+        "presence_penalty": 0,
+    }
+
+    response = requests.post(
+        "https://api.openai.com/v1/chat/completions", headers=headers, json=data
     )
 
-    captions_content = response.choices[0].message.content.strip()
-    print("API Response:\n", captions_content)  # Debug print
+    if response.status_code == 200:
+        response_data = response.json()
+        captions_content = response_data["choices"][0]["message"]["content"].strip()
+        print("API Response:\n", captions_content)  # Debug print
 
-    try:
-        # Try parsing the response as a JSON list
-        rewritten_captions_content = json.loads(captions_content)
-        if not isinstance(rewritten_captions_content, list):
-            raise ValueError("Parsed JSON is not a list")
-    except (json.JSONDecodeError, ValueError) as e:
-        print("JSON Decode Error or Value Error:", e)
-        # Fallback to splitting the response by newlines, assuming each line is a caption
-        rewritten_captions_content = captions_content.split("\n")
+        try:
+            # Try parsing the response as a JSON list
+            rewritten_captions_content = json.loads(captions_content)
+            if not isinstance(rewritten_captions_content, list):
+                raise ValueError("Parsed JSON is not a list")
+        except (json.JSONDecodeError, ValueError) as e:
+            print("JSON Decode Error or Value Error:", e)
+            # Fallback to splitting the response by newlines, assuming each line is a caption
+            rewritten_captions_content = captions_content.split("\n")
 
-    print("==== Captions rewritten by OpenAI ====")
-    return rewritten_captions_content
+        print("==== Captions rewritten by OpenAI ====")
+        return rewritten_captions_content
+    else:
+        print(f"Error: {response.status_code} - {response.text}")
+        return []
 
 
 def read_combinations_and_get_array_of_just_captions():
