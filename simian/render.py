@@ -72,6 +72,7 @@ def render_scene(
     combination_index=0,
     combination=None,
     render_images=False,
+    user_blend_file=None
 ) -> None:
     """
     Renders a scene with specified parameters.
@@ -85,7 +86,7 @@ def render_scene(
         animation_length (int): Length of the animation. Defaults to 300.
         combination_index (int): Index of the camera combination to use from the JSON file. Defaults to 0.
         render_images (bool): Flag to indicate if images should be rendered instead of videos.
-
+        user_blend_file (str): Path to the user-specified Blender file to use as the base scene.
     Returns:
         None
     """
@@ -94,7 +95,11 @@ def render_scene(
 
     os.makedirs(output_dir, exist_ok=True)
 
-    initialize_scene()
+    if user_blend_file:
+        bpy.ops.wm.open_mainfile(filepath=user_blend_file)
+    else:
+        initialize_scene()
+
     create_camera_rig()
 
     scene = context.scene
@@ -264,6 +269,12 @@ if __name__ == "__main__":
         "--images",
         action="store_true",
         help="Generate images instead of videos.",
+    )
+    parser.add_argument(
+        "--blend",
+        type=str,
+        default=None,
+        help="Path to the user-specified Blender file to use as the base scene.",
     )
 
     if "--" in sys.argv:

@@ -145,6 +145,12 @@ def main():
         help="End frame of the animation.",
         required=False,
     )
+    parser.add_argument(
+        "--blend",
+        type=str,
+        default=None,
+        help="Path to the user-specified Blender file to use as the base scene.",
+    )
 
     args = parser.parse_args()
 
