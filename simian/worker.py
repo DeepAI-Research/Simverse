@@ -47,7 +47,7 @@ def run_job(
     args += f" --combination {combination}"
 
     command = f"{sys.executable} simian/render.py -- {args}"
-    logger.info("Worker running: ", command)
+    logger.info(f"Worker running: {command}")
 
     subprocess.run(["bash", "-c", command], check=False)
 

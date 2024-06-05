@@ -136,10 +136,7 @@ if __name__ == "__main__":
         signal_handler = handle_signal(nodes)
         signal.signal(signal.SIGINT, signal_handler)
 
-        logger.info("Configuring distributaur...")
-
-        logger.info('settings["combinations"]')
-        logger.info(settings["combinations"])
+        logger.info("Configuring distributed jobs...")
 
         job_config = {
             "job_id": job_id,
@@ -202,8 +199,6 @@ if __name__ == "__main__":
         parser.add_argument("--hf_repo_id", help="Hugging Face repository ID")
         parser.add_argument("--hf_path", help="Hugging Face path")
         args = parser.parse_args()
-        logger.info("args")
-        logger.info(args)
 
         if args.list is True:
             list_jobs()
@@ -225,8 +220,7 @@ if __name__ == "__main__":
         logger.info("Existing jobs:")
         for job_id, status_counts in jobs.items():
             logger.info(f"Job ID: {job_id}")
-            logger.info(f"  Status: {status_counts}")
-            logger.info()
+            logger.info(f"Status: {status_counts}")
 
         while True:
             selection = input(

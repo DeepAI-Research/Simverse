@@ -450,7 +450,7 @@ def join_objects_in_hierarchy(obj: bpy.types.Object) -> None:
                 # Join meshes using the bpy.ops.object.join() operator with a custom context override
                 if len(meshes) > 1:
                     bpy.ops.object.join()
-                    logger.info("Joined", len(meshes), "meshes.")
+                    logger.info(f"Joined {len(meshes)} meshes.")
                 else:
                     logger.info("Not enough meshes to join.")
         else:

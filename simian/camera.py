@@ -164,7 +164,6 @@ def set_camera_settings(combination: dict) -> None:
 
     # Get the first keyframe's angle_offset value, if available
     animation = combination["animation"]
-    logger.info("animation", animation)
     keyframes = animation["keyframes"]
     if (
         keyframes
@@ -250,8 +249,6 @@ def position_camera(combination: dict, focus_object: bpy.types.Object) -> None:
     """
     camera = bpy.context.scene.objects["Camera"]
 
-    logger.info(f"Focus object: {focus_object.name}")
-
     # Get the bounding box of the focus object in world space
     bpy.context.view_layer.update()
     bbox = [
@@ -264,9 +261,6 @@ def position_camera(combination: dict, focus_object: bpy.types.Object) -> None:
     rotation_angles = (45, 45, 45)  # Example rotation angles
     rotated_points = rotate_points(bbox_points, rotation_angles)
 
-    logger.info("combination")
-    logger.info(combination)
-
     # scale rotated_points by combination["framing"]["coverage_factor"]
     rotated_points *= combination["framing"]["coverage_factor"]
 
@@ -277,7 +271,7 @@ def position_camera(combination: dict, focus_object: bpy.types.Object) -> None:
     aspect_ratio = (
         bpy.context.scene.render.resolution_x / bpy.context.scene.render.resolution_y
     )
-    logger.info("aspect_ratio", aspect_ratio)
+
     camera_distance, centroid, radius = compute_camera_distance(
         rotated_points, fov_deg / aspect_ratio
     )
