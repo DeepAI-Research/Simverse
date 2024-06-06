@@ -36,7 +36,7 @@ def render_objects(
 
     Args:
         processes (Optional[int]): Number of processes to use for multiprocessing.
-            Defaults to three times the number of CPU cores.
+        Defaults to three times the number of CPU cores.
         render_timeout (int): Maximum time in seconds for a single rendering process.
         width (int): Width of the rendering in pixels.
         height (int): Height of the rendering in pixels.
@@ -79,9 +79,12 @@ def render_objects(
     # Loop over each combination index to set up and run the rendering process.
     for i in range(start_index, end_index):
         if images:
-            args = f"--width {width} --height {height} --combination_index {i} --start_frame {start_frame} --end_frame {end_frame} --output_dir {target_directory} --hdri_path {hdri_path} --animation_length {animation_length} --blend {blend_file} --images"
+            args = f"--width {width} --height {height} --combination_index {i} --start_frame {start_frame} --end_frame {end_frame} --output_dir {target_directory} --hdri_path {hdri_path} --animation_length {animation_length} --images"
         else:
-            args = f"--width {width} --height {height} --combination_index {i} --start_frame {start_frame} --end_frame {end_frame} --output_dir {target_directory} --hdri_path {hdri_path} --animation_length {animation_length} --blend {blend_file}"
+            args = f"--width {width} --height {height} --combination_index {i} --start_frame {start_frame} --end_frame {end_frame} --output_dir {target_directory} --hdri_path {hdri_path} --animation_length {animation_length}"
+
+        if blend_file:
+            args += f" --blend {blend_file}"
 
         command = f"{sys.executable} simian/render.py -- {args}"
         subprocess.run(["bash", "-c", command], timeout=render_timeout, check=False)
