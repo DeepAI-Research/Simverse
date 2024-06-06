@@ -109,12 +109,12 @@ def render_scene(
 
     os.makedirs(output_dir, exist_ok=True)
 
+    initialize_scene()
+    
     if user_blend_file:
         if not load_user_blend_file(user_blend_file):
             logger.error(f"Unable to load user-specified Blender file: {user_blend_file}")
             return  # Exit the function if the file could not be loaded
-    else:
-        initialize_scene()
 
     create_camera_rig()
 
