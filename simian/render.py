@@ -294,6 +294,7 @@ if __name__ == "__main__":
         type=str,
         default=None,
         help="Path to the user-specified Blender file to use as the base scene.",
+        required=False,
     )
 
     if "--" in sys.argv:

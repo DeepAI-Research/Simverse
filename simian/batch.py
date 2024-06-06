@@ -156,6 +156,7 @@ def main():
         type=str,
         default=None,
         help="Path to the user-specified Blender file to use as the base scene.",
+        required=False,
     )
 
     args = parser.parse_args()
