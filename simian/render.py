@@ -6,6 +6,8 @@ import ssl
 import sys
 import bpy
 import random
+from pathlib import Path  # Add this import
+
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
@@ -45,6 +47,45 @@ from simian.background import create_photosphere, set_background
 from simian.scene import apply_stage_material, create_stage, initialize_scene
 import simian.vendor.objaverse
 
+    
+def generate_random_scene(output_folder: str) -> str:
+    infinigen_path = os.path.join(os.getcwd(), "infinigen")
+
+    if os.path.exists(infinigen_path):
+        sys.path.append(infinigen_path)
+
+        try:
+            from infinigen.datagen.manage_jobs import main as manage_jobs_main
+        except ImportError as e:
+            print(f"Error importing manage_jobs: {e}")
+            return ""
+
+        # Set up arguments for scene generation
+        args = argparse.Namespace()
+        args.output_folder = Path(output_folder)
+        args.num_scenes = 1
+        args.meta_seed = None
+        args.specific_seed = None
+        args.use_existing = False
+        args.warmup_sec = 0
+        args.cleanup = 'none'
+        args.configs = ["base.gin"]
+        args.overrides = []
+        args.wandb_mode = 'disabled'
+        args.pipeline_configs = ["local_16GB.gin", "monocular.gin", "blender_gt.gin"]
+        args.pipeline_overrides = ["LocalScheduleHandler.use_gpu=False"]
+        args.overwrite = True
+        args.loglevel = logging.INFO
+
+        manage_jobs_main(args)
+
+        # Return the path to the generated .blend file
+        seed = "00000000"  # Replace with actual seed used/generated in manage_jobs
+        return os.path.join(output_folder, "fine", f"{seed}.blend")
+    else:
+        print("Infinigen folder does not exist. Please install Infinigen before running this script.")
+        return ""
+        
 
 def read_combination(combination_file: str, index: int = 0) -> dict:
     """
@@ -110,8 +151,14 @@ def render_scene(
     os.makedirs(output_dir, exist_ok=True)
 
     initialize_scene()
-    
-    if user_blend_file:
+
+    if user_blend_file == "infinigen":
+        user_blend_file = generate_random_scene(output_dir)
+        if not load_user_blend_file(user_blend_file):
+            logger.error(f"Unable to load generated Blender file: {user_blend_file}")
+            return  # Exit the function if the file could not be loaded
+
+    elif user_blend_file:
         if not load_user_blend_file(user_blend_file):
             logger.error(f"Unable to load user-specified Blender file: {user_blend_file}")
             return  # Exit the function if the file could not be loaded
@@ -290,11 +337,13 @@ if __name__ == "__main__":
         help="Generate images instead of videos.",
     )
     parser.add_argument(
-        "--blend",
+        "--scene",
         type=str,
         default=None,
         help="Path to the user-specified Blender file to use as the base scene.",
         required=False,
+        nargs='?',  # This makes the argument optional and allows it to be empty
+        const='infinigen',  # This makes it default to 'infinigen' if no value is provided
     )
 
     if "--" in sys.argv:
@@ -332,5 +381,5 @@ if __name__ == "__main__":
         combination_index=args.combination_index,
         combination=args.combination,
         render_images=args.images,
-        user_blend_file=args.blend,
+        user_blend_file=args.scene,
     )

@@ -14,7 +14,7 @@ Simian creates synthetic data that is usable for generative video and video capt
 
 ## 🖥️ Setup
 
-> **_NOTE:_** Simian requires Python 3.11.
+> **_NOTE:_** Simian requires Python 3.10 or above.
 
 1. Install dependences:
 ```bash
@@ -26,7 +26,13 @@ pip install -r requirements.txt
 ./scripts/get_data.sh
 ```
 
-3. [OPTIONAL] If you're on a headless Linux server, install Xorg and start it:
+3. Download infinigen for beautiful generated worlds:
+```bash
+chmod +x ./setup_scene.sh
+./setup_scene.sh
+```
+
+4. [OPTIONAL] If you're on a headless Linux server, install Xorg and start it:
 
 ```bash
 sudo apt-get install xserver-xorg -y && \
@@ -57,16 +63,24 @@ Or generate all or part of the combination set using the `batch.py` script:
 
 ### Generating Videos or Images
 
-To generate a video(s): 
+To generate a video(s) you have 3 options:
+
+1) First command will generate a flat terrain with your objects
+2) Second command will generate a random beautiful terrain with objects
+3) Third command will allow you to import your own .blend file terrains
+
 ```bash
 python3 simian/batch.py --start_index 0 --end_index 1000 --width 1024 --height 576 --start_frame 1 --end_frame 65 --animation_length 120
+
+python3 simian/batch.py --start_index 0 --end_index 1000 --width 1024 --height 576 --start_frame 1 --end_frame 65 --animation_length 120 --scene
+
+python3 simian/batch.py --start_index 0 --end_index 1000 --width 1024 --height 576 --start_frame 1 --end_frame 65 --animation_length 120 --scene /Users/Downloads/scene.blend
 ```
 
 To generate an image(s):
 ```bash
 python3 simian/batch.py --start_index 0 --end_index 1000 --width 1024 --height 576 --start_frame 1 --end_frame 65 --animation_length 120 --images
 ```
-
 
 ### Clean up Captions
 

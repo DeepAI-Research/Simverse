@@ -84,7 +84,7 @@ def render_objects(
             args = f"--width {width} --height {height} --combination_index {i} --start_frame {start_frame} --end_frame {end_frame} --output_dir {target_directory} --hdri_path {hdri_path} --animation_length {animation_length}"
 
         if blend_file:
-            args += f" --blend {blend_file}"
+            args += f" --scene {blend_file}"
 
         command = f"{sys.executable} simian/render.py -- {args}"
         subprocess.run(["bash", "-c", command], timeout=render_timeout, check=False)
@@ -155,11 +155,13 @@ def main():
         required=False,
     )
     parser.add_argument(
-        "--blend",
+        "--scene",
         type=str,
         default=None,
         help="Path to the user-specified Blender file to use as the base scene.",
         required=False,
+        nargs='?',  # This makes the argument optional and allows it to be empty
+        const='infinigen',  # This makes it default to 'infinigen' if no value is provided
     )
 
     args = parser.parse_args()
@@ -175,7 +177,7 @@ def main():
         start_frame=args.start_frame,
         end_frame=args.end_frame,
         images=args.images,
-        blend_file=args.blend,
+        blend_file=args.scene,
     )
 
 
