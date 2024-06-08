@@ -1,7 +1,6 @@
 requests
 argparse
 numpy
-black
 scipy
 distributaur
 bpy

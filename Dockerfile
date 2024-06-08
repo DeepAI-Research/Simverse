@@ -16,13 +16,15 @@ RUN apt-get update && \
     apt-get install -y python3.11 python3.11-distutils && \
     update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1 && \
     update-alternatives --install /usr/bin/python python /usr/bin/python3.11 1 && \
-    python3 -m pip install --upgrade pip
+    python3.11 -m pip install --upgrade pip \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 COPY scripts/ ./scripts/
 RUN bash scripts/get_data.sh
 
 COPY requirements.txt .
-RUN python3 -m pip install --no-cache-dir -r requirements.txt
+RUN python3.11 -m pip install -r requirements.txt
 
 COPY simian/ ./simian/
 COPY data/ ./data/
