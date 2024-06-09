@@ -46,7 +46,7 @@ def run_job(
     args += f" --start_frame {start_frame} --end_frame {end_frame}"
     args += f" --combination {combination}"
 
-    command = f"{sys.executable} simian/render.py -- {args}"
+    command = f"{sys.executable} -m simian.render -- {args}"
     logger.info(f"Worker running: {command}")
 
     subprocess.run(["bash", "-c", command], check=False)
@@ -63,12 +63,14 @@ def run_job(
             logger.info(e)
 
 
-if __name__ == "__main__":
+# only run this is this file was started by celery or run directly
+# check if celery is in sys.argv, it could be sys.argv[0] but might not be
+    
+if __name__ == "__main__" or any("celery" in arg for arg in sys.argv):
+    from distributaur.distributaur import create_from_config
 
-    from distributaur.core import register_function, app
+    distributaur = create_from_config()
+    distributaur.register_function(run_job)
 
-    sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../"))
+    celery = distributaur.app
 
-    celery = app
-
-    register_function(run_job)

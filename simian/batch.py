@@ -1,16 +1,10 @@
 import json
 import multiprocessing
 import os
-import platform
-import random
 import subprocess
 import sys
 import argparse
 from typing import Optional
-
-# Append Simian to sys.path before importing from package
-sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../"))
-
 
 def render_objects(
     processes: Optional[int] = None,
@@ -77,7 +71,7 @@ def render_objects(
         else:
             args = f"--width {width} --height {height} --combination_index {i} --start_frame {start_frame} --end_frame {end_frame} --output_dir {target_directory} --hdri_path {hdri_path} --animation_length {animation_length}"
 
-        command = f"{sys.executable} simian/render.py -- {args}"
+        command = f"{sys.executable} -m simian.render -- {args}"
         subprocess.run(["bash", "-c", command], timeout=render_timeout, check=False)
 
 

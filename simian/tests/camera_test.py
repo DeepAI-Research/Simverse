@@ -1,19 +1,12 @@
-import os
-import sys
 import math
 
-
-current_dir = os.path.dirname(os.path.abspath(__file__))
-simian_path = os.path.join(current_dir, "../")
-sys.path.append(simian_path)
-
 import bpy
-from simian.camera import (
+from ..camera import (
     create_camera_rig,
     set_camera_settings,
     position_camera,
 )
-from simian.scene import initialize_scene
+from ..scene import initialize_scene
 
 
 def test_create_camera_rig():

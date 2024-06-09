@@ -1,13 +1,6 @@
 import math
-import os
-import sys
-import numpy as np
 
-current_dir = os.path.dirname(os.path.abspath(__file__))
-combiner_path = os.path.join(current_dir, "../")
-sys.path.append(combiner_path)
-
-from simian.transform import (
+from ..transform import (
     degrees_to_radians,
     compute_rotation_matrix,
     apply_rotation,

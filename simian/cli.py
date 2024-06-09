@@ -1,41 +1,23 @@
 import argparse
+import json
 import logging
 import os
 import signal
 import sys
 import time
-import json
 from typing import Dict
+
+from distributaur.distributaur import Distributaur
+
+from .worker import run_job
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
 
-sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../"))
-
 if __name__ == "__main__":
 
-    from distributaur.core import (
-        execute_function,
-        get_env_vars,
-        redis_client,
-        check_job_status,
-        attach_to_existing_job,
-        monitor_job_status,
-    )
-
-    from distributaur.vast import rent_nodes, terminate_nodes, handle_signal
-
-    from simian.worker import *
-
     def get_env_vars(path: str = ".env") -> Dict[str, str]:
-        """Get the environment variables from the specified file.
-
-        Args:
-            path (str): The path to the file containing the environment variables. Defaults to ".env".
-
-        Returns:
-            Dict[str, str]: A dictionary containing the environment variables.
-        """
+        """Get the environment variables from the specified file."""
         env_vars = {}
         if not os.path.exists(path):
             return env_vars
@@ -61,8 +43,6 @@ if __name__ == "__main__":
             "hdri_path": args.hdri_path or env_vars.get("HDRI_PATH", "./backgrounds"),
             "max_price": args.max_price or float(env_vars.get("MAX_PRICE", 0.1)),
             "max_nodes": args.max_nodes or int(env_vars.get("MAX_NODES", 1)),
-            "image": args.image
-            or env_vars.get("DOCKER_IMAGE", "arfx/simian-worker:latest"),
             "api_key": args.api_key or env_vars.get("VAST_API_KEY", ""),
             "redis_host": args.redis_host or env_vars.get("REDIS_HOST", "localhost"),
             "redis_port": args.redis_port or int(env_vars.get("REDIS_PORT", 6379)),
@@ -80,12 +60,76 @@ if __name__ == "__main__":
 
         return settings
 
-    def setup_and_run(job_config):
+    def start_new_job(args):
+        logger.info("Starting a new job...")
+        settings = get_settings(args)
+
+        # Override environment variables with provided arguments
+        os.environ["REDIS_HOST"] = args.redis_host or settings["redis_host"]
+        os.environ["REDIS_PORT"] = str(args.redis_port or settings["redis_port"])
+        os.environ["REDIS_USER"] = args.redis_user or settings["redis_user"]
+        os.environ["REDIS_PASSWORD"] = args.redis_password or settings["redis_password"]
+        os.environ["HF_TOKEN"] = args.hf_token or settings["hf_token"]
+        os.environ["HF_REPO_ID"] = args.hf_repo_id or settings["hf_repo_id"]
+        os.environ["HF_PATH"] = args.hf_path or settings["hf_path"]
+
+        job_config = {
+            "max_price": settings["max_price"],
+            "max_nodes": settings["max_nodes"],
+            "start_index": settings["start_index"],
+            "end_index": settings["end_index"],
+            "combinations": settings["combinations"],
+            "width": settings["width"],
+            "height": settings["height"],
+            "output_dir": settings["output_dir"],
+            "hdri_path": settings["hdri_path"],
+            "start_frame": settings["start_frame"],
+            "end_frame": settings["end_frame"],
+            "api_key": settings["api_key"],
+            "hf_token": settings["hf_token"],
+            "hf_repo_id": settings["hf_repo_id"],
+            "hf_path": settings["hf_path"],
+            "redis_host": settings["redis_host"],
+            "redis_port": settings["redis_port"],
+            "redis_user": settings["redis_user"],
+            "redis_password": settings["redis_password"],
+        }
+        
+        print('*** JOB CONFIG')
+        print(job_config)
+
+        distributaur = Distributaur(
+            hf_repo_id=job_config["hf_repo_id"],
+            hf_token=job_config["hf_token"],
+            vast_api_key=job_config["api_key"],
+            redis_host=job_config["redis_host"],
+            redis_port=job_config["redis_port"],
+            redis_username=job_config["redis_user"],
+            redis_password=job_config["redis_password"],
+        )
+
+        max_price = job_config["max_price"]
+        max_nodes = job_config["max_nodes"]
+        docker_image = "arfx/simian-worker:latest"
+
+        print("MAX PRICE: ", max_price)
+        print("SEARCHING FOR NODES...")
+        num_nodes_avail = len(distributaur.search_offers(max_price))
+        print("TOTAL NODES AVAILABLE: ", num_nodes_avail)
+
+        rented_nodes = distributaur.rent_nodes(max_price, max_nodes, docker_image)
+
+        print("TOTAL RENTED NODES: ", len(rented_nodes))
+        print(rented_nodes)
+
+        distributaur.register_function(run_job)
+        distributaur.start_monitoring_server(worker_name="simian.worker")
+
         tasks = []
-        # combination_index should be max of the length of the combinations and the end index
-        end_index = min(len(job_config["combinations"]), job_config["end_index"])
-        for combination_index in range(job_config["start_index"], end_index):
-            task = execute_function(
+
+        # Submit tasks
+        for combination_index in range(job_config["start_index"], min(job_config["end_index"], len(job_config["combinations"]))):
+            task = distributaur.execute_function(
                 "run_job",
                 {
                     "combination_index": combination_index,
@@ -100,154 +144,41 @@ if __name__ == "__main__":
             )
             tasks.append(task)
 
-        for task in tasks:
-            logger.info(f"Task {task.id} dispatched.")
-
+        # Wait for tasks to complete
+        print("Tasks submitted to queue. Waiting for tasks to complete...")
         while not all(task.ready() for task in tasks):
             time.sleep(1)
 
-        logger.info("All tasks have been completed!")
-
-    def start_new_job(args):
-        logger.info("Starting a new job...")
-        settings = get_settings(args)
-        job_id = args.job_id or input("Enter a unique job ID: ")
-
-        # Override environment variables with provided arguments
-        os.environ["REDIS_HOST"] = args.redis_host or settings["redis_host"]
-        os.environ["REDIS_PORT"] = str(args.redis_port or settings["redis_port"])
-        os.environ["REDIS_USER"] = args.redis_user or settings["redis_user"]
-        os.environ["REDIS_PASSWORD"] = args.redis_password or settings["redis_password"]
-        os.environ["HF_TOKEN"] = args.hf_token or settings["hf_token"]
-        os.environ["HF_REPO_ID"] = args.hf_repo_id or settings["hf_repo_id"]
-        os.environ["HF_PATH"] = args.hf_path or settings["hf_path"]
-
-        logger.info("Renting nodes on Vast.ai...")
-        # Rent nodes from vast.ai
-        nodes = rent_nodes(
-            max_price=settings["max_price"],
-            max_nodes=settings["max_nodes"],
-            image=settings["image"],
-            api_key=settings["api_key"],
-        )
-        logger.info("Nodes rented successfully!")
-
-        # Set up signal handler for graceful shutdown
-        signal_handler = handle_signal(nodes)
-        signal.signal(signal.SIGINT, signal_handler)
-
-        logger.info("Configuring distributed jobs...")
-
-        job_config = {
-            "job_id": job_id,
-            "max_price": settings["max_price"],
-            "max_nodes": settings["max_nodes"],
-            "docker_image": settings["image"],
-            "start_index": settings["start_index"],
-            "end_index": settings["end_index"],
-            "combinations": settings["combinations"],
-            "width": settings["width"],
-            "height": settings["height"],
-            "output_dir": settings["output_dir"],
-            "hdri_path": settings["hdri_path"],
-            "start_frame": settings["start_frame"],
-            "end_frame": settings["end_frame"],
-        }
-
-        # Check if the job is already running
-        if attach_to_existing_job(job_id):
-            logger.info("Attaching to an existing job...")
-            # Monitor job status and handle success/failure conditions
-            monitor_job_status(job_id)
-        else:
-            logger.info("Setting up and running the job...")
-            # Run the job
-            setup_and_run(job_config)
-            # Monitor job status and handle success/failure conditions
-            monitor_job_status(job_id)
-        logger.info("Job completed!")
-        # Terminate the rented nodes
-        terminate_nodes(nodes)
+        print("All tasks have been completed!")
+        distributaur.terminate_nodes(rented_nodes)
 
     def main():
         parser = argparse.ArgumentParser(description="Simian CLI")
-        # boolean
-        parser.add_argument("--list", action="store_true", help="List existing jobs")
-        parser.add_argument("--job-id", help="Unique job ID")
         parser.add_argument(
             "--start-index", type=int, help="Starting index for rendering"
         )
         parser.add_argument(
             "--combinations-file", help="Path to the combinations JSON file"
         )
-        parser.add_argument("--end_index", type=int, help="Ending index for rendering")
-        parser.add_argument("--start_frame", type=int, help="Starting frame number")
-        parser.add_argument("--end_frame", type=int, help="Ending frame number")
+        parser.add_argument("--end-index", type=int, help="Ending index for rendering")
+        parser.add_argument("--start-frame", type=int, help="Starting frame number")
+        parser.add_argument("--end-frame", type=int, help="Ending frame number")
         parser.add_argument("--width", type=int, help="Rendering width in pixels")
         parser.add_argument("--height", type=int, help="Rendering height in pixels")
-        parser.add_argument("--output_dir", help="Output directory")
+        parser.add_argument("--output-dir", help="Output directory")
         parser.add_argument("--hdri-path", help="HDRI path")
-        parser.add_argument("--max_price", type=float, help="Maximum price per hour")
-        parser.add_argument("--max_nodes", type=int, help="Maximum number of nodes")
-        parser.add_argument("--image", help="Docker image")
-        parser.add_argument("--api_key", help="Vast.ai API key")
-        parser.add_argument("--redis_host", help="Redis host")
-        parser.add_argument("--redis_port", type=int, help="Redis port")
-        parser.add_argument("--redis_user", help="Redis user")
-        parser.add_argument("--redis_password", help="Redis password")
-        parser.add_argument("--hf_token", help="Hugging Face token")
-        parser.add_argument("--hf_repo_id", help="Hugging Face repository ID")
-        parser.add_argument("--hf_path", help="Hugging Face path")
+        parser.add_argument("--max-price", type=float, help="Maximum price per hour")
+        parser.add_argument("--max-nodes", type=int, help="Maximum number of nodes")
+        parser.add_argument("--api-key", help="Vast.ai API key")
+        parser.add_argument("--redis-host", help="Redis host")
+        parser.add_argument("--redis-port", type=int, help="Redis port")
+        parser.add_argument("--redis-user", help="Redis user")
+        parser.add_argument("--redis-password", help="Redis password")
+        parser.add_argument("--hf-token", help="Hugging Face token")
+        parser.add_argument("--hf-repo-id", help="Hugging Face repository ID")
+        parser.add_argument("--hf-path", help="Hugging Face path")
         args = parser.parse_args()
 
-        if args.list is True:
-            list_jobs()
-        else:
-            start_new_job(args)
-
-    def list_jobs():
-        job_keys = redis_client.keys("celery-task-meta-*")
-        jobs = {}
-        for key in job_keys:
-            job_id = key.decode("utf-8").split("-")[-1]
-            if job_id not in jobs:
-                jobs[job_id] = check_job_status(job_id)
-
-        if not jobs:
-            logger.info("No existing jobs found.")
-            return
-
-        logger.info("Existing jobs:")
-        for job_id, status_counts in jobs.items():
-            logger.info(f"Job ID: {job_id}")
-            logger.info(f"Status: {status_counts}")
-
-        while True:
-            selection = input(
-                "Enter a job ID to attach to, 'd' to delete a job, 'c' to clear all jobs, or 'q' to quit: "
-            )
-            if selection == "q":
-                break
-            elif selection == "c":
-                confirm = input("Are you sure you want to clear all jobs? (y/n): ")
-                if confirm.lower() == "y":
-                    redis_client.flushdb()
-                    logger.info("All jobs cleared.")
-                break
-            elif selection == "d":
-                job_id = input("Enter the job ID to delete: ")
-                if job_id in jobs:
-                    keys = redis_client.keys(f"celery-task-meta-*{job_id}")
-                    for key in keys:
-                        redis_client.delete(key)
-                    logger.info(f"Job {job_id} deleted.")
-                else:
-                    logger.info(f"Job {job_id} not found.")
-            elif selection in jobs:
-                logger.info(f"Attaching to job {selection}...")
-                sys.argv = [sys.argv[0], "--job-id", selection]
-                break
-            else:
-                logger.info("Invalid selection.")
+        start_new_job(args)
 
     main()

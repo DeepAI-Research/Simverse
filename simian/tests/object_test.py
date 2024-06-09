@@ -1,13 +1,8 @@
-import sys
 import os
 
-current_dir = os.path.dirname(os.path.abspath(__file__))
-simian_path = os.path.join(current_dir, "../")
-sys.path.append(simian_path)
-
-from simian.camera import create_camera_rig
-from simian.scene import initialize_scene
-from simian.object import (
+from ..camera import create_camera_rig
+from ..scene import initialize_scene
+from ..object import (
     delete_all_empties,
     get_hierarchy_bbox,
     join_objects_in_hierarchy,
@@ -73,7 +68,7 @@ def test_remove_small_geometry():
     initial_objects = lock_all_objects()
 
     # Path to the GLB file
-    glb_path = os.path.join(current_dir, "../", "examples", "dangling_parts.glb")
+    glb_path = os.path.join(current_dir, "../", "../", "examples", "dangling_parts.glb")
 
     # Load the model
     bpy.ops.import_scene.gltf(filepath=glb_path)

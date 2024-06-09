@@ -1,12 +1,7 @@
 import os
-import sys
-
-current_dir = os.path.dirname(os.path.abspath(__file__))
-simian_path = os.path.join(current_dir, "../")
-sys.path.append(simian_path)
 
 from unittest.mock import patch, MagicMock
-from simian.background import (
+from ..background import (
     get_hdri_path,
     get_background,
     set_background,
@@ -15,7 +10,7 @@ from simian.background import (
 )
 
 import bpy
-from simian.background import set_background
+from ..background import set_background
 
 
 def test_get_hdri_path():
@@ -75,7 +70,7 @@ def test_set_background():
 
     # Mocking dependencies
     with patch(
-        "simian.background.get_hdri_path",
+        "..background.get_hdri_path",
         return_value=os.path.join(background_base_path, "test_dataset/123.hdr"),
     ) as mock_get_path:
         with patch("os.path.exists", return_value=False):
@@ -173,7 +168,7 @@ def test_create_photosphere_material():
 
     # Mock the get_hdri_path function to return a known path
     with patch(
-        "simian.background.get_hdri_path",
+        "..background.get_hdri_path",
         return_value=os.path.join(background_base_path, "test_dataset/123.hdr"),
     ) as mock_get_path:
         # Mock the existence of the background image file

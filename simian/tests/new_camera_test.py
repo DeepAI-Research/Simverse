@@ -1,14 +1,8 @@
-import os
-import sys
 import bpy
 import math
 from mathutils import Vector
 
-current_dir = os.path.dirname(os.path.abspath(__file__))
-combiner_path = os.path.join(current_dir, "../")
-sys.path.append(combiner_path)
-
-from simian.camera import create_camera_rig
+from ..camera import create_camera_rig
 
 
 def calculate_optimal_distance(camera, obj):

@@ -10,18 +10,17 @@ parser.add_argument(
 )
 args = parser.parse_args()
 
-files = os.listdir("tests")
+files = os.listdir("simian/tests")
 test_files = [file for file in files if file.endswith("_test.py")]
-
-# Append Simian to sys.path before importing from package
-sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../"))
 
 # Flag to track if any test has failed
 test_failed = False
 
 for test_file in test_files:
     print(f"Running tests in {test_file}...")
-    cmd = [sys.executable, f"tests/{test_file}"]
+    # get the module name from the file by removing .py
+    module_name = test_file[:-3]
+    cmd = [sys.executable, "-m", f"simian.tests.{module_name}"]
 
     if args.debug:
         print(f"Command: {' '.join(cmd)}")

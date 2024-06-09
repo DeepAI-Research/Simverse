@@ -1,13 +1,6 @@
 from unittest.mock import MagicMock
 
-import sys
-import os
-
-current_dir = os.path.dirname(os.path.abspath(__file__))
-simian_path = os.path.join(current_dir, "../")
-sys.path.append(simian_path)
-
-from simian.postprocessing import (
+from ..postprocessing import (
     setup_compositor_for_black_and_white,
     setup_compositor_for_cel_shading,
     setup_compositor_for_depth,
