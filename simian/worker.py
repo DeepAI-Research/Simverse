@@ -66,7 +66,7 @@ def run_job(
 from distributaur.distributaur import create_from_config
 
 distributaur = create_from_config()
+distributaur.register_function(run_job)
 
 celery = distributaur.app
 
-distributaur.register_function(run_job)
