@@ -2,17 +2,10 @@ import json
 import logging
 import multiprocessing
 import os
-import platform
-import random
 import subprocess
 import sys
 import argparse
 from typing import Optional
-# Append Simian to sys.path before importing from package
-sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../"))
-
-logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
-logger = logging.getLogger(__name__)
 
 def render_objects(
     processes: Optional[int] = None,
@@ -87,6 +80,7 @@ def render_objects(
             args += f" --scene {blend_file}"
 
         command = f"{sys.executable} simian/render.py -- {args}"
+
         subprocess.run(["bash", "-c", command], timeout=render_timeout, check=False)
 
 

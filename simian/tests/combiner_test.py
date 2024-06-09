@@ -7,8 +7,7 @@ from unittest.mock import patch, mock_open
 import random
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
-project_root = os.path.abspath(os.path.join(current_dir, ".."))
-sys.path.append(project_root)
+project_root = os.path.abspath(os.path.join(current_dir, "../../"))
 
 # Mock arguments with absolute paths
 mock_args = {
@@ -30,9 +29,9 @@ def mock_parse_args(*args, **kwargs):
     return argparse.Namespace(**mock_args)
 
 
-# Mock parse_args globally before importing simian.combiner
+# Mock parse_args globally before importing ..combiner
 with patch("argparse.ArgumentParser.parse_args", new=mock_parse_args):
-    from simian.combiner import (
+    from ..combiner import (
         read_json_file,
         generate_combinations,
         generate_stage_captions,
@@ -153,8 +152,7 @@ cap3d_captions_data = read_json_file(os.path.join(datasets_dir, "cap3d_captions.
 
 
 def test_combination_caption():
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    file_path = os.path.join(current_dir, "../combinations.json")
+    file_path = os.path.join(project_root, "combinations.json")
 
     with open(file_path, "r") as file:
         data = json.load(file)

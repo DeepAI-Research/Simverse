@@ -35,10 +35,10 @@ jobs:
       run: bash scripts/get_data.sh
 
     - name: Generate combinations
-      run: python3.11 simian/combiner.py
+      run: python3.11 -m simian.combiner
 
     - name: Run tests
-      run: python3.11 tests/__run__.py
+      run: python3.11 -m simian.tests.__run__
 
     - name: Check test results
       if: failure()

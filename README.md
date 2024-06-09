@@ -44,7 +44,7 @@ sudo python3 scripts/start_x_server.py start
 ### Generating Combinations
 
 ```bash
-python3 simian/combiner.py --count 1000 --seed 42
+python3 -m simian.combiner --count 1000 --seed 42
 ```
 
 ### Generating Videos or Images
@@ -79,7 +79,7 @@ python3 simian/batch.py --start_index 0 --end_index 1000 --width 1024 --height 5
 
 To generate an image(s):
 ```bash
-python3 simian/batch.py --start_index 0 --end_index 1000 --width 1024 --height 576 --start_frame 1 --end_frame 65 --animation_length 120 --images
+python3 -m simian.batch --start_index 0 --end_index 1000 --width 1024 --height 576 --start_frame 1 --end_frame 65 --animation_length 120 --images
 ```
 
 ### Clean up Captions
@@ -134,7 +134,7 @@ docker run -e REDIS_HOST={myhost} -e REDIS_PORT={port} -e REDIS_USER=default -e 
 Finally, issue work to your task queue
 
 ```bash
-python3 simian/simian.py --start_index 0 --end_index 10 --width 1024 --height 576
+python3 -m simian.cli --start_index 0 --end_index 10 --width 1024 --height 576
 ```
 
 If you want to use a custom or hosted Redis instance (recommended), you can add the redis details like this:
@@ -145,10 +145,16 @@ export REDIS_USER=default
 export REDIS_PASSWORD=<somepassword>
 ```
 
+To run all tests
+
+```
+python3 -m simian.tests.__run__
+```
+
 To run tests look into the test folder and run whichever test file you want
 
 ```bash
-python object_test.py
+python3 -m simian.tests.object_test
 ```
 
 ## 📁 Datasets

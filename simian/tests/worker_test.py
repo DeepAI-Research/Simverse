@@ -1,16 +1,11 @@
 import json
-import os
 import sys
 from unittest.mock import patch
 
-current_dir = os.path.dirname(os.path.abspath(__file__))
-combiner_path = os.path.join(current_dir, "../")
-sys.path.append(combiner_path)
-
-from simian.worker import run_job
+from ..worker import run_job
 
 
-@patch("simian.worker.subprocess.run")
+@patch("..worker.subprocess.run")
 def test_run_job(mock_subprocess_run):
     combination_index = 0
     combination = {"objects": []}
@@ -35,7 +30,7 @@ def test_run_job(mock_subprocess_run):
     combination_str = json.dumps(combination)
     combination_str = '"' + combination_str.replace('"', '\\"') + '"'
 
-    command = f"{sys.executable} simian/render.py -- --width {width} --height {height} --combination_index {combination_index}"
+    command = f"{sys.executable} -m simian.render -- --width {width} --height {height} --combination_index {combination_index}"
     command += f" --output_dir {output_dir}"
     command += f" --hdri_path {hdri_path}"
     command += f" --start_frame {start_frame} --end_frame {end_frame}"

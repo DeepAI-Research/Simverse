@@ -1,7 +1,7 @@
+omegaconf==2.0.5
 requests
 argparse
 numpy
-black
 scipy
 distributaur
 bpy
