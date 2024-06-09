@@ -28,7 +28,7 @@ sudo python3 scripts/start_x_server.py start
 ### Generating Combinations
 
 ```bash
-python3 simian/combiner.py --count 1000 --seed 42
+python3 -m simian.combiner --count 1000 --seed 42
 ```
 
 ### Generating Videos
@@ -36,13 +36,13 @@ python3 simian/combiner.py --count 1000 --seed 42
 You can generate individually:
 ```bash
 # MacOS
-python simian/render.py
+python -m simian.render
 
 # Linux
-python simian/render.py
+python -m simian.render
 
 ## Kitchen sink
-python simian/render.py -- --width 1920 --height 1080 --combination_index 0 --output_dir ./renders --hdri_path ./backgrounds --start_frame 1 --end_frame 65
+python -m simian.render -- --width 1920 --height 1080 --combination_index 0 --output_dir ./renders --hdri_path ./backgrounds --start_frame 1 --end_frame 65
 ```
 
 Configure the flags as needed:
@@ -55,7 +55,7 @@ Configure the flags as needed:
 Or generate all or part of the combination set using the `batch.py` script:
 
 ```bash
-python3 simian/batch.py --start_index 0 --end_index 1000 --width 1024 --height 576 --start_frame 1 --end_frame 65
+python3 -m simian.batch --start_index 0 --end_index 1000 --width 1024 --height 576 --start_frame 1 --end_frame 65
 ```
 
 ### Clean up Captions
@@ -110,7 +110,7 @@ docker run -e REDIS_HOST={myhost} -e REDIS_PORT={port} -e REDIS_USER=default -e 
 Finally, issue work to your task queue
 
 ```bash
-python3 simian/simian.py --start_index 0 --end_index 10 --width 1024 --height 576
+python3 -m simian.cli --start_index 0 --end_index 10 --width 1024 --height 576
 ```
 
 If you want to use a custom or hosted Redis instance (recommended), you can add the redis details like this:

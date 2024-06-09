@@ -12,23 +12,14 @@ logger = logging.getLogger(__name__)
 
 ssl._create_default_https_context = ssl._create_unverified_context
 
-# Get the directory of the currently executing script
-current_dir = os.path.dirname(os.path.abspath(__file__))
-
-# if the directory is simian, remove that
-if current_dir.endswith("simian"):
-    current_dir = os.path.dirname(current_dir)
-
-sys.path.append(os.path.join(current_dir))
-
-from simian.camera import (
+from .camera import (
     create_camera_rig,
     position_camera,
     set_camera_animation,
     set_camera_settings,
 )
-from simian.transform import find_largest_length, place_objects_on_grid
-from simian.object import (
+from .transform import find_largest_length, place_objects_on_grid
+from .object import (
     apply_all_modifiers,
     apply_and_remove_armatures,
     get_meshes_in_hierarchy,
@@ -41,10 +32,9 @@ from simian.object import (
     unlock_objects,
     unparent_keep_transform,
 )
-from simian.background import create_photosphere, set_background
-from simian.scene import apply_stage_material, create_stage, initialize_scene
-import simian.vendor.objaverse
-
+from .background import create_photosphere, set_background
+from .scene import apply_stage_material, create_stage, initialize_scene
+from .vendor import objaverse
 
 def read_combination(combination_file: str, index: int = 0) -> dict:
     """
@@ -114,7 +104,7 @@ def render_scene(
     focus_object = None
 
     for object_data in combination["objects"]:
-        object_file = simian.vendor.objaverse.load_objects([object_data["uid"]])[
+        object_file = objaverse.load_objects([object_data["uid"]])[
             object_data["uid"]
         ]
 
@@ -288,7 +278,7 @@ if __name__ == "__main__":
     for object in objects_column:
         uid = object["uid"]
 
-        downloaded = simian.vendor.objaverse.load_objects([uid])
+        downloaded = objaverse.load_objects([uid])
 
     # Render the images
     render_scene(

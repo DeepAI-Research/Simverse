@@ -4,12 +4,9 @@ import math
 import os
 import random
 import argparse
-import sys
 from typing import Any, Dict, List, Optional
 
-sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../"))
-
-from simian.transform import determine_relationships, adjust_positions
+from .transform import determine_relationships, adjust_positions
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)

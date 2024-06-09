@@ -21,3 +21,4 @@ venv/
 .env
 version.txt
 dist
+config.json
