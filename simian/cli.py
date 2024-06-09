@@ -112,6 +112,8 @@ if __name__ == "__main__":
         max_nodes = job_config["max_nodes"]
         docker_image = "arfx/simian-worker:latest"
 
+        print("MAX PRICE: ", max_price)
+        print("SEARCHING FOR NODES...")
         num_nodes_avail = len(distributaur.search_offers(max_price))
         print("TOTAL NODES AVAILABLE: ", num_nodes_avail)
 
