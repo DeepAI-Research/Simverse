@@ -15,6 +15,7 @@ RUN apt-get update && \
     libxfixes3 \
     libxi6 \
     xorg \
+    git \
     && apt-get install -y software-properties-common && \
     add-apt-repository ppa:deadsnakes/ppa && \
     apt-get update && \

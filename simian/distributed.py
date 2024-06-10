@@ -2,8 +2,6 @@ import argparse
 import json
 import logging
 import os
-import signal
-import sys
 import time
 from typing import Dict
 
@@ -153,33 +151,30 @@ if __name__ == "__main__":
         print("All tasks have been completed!")
         distributaur.terminate_nodes(rented_nodes)
 
-    def main():
-        parser = argparse.ArgumentParser(description="Simian CLI")
-        parser.add_argument(
-            "--start-index", type=int, help="Starting index for rendering"
-        )
-        parser.add_argument(
-            "--combinations-file", help="Path to the combinations JSON file"
-        )
-        parser.add_argument("--end-index", type=int, help="Ending index for rendering")
-        parser.add_argument("--start-frame", type=int, help="Starting frame number")
-        parser.add_argument("--end-frame", type=int, help="Ending frame number")
-        parser.add_argument("--width", type=int, help="Rendering width in pixels")
-        parser.add_argument("--height", type=int, help="Rendering height in pixels")
-        parser.add_argument("--output-dir", help="Output directory")
-        parser.add_argument("--hdri-path", help="HDRI path")
-        parser.add_argument("--max-price", type=float, help="Maximum price per hour")
-        parser.add_argument("--max-nodes", type=int, help="Maximum number of nodes")
-        parser.add_argument("--api-key", help="Vast.ai API key")
-        parser.add_argument("--redis-host", help="Redis host")
-        parser.add_argument("--redis-port", type=int, help="Redis port")
-        parser.add_argument("--redis-user", help="Redis user")
-        parser.add_argument("--redis-password", help="Redis password")
-        parser.add_argument("--hf-token", help="Hugging Face token")
-        parser.add_argument("--hf-repo-id", help="Hugging Face repository ID")
-        parser.add_argument("--hf-path", help="Hugging Face path")
-        args = parser.parse_args()
+    parser = argparse.ArgumentParser(description="Simian CLI")
+    parser.add_argument(
+        "--start-index", type=int, help="Starting index for rendering"
+    )
+    parser.add_argument(
+        "--combinations-file", help="Path to the combinations JSON file"
+    )
+    parser.add_argument("--end-index", type=int, help="Ending index for rendering")
+    parser.add_argument("--start-frame", type=int, help="Starting frame number")
+    parser.add_argument("--end-frame", type=int, help="Ending frame number")
+    parser.add_argument("--width", type=int, help="Rendering width in pixels")
+    parser.add_argument("--height", type=int, help="Rendering height in pixels")
+    parser.add_argument("--output-dir", help="Output directory")
+    parser.add_argument("--hdri-path", help="HDRI path")
+    parser.add_argument("--max-price", type=float, help="Maximum price per hour")
+    parser.add_argument("--max-nodes", type=int, help="Maximum number of nodes")
+    parser.add_argument("--api-key", help="Vast.ai API key")
+    parser.add_argument("--redis-host", help="Redis host")
+    parser.add_argument("--redis-port", type=int, help="Redis port")
+    parser.add_argument("--redis-user", help="Redis user")
+    parser.add_argument("--redis-password", help="Redis password")
+    parser.add_argument("--hf-token", help="Hugging Face token")
+    parser.add_argument("--hf-repo-id", help="Hugging Face repository ID")
+    parser.add_argument("--hf-path", help="Hugging Face path")
+    args = parser.parse_args()
 
-        start_new_job(args)
-
-    main()
+    start_new_job(args)
