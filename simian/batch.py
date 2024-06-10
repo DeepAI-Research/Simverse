@@ -18,7 +18,7 @@ def render_objects(
     end_frame: int = 65,
     images: bool = False,
     animation_length: Optional[int] = 120,
-    blend_file: Optional[str] = None,
+    blend_file: Optional[str] = "infinigen",
 ) -> None:
     """
     Automates the rendering of objects using Blender based on predefined combinations.
@@ -151,11 +151,9 @@ def main():
     parser.add_argument(
         "--scene",
         type=str,
-        default=None,
+        default="infinigen",
         help="Path to the user-specified Blender file to use as the base scene.",
         required=False,
-        nargs='?',  # This makes the argument optional and allows it to be empty
-        const='infinigen',  # This makes it default to 'infinigen' if no value is provided
     )
 
     args = parser.parse_args()

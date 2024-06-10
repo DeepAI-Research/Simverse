@@ -140,7 +140,7 @@ def render_scene(
     combination_index=0,
     combination=None,
     render_images=False,
-    user_blend_file=None
+    user_blend_file="infinigen"
 ) -> None:
     """
     Renders a scene with specified parameters.
@@ -353,11 +353,9 @@ if __name__ == "__main__":
     parser.add_argument(
         "--scene",
         type=str,
-        default=None,
+        default="infinigen",
         help="Path to the user-specified Blender file to use as the base scene.",
-        required=False,
-        nargs='?',  # This makes the argument optional and allows it to be empty
-        const='infinigen',  # This makes it default to 'infinigen' if no value is provided
+        required=False
     )
 
     if "--" in sys.argv:
