@@ -10,10 +10,15 @@ RUN apt-get update && \
     bzip2 \
     python3-pip \
     python3 \
+    libxrender1 \
+    libxxf86vm-dev \
+    libxfixes3 \
+    libxi6 \
+    xorg \
     && apt-get install -y software-properties-common && \
     add-apt-repository ppa:deadsnakes/ppa && \
     apt-get update && \
-    apt-get install -y python3.11 python3.11-distutils && \
+    apt-get install -y python3.11 python3.11-distutils python3.11-dev && \
     update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1 && \
     update-alternatives --install /usr/bin/python python /usr/bin/python3.11 1 && \
     python3.11 -m pip install --upgrade pip \
@@ -28,6 +33,5 @@ RUN python3.11 -m pip install -r requirements.txt
 
 COPY simian/ ./simian/
 COPY data/ ./data/
-COPY tests/ ./tests/
 
-CMD ["celery", "-A", "simian.worker", "worker", "--loglevel=info", "--concurrency=1"]
+CMD ["python3.11", "-m", "celery", "-A", "simian.worker", "worker", "--loglevel=info", "--concurrency=1"]
