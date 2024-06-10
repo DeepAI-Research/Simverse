@@ -40,42 +40,41 @@ from simian.scene import apply_stage_material, create_stage, initialize_scene
 import simian.vendor.objaverse
 
     
-def generate_random_scene(output_folder: str) -> str:
-    infinigen_path = os.path.join(os.getcwd(), "infinigen")
+def generate_random_scene() -> str:
+    try:
+        command = [
+            "python3", "-m", "infinigen.datagen.manage_jobs",
+            "--output_folder", "outputs/random",
+            "--num_scenes", "1",
+            "--configs", "desert.gin", "simple.gin",
+            "--pipeline_configs", "local_16GB.gin", "monocular.gin", "blender_gt.gin",
+            "--pipeline_overrides", "LocalScheduleHandler.use_gpu=False"
+        ]
+        infinigen_path = os.path.join(os.getcwd(), "infinigen")
+        print(f"Running command: {' '.join(command)} in {infinigen_path}")
+        result = subprocess.run(command, cwd=infinigen_path, capture_output=True, text=True, timeout=600)
+        print(f"Subprocess return code: {result.returncode}")
+        print(f"Subprocess stdout: {result.stdout}")
+        print(f"Subprocess stderr: {result.stderr}")
 
-    if os.path.exists(infinigen_path):
-        sys.path.append(infinigen_path)
-
-        try:
-            from infinigen.datagen.manage_jobs import main as manage_jobs_main
-        except ImportError as e:
-            print(f"Error importing manage_jobs: {e}")
+        if result.returncode != 0:
+            print(f"Error running command: {result.stderr}")
             return ""
-
-        # Set up arguments for scene generation
-        args = argparse.Namespace()
-        args.output_folder = Path(output_folder)
-        args.num_scenes = 1
-        args.meta_seed = None
-        args.specific_seed = None
-        args.use_existing = False
-        args.warmup_sec = 0
-        args.cleanup = 'none'
-        args.configs = ["base.gin"]
-        args.overrides = []
-        args.wandb_mode = 'disabled'
-        args.pipeline_configs = ["local_16GB.gin", "monocular.gin", "blender_gt.gin"]
-        args.pipeline_overrides = ["LocalScheduleHandler.use_gpu=False"]
-        args.overwrite = True
-        args.loglevel = logging.INFO
-
-        manage_jobs_main(args)
-
-        # Return the path to the generated .blend file
-        seed = "00000000"  # Replace with actual seed used/generated in manage_jobs
-        return os.path.join(output_folder, "fine", f"{seed}.blend")
-    else:
-        print("Infinigen folder does not exist. Please install Infinigen before running this script.")
+        else:
+            print(f"Command output: {result.stdout}")
+            # Find the generated folder in outputs/random
+            random_folder = os.path.join(infinigen_path, "outputs/random")
+            generated_folders = [f for f in os.listdir(random_folder) if os.path.isdir(os.path.join(random_folder, f))]
+            if not generated_folders:
+                print("Error: No folder generated in outputs/random")
+                return ""
+            generated_folder = os.path.join(random_folder, generated_folders[0])
+            return os.path.join(generated_folder, "fine", "scene.blend")
+    except subprocess.TimeoutExpired:
+        print("Error: Subprocess timed out")
+        return ""
+    except Exception as e:
+        print(f"Error running command: {e}")
         return ""
         
         
@@ -107,6 +106,28 @@ def load_user_blend_file(user_blend_file):
     except Exception as e:
         logger.error(f"Failed to load Blender file {user_blend_file}: {e}")
         return False
+    
+
+def delete_folder():
+    try:
+        # Get the current working directory and navigate to the infinigen folder
+        infinigen_path = os.path.join(os.getcwd(), "infinigen")
+        random_folder = os.path.join(infinigen_path, "outputs/random")
+        
+        # Check if the random folder exists
+        if os.path.exists(random_folder):
+            # Delete the random folder
+            for root, dirs, files in os.walk(random_folder, topdown=False):
+                for name in files:
+                    os.remove(os.path.join(root, name))
+                for name in dirs:
+                    os.rmdir(os.path.join(root, name))
+            os.rmdir(random_folder)
+            print(f"Deleted folder: {random_folder}")
+        else:
+            print("Random folder does not exist.")
+    except Exception as e:
+        print(f"Error deleting folder: {e}")
     
 
 def render_scene(
@@ -145,15 +166,16 @@ def render_scene(
     initialize_scene()
 
     if user_blend_file == "infinigen":
-        user_blend_file = generate_random_scene(output_dir)
+        user_blend_file = generate_random_scene()
         if not load_user_blend_file(user_blend_file):
             logger.error(f"Unable to load generated Blender file: {user_blend_file}")
             return  # Exit the function if the file could not be loaded
-
     elif user_blend_file:
         if not load_user_blend_file(user_blend_file):
             logger.error(f"Unable to load user-specified Blender file: {user_blend_file}")
             return  # Exit the function if the file could not be loaded
+
+    delete__folder()
 
     create_camera_rig()
 
@@ -375,3 +397,8 @@ if __name__ == "__main__":
         render_images=args.images,
         user_blend_file=args.scene,
     )
+
+
+
+
+
