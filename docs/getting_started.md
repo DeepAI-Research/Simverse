@@ -32,6 +32,15 @@ python3 -m simian.combiner --count 1000 --seed 42
 ```
 
 ### Generating Videos
+To generate a video(s): 
+```bash
+python3 -m simian.batch --start_index 0 --end_index 1000 --width 1024 --height 576 --start_frame 1 --end_frame 65 --animation_length 120
+```
+
+To generate an image(s):
+```bash
+python3 -m simian.batch --start_index 0 --end_index 1000 --width 1024 --height 576 --start_frame 1 --end_frame 65 --animation_length 120 --images
+```
 
 You can generate individually:
 ```bash

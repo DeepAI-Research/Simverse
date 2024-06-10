@@ -67,6 +67,18 @@ To generate an image(s):
 python3 -m simian.batch --start_index 0 --end_index 1000 --width 1024 --height 576 --start_frame 1 --end_frame 65 --animation_length 120 --images
 ```
 
+You can also generate individually:
+```bash
+# MacOS
+python -m simian.render
+
+# Linux
+python -m simian.render
+
+## Kitchen sink
+python -m simian.render -- --width 1920 --height 1080 --combination_index 0 --output_dir ./renders --hdri_path ./backgrounds --start_frame 1 --end_frame 65
+```
+
 
 ### Clean up Captions
 
