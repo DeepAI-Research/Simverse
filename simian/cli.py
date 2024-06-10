@@ -111,13 +111,14 @@ if __name__ == "__main__":
         max_price = job_config["max_price"]
         max_nodes = job_config["max_nodes"]
         docker_image = "arfx/simian-worker:latest"
+        module_name = "simian.worker"
 
         print("MAX PRICE: ", max_price)
         print("SEARCHING FOR NODES...")
         num_nodes_avail = len(distributaur.search_offers(max_price))
         print("TOTAL NODES AVAILABLE: ", num_nodes_avail)
 
-        rented_nodes = distributaur.rent_nodes(max_price, max_nodes, docker_image)
+        rented_nodes = distributaur.rent_nodes(max_price, max_nodes, docker_image, module_name)
 
         print("TOTAL RENTED NODES: ", len(rented_nodes))
         print(rented_nodes)
