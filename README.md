@@ -26,6 +26,11 @@ pip install -r requirements.txt
 ./scripts/get_data.sh
 ```
 
+3. Setup infinigen:
+```bash
+./setup_scene.sh
+```
+
 3. [OPTIONAL] If you're on a headless Linux server, install Xorg and start it:
 
 ```bash
@@ -57,9 +62,19 @@ Or generate all or part of the combination set using the `batch.py` script:
 
 ### Generating Videos or Images
 
-To generate a video(s): 
+To generate a video(s) with flat terrain: 
 ```bash
-python3 -m simian.batch --start_index 0 --end_index 1000 --width 1024 --height 576 --start_frame 1 --end_frame 65 --animation_length 120
+python3 -m simian.batch --start_index 0 --end_index 1000 --width 1024 --height 576 --start_frame 1 --end_frame 65 --animation_length 120 --scene flat
+```
+
+To generate a video(s) with your own blend file: 
+```bash
+python3 -m simian.batch --start_index 0 --end_index 1000 --width 1024 --height 576 --start_frame 1 --end_frame 65 --animation_length 120 --scene <absolute blend file path>
+```
+
+To generate a video(s) with random generated scenes (infinigen): 
+```bash
+python3 -m simian.batch --start_index 0 --end_index 1000 --width 1024 --height 576 --start_frame 1 --end_frame 65 --animation_length 120 --scene
 ```
 
 To generate an image(s):
@@ -70,13 +85,13 @@ python3 -m simian.batch --start_index 0 --end_index 1000 --width 1024 --height 5
 You can also generate individually:
 ```bash
 # MacOS
-python -m simian.render
+python -m simian.worker
 
 # Linux
-python -m simian.render
+python -m simian.worker
 
 ## Kitchen sink
-python -m simian.render -- --width 1920 --height 1080 --combination_index 0 --output_dir ./renders --hdri_path ./backgrounds --start_frame 1 --end_frame 65
+python -m simian.worker -- --width 1920 --height 1080 --combination_index 0 --output_dir ./renders --hdri_path ./backgrounds --start_frame 1 --end_frame 65
 ```
 
 
