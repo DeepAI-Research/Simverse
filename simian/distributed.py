@@ -122,7 +122,7 @@ if __name__ == "__main__":
         print(rented_nodes)
 
         distributaur.register_function(run_job)
-        distributaur.start_monitoring_server(worker_name="simian.worker")
+        # distributaur.start_monitoring_server(worker_name="simian.worker")
 
         tasks = []
 
@@ -158,23 +158,23 @@ if __name__ == "__main__":
     parser.add_argument(
         "--combinations-file", help="Path to the combinations JSON file"
     )
-    parser.add_argument("--end-index", type=int, help="Ending index for rendering")
-    parser.add_argument("--start-frame", type=int, help="Starting frame number")
-    parser.add_argument("--end-frame", type=int, help="Ending frame number")
+    parser.add_argument("--end_index", type=int, help="Ending index for rendering")
+    parser.add_argument("--start_frame", type=int, help="Starting frame number")
+    parser.add_argument("--end_frame", type=int, help="Ending frame number")
     parser.add_argument("--width", type=int, help="Rendering width in pixels")
     parser.add_argument("--height", type=int, help="Rendering height in pixels")
-    parser.add_argument("--output-dir", help="Output directory")
-    parser.add_argument("--hdri-path", help="HDRI path")
-    parser.add_argument("--max-price", type=float, help="Maximum price per hour")
-    parser.add_argument("--max-nodes", type=int, help="Maximum number of nodes")
-    parser.add_argument("--api-key", help="Vast.ai API key")
-    parser.add_argument("--redis-host", help="Redis host")
-    parser.add_argument("--redis-port", type=int, help="Redis port")
-    parser.add_argument("--redis-user", help="Redis user")
-    parser.add_argument("--redis-password", help="Redis password")
-    parser.add_argument("--hf-token", help="Hugging Face token")
-    parser.add_argument("--hf-repo-id", help="Hugging Face repository ID")
-    parser.add_argument("--hf-path", help="Hugging Face path")
+    parser.add_argument("--output_dir", help="Output directory")
+    parser.add_argument("--hdri_path", help="HDRI path")
+    parser.add_argument("--max_price", type=float, help="Maximum price per hour")
+    parser.add_argument("--max_nodes", type=int, help="Maximum number of nodes")
+    parser.add_argument("--api_key", help="Vast.ai API key")
+    parser.add_argument("--redis_host", help="Redis host")
+    parser.add_argument("--redis_port", type=int, help="Redis port")
+    parser.add_argument("--redis_user", help="Redis user")
+    parser.add_argument("--redis_password", help="Redis password")
+    parser.add_argument("--hf_token", help="Hugging Face token")
+    parser.add_argument("--hf_repo-id", help="Hugging Face repository ID")
+    parser.add_argument("--hf_path", help="Hugging Face path")
     args = parser.parse_args()
 
     start_new_job(args)
