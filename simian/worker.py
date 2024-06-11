@@ -50,17 +50,10 @@ def run_job(
     logger.info(f"Worker running: {command}")
 
     subprocess.run(["bash", "-c", command], check=False)
-
-    # TODO: Make sure directory is uploaded
-    # upload_directory(output_dir)
-
-    for file in os.listdir(output_dir):
-        file_path = os.path.join(output_dir, file)
-        try:
-            if os.path.isfile(file_path):
-                os.unlink(file_path)
-        except Exception as e:
-            logger.info(e)
+    
+    distributaur.upload_directory(output_dir)
+    
+    print("Job done")
 
 
 # only run this is this file was started by celery or run directly
