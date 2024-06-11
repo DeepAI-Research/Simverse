@@ -5,4 +5,4 @@ numpy
 scipy
 distributaur
 bpy
-infinigen
+infinigen==1.3.4
