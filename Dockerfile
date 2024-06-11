@@ -30,6 +30,7 @@ COPY scripts/ ./scripts/
 RUN bash scripts/get_data.sh
 
 COPY requirements.txt .
+RUN python3.11 -m pip install --upgrade --ignore-installed setuptools wheel
 RUN python3.11 -m pip install -r requirements.txt
 
 COPY simian/ ./simian/
