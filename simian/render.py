@@ -6,8 +6,6 @@ import ssl
 import sys
 import bpy
 import random
-from pathlib import Path  # Add this import
-
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
@@ -34,50 +32,30 @@ from .object import (
     unlock_objects,
     unparent_keep_transform,
 )
+from .background import create_photosphere, set_background
+from .scene import apply_stage_material, create_stage, initialize_scene
+from .vendor import objaverse
 
-from simian.background import create_photosphere, set_background
-from simian.scene import apply_stage_material, create_stage, initialize_scene
-import simian.vendor.objaverse
+import os
+from infinigen_examples.generate_nature import main as generate_nature
+from types import SimpleNamespace
 
-    
-def generate_random_scene() -> str:
-    try:
-        command = [
-            "python3", "-m", "infinigen.datagen.manage_jobs",
-            "--output_folder", "outputs/random",
-            "--num_scenes", "1",
-            "--configs", "desert.gin", "simple.gin",
-            "--pipeline_configs", "local_16GB.gin", "monocular.gin", "blender_gt.gin",
-            "--pipeline_overrides", "LocalScheduleHandler.use_gpu=False"
-        ]
-        infinigen_path = os.path.join(os.getcwd(), "infinigen")
-        print(f"Running command: {' '.join(command)} in {infinigen_path}")
-        result = subprocess.run(command, cwd=infinigen_path, capture_output=True, text=True, timeout=600)
-        print(f"Subprocess return code: {result.returncode}")
-        print(f"Subprocess stdout: {result.stdout}")
-        print(f"Subprocess stderr: {result.stderr}")
 
-        if result.returncode != 0:
-            print(f"Error running command: {result.stderr}")
-            return ""
-        else:
-            print(f"Command output: {result.stdout}")
-            # Find the generated folder in outputs/random
-            random_folder = os.path.join(infinigen_path, "outputs/random")
-            generated_folders = [f for f in os.listdir(random_folder) if os.path.isdir(os.path.join(random_folder, f))]
-            if not generated_folders:
-                print("Error: No folder generated in outputs/random")
-                return ""
-            generated_folder = os.path.join(random_folder, generated_folders[0])
-            return os.path.join(generated_folder, "fine", "scene.blend")
-    except subprocess.TimeoutExpired:
-        print("Error: Subprocess timed out")
-        return ""
-    except Exception as e:
-        print(f"Error running command: {e}")
-        return ""
-        
-        
+def generate_scene(seed, task, output_folder, input_folder=None, pipeline_override=None):
+    hex_seed = f"{seed:016x}"  # Convert seed to a 16-character hexadecimal string
+    args = SimpleNamespace(
+        seed=hex_seed,  # Pass the hex seed
+        task=task,
+        configs=["desert.gin", "simple.gin"],
+        output_folder=output_folder,
+        input_folder=input_folder,
+        pipeline_override=pipeline_override,
+        overrides=[],
+        task_uniqname=task  # Add the task_uniqname attribute
+    )
+    generate_nature(args)
+
+
 def read_combination(combination_file: str, index: int = 0) -> dict:
     """
     Reads a specified camera combination from a JSON file.
@@ -165,17 +143,34 @@ def render_scene(
 
     initialize_scene()
 
-    if user_blend_file == "infinigen":
-        user_blend_file = generate_random_scene()
-        if not load_user_blend_file(user_blend_file):
-            logger.error(f"Unable to load generated Blender file: {user_blend_file}")
-            return  # Exit the function if the file could not be loaded
-    elif user_blend_file:
-        if not load_user_blend_file(user_blend_file):
-            logger.error(f"Unable to load user-specified Blender file: {user_blend_file}")
-            return  # Exit the function if the file could not be loaded
+        # Step 1: Generate Scene Layout
+    # create outputs folder
+    os.makedirs('outputs/', exist_ok=True)
 
-    delete__folder()
+    # Step 1: Generate Scene Layout
+    generate_scene(seed=0, task='coarse', output_folder='outputs/hello_world/coarse')
+
+    # Step 2: Populate Unique Assets
+    generate_scene(seed=0, task='populate', output_folder='outputs/hello_world/fine', input_folder='outputs/hello_world/coarse')
+    generate_scene(seed=0, task='fine_terrain', output_folder='outputs/hello_world/fine', input_folder='outputs/hello_world/coarse')
+
+    # Step 3: Render RGB Images
+    generate_scene(seed=0, task='render', output_folder='outputs/hello_world/frames', input_folder='outputs/hello_world/fine')
+
+    # Step 4: Render for Accurate Ground-Truth
+    generate_scene(seed=0, task='render', output_folder='outputs/hello_world/frames', input_folder='outputs/hello_world/fine', pipeline_override='render.render_image_func=@flat/render_image')
+
+    # if user_blend_file == "infinigen":
+    #     user_blend_file = 
+    #     if not load_user_blend_file(user_blend_file):
+    #         logger.error(f"Unable to load generated Blender file: {user_blend_file}")
+    #         return  # Exit the function if the file could not be loaded
+    # elif user_blend_file:
+    #     if not load_user_blend_file(user_blend_file):
+    #         logger.error(f"Unable to load user-specified Blender file: {user_blend_file}")
+    #         return  # Exit the function if the file could not be loaded
+
+    # delete__folder()
 
     create_camera_rig()
 

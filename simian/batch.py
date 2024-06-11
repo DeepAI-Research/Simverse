@@ -79,8 +79,7 @@ def render_objects(
         if blend_file:
             args += f" --scene {blend_file}"
 
-        command = f"{sys.executable} simian/render.py -- {args}"
-
+        command = f"{sys.executable} -m simian.render -- {args}"
         subprocess.run(["bash", "-c", command], timeout=render_timeout, check=False)
 
 

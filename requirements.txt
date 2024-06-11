@@ -5,4 +5,4 @@ numpy
 scipy
 distributaur
 bpy
-rr-infinigen
+infinigen
