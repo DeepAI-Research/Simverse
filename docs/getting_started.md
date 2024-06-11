@@ -119,7 +119,7 @@ docker run -e REDIS_HOST={myhost} -e REDIS_PORT={port} -e REDIS_USER=default -e 
 Finally, issue work to your task queue
 
 ```bash
-python3 -m simian.cli --start_index 0 --end_index 10 --width 1024 --height 576
+python3 -m simian.distributed --width 1024 --height 576
 ```
 
 If you want to use a custom or hosted Redis instance (recommended), you can add the redis details like this:
