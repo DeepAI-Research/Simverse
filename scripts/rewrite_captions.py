@@ -1,9 +1,10 @@
 import os
 import json
 import requests
+from dotenv import load_dotenv
 
+load_dotenv()
 MODEL = "gpt-4o"
-
 
 def rewrite_caption(caption_arr, context_string):
     split_captions = [caption.split(", ") for caption in caption_arr]
