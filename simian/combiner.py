@@ -755,85 +755,6 @@ def generate_animation(camera_data: Dict[str, Any]) -> Dict[str, Any]:
     return animation
 
 
-def generate_objects(
-    object_data, dataset_names, dataset_weights, dataset_dict, captions_data
-) -> List[Dict[str, Any]]:
-    """
-    Generate a list of random objects.
-
-    Returns:
-        List[Dict[str, Any]]: List of generated objects.
-    """
-    chosen_dataset = "cap3d"
-
-    # Randomly generate max_number_of_objects
-    max_number_of_objects = parse_args().max_number_of_objects
-    number_of_objects = random.randint(1, max_number_of_objects)
-
-    object_scales = object_data["scales"]
-
-    # Scale values
-    scale_values = [scale["factor"] for scale in object_scales.values()]
-
-    # Create simple triangular distribution based on scale_values
-    len_scale_values = len(scale_values)
-    mid_point = len_scale_values // 2
-    if len_scale_values % 2 == 0:
-        weights = [i + 1 for i in range(mid_point)] + [
-            mid_point - i for i in range(mid_point)
-        ]
-    else:
-        weights = (
-            [i + 1 for i in range(mid_point)]
-            + [mid_point + 1]
-            + [mid_point - i for i in range(mid_point)]
-        )
-
-    total_weight = sum(weights)
-    normalized_weights = [w / total_weight for w in weights]
-
-    objects = []
-    positions_taken = set()
-    for i in range(number_of_objects):
-        object_uid = random.choice(dataset_dict[chosen_dataset])
-        object_description = captions_data[object_uid]
-        
-        scale_choice = random.choices(
-            list(object_scales.items()), weights=normalized_weights, k=1
-        )[0]
-        scale_key = scale_choice[0]
-        scale_value = scale_choice[1]
-
-        scale = {
-            "factor": scale_value["factor"],
-            "name": scale_key,
-            "name_synonym": random.choice(scale_value["names"]),
-        }
-
-        if i == 0:
-            placement = 4  # Ensure the first object is always placed at position 4
-            positions_taken.add(placement)
-        else:
-            possible_positions = [
-                pos for pos in range(0, 9) if pos not in positions_taken
-            ]
-            placement = random.choice(possible_positions)
-            positions_taken.add(placement)
-
-        object = {
-            "name": object_description,  # Use the description directly
-            "uid": object_uid,
-            "description": object_description,  # Use the description directly
-            "placement": placement,
-            "from": chosen_dataset,
-            "scale": scale,
-        }
-
-        objects.append(object)
-
-    return objects
-
-
 def generate_background(
     background_dict, background_names, background_weights
 ) -> Dict[str, Any]:
@@ -957,6 +878,86 @@ def generate_combinations(
 
     return data
 
+def generate_objects(
+    object_data, dataset_names, dataset_weights, dataset_dict, captions_data
+) -> List[Dict[str, Any]]:
+    """
+    Generate a list of random objects.
+
+    Returns:
+        List[Dict[str, Any]]: List of generated objects.
+    """
+    chosen_dataset = "cap3d"
+
+    if chosen_dataset not in dataset_dict:
+        raise KeyError(f"Dataset '{chosen_dataset}' not found in dataset_dict")
+
+    # Randomly generate max_number_of_objects
+    max_number_of_objects = parse_args().max_number_of_objects
+    number_of_objects = random.randint(1, max_number_of_objects)
+
+    object_scales = object_data["scales"]
+
+    # Scale values
+    scale_values = [scale["factor"] for scale in object_scales.values()]
+
+    # Create simple triangular distribution based on scale_values
+    len_scale_values = len(scale_values)
+    mid_point = len_scale_values // 2
+    if len_scale_values % 2 == 0:
+        weights = [i + 1 for i in range(mid_point)] + [
+            mid_point - i for i in range(mid_point)
+        ]
+    else:
+        weights = (
+            [i + 1 for i in range(mid_point)]
+            + [mid_point + 1]
+            + [mid_point - i for i in range(mid_point)]
+        )
+
+    total_weight = sum(weights)
+    normalized_weights = [w / total_weight for w in weights]
+
+    objects = []
+    positions_taken = set()
+    for i in range(number_of_objects):
+        object_uid = random.choice(dataset_dict[chosen_dataset])
+        object_description = captions_data[object_uid]
+        
+        scale_choice = random.choices(
+            list(object_scales.items()), weights=normalized_weights, k=1
+        )[0]
+        scale_key = scale_choice[0]
+        scale_value = scale_choice[1]
+
+        scale = {
+            "factor": scale_value["factor"],
+            "name": scale_key,
+            "name_synonym": random.choice(scale_value["names"]),
+        }
+
+        if i == 0:
+            placement = 4  # Ensure the first object is always placed at position 4
+            positions_taken.add(placement)
+        else:
+            possible_positions = [
+                pos for pos in range(0, 9) if pos not in positions_taken
+            ]
+            placement = random.choice(possible_positions)
+            positions_taken.add(placement)
+
+        object = {
+            "name": object_description,  # Use the description directly
+            "uid": object_uid,
+            "description": object_description,  # Use the description directly
+            "placement": placement,
+            "from": chosen_dataset,
+            "scale": scale,
+        }
+
+        objects.append(object)
+
+    return objects
 
 if __name__ == "__main__":
     args = parse_args()
