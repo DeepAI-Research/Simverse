@@ -755,88 +755,6 @@ def generate_animation(camera_data: Dict[str, Any]) -> Dict[str, Any]:
     return animation
 
 
-def generate_objects(
-    object_data, dataset_names, dataset_weights, dataset_dict, captions_data
-) -> List[Dict[str, Any]]:
-    """
-    Generate a list of random objects.
-
-    Returns:
-        List[Dict[str, Any]]: List of generated objects.
-    """
-    chosen_dataset = random.choices(dataset_names, weights=dataset_weights)[0]
-
-    # Randomly generate max_number_of_objects
-    max_number_of_objects = parse_args().max_number_of_objects
-    number_of_objects = random.randint(1, max_number_of_objects)
-
-    object_scales = object_data["scales"]
-
-    # scale values
-    scale_values = [scale["factor"] for scale in object_scales.values()]
-
-    # create simple triangular distribution based on scale_values
-    len_scale_values = len(scale_values)
-
-    mid_point = len_scale_values // 2
-    if len_scale_values % 2 == 0:
-        weights = [i + 1 for i in range(mid_point)] + [
-            mid_point - i for i in range(mid_point)
-        ]
-    else:
-        weights = (
-            [i + 1 for i in range(mid_point)]
-            + [mid_point + 1]
-            + [mid_point - i for i in range(mid_point)]
-        )
-
-    total_weight = sum(weights)
-    normalized_weights = [w / total_weight for w in weights]
-
-    objects = []
-    positions_taken = set()
-    for i in range(number_of_objects):
-        object = random.choice(dataset_dict[chosen_dataset])
-        scale_choice = random.choices(
-            list(object_scales.items()), weights=normalized_weights, k=1
-        )[0]
-        scale_key = scale_choice[0]
-        scale_value = scale_choice[1]
-
-        scale = {
-            "factor": scale_value["factor"],
-            "name": scale_key,
-            "name_synonym": random.choice(scale_value["names"]),
-        }
-
-        if i == 0:
-            placement = 4  # Ensure the first object is always placed at position 4
-            positions_taken.add(placement)
-        else:
-            possible_positions = [
-                pos for pos in range(0, 9) if pos not in positions_taken
-            ]
-            placement = random.choice(possible_positions)
-            positions_taken.add(placement)
-
-        object = {
-            "name": object["name"],
-            "uid": object["uid"],
-            "description": object["description"],
-            "placement": placement,
-            "from": chosen_dataset,
-            "scale": scale,
-        }
-
-        if object["uid"] in captions_data:
-            description = captions_data[object["uid"]]
-            object["description"] = description
-
-        objects.append(object)
-
-    return objects
-
-
 def generate_background(
     background_dict, background_names, background_weights
 ) -> Dict[str, Any]:
@@ -960,78 +878,117 @@ def generate_combinations(
 
     return data
 
+def generate_objects(
+    object_data, dataset_names, dataset_weights, dataset_dict, captions_data
+) -> List[Dict[str, Any]]:
+    """
+    Generate a list of random objects.
+
+    Returns:
+        List[Dict[str, Any]]: List of generated objects.
+    """
+    chosen_dataset = "cap3d"
+
+    if chosen_dataset not in dataset_dict:
+        raise KeyError(f"Dataset '{chosen_dataset}' not found in dataset_dict")
+
+    # Randomly generate max_number_of_objects
+    max_number_of_objects = parse_args().max_number_of_objects
+    number_of_objects = random.randint(1, max_number_of_objects)
+
+    object_scales = object_data["scales"]
+
+    # Scale values
+    scale_values = [scale["factor"] for scale in object_scales.values()]
+
+    # Create simple triangular distribution based on scale_values
+    len_scale_values = len(scale_values)
+    mid_point = len_scale_values // 2
+    if len_scale_values % 2 == 0:
+        weights = [i + 1 for i in range(mid_point)] + [
+            mid_point - i for i in range(mid_point)
+        ]
+    else:
+        weights = (
+            [i + 1 for i in range(mid_point)]
+            + [mid_point + 1]
+            + [mid_point - i for i in range(mid_point)]
+        )
+
+    total_weight = sum(weights)
+    normalized_weights = [w / total_weight for w in weights]
+
+    objects = []
+    positions_taken = set()
+    for i in range(number_of_objects):
+        object_uid = random.choice(dataset_dict[chosen_dataset])
+        object_description = captions_data[object_uid]
+        
+        scale_choice = random.choices(
+            list(object_scales.items()), weights=normalized_weights, k=1
+        )[0]
+        scale_key = scale_choice[0]
+        scale_value = scale_choice[1]
+
+        scale = {
+            "factor": scale_value["factor"],
+            "name": scale_key,
+            "name_synonym": random.choice(scale_value["names"]),
+        }
+
+        if i == 0:
+            placement = 4  # Ensure the first object is always placed at position 4
+            positions_taken.add(placement)
+        else:
+            possible_positions = [
+                pos for pos in range(0, 9) if pos not in positions_taken
+            ]
+            placement = random.choice(possible_positions)
+            positions_taken.add(placement)
+
+        object = {
+            "name": object_description,  # Use the description directly
+            "uid": object_uid,
+            "description": object_description,  # Use the description directly
+            "placement": placement,
+            "from": chosen_dataset,
+            "scale": scale,
+        }
+
+        objects.append(object)
+
+    return objects
 
 if __name__ == "__main__":
     args = parse_args()
 
-    datasets = read_json_file(args.datasets_path)
+    # Load only cap3d dataset
+    cap3d_data_path = args.cap3d_captions_path
+    logger.info(f"Loading {cap3d_data_path}")
+    cap3d_data = read_json_file(cap3d_data_path)
+    logger.info(f"Loaded {len(cap3d_data)} unique entries from cap3d")
+
+    # Ensure the dataset_dict contains only cap3d data
+    dataset_dict = {"cap3d": list(cap3d_data.keys())}
+
     object_data = read_json_file(args.object_data_path)
     captions_data = read_json_file(args.cap3d_captions_path)
     stage_data = read_json_file(args.stage_data_path)
     texture_data = read_json_file(args.texture_data_path)
     camera_data = read_json_file(args.camera_file_path)
 
-    models = datasets["models"]
-    dataset_dict = {}
-    object_map = {}
-    category_map = {}
-
-    for dataset in models:
-        current_path = os.path.dirname(os.path.realpath(__file__))
-        dataset_path = os.path.join(args.simdata_path, dataset + ".json")
-        dataset_full_path = os.path.join(current_path, "../", dataset_path)
-        logger.info(f"Loading {dataset_full_path}")
-        if os.path.exists(dataset_full_path):
-            dataset_data = read_json_file(dataset_full_path)
-            local_count = 0
-
-            for object in dataset_data:
-                object_id = object["uid"]
-                categories = object["categories"]
-
-                if object_id not in object_map:
-                    object_map[object_id] = object
-                    local_count += 1
-
-                for category in categories:
-                    if category not in category_map:
-                        category_map[category] = set()
-                    category_map[category].add(object_id)
-
-            logger.info(
-                f"Loaded {local_count} unique entries out of {len(dataset_data)} from {dataset}"
-            )
-            dataset_dict[dataset] = dataset_data
-        else:
-            logger.info(f"Dataset file {dataset_path} not found")
-
-    # count the total length of all entries
-    total_length = sum(len(dataset_dict[dataset]) for dataset in dataset_dict)
-    logger.info(f"Total number of objects: {total_length}")
-
-    backgrounds = datasets["backgrounds"]
+    # Load backgrounds
+    backgrounds = read_json_file(args.datasets_path)["backgrounds"]
     background_dict = {}
-
-    for background in backgrounds:
-        # get the current path of this file
-        current_path = os.path.dirname(os.path.realpath(__file__))
-        hdri_path = os.path.join(args.simdata_path, background + ".json")
-        background_full_path = os.path.join(current_path, "../", hdri_path)
-        logger.info(f"Loading {background_full_path}")
-        if os.path.exists(background_full_path):
-            background_data = read_json_file(background_full_path)
-            logger.info(f"Loaded {len(background_data)} from {background}")
-            background_dict[background] = background_data
+    for bg in backgrounds:
+        bg_path = os.path.join(args.simdata_path, bg + ".json")
+        logger.info(f"Loading {bg_path}")
+        if os.path.exists(bg_path):
+            background_data = read_json_file(bg_path)
+            background_dict[bg] = background_data
+            logger.info(f"Loaded {len(background_data)} entries from {bg}")
         else:
-            logger.info(f"Dataset file {hdri_path} not found")
-
-    total_length = sum(
-        len(background_dict[background]) for background in background_dict
-    )
-    logger.info(f"Total number of backgrounds: {total_length}")
-
-    dataset_names = list(dataset_dict.keys())
-    dataset_weights = [len(dataset_dict[name]) for name in dataset_names]
+            logger.info(f"Dataset file {bg_path} not found")
 
     background_names = list(background_dict.keys())
     background_weights = [len(background_dict[name]) for name in background_names]
@@ -1041,8 +998,8 @@ if __name__ == "__main__":
         camera_data,
         args.count,
         args.seed,
-        dataset_names,
-        dataset_weights,
+        ["cap3d"],  # Use only the cap3d dataset
+        [1],  # Weight for the cap3d dataset
         object_data,
         dataset_dict,
         captions_data,

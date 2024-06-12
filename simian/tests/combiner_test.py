@@ -351,15 +351,13 @@ def test_generate_combinations():
     seed = 42  # Add seed argument
 
     # Prepare mock data for dataset_names and dataset_weights
-    dataset_names = ["dataset1", "dataset2", "dataset3"]
-    dataset_weights = [1, 1, 1]
+    dataset_names = ["cap3d"]
+    dataset_weights = [1]
 
     # Mock dataset_dict for generate_objects
     global dataset_dict, object_data, captions_data, background_names, background_weights, background_dict
     dataset_dict = {
-        "dataset1": [{"name": "Object1", "uid": "1", "description": "Desc1"}],
-        "dataset2": [{"name": "Object2", "uid": "2", "description": "Desc2"}],
-        "dataset3": [{"name": "Object3", "uid": "3", "description": "Desc3"}],
+        "cap3d": ["1", "2", "3"],
     }
     
     # Mock object_data for generate_objects
@@ -427,7 +425,8 @@ def test_generate_combinations():
             combination["orientation"]["pitch"] <= 90
         ), "Pitch is out of the specified range."
         print("============ Test Passed: test_generate_combinations ============")
-    
+
+
 
 def test_generate_stage_captions():
     combination = {
@@ -818,7 +817,10 @@ def test_generate_animation():
 
 
 def test_generate_objects():
-    # Prepare mock data for the required arguments
+    """
+    Test the generate_objects function.
+    """
+    # Mock data for object_data, dataset_dict, and captions_data
     object_data = {
         "scales": {
             "small": {"factor": 0.5, "names": ["tiny", "mini"]},
@@ -829,43 +831,36 @@ def test_generate_objects():
             "<name> is a <size> object. <description>"
         ]
     }
-    
-    dataset_names = ["dataset1", "dataset2"]
-    dataset_weights = [1, 1]
-    
+
     dataset_dict = {
-        "dataset1": [
-            {"name": "Object1", "uid": "1", "description": "Description1"},
-            {"name": "Object2", "uid": "2", "description": "Description2"}
-        ],
-        "dataset2": [
-            {"name": "Object3", "uid": "3", "description": "Description3"},
-            {"name": "Object4", "uid": "4", "description": "Description4"}
-        ]
+        "cap3d": ["1", "2", "3"],
     }
-    
+
     captions_data = {
-        "1": "Caption for Object1",
-        "2": "Caption for Object2",
-        "3": "Caption for Object3",
-        "4": "Caption for Object4"
+        "1": "This is a caption for Object1.",
+        "2": "This is a caption for Object2.",
+        "3": "This is a caption for Object3.",
     }
-    
+
+    # Mock dataset_names and dataset_weights
+    dataset_names = ["cap3d"]
+    dataset_weights = [1]
+
     # Generate objects
     objects = generate_objects(object_data, dataset_names, dataset_weights, dataset_dict, captions_data)
-    
+
     # Ensure the function generates the correct number of objects
     assert len(objects) > 0, "Objects generation should create more than 1 object."
-    
+
     # Ensure at least one object has placement 4
     assert any(obj["placement"] == 4 for obj in objects), "There should be at least one object with placement 4."
-    
+
     # Ensure all objects have the required fields
     required_fields = ["name", "uid", "description", "placement", "from", "scale"]
     for obj in objects:
         for field in required_fields:
             assert field in obj, f"Missing field: {field}"
-    
+
     print("============ Test Passed: test_generate_objects ============")
 
 

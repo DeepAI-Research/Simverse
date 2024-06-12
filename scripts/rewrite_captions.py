@@ -1,9 +1,10 @@
 import os
 import json
 import requests
+from dotenv import load_dotenv
 
+load_dotenv()
 MODEL = "gpt-4o"
-
 
 def rewrite_caption(caption_arr, context_string):
     split_captions = [caption.split(", ") for caption in caption_arr]
@@ -107,6 +108,9 @@ if __name__ == "__main__":
 
     Before: "Best Japanese Curry is 1 and A bowl of stew with rice and meat. Apple is 7feet and an apple. Apple is  and behind Best Japanese Curry. Best Japanese Curry is  and in front of Apple. Direct the camera sharp right back, set tilt to steeply angled down. The focal length is 29 mm. Taking in the whole scene. The scene has a noticeable bloom effect. Motion blur is set to medium intensity in the scene. The backdrop is Pump House. The floor texture is Wood Plank Wall. The scene moves with a relaxed animation speed."
     After: "Best Japanese Curry is a bowl of stew with rice and meat. Apple is an apple placed behind Best Japanese Curry. Best Japanese Curry is in front of Apple. The camera is very angled right and very down, make sure to capture whole scene. Subtle glow effect, and medium blur when movement. Background is Pump House with a wood plank floor. Slow animation speed maybe"
+
+    Before: "[Black Mercedes-Benz G-Class SUV - Black Mercedes-Benz G-Class SUV - 0.75meters] a damaged room with a kitchen and bathroom, including a refrigerator, sinks, and a toilet, in an upside-down house and destroyed building. (size: 1.5meters) a damaged room with a kitchen and bathroom, including a refrigerator, sinks, and a toilet, in an upside-down house and destroyed building. is  and in front of Black Mercedes-Benz G-Class SUV. Black Mercedes-Benz G-Class SUV is  and behind a damaged room with a kitchen and bathroom, including a refrigerator, sinks, and a toilet, in an upside-down house and destroyed building.. Rotate the camera to heavy left rear and tilt it 51 forward. The camera has a 17 mm focal length. Extremely wide coverage  The landscape is Woods. The floor material is Blue Painted Planks. The scene has a faster animation speed of 156%."
+    After: "there are 2 objects: Black Mercedes-Benz G-Class SUV, a damaged room with a kitchen and bathroom, including a refrigerator, sinks, and a toilet, in an upside-down house and destroyed building. the damaged room with a kitchen and bathroom is infront of Black Mercedes-Benz G-Class SUV. Black Mercedes-Benz G-Class SUV is  and behind the damaged room. Rotate the camera a lot left and tilt it forward, wide angle. wood landscape. The floor is blue painted planks. fast animation speed."
 
     Above are caption example before and after. Go through array of captions and make it sound more human. Change complex director-like words like "bloom" or "pitch", change them to synonyms that are easier to understand and that any person would most likely use.
     Feel free to change/remove exact values like degrees. Instead of 32 degrees left you can say slightly to the left. Combine sentences maybe.
