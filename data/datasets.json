@@ -1,19 +1,6 @@
 {
     "models": [
-        "animals-pets",
-        "cars-vehicles",
-        "characters-creatures",
-        "electronics-gadgets",
-        "fashion-style",
-        "food-drink",
-        "furniture-home",
-        "music",
-        "nature-plants",
-        "news-politics",
-        "people",
-        "science-technology",
-        "sports-fitness",
-        "weapons-military"
+        "cap3d_captions"
     ],
     "backgrounds": ["hdri_data"]
 }
