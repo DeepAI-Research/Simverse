@@ -350,13 +350,14 @@ def test_generate_combinations():
     count = 2
     seed = 42  # Add seed argument
 
+    # Prepare mock data for dataset_names and dataset_weights
+    dataset_names = ["cap3d"]
+    dataset_weights = [1]
+
     # Mock dataset_dict for generate_objects
     global dataset_dict, object_data, captions_data, background_names, background_weights, background_dict
     dataset_dict = {
-        "cap3d": [
-            {"uid": "1", "name": "Object1", "description": "Description1"},
-            {"uid": "2", "name": "Object2", "description": "Description2"}
-        ]
+        "cap3d": ["1", "2", "3"],
     }
     
     # Mock object_data for generate_objects
@@ -374,7 +375,8 @@ def test_generate_combinations():
     # Mock captions_data for generate_objects
     captions_data = {
         "1": "This is a caption for Object1.",
-        "2": "This is a caption for Object2."
+        "2": "This is a caption for Object2.",
+        "3": "This is a caption for Object3.",
     }
 
     # Mock background names and weights
@@ -402,8 +404,8 @@ def test_generate_combinations():
     combinations = generate_combinations(camera_data, 
                                          count, 
                                          seed, 
-                                         ["cap3d"],  # Use only the cap3d dataset
-                                         [1],  # Weight for the cap3d dataset
+                                         dataset_names, 
+                                         dataset_weights, 
                                          object_data, 
                                          dataset_dict, 
                                          captions_data, 
@@ -423,6 +425,7 @@ def test_generate_combinations():
             combination["orientation"]["pitch"] <= 90
         ), "Pitch is out of the specified range."
         print("============ Test Passed: test_generate_combinations ============")
+
 
 
 def test_generate_stage_captions():
