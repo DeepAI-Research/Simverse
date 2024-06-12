@@ -17,6 +17,7 @@ def render_objects(
     end_frame: int = 65,
     images: bool = False,
     animation_length: int = 120,
+    blend_file: Optional[str] = "infinigen",
 ) -> None:
     """
     Automates the rendering of objects using Blender based on predefined combinations.
@@ -71,7 +72,11 @@ def render_objects(
         else:
             args = f"--width {width} --height {height} --combination_index {i} --start_frame {start_frame} --end_frame {end_frame} --output_dir {target_directory} --hdri_path {hdri_path} --animation_length {animation_length}"
 
-        command = f"{sys.executable} -m simian.render -- {args}"
+        if blend_file:
+            args += f" --scene {blend_file}"
+
+        command = f"{sys.executable} simian/render.py -- {args}"
+
         subprocess.run(["bash", "-c", command], timeout=render_timeout, check=False)
 
 
@@ -139,6 +144,13 @@ def main():
         help="End frame of the animation.",
         required=False,
     )
+    parser.add_argument(
+        "--scene",
+        type=str,
+        default="infinigen",
+        help="Path to the user-specified Blender file to use as the base scene.",
+        required=False,
+    )
 
     args = parser.parse_args()
 
@@ -153,6 +165,7 @@ def main():
         start_frame=args.start_frame,
         end_frame=args.end_frame,
         images=args.images,
+        blend_file=args.scene,
     )
 
 

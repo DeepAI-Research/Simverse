@@ -36,6 +36,49 @@ from .background import create_photosphere, set_background
 from .scene import apply_stage_material, create_stage, initialize_scene
 from .vendor import objaverse
 
+import subprocess
+    
+def generate_random_scene() -> str:
+    try:
+        # Ensure the outputs folder exists
+        outputs_path = os.path.join(os.getcwd(), "outputs")
+        random_path = os.path.join(outputs_path, "random")
+        os.makedirs(random_path, exist_ok=True)
+
+        command = [
+            "python3", "-m", "infinigen.datagen.manage_jobs",
+            "--output_folder", "outputs/random",
+            "--num_scenes", "1",
+            "--configs", "desert.gin", "simple.gin",
+            "--pipeline_configs", "local_16GB.gin", "monocular.gin", "blender_gt.gin",
+            "--pipeline_overrides", "LocalScheduleHandler.use_gpu=False"
+        ]
+        print(f"Running command: {' '.join(command)} in {os.getcwd()}")
+        result = subprocess.run(command, cwd=os.getcwd(), capture_output=True, text=True, timeout=600)
+        print(f"Subprocess return code: {result.returncode}")
+        print(f"Subprocess stdout: {result.stdout}")
+        print(f"Subprocess stderr: {result.stderr}")
+
+        if result.returncode != 0:
+            print(f"Error running command: {result.stderr}")
+            return ""
+        else:
+            print(f"Command output: {result.stdout}")
+            # Find the generated folder in outputs/random
+            generated_folders = [f for f in os.listdir(random_path) if os.path.isdir(os.path.join(random_path, f))]
+            if not generated_folders:
+                print("Error: No folder generated in outputs/random")
+                return ""
+            generated_folder = os.path.join(random_path, generated_folders[0])
+            return os.path.join(generated_folder, "fine", "scene.blend")
+    except subprocess.TimeoutExpired:
+        print("Error: Subprocess timed out")
+        return ""
+    except Exception as e:
+        print(f"Error running command: {e}")
+        return ""
+    
+
 def read_combination(combination_file: str, index: int = 0) -> dict:
     """
     Reads a specified camera combination from a JSON file.
@@ -50,6 +93,42 @@ def read_combination(combination_file: str, index: int = 0) -> dict:
         data = json.load(file)
         combinations_data = data["combinations"]
         return combinations_data[index]
+    
+
+def load_user_blend_file(user_blend_file):
+    if not os.path.exists(user_blend_file):
+        logger.error(f"Blender file {user_blend_file} does not exist.")
+        return False
+    
+    try:
+        bpy.ops.wm.open_mainfile(filepath=user_blend_file)
+        logger.info(f"Opened user-specified Blender file {user_blend_file} as the base scene.")
+        return True
+    except Exception as e:
+        logger.error(f"Failed to load Blender file {user_blend_file}: {e}")
+        return False
+    
+
+def delete_folder():
+    try:
+        # Get the current working directory and navigate to the infinigen folder
+        infinigen_path = os.path.join(os.getcwd(), "infinigen")
+        random_folder = os.path.join(infinigen_path, "outputs/random")
+        
+        # Check if the random folder exists
+        if os.path.exists(random_folder):
+            # Delete the random folder
+            for root, dirs, files in os.walk(random_folder, topdown=False):
+                for name in files:
+                    os.remove(os.path.join(root, name))
+                for name in dirs:
+                    os.rmdir(os.path.join(root, name))
+            os.rmdir(random_folder)
+            print(f"Deleted folder: {random_folder}")
+        else:
+            print("Random folder does not exist.")
+    except Exception as e:
+        print(f"Error deleting folder: {e}")
 
 
 def render_scene(
@@ -62,6 +141,7 @@ def render_scene(
     combination_index=0,
     combination=None,
     render_images=False,
+    user_blend_file="infinigen"
 ) -> None:
     """
     Renders a scene with specified parameters.
@@ -85,6 +165,17 @@ def render_scene(
     os.makedirs(output_dir, exist_ok=True)
 
     initialize_scene()
+
+    if user_blend_file == "infinigen":
+        user_blend_file = generate_random_scene()
+        if not load_user_blend_file(user_blend_file):
+            logger.error(f"Unable to load generated Blender file: {user_blend_file}")
+            return  # Exit the function if the file could not be loaded
+    elif user_blend_file:
+        if not load_user_blend_file(user_blend_file):
+            logger.error(f"Unable to load user-specified Blender file: {user_blend_file}")
+            return  # Exit the function if the file could not be loaded
+        
     create_camera_rig()
 
     scene = context.scene
@@ -255,6 +346,13 @@ if __name__ == "__main__":
         action="store_true",
         help="Generate images instead of videos.",
     )
+    parser.add_argument(
+        "--scene",
+        type=str,
+        default="infinigen",
+        help="Path to the user-specified Blender file to use as the base scene.",
+        required=False
+    )
 
     if "--" in sys.argv:
         argv = sys.argv[sys.argv.index("--") + 1 :]
@@ -291,4 +389,5 @@ if __name__ == "__main__":
         combination_index=args.combination_index,
         combination=args.combination,
         render_images=args.images,
+        user_blend_file=args.scene,
     )
