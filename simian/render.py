@@ -50,6 +50,20 @@ def read_combination(combination_file: str, index: int = 0) -> dict:
         data = json.load(file)
         combinations_data = data["combinations"]
         return combinations_data[index]
+    
+
+def load_user_blend_file(user_blend_file):
+    if not os.path.exists(user_blend_file):
+        logger.error(f"Blender file {user_blend_file} does not exist.")
+        return False
+
+    try:
+        bpy.ops.wm.open_mainfile(filepath=user_blend_file)
+        logger.info(f"Opened user-specified Blender file {user_blend_file} as the base scene.")
+        return True
+    except Exception as e:
+        logger.error(f"Failed to load Blender file {user_blend_file}: {e}")
+        return False
 
 
 def render_scene(
@@ -62,6 +76,7 @@ def render_scene(
     combination_index=0,
     combination=None,
     render_images=False,
+    user_blend_file=None
 ) -> None:
     """
     Renders a scene with specified parameters.
@@ -75,6 +90,7 @@ def render_scene(
         animation_length (int): Length of the animation. Defaults to 300.
         combination_index (int): Index of the camera combination to use from the JSON file. Defaults to 0.
         render_images (bool): Flag to indicate if images should be rendered instead of videos.
+        user_blend_file (str): Path to the user-specified Blender file to use as the base scene.
 
     Returns:
         None
@@ -85,6 +101,13 @@ def render_scene(
     os.makedirs(output_dir, exist_ok=True)
 
     initialize_scene()
+
+    if user_blend_file:
+        bpy.ops.wm.open_mainfile(filepath=user_blend_file)
+        if not load_user_blend_file(user_blend_file):
+            logger.error(f"Unable to load user-specified Blender file: {user_blend_file}")
+            return  # Exit the function if the file could not be loaded
+
     create_camera_rig()
 
     scene = context.scene
@@ -255,6 +278,12 @@ if __name__ == "__main__":
         action="store_true",
         help="Generate images instead of videos.",
     )
+    parser.add_argument(
+        "--blend",
+        type=str,
+        default=None,
+        help="Path to the user-specified Blender file to use as the base scene.",
+    )
 
     if "--" in sys.argv:
         argv = sys.argv[sys.argv.index("--") + 1 :]
@@ -291,4 +320,5 @@ if __name__ == "__main__":
         combination_index=args.combination_index,
         combination=args.combination,
         render_images=args.images,
+        user_blend_file=args.blend,
     )
