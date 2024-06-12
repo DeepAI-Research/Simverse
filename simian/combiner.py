@@ -963,10 +963,12 @@ if __name__ == "__main__":
 
     # Load only cap3d dataset
     cap3d_data_path = args.cap3d_captions_path
+    logger.info(f"Loading {cap3d_data_path}")
     cap3d_data = read_json_file(cap3d_data_path)
-    
+    logger.info(f"Loaded {len(cap3d_data)} unique entries from cap3d")
+
     # Ensure the dataset_dict contains only cap3d data
-    dataset_dict = {"cap3d": list(cap3d_data.keys())}  # Adjust if the key is different
+    dataset_dict = {"cap3d": list(cap3d_data.keys())}
 
     object_data = read_json_file(args.object_data_path)
     captions_data = read_json_file(args.cap3d_captions_path)
@@ -976,7 +978,16 @@ if __name__ == "__main__":
 
     # Load backgrounds
     backgrounds = read_json_file(args.datasets_path)["backgrounds"]
-    background_dict = {bg: read_json_file(os.path.join(args.simdata_path, bg + ".json")) for bg in backgrounds if os.path.exists(os.path.join(args.simdata_path, bg + ".json"))}
+    background_dict = {}
+    for bg in backgrounds:
+        bg_path = os.path.join(args.simdata_path, bg + ".json")
+        logger.info(f"Loading {bg_path}")
+        if os.path.exists(bg_path):
+            background_data = read_json_file(bg_path)
+            background_dict[bg] = background_data
+            logger.info(f"Loaded {len(background_data)} entries from {bg}")
+        else:
+            logger.info(f"Dataset file {bg_path} not found")
 
     background_names = list(background_dict.keys())
     background_weights = [len(background_dict[name]) for name in background_names]
