@@ -64,11 +64,8 @@ python3 -m simian.batch --start_index 0 --end_index 1000 --width 1024 --height 5
 
 To generate an video(s) with your own blend file:
 ```bash
-python3 -m simian.batch --start_index 0 --end_index 1000 --width 1024 --height 576 --start_frame 1 --end_frame 3 --animation_length 120 --blend 
-```
-
 python3 -m simian.batch --start_index 0 --end_index 1000 --width 1024 --height 576 --start_frame 1 --end_frame 3 --animation_length 120 --blend <absolute path to blend file>
-
+```
 
 To generate an image(s):
 ```bash
