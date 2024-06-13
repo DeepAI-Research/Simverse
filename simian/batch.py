@@ -17,7 +17,7 @@ def render_objects(
     end_frame: int = 65,
     images: bool = False,
     animation_length: int = 120,
-    blend_file: Optional[str] = None,
+    blend_file: Optional[str] = "flat",
 ) -> None:
     """
     Automates the rendering of objects using Blender based on predefined combinations.
@@ -71,9 +71,12 @@ def render_objects(
     # Loop over each combination index to set up and run the rendering process.
     for i in range(start_index, end_index):
         if images:
-            args = f"--width {width} --height {height} --combination_index {i} --start_frame {start_frame} --end_frame {end_frame} --output_dir {target_directory} --hdri_path {hdri_path} --animation_length {animation_length}  --blend {blend_file} --images"
+            args = f"--width {width} --height {height} --combination_index {i} --start_frame {start_frame} --end_frame {end_frame} --output_dir {target_directory} --hdri_path {hdri_path} --animation_length {animation_length} --images"
         else:
-            args = f"--width {width} --height {height} --combination_index {i} --start_frame {start_frame} --end_frame {end_frame} --output_dir {target_directory} --hdri_path {hdri_path} --animation_length {animation_length}  --blend {blend_file}"
+            args = f"--width {width} --height {height} --combination_index {i} --start_frame {start_frame} --end_frame {end_frame} --output_dir {target_directory} --hdri_path {hdri_path} --animation_length {animation_length}"
+
+        if blend_file != "flat":
+            args += f" --blend {blend_file}"
 
         command = f"{sys.executable} -m simian.render -- {args}"
         subprocess.run(["bash", "-c", command], timeout=render_timeout, check=False)
@@ -146,7 +149,7 @@ def main():
     parser.add_argument(
         "--blend",
         type=str,
-        default="infinigen",
+        default="flat",
         help="Path to the user-specified Blender file to use as the base scene.",
     )
 

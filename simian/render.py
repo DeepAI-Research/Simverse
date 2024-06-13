@@ -85,7 +85,7 @@ def render_scene(
     combination_index=0,
     combination=None,
     render_images=False,
-    user_blend_file=None
+    user_blend_file="flat"
 ) -> None:
     """
     Renders a scene with specified parameters.
@@ -111,7 +111,7 @@ def render_scene(
 
     initialize_scene()
 
-    if user_blend_file:
+    if user_blend_file == "infinigen":
         bpy.ops.wm.open_mainfile(filepath=user_blend_file)
         if not load_user_blend_file(user_blend_file):
             logger.error(f"Unable to load user-specified Blender file: {user_blend_file}")
@@ -155,7 +155,7 @@ def render_scene(
             focus_object = obj
 
         unparent_keep_transform(obj)
-        set_pivot_to_bottom(obj, user_blend_file)
+        set_pivot_to_bottom(obj)
 
         obj.scale = [object_data["scale"]["factor"] for _ in range(3)]
         normalize_object_scale(obj)
@@ -174,7 +174,7 @@ def render_scene(
 
     set_camera_animation(combination, animation_length)
 
-    if not user_blend_file:
+    if user_blend_file != "infinigen":
         set_background(args.hdri_path, combination)
         create_photosphere(args.hdri_path, combination).scale = (10, 10, 10)
         stage = create_stage(combination)
@@ -289,7 +289,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--blend",
         type=str,
-        default="infinigen",
+        default="flat",
         help="Path to the user-specified Blender file to use as the base scene.",
     )
 
