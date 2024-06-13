@@ -149,8 +149,9 @@ def main():
     parser.add_argument(
         "--blend",
         type=str,
-        default="flat",
+        default=None,
         help="Path to the user-specified Blender file to use as the base scene.",
+        required=False,
     )
 
     args = parser.parse_args()

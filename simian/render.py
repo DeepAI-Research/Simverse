@@ -36,6 +36,7 @@ from .background import create_photosphere, set_background
 from .scene import apply_stage_material, create_stage, initialize_scene
 from .vendor import objaverse
 
+
 def read_combination(combination_file: str, index: int = 0) -> dict:
     """
     Reads a specified camera combination from a JSON file.
@@ -85,7 +86,7 @@ def render_scene(
     combination_index=0,
     combination=None,
     render_images=False,
-    user_blend_file="flat"
+    user_blend_file=None
 ) -> None:
     """
     Renders a scene with specified parameters.
@@ -111,11 +112,13 @@ def render_scene(
 
     initialize_scene()
 
-    if user_blend_file == "infinigen":
+    if user_blend_file:
         bpy.ops.wm.open_mainfile(filepath=user_blend_file)
         if not load_user_blend_file(user_blend_file):
             logger.error(f"Unable to load user-specified Blender file: {user_blend_file}")
             return  # Exit the function if the file could not be loaded
+
+    context.scene.render.engine = 'BLENDER_EEVEE'
 
     create_camera_rig()
 
@@ -174,7 +177,7 @@ def render_scene(
 
     set_camera_animation(combination, animation_length)
 
-    if user_blend_file != "infinigen":
+    if not user_blend_file:
         set_background(args.hdri_path, combination)
         create_photosphere(args.hdri_path, combination).scale = (10, 10, 10)
         stage = create_stage(combination)
@@ -289,8 +292,9 @@ if __name__ == "__main__":
     parser.add_argument(
         "--blend",
         type=str,
-        default="flat",
+        default=None,
         help="Path to the user-specified Blender file to use as the base scene.",
+        required=False,
     )
 
     if "--" in sys.argv:
