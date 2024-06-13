@@ -337,6 +337,29 @@ def apply_and_remove_armatures():
                     bpy.ops.object.select_all(action="DESELECT")
 
 
+def get_terrain_height(location: Vector) -> float:
+    """
+    Get the height of the terrain at a specific location.
+    Args:
+        location (Vector): The location to get the height for.
+    Returns:
+        float: The height of the terrain at the specified location.
+    """
+    bpy.context.view_layer.update()
+    ray_origin = Vector((location.x, location.y, 1000))  # Ray origin above the location
+    ray_direction = Vector((0, 0, -1))  # Ray direction downwards
+
+    depsgraph = bpy.context.evaluated_depsgraph_get()
+    result, hit_location, normal, index, obj, matrix = bpy.context.scene.ray_cast(depsgraph, ray_origin, ray_direction)
+
+    if result:
+        logger.info(f"Ray hit at {hit_location}")
+        return hit_location.z
+    else:
+        logger.info("Ray did not hit any terrain")
+        return 0.0  # Default to 0 if no intersection is found
+    
+
 def apply_all_modifiers(obj: bpy.types.Object):
     """
     Recursively apply all modifiers to the object and its children.
@@ -459,35 +482,56 @@ def join_objects_in_hierarchy(obj: bpy.types.Object) -> None:
         logger.info("No meshes found to set as active.")
 
 
-def set_pivot_to_bottom(obj: bpy.types.Object) -> None:
+def set_pivot_to_bottom(obj: bpy.types.Object, user_blend_file: str = None) -> None:
     """
     Set the pivot of the object to the center of mass, and the Z-coordinate to the bottom of the bounding box.
-
     Args:
         obj (bpy.types.Object): The object to adjust.
-
+        user_blend_file (str): Path to the user blend file if available.
     Returns:
         None
     """
-    # Calculate the center of mass
     bpy.context.view_layer.update()
-    center_of_mass = obj.location
-
+    
     # Calculate the bounding box bottom
     bbox_min = [obj.matrix_world @ Vector(corner) for corner in obj.bound_box][0]
     for corner in obj.bound_box:
         world_corner = obj.matrix_world @ Vector(corner)
         if world_corner.z < bbox_min.z:
             bbox_min = world_corner
+    
+    # Calculate the center of mass
+    center_of_mass = sum((obj.matrix_world @ Vector(corner) for corner in obj.bound_box), Vector()) / 8.0
 
     # Set origin to the center of mass, then adjust Z-coordinate to the bottom of the bounding box
     bpy.ops.object.origin_set(type="ORIGIN_CENTER_OF_MASS", center="BOUNDS")
     obj.location.z = center_of_mass.z - bbox_min.z
-    obj.location.y = 0
-    obj.location.x = 0
 
+    # For custom blend file scenarios
+    if user_blend_file:
+        original_location = obj.location.copy()
+        
+        # Temporarily move the object out of the way to measure terrain height
+        obj.location.z += 1000  # Move the object up by 1000 units
+        bpy.context.view_layer.update()
+        
+        # Get the terrain height at the original location
+        terrain_height = get_terrain_height(original_location)
+        logger.info(f"Terrain height at object location: {terrain_height}")
+        
+        # Move the object back to its original location
+        obj.location = original_location
+        bpy.context.view_layer.update()
+
+        # Adjust the object's Z location to align with the terrain height
+        obj.location.z = terrain_height - bbox_min.z
+        logger.info(f"Adjusted object Z location: {obj.location.z}")
+
+    # Apply transformations and set origin to the cursor
     bpy.context.scene.cursor.location = (0, 0, 0)
     bpy.ops.object.origin_set(type="ORIGIN_CURSOR")
+    bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+    logger.info(f"Applied transformation to the object: {obj.location}")
 
 
 def unparent_keep_transform(obj: bpy.types.Object) -> None:

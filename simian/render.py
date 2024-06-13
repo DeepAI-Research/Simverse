@@ -53,6 +53,15 @@ def read_combination(combination_file: str, index: int = 0) -> dict:
     
 
 def load_user_blend_file(user_blend_file):
+    """
+    Loads a user-specified Blender file as the base scene.
+
+    Args:
+        user_blend_file (str): Path to the user-specified Blender file.
+
+    Returns:
+        bool: True if the file was successfully loaded, False otherwise.
+    """
     if not os.path.exists(user_blend_file):
         logger.error(f"Blender file {user_blend_file} does not exist.")
         return False
@@ -146,7 +155,7 @@ def render_scene(
             focus_object = obj
 
         unparent_keep_transform(obj)
-        set_pivot_to_bottom(obj)
+        set_pivot_to_bottom(obj, user_blend_file)
 
         obj.scale = [object_data["scale"]["factor"] for _ in range(3)]
         normalize_object_scale(obj)
@@ -165,12 +174,11 @@ def render_scene(
 
     set_camera_animation(combination, animation_length)
 
-    set_background(args.hdri_path, combination)
-
-    create_photosphere(args.hdri_path, combination).scale = (10, 10, 10)
-
-    stage = create_stage(combination)
-    apply_stage_material(stage, combination)
+    if not user_blend_file:
+        set_background(args.hdri_path, combination)
+        create_photosphere(args.hdri_path, combination).scale = (10, 10, 10)
+        stage = create_stage(combination)
+        apply_stage_material(stage, combination)
 
     # Randomize image sizes
     sizes = [
@@ -281,7 +289,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--blend",
         type=str,
-        default=None,
+        default="infinigen",
         help="Path to the user-specified Blender file to use as the base scene.",
     )
 
