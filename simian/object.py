@@ -337,6 +337,29 @@ def apply_and_remove_armatures():
                     bpy.ops.object.select_all(action="DESELECT")
 
 
+def get_terrain_height(location: Vector) -> float:
+    """
+    Get the height of the terrain at a specific location.
+    Args:
+        location (Vector): The location to get the height for.
+    Returns:
+        float: The height of the terrain at the specified location.
+    """
+    bpy.context.view_layer.update()
+    ray_origin = Vector((location.x, location.y, 100))  # Ray origin above the location
+    ray_direction = Vector((0, 0, -1))  # Ray direction downwards
+
+    depsgraph = bpy.context.evaluated_depsgraph_get()
+    result, hit_location, normal, index, obj, matrix = bpy.context.scene.ray_cast(depsgraph, ray_origin, ray_direction)
+
+    if result:
+        logger.info(f"Ray hit at {hit_location}")
+        return hit_location.z
+    else:
+        logger.info("Ray did not hit any terrain")
+        return 0.0  # Default to 0 if no intersection is found
+    
+
 def apply_all_modifiers(obj: bpy.types.Object):
     """
     Recursively apply all modifiers to the object and its children.
@@ -461,16 +484,16 @@ def join_objects_in_hierarchy(obj: bpy.types.Object) -> None:
 
 def set_pivot_to_bottom(obj: bpy.types.Object) -> None:
     """
-    Set the pivot of the object to the center of mass, and the Z-coordinate to the bottom of the bounding box.
-
+    Set the pivot of the object to the center of mass, and place it on the terrain surface.
     Args:
         obj (bpy.types.Object): The object to adjust.
-
     Returns:
         None
     """
-    # Calculate the center of mass
+    # Update the view layer to ensure the latest changes are considered
     bpy.context.view_layer.update()
+
+    # Calculate the center of mass
     center_of_mass = obj.location
 
     # Calculate the bounding box bottom
@@ -480,14 +503,22 @@ def set_pivot_to_bottom(obj: bpy.types.Object) -> None:
         if world_corner.z < bbox_min.z:
             bbox_min = world_corner
 
-    # Set origin to the center of mass, then adjust Z-coordinate to the bottom of the bounding box
+    # Set origin to the center of mass
     bpy.ops.object.origin_set(type="ORIGIN_CENTER_OF_MASS", center="BOUNDS")
-    obj.location.z = center_of_mass.z - bbox_min.z
-    obj.location.y = 0
-    obj.location.x = 0
 
-    bpy.context.scene.cursor.location = (0, 0, 0)
-    bpy.ops.object.origin_set(type="ORIGIN_CURSOR")
+    # Get the terrain height at the object's bounding box minimum location
+    terrain_height = get_terrain_height(bbox_min)
+    logger.info(f"Terrain height at object location: {terrain_height}")
+
+    # Calculate the object's height
+    obj_height = center_of_mass.z - bbox_min.z
+
+    # Move the object to the terrain height plus its height
+    obj.location.z = terrain_height + obj_height
+
+    # Apply transformations
+    bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+    logger.info(f"Applied transformation to the object: {obj.location}")
 
 
 def unparent_keep_transform(obj: bpy.types.Object) -> None:
