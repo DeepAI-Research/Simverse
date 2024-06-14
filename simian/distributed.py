@@ -3,6 +3,7 @@ import json
 import logging
 import os
 import time
+from tqdm import tqdm
 from typing import Dict
 
 from distributaur.distributaur import Distributaur
@@ -49,7 +50,8 @@ if __name__ == "__main__":
             "hf_token": args.hf_token or env_vars.get("HF_TOKEN", ""),
             "hf_repo_id": args.hf_repo_id or env_vars.get("HF_REPO_ID", ""),
             "hf_path": args.hf_path or env_vars.get("HF_PATH", ""),
-            "broker_pool_limit": args.broker_pool_limit or int(env_vars.get("BROKER_POOL_LIMIT", 1))
+            "broker_pool_limit": args.broker_pool_limit
+            or int(env_vars.get("BROKER_POOL_LIMIT", 1)),
         }
 
         # Load combinations from file
@@ -92,11 +94,10 @@ if __name__ == "__main__":
             "redis_port": settings["redis_port"],
             "redis_user": settings["redis_user"],
             "redis_password": settings["redis_password"],
-            "broker_pool_limit": settings["broker_pool_limit"]
+            "broker_pool_limit": settings["broker_pool_limit"],
         }
-        
 
-        print('*** JOB CONFIG')
+        print("*** JOB CONFIG")
         print(job_config)
 
         distributaur = Distributaur(
@@ -107,7 +108,7 @@ if __name__ == "__main__":
             redis_port=job_config["redis_port"],
             redis_username=job_config["redis_user"],
             redis_password=job_config["redis_password"],
-            broker_pool_limit=job_config["broker_pool_limit"]
+            broker_pool_limit=job_config["broker_pool_limit"],
         )
 
         max_price = job_config["max_price"]
@@ -120,7 +121,9 @@ if __name__ == "__main__":
         num_nodes_avail = len(distributaur.search_offers(max_price))
         print("TOTAL NODES AVAILABLE: ", num_nodes_avail)
 
-        rented_nodes = distributaur.rent_nodes(max_price, max_nodes, docker_image, module_name)
+        rented_nodes = distributaur.rent_nodes(
+            max_price, max_nodes, docker_image, module_name
+        )
 
         print("TOTAL RENTED NODES: ", len(rented_nodes))
         print(rented_nodes)
@@ -130,7 +133,10 @@ if __name__ == "__main__":
         tasks = []
 
         # Submit tasks
-        for combination_index in range(job_config["start_index"], min(job_config["end_index"], len(job_config["combinations"]))):
+        for combination_index in range(
+            job_config["start_index"],
+            min(job_config["end_index"], len(job_config["combinations"])),
+        ):
             task = distributaur.execute_function(
                 "run_job",
                 {
@@ -148,16 +154,39 @@ if __name__ == "__main__":
 
         # Wait for tasks to complete
         print("Tasks submitted to queue. Waiting for tasks to complete...")
-        while not all(task.ready() for task in tasks):
-            time.sleep(1)
+
+
+        prev_tasks = 0
+        first_task_done = False
+        queue_start_time = time.time()
+        # Wait for the tasks to complete
+        print("Tasks submitted to queue. Initializing queue...")
+        with tqdm(total=len(tasks), unit="task") as pbar:
+            while not all(task.ready() for task in tasks):
+                current_tasks = sum([task.ready() for task in tasks])
+                pbar.update(current_tasks - pbar.n)
+
+                if current_tasks > 0:
+                    # begin estimation from time of first task
+                    if not first_task_done:
+                        first_task_done = True
+                        first_task_start_time = time.time()
+                        print("Initialization completed. Tasks started...")
+
+                    # calculate and print total elapsed time and estimated time left
+                    end_time = time.time()
+                    elapsed_time = end_time - first_task_start_time
+                    time_per_tasks = elapsed_time / current_tasks
+                    time_left = time_per_tasks * (len(tasks) - current_tasks)
+
+                    pbar.set_postfix(
+                        elapsed=f"{elapsed_time:.2f}s", time_left=f"{time_left:.2f}"
+                    )            
 
         print("All tasks have been completed!")
-        distributaur.terminate_nodes(rented_nodes)
 
     parser = argparse.ArgumentParser(description="Simian CLI")
-    parser.add_argument(
-        "--start-index", type=int, help="Starting index for rendering"
-    )
+    parser.add_argument("--start-index", type=int, help="Starting index for rendering")
     parser.add_argument(
         "--combinations-file", help="Path to the combinations JSON file"
     )
@@ -178,7 +207,9 @@ if __name__ == "__main__":
     parser.add_argument("--hf_token", help="Hugging Face token")
     parser.add_argument("--hf_repo-id", help="Hugging Face repository ID")
     parser.add_argument("--hf_path", help="Hugging Face path")
-    parser.add_argument("--broker_pool_limit", type=int, help="Limit on redis pool size")
+    parser.add_argument(
+        "--broker_pool_limit", type=int, help="Limit on redis pool size"
+    )
     args = parser.parse_args()
 
     start_new_job(args)
