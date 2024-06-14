@@ -14,6 +14,9 @@ def initialize_scene() -> None:
     bpy.ops.object.select_all(action="SELECT")
 
     bpy.ops.object.delete()
+    
+    # set render mode of blend file to eevee
+    bpy.context.scene.render.engine = 'BLENDER_EEVEE'
 
 
 def download_texture(url: str, material_name: str, texture_name: str) -> str:

@@ -17,6 +17,7 @@ def render_objects(
     end_frame: int = 65,
     images: bool = False,
     animation_length: int = 120,
+    blend_file: Optional[str] = "flat",
 ) -> None:
     """
     Automates the rendering of objects using Blender based on predefined combinations.
@@ -27,7 +28,7 @@ def render_objects(
 
     Args:
         processes (Optional[int]): Number of processes to use for multiprocessing.
-            Defaults to three times the number of CPU cores.
+        Defaults to three times the number of CPU cores.
         render_timeout (int): Maximum time in seconds for a single rendering process.
         width (int): Width of the rendering in pixels.
         height (int): Height of the rendering in pixels.
@@ -35,6 +36,9 @@ def render_objects(
         end_index (int): Ending index for rendering from the combinations DataFrame.
         start_frame (int): Starting frame number for the animation.
         end_frame (int): Ending frame number for the animation.
+        images (bool): Generate images instead of videos.
+        animation_length (int): End frame of the animation.
+        blend_file (Optional[str]): Path to the user-specified Blender file to use as the base scene.
 
     Raises:
         NotImplementedError: If the operating system is not supported.
@@ -70,6 +74,9 @@ def render_objects(
             args = f"--width {width} --height {height} --combination_index {i} --start_frame {start_frame} --end_frame {end_frame} --output_dir {target_directory} --hdri_path {hdri_path} --animation_length {animation_length} --images"
         else:
             args = f"--width {width} --height {height} --combination_index {i} --start_frame {start_frame} --end_frame {end_frame} --output_dir {target_directory} --hdri_path {hdri_path} --animation_length {animation_length}"
+
+        if blend_file != "flat":
+            args += f" --blend {blend_file}"
 
         command = f"{sys.executable} -m simian.render -- {args}"
         subprocess.run(["bash", "-c", command], timeout=render_timeout, check=False)
@@ -139,6 +146,13 @@ def main():
         help="End frame of the animation.",
         required=False,
     )
+    parser.add_argument(
+        "--blend",
+        type=str,
+        default=None,
+        help="Path to the user-specified Blender file to use as the base scene.",
+        required=False,
+    )
 
     args = parser.parse_args()
 
@@ -153,6 +167,7 @@ def main():
         start_frame=args.start_frame,
         end_frame=args.end_frame,
         images=args.images,
+        blend_file=args.blend,
     )
 
 

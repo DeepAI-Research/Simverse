@@ -36,6 +36,7 @@ from .background import create_photosphere, set_background
 from .scene import apply_stage_material, create_stage, initialize_scene
 from .vendor import objaverse
 
+
 def read_combination(combination_file: str, index: int = 0) -> dict:
     """
     Reads a specified camera combination from a JSON file.
@@ -50,6 +51,29 @@ def read_combination(combination_file: str, index: int = 0) -> dict:
         data = json.load(file)
         combinations_data = data["combinations"]
         return combinations_data[index]
+    
+
+def load_user_blend_file(user_blend_file):
+    """
+    Loads a user-specified Blender file as the base scene.
+
+    Args:
+        user_blend_file (str): Path to the user-specified Blender file.
+
+    Returns:
+        bool: True if the file was successfully loaded, False otherwise.
+    """
+    if not os.path.exists(user_blend_file):
+        logger.error(f"Blender file {user_blend_file} does not exist.")
+        return False
+
+    try:
+        bpy.ops.wm.open_mainfile(filepath=user_blend_file)
+        logger.info(f"Opened user-specified Blender file {user_blend_file} as the base scene.")
+        return True
+    except Exception as e:
+        logger.error(f"Failed to load Blender file {user_blend_file}: {e}")
+        return False
 
 
 def render_scene(
@@ -62,6 +86,7 @@ def render_scene(
     combination_index=0,
     combination=None,
     render_images=False,
+    user_blend_file=None
 ) -> None:
     """
     Renders a scene with specified parameters.
@@ -75,6 +100,7 @@ def render_scene(
         animation_length (int): Length of the animation. Defaults to 300.
         combination_index (int): Index of the camera combination to use from the JSON file. Defaults to 0.
         render_images (bool): Flag to indicate if images should be rendered instead of videos.
+        user_blend_file (str): Path to the user-specified Blender file to use as the base scene.
 
     Returns:
         None
@@ -85,6 +111,15 @@ def render_scene(
     os.makedirs(output_dir, exist_ok=True)
 
     initialize_scene()
+
+    if user_blend_file:
+        bpy.ops.wm.open_mainfile(filepath=user_blend_file)
+        if not load_user_blend_file(user_blend_file):
+            logger.error(f"Unable to load user-specified Blender file: {user_blend_file}")
+            return  # Exit the function if the file could not be loaded
+
+    context.scene.render.engine = 'BLENDER_EEVEE'
+
     create_camera_rig()
 
     scene = context.scene
@@ -142,12 +177,11 @@ def render_scene(
 
     set_camera_animation(combination, animation_length)
 
-    set_background(args.hdri_path, combination)
-
-    create_photosphere(args.hdri_path, combination).scale = (10, 10, 10)
-
-    stage = create_stage(combination)
-    apply_stage_material(stage, combination)
+    if not user_blend_file:
+        set_background(args.hdri_path, combination)
+        create_photosphere(args.hdri_path, combination).scale = (10, 10, 10)
+        stage = create_stage(combination)
+        apply_stage_material(stage, combination)
 
     # Randomize image sizes
     sizes = [
@@ -186,9 +220,9 @@ def render_scene(
         render_path = os.path.join(output_dir, f"{combination_index}.mp4")
         scene.render.filepath = render_path
         bpy.ops.render.render(animation=True)
-        bpy.ops.wm.save_as_mainfile(
-            filepath=os.path.join(output_dir, f"{combination_index}.blend")
-        )
+        # bpy.ops.wm.save_as_mainfile(
+        #     filepath=os.path.join(output_dir, f"{combination_index}.blend")
+        # )
         logger.info(f"Rendered video saved to {render_path}")
 
 
@@ -255,6 +289,13 @@ if __name__ == "__main__":
         action="store_true",
         help="Generate images instead of videos.",
     )
+    parser.add_argument(
+        "--blend",
+        type=str,
+        default=None,
+        help="Path to the user-specified Blender file to use as the base scene.",
+        required=False,
+    )
 
     if "--" in sys.argv:
         argv = sys.argv[sys.argv.index("--") + 1 :]
@@ -291,4 +332,5 @@ if __name__ == "__main__":
         combination_index=args.combination_index,
         combination=args.combination,
         render_images=args.images,
+        user_blend_file=args.blend,
     )

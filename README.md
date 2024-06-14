@@ -59,7 +59,12 @@ Or generate all or part of the combination set using the `batch.py` script:
 
 To generate a video(s): 
 ```bash
-python3 -m simian.batch --start_index 0 --end_index 1000 --width 1024 --height 576 --start_frame 1 --end_frame 65 --animation_length 120
+python3 -m simian.batch --start_index 0 --end_index 1000 --width 1024 --height 576 --start_frame 1 --end_frame 3 --animation_length 120
+```
+
+To generate an video(s) with your own blend file:
+```bash
+python3 -m simian.batch --start_index 0 --end_index 1000 --width 1024 --height 576 --start_frame 1 --end_frame 3 --animation_length 120 --blend <absolute path to blend file>
 ```
 
 To generate an image(s):
@@ -193,7 +198,7 @@ If you use it, please cite us:
 ## Contributors ✨
 
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-2-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-3-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
@@ -204,8 +209,9 @@ This project follows the [all-contributors](https://github.com/all-contributors/
 <table>
   <tbody>
     <tr>
-      <td align="center" valign="top" width="14.28%"><a href="https://github.com/lalalune"><img src="https://avatars.githubusercontent.com/u/18633264?v=4?s=100" width="100px;" alt="M̵̞̗̝̼̅̏̎͝Ȯ̴̝̻̊̃̋̀Õ̷̼͋N̸̩̿͜ ̶̜̠̹̼̩͒"/><br /><sub><b>M̵̞̗̝̼̅̏̎͝Ȯ̴̝̻̊̃̋̀Õ̷̼͋N̸̩̿͜ ̶̜̠̹̼̩͒</b></sub></a><br /><a href="#infra-lalalune" title="Infrastructure (Hosting, Build-Tools, etc)">🚇</a> <a href="https://github.com/RaccoonResearch/Simian/commits?author=lalalune" title="Tests">⚠️</a> <a href="https://github.com/RaccoonResearch/Simian/commits?author=lalalune" title="Code">💻</a> <a href="https://github.com/RaccoonResearch/Simian/commits?author=eric-prog" title="Documentation">📖</a></td>
-      <td align="center" valign="top" width="14.28%"><a href="https://ericsheen.tech/"><img src="https://avatars.githubusercontent.com/u/59460685?v=4?s=100" width="100px;" alt="Eric S"/><br /><sub><b>Eric S</b></sub></a><br /> <a href="https://github.com/RaccoonResearch/Simian/commits?author=eric-prog" title="Code">💻</a> <a href="https://github.com/RaccoonResearch/Simian/commits?author=eric-prog" title="Tests">⚠️</a> <a href="https://github.com/RaccoonResearch/Simian/commits?author=eric-prog" title="Documentation">📖</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/lalalune"><img src="https://avatars.githubusercontent.com/u/18633264?v=4?s=100" width="100px;" alt="M̵̞̗̝̼̅̏̎͝Ȯ̴̝̻̊̃̋̀Õ̷̼͋N̸̩̿͜ ̶̜̠̹̼̩͒"/><br /><sub><b>M̵̞̗̝̼̅̏̎͝Ȯ̴̝̻̊̃̋̀Õ̷̼͋N̸̩̿͜ ̶̜̠̹̼̩͒</b></sub></a><br /><a href="#infra-lalalune" title="Infrastructure (Hosting, Build-Tools, etc)">🚇</a> <a href="https://github.com/RaccoonResearch/Simian/commits?author=lalalune" title="Code">💻</a> <a href="https://github.com/RaccoonResearch/Simian/commits?author=lalalune" title="Tests">⚠️</a> <a href="https://github.com/RaccoonResearch/Simian/commits?author=lalalune" title="Documentation">📖</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://ericsheen.tech/"><img src="https://avatars.githubusercontent.com/u/59460685?v=4?s=100" width="100px;" alt="Eric S"/><br /><sub><b>Eric S</b></sub></a><br /><a href="https://github.com/RaccoonResearch/Simian/commits?author=eric-prog" title="Code">💻</a> <a href="https://github.com/RaccoonResearch/Simian/commits?author=eric-prog" title="Tests">⚠️</a> <a href="https://github.com/RaccoonResearch/Simian/commits?author=eric-prog" title="Documentation">📖</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/antbaez9"><img src="https://avatars.githubusercontent.com/u/97056049?v=4?s=100" width="100px;" alt="Anthony"/><br /><sub><b>Anthony</b></sub></a><br /><a href="https://github.com/RaccoonResearch/Simian/commits?author=antbaez9" title="Code">💻</a></td>
     </tr>
   </tbody>
 </table>
