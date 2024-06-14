@@ -3,6 +3,7 @@ import json
 import logging
 import os
 import time
+import atexit
 from tqdm import tqdm
 from typing import Dict
 
@@ -155,17 +156,24 @@ if __name__ == "__main__":
         # Wait for tasks to complete
         print("Tasks submitted to queue. Waiting for tasks to complete...")
 
+        def cleanup_redis():
+            patterns = ["celery-task*", "task_status*"]
+            redis_connection = distributaur.get_redis_connection()
+            for pattern in patterns:
+                for key in redis_connection.scan_iter(match=pattern):
+                    redis_connection.delete(key)
 
-        prev_tasks = 0
+        atexit.register(cleanup_redis)
+
+
         first_task_done = False
-        queue_start_time = time.time()
         # Wait for the tasks to complete
         print("Tasks submitted to queue. Initializing queue...")
         with tqdm(total=len(tasks), unit="task") as pbar:
             while not all(task.ready() for task in tasks):
+                first_task = tasks[0]
                 current_tasks = sum([task.ready() for task in tasks])
                 pbar.update(current_tasks - pbar.n)
-
                 if current_tasks > 0:
                     # begin estimation from time of first task
                     if not first_task_done:
@@ -182,6 +190,7 @@ if __name__ == "__main__":
                     pbar.set_postfix(
                         elapsed=f"{elapsed_time:.2f}s", time_left=f"{time_left:.2f}"
                     )            
+                time.sleep(1)
 
         print("All tasks have been completed!")
 

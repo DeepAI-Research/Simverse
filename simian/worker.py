@@ -3,7 +3,9 @@ import logging
 import os
 import sys
 import subprocess
+import time
 from typing import Any, Dict
+from celery import current_task
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
@@ -34,6 +36,9 @@ def run_job(
     Returns:
         None
     """
+
+
+
     combination = json.dumps(combination)
     combination = '"' + combination.replace('"', '\\"') + '"'
 
@@ -44,15 +49,20 @@ def run_job(
     args += f" --hdri_path {hdri_path}"
     args += f" --start_frame {start_frame} --end_frame {end_frame}"
     args += f" --combination {combination}"
+    # args += f" --images"
 
     command = f"{sys.executable} -m simian.render -- {args}"
     logger.info(f"Worker running: {command}")
 
     subprocess.run(["bash", "-c", command], check=False)
-    
+
+
+    # causes tqdm to not function, unsure whether it happens whether rate limiting occurs or not
     distributaur.upload_directory(output_dir)
-    
-    print("Job done")
+
+    return "Task done"
+
+
 
 
 # only run this is this file was started by celery or run directly
