@@ -8,7 +8,6 @@ from typing import Any, Dict
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
 
-
 def run_job(
     combination_index: int,
     combination: Dict[str, Any],
