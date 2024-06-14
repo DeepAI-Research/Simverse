@@ -49,6 +49,7 @@ if __name__ == "__main__":
             "hf_token": args.hf_token or env_vars.get("HF_TOKEN", ""),
             "hf_repo_id": args.hf_repo_id or env_vars.get("HF_REPO_ID", ""),
             "hf_path": args.hf_path or env_vars.get("HF_PATH", ""),
+            "broker_pool_limit": args.broker_pool_limit or int(env_vars.get("BROKER_POOL_LIMIT", 1))
         }
 
         # Load combinations from file
@@ -91,8 +92,10 @@ if __name__ == "__main__":
             "redis_port": settings["redis_port"],
             "redis_user": settings["redis_user"],
             "redis_password": settings["redis_password"],
+            "broker_pool_limit": settings["broker_pool_limit"]
         }
         
+
         print('*** JOB CONFIG')
         print(job_config)
 
@@ -104,6 +107,7 @@ if __name__ == "__main__":
             redis_port=job_config["redis_port"],
             redis_username=job_config["redis_user"],
             redis_password=job_config["redis_password"],
+            broker_pool_limit=job_config["broker_pool_limit"]
         )
 
         max_price = job_config["max_price"]
@@ -121,8 +125,7 @@ if __name__ == "__main__":
         print("TOTAL RENTED NODES: ", len(rented_nodes))
         print(rented_nodes)
 
-        distributaur.register_function(run_job)
-        # distributaur.start_monitoring_server(worker_name="simian.worker")
+        # distributaur.register_function(run_job)
 
         tasks = []
 
@@ -175,6 +178,7 @@ if __name__ == "__main__":
     parser.add_argument("--hf_token", help="Hugging Face token")
     parser.add_argument("--hf_repo-id", help="Hugging Face repository ID")
     parser.add_argument("--hf_path", help="Hugging Face path")
+    parser.add_argument("--broker_pool_limit", type=int, help="Limit on redis pool size")
     args = parser.parse_args()
 
     start_new_job(args)
