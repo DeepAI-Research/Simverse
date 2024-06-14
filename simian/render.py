@@ -220,9 +220,9 @@ def render_scene(
         render_path = os.path.join(output_dir, f"{combination_index}.mp4")
         scene.render.filepath = render_path
         bpy.ops.render.render(animation=True)
-        bpy.ops.wm.save_as_mainfile(
-            filepath=os.path.join(output_dir, f"{combination_index}.blend")
-        )
+        # bpy.ops.wm.save_as_mainfile(
+        #     filepath=os.path.join(output_dir, f"{combination_index}.blend")
+        # )
         logger.info(f"Rendered video saved to {render_path}")
 
 
