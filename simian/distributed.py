@@ -125,7 +125,7 @@ if __name__ == "__main__":
         print("TOTAL RENTED NODES: ", len(rented_nodes))
         print(rented_nodes)
 
-        # distributaur.register_function(run_job)
+        distributaur.register_function(run_job)
 
         tasks = []
 
