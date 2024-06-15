@@ -296,7 +296,7 @@ def place_objects_on_grid(
             (
                 transformed_position[0] * largest_length,
                 transformed_position[1] * largest_length,
-                0,
+                obj.location.z,
             )
         )
         logger.info(f"Placed object {obj.name} at {obj.location}")
