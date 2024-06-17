@@ -87,7 +87,6 @@ def render_scene(
     combination=None,
     render_images=False,
     user_blend_file=None,
-    movement=None,
 ) -> None:
     """
     Renders a scene with specified parameters.
@@ -102,7 +101,6 @@ def render_scene(
         combination_index (int): Index of the camera combination to use from the JSON file. Defaults to 0.
         render_images (bool): Flag to indicate if images should be rendered instead of videos.
         user_blend_file (str): Path to the user-specified Blender file to use as the base scene.
-        movement (str): Adding movement to Simian
 
     Returns:
         None

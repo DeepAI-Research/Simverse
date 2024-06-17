@@ -18,7 +18,6 @@ def render_objects(
     images: bool = False,
     animation_length: int = 120,
     blend_file: Optional[str] = None,
-    movement: Optional[str] = None,
 ) -> None:
     """
     Automates the rendering of objects using Blender based on predefined combinations.
