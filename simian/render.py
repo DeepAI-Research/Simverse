@@ -86,7 +86,8 @@ def render_scene(
     combination_index=0,
     combination=None,
     render_images=False,
-    user_blend_file=None
+    user_blend_file=None,
+    movement=None,
 ) -> None:
     """
     Renders a scene with specified parameters.
@@ -101,6 +102,7 @@ def render_scene(
         combination_index (int): Index of the camera combination to use from the JSON file. Defaults to 0.
         render_images (bool): Flag to indicate if images should be rendered instead of videos.
         user_blend_file (str): Path to the user-specified Blender file to use as the base scene.
+        movement (str): Adding movement to Simian
 
     Returns:
         None
@@ -186,9 +188,11 @@ def render_scene(
     # Randomize image sizes
     sizes = [
         (1920, 1080),
-        (1024, 1024),
-        (512, 512),
+        # (1024, 1024),
+        # (512, 512),
     ]
+
+    # python3 -m simian.batch --start_index 30 --end_index 1000 --width 1024 --height 576 --start_frame 1 --end_frame 65 --animation_length 120 --blend /Users/ericsheen/Desktop/Raccoon_Research/infinigen100/scene_1.blend
 
     if render_images:
         # Render a specific frame as an image with a random size

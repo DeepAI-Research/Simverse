@@ -5,6 +5,7 @@ import os
 import random
 import argparse
 from typing import Any, Dict, List, Optional
+from mathutils import Vector
 
 from .transform import determine_relationships, adjust_positions
 
@@ -93,6 +94,13 @@ def parse_args() -> argparse.Namespace:
         type=str,
         default="data/stage_data.json",
         help="Path to the JSON file containing stage data",
+    )
+    parser.add_argument(
+        "--movement",
+        type=str,
+        default="none",
+        choices=["none", "all"],
+        help="Apply movement to all, none, or random objects."
     )
     return parser.parse_args()
 
@@ -277,6 +285,17 @@ def generate_relationship_captions(combination: Dict[str, Any]) -> List[str]:
         selected_relationships = random.sample(relationships, threshold_relationships)
 
     return selected_relationships
+
+
+def add_movement_to_objects(objects, movement="none", max_speed=1.0):
+    if movement == "none":
+        return objects
+    for obj in objects:
+        if movement == "all":
+            direction = random.choice(["left", "right", "up", "forward", "backward"])
+            speed = random.uniform(0.1, max_speed)
+            obj["movement"] = {"direction": direction, "speed": speed}
+    return objects
 
 
 def generate_fov_caption(combination: Dict[str, Any]) -> str:
@@ -479,6 +498,23 @@ def generate_animation_captions(combination: Dict[str, Any], camera_data) -> Lis
     return []
 
 
+def generate_movement_captions(combination: Dict[str, Any]) -> List[str]:
+    """
+    Generate captions for object movement based on the combination data.
+    Copy codeArgs:
+        combination (Dict[str, Any]): Combination data.
+
+    Returns:
+        List[str]: List of movement captions.
+    """
+    movement_captions = []
+    for obj in combination["objects"]:
+        if "movement" in obj:
+            movement_description = f"{obj['name']} moves {obj['movement']['direction']} at {obj['movement']['speed']} units."
+            movement_captions.append(movement_description)
+    return movement_captions
+
+
 def generate_caption(combination: Dict[str, Any], object_data, camera_data) -> str:
     """
     Generate a complete caption based on the combination data.
@@ -519,6 +555,10 @@ def generate_caption(combination: Dict[str, Any], object_data, camera_data) -> s
 
     animation_captions = generate_animation_captions(combination, camera_data)
     caption_parts.extend(animation_captions)
+
+     # Add information about object movement
+    movement_captions = generate_movement_captions(combination)
+    caption_parts.extend(movement_captions)
 
     caption = " ".join(caption_parts)  # Join the caption parts into a single string
     caption = caption.strip()  # Remove leading and trailing whitespace
@@ -859,6 +899,8 @@ def generate_combinations(
 
         stage = generate_stage(texture_data)
 
+        movement = add_movement_to_objects(objects, args.movement, max_speed=1.0)
+
         combination = {
             "index": i,
             "objects": objects,
@@ -868,6 +910,7 @@ def generate_combinations(
             "animation": animation,
             "stage": stage,
             "postprocessing": postprocessing,
+            "movement": movement,
         }
 
         combination["caption"] = generate_caption(combination, object_data, camera_data)
