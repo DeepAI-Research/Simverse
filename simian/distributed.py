@@ -3,7 +3,6 @@ import json
 import logging
 import os
 import time
-import atexit
 from tqdm import tqdm
 from typing import Dict
 
@@ -53,8 +52,6 @@ if __name__ == "__main__":
             "hf_path": args.hf_path or env_vars.get("HF_PATH", ""),
             "broker_pool_limit": args.broker_pool_limit
             or int(env_vars.get("BROKER_POOL_LIMIT", 1)),
-            "render_batch_size": args.render_batch_size
-            or int(env_vars.get("RENDER_BATCH_SIZE", 2)),
         }
 
         # Load combinations from file
@@ -98,7 +95,6 @@ if __name__ == "__main__":
             "redis_user": settings["redis_user"],
             "redis_password": settings["redis_password"],
             "broker_pool_limit": settings["broker_pool_limit"],
-            "render_batch_size": settings["render_batch_size"],
         }
 
         print("*** JOB CONFIG")
@@ -136,45 +132,22 @@ if __name__ == "__main__":
 
         tasks = []
 
-        batch_size = job_config["render_batch_size"]
         # Submit tasks
         for combination_index in range(
             job_config["start_index"],
             min(job_config["end_index"], len(job_config["combinations"])),
-            batch_size,
         ):
             task = distributaur.execute_function(
                 "run_job",
                 {
-                    "combination_indeces": [
-                        index
-                        for index in range(
-                            combination_index,
-                            min(
-                                combination_index + batch_size,
-                                (job_config["end_index"] - job_config["start_index"])
-                                % batch_size,
-                            ),
-                        )
-                    ],
-                    "combinations": [
-                        job_config["combinations"][index]
-                        for index in range(
-                            combination_index,
-                            min(
-                                combination_index + batch_size,
-                                (job_config["end_index"] - job_config["start_index"])
-                                % batch_size,
-                            ),
-                        )
-                    ],
+                    "combination_index": combination_index,
+                    "combination": job_config["combinations"][combination_index],
                     "width": job_config["width"],
                     "height": job_config["height"],
                     "output_dir": job_config["output_dir"],
                     "hdri_path": job_config["hdri_path"],
                     "start_frame": job_config["start_frame"],
                     "end_frame": job_config["end_frame"],
-                    "render_batch_size": job_config["render_batch_size"],
                 },
             )
             tasks.append(task)
@@ -182,22 +155,17 @@ if __name__ == "__main__":
         # Wait for tasks to complete
         print("Tasks submitted to queue. Waiting for tasks to complete...")
 
-        def cleanup_redis():
-            patterns = ["celery-task*", "task_status*"]
-            redis_connection = distributaur.get_redis_connection()
-            for pattern in patterns:
-                for key in redis_connection.scan_iter(match=pattern):
-                    redis_connection.delete(key)
 
-        atexit.register(cleanup_redis)
-
+        prev_tasks = 0
         first_task_done = False
+        queue_start_time = time.time()
         # Wait for the tasks to complete
         print("Tasks submitted to queue. Initializing queue...")
         with tqdm(total=len(tasks), unit="task") as pbar:
             while not all(task.ready() for task in tasks):
                 current_tasks = sum([task.ready() for task in tasks])
                 pbar.update(current_tasks - pbar.n)
+
                 if current_tasks > 0:
                     # begin estimation from time of first task
                     if not first_task_done:
@@ -213,8 +181,7 @@ if __name__ == "__main__":
 
                     pbar.set_postfix(
                         elapsed=f"{elapsed_time:.2f}s", time_left=f"{time_left:.2f}"
-                    )
-                time.sleep(1)
+                    )            
 
         print("All tasks have been completed!")
 
@@ -242,9 +209,6 @@ if __name__ == "__main__":
     parser.add_argument("--hf_path", help="Hugging Face path")
     parser.add_argument(
         "--broker_pool_limit", type=int, help="Limit on redis pool size"
-    )
-    parser.add_argument(
-        "--render_batch_size", type=int, help="Batch size of simian rendering"
     )
     args = parser.parse_args()
 
