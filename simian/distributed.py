@@ -173,8 +173,7 @@ if __name__ == "__main__":
                     "output_dir": job_config["output_dir"],
                     "hdri_path": job_config["hdri_path"],
                     "start_frame": job_config["start_frame"],
-                    "end_frame": job_config["end_frame"],
-                    "render_batch_size": job_config["render_batch_size"],
+                    "end_frame": job_config["end_frame"]
                 },
             )
             tasks.append(task)
