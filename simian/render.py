@@ -108,8 +108,6 @@ def render_scene(
 
     logger.info(f"Rendering scene with combination {combination_index}")
 
-    os.makedirs(output_dir, exist_ok=True)
-
     initialize_scene()
 
     if user_blend_file:
