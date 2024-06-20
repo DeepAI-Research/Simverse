@@ -857,6 +857,8 @@ def generate_combinations(
     background_names: List[str],
     background_weights: List[int],
     texture_data: Dict[str, Any],
+    movement: str,  
+    max_speed: float = 1.0 
 ) -> Dict[str, Any]:
     """
     Generate random combinations of camera settings, objects, background, and stage.
@@ -899,7 +901,7 @@ def generate_combinations(
 
         stage = generate_stage(texture_data)
 
-        movement = add_movement_to_objects(objects, args.movement, max_speed=1.0)
+        movement = add_movement_to_objects(objects, movement, max_speed=1.0)
 
         combination = {
             "index": i,
@@ -1019,6 +1021,8 @@ if __name__ == "__main__":
     stage_data = read_json_file(args.stage_data_path)
     texture_data = read_json_file(args.texture_data_path)
     camera_data = read_json_file(args.camera_file_path)
+    movement_data = args.movement
+    speed = 1.0
 
     # Load backgrounds
     backgrounds = read_json_file(args.datasets_path)["backgrounds"]
@@ -1050,6 +1054,8 @@ if __name__ == "__main__":
         background_names,
         background_weights,
         texture_data,
+        movement_data,
+        speed
     )
 
     # Write to JSON file
