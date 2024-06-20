@@ -401,6 +401,8 @@ def test_generate_combinations():
         "texture2": {"name": "Metal", "maps": ["diffuse", "normal", "specular"]}
     }
 
+    movement = "none"
+
     combinations = generate_combinations(camera_data, 
                                          count, 
                                          seed, 
@@ -412,7 +414,9 @@ def test_generate_combinations():
                                          background_dict,
                                          background_names, 
                                          background_weights,
-                                         texture_data)
+                                         texture_data,
+                                         movement
+                                         )
     
     assert (
         len(combinations["combinations"]) == count
