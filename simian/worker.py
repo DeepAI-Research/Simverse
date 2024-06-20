@@ -12,6 +12,7 @@ from typing import Any, Dict, List
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
 
+
 def run_job(
     combination_indeces: List[Any],
     combinations: List[Dict],
@@ -20,7 +21,7 @@ def run_job(
     output_dir: str,
     hdri_path: str,
     start_frame: int = 0,
-    end_frame: int = 65
+    end_frame: int = 65,
 ) -> None:
     """
     Run a rendering job with the specified combination index and settings.
@@ -62,8 +63,6 @@ def run_job(
 
         subprocess.run(["bash", "-c", command], check=True)
 
-
-
     api = HfApi(token=os.getenv("HF_TOKEN"))
     # Upload the directory using distributaur
     api.upload_folder(
@@ -71,15 +70,13 @@ def run_job(
         repo_id=os.getenv("HF_REPO_ID"),
         repo_type="dataset",
     )
-        
+
     return "Task done"
-
-
 
 
 # only run this is this file was started by celery or run directly
 # check if celery is in sys.argv, it could be sys.argv[0] but might not be
-    
+
 if __name__ == "__main__" or any("celery" in arg for arg in sys.argv):
     from distributaur.distributaur import create_from_config
 
@@ -87,4 +84,3 @@ if __name__ == "__main__" or any("celery" in arg for arg in sys.argv):
     distributaur.register_function(run_job)
 
     celery = distributaur.app
-

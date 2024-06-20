@@ -117,7 +117,7 @@ if __name__ == "__main__":
 
         max_price = job_config["max_price"]
         max_nodes = job_config["max_nodes"]
-        docker_image = "arfx/simian-worker:latest"
+        docker_image = "antbaez/simian-worker:latest"
         module_name = "simian.worker"
 
         print("MAX PRICE: ", max_price)
@@ -149,23 +149,13 @@ if __name__ == "__main__":
                     "combination_indeces": [
                         index
                         for index in range(
-                            combination_index,
-                            min(
-                                combination_index + batch_size,
-                                (job_config["end_index"] - job_config["start_index"])
-                                % batch_size,
-                            ),
+                            combination_index, combination_index + batch_size
                         )
                     ],
                     "combinations": [
                         job_config["combinations"][index]
                         for index in range(
-                            combination_index,
-                            min(
-                                combination_index + batch_size,
-                                (job_config["end_index"] - job_config["start_index"])
-                                % batch_size,
-                            ),
+                            combination_index, combination_index + batch_size
                         )
                     ],
                     "width": job_config["width"],
@@ -174,7 +164,6 @@ if __name__ == "__main__":
                     "hdri_path": job_config["hdri_path"],
                     "start_frame": job_config["start_frame"],
                     "end_frame": job_config["end_frame"],
-                    "render_batch_size": job_config["render_batch_size"],
                 },
             )
             tasks.append(task)
