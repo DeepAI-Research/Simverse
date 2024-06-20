@@ -4,7 +4,8 @@ from typing import Dict, List, Union
 import numpy as np
 
 import bpy
-from mathutils import Vector
+from mathutils import Vector, Matrix
+import math
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
@@ -304,3 +305,96 @@ def place_objects_on_grid(
     bpy.context.view_layer.update()
     if len(objects) > 1:
         bring_objects_to_origin(objects)
+
+
+# def apply_movement(objects, yaw, start_frame, end_frame):
+#     """
+#     Apply movement based on yaw orientation and predefined movement parameters
+#     across the specified frame range.
+#     """
+#     yaw_radians = radians(yaw)
+#     rotation_matrix = Matrix.Rotation(yaw_radians, 4, 'Z')
+
+#     logger.info(f"Applying movement with yaw: {yaw_radians}")
+
+#     for obj_dict in objects:
+#         obj = list(obj_dict.keys())[0]
+#         properties = list(obj_dict.values())[0]
+
+#         print("This is the properties: ", properties)
+#         movement = properties.get('movement')
+#         print("This is the movement: ", movement)
+
+#         if not movement:
+#             continue
+
+        # direction_vector = Vector({
+        #     "forward": (1, 0, 0),
+        #     "backward": (-1, 0, 0),
+        #     "right": (0, 1, 0),
+        #     "left": (0, -1, 0)
+        # }[movement["direction"]])
+
+        # # Rotate direction vector according to yaw
+        # rotated_vector = rotation_matrix @ direction_vector
+        # step_vector = (rotated_vector * movement["speed"])
+
+#        # Apply movement only within the designated frame range
+#         scene = bpy.context.scene
+#         for frame in range(start_frame, end_frame + 1):
+#             scene.frame_set(frame)
+#             if frame == start_frame:
+#                 # Reset object position at start_frame
+#                 obj.location = Vector((0, 0, 0))
+#                 obj.keyframe_insert(data_path="location", frame=frame)
+#             obj.location += step_vector
+#             obj.keyframe_insert(data_path="location", frame=frame)
+
+#         logger.info(f"Movement applied to {obj.name} from frame {start_frame} to {end_frame}")
+
+#     bpy.context.view_layer.update()
+
+def apply_movement(objects, yaw, start_frame, end_frame):
+    """
+    Apply movement based on yaw orientation and predefined movement parameters
+    across the specified frame range, ensuring the object is centered at the midpoint.
+    """
+    yaw_radians = radians(yaw)
+    rotation_matrix = Matrix.Rotation(yaw_radians, 4, 'Z')
+    scene = bpy.context.scene
+
+    for obj_dict in objects:
+        obj = list(obj_dict.keys())[0]
+        properties = list(obj_dict.values())[0]
+        movement = properties.get('movement')
+
+        if not movement:
+            continue
+        
+        direction_vector = Vector({
+            "forward": (1, 0, 0),
+            "backward": (-1, 0, 0),
+            "right": (0, 1, 0),
+            "left": (0, -1, 0)
+        }[movement["direction"]])
+
+        # Rotate direction vector according to yaw
+        rotated_vector = rotation_matrix @ direction_vector
+        step_vector = (rotated_vector * movement["speed"])
+
+        # Calculate total movement to determine initial positioning
+        total_movement = step_vector * (end_frame - start_frame)
+        initial_position = -total_movement / 2  # Start halfway back
+
+        # Position object at initial location at the start frame
+        scene.frame_set(start_frame)
+        obj.location = initial_position
+        obj.keyframe_insert(data_path="location", frame=start_frame)
+
+        # Animate object from start_frame to end_frame
+        for frame in range(start_frame + 1, end_frame + 1):
+            obj.location += step_vector
+            obj.keyframe_insert(data_path="location", frame=frame)
+
+    logger.info(f"Movement applied from frame {start_frame} to {end_frame}")
+    bpy.context.view_layer.update()

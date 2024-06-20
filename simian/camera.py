@@ -251,6 +251,7 @@ def position_camera(combination: dict, focus_object: bpy.types.Object) -> None:
 
     # Get the bounding box of the focus object in world space
     bpy.context.view_layer.update()
+    
     bbox = [
         focus_object.matrix_world @ Vector(corner) for corner in focus_object.bound_box
     ]
