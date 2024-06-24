@@ -901,7 +901,7 @@ def generate_combinations(
 
         stage = generate_stage(texture_data)
 
-        movement = add_movement_to_objects(objects, movement, max_speed=1.0)
+        objects = add_movement_to_objects(objects, movement, max_speed=1.0)
 
         combination = {
             "index": i,
@@ -912,7 +912,6 @@ def generate_combinations(
             "animation": animation,
             "stage": stage,
             "postprocessing": postprocessing,
-            "movement": movement,
         }
 
         combination["caption"] = generate_caption(combination, object_data, camera_data)
