@@ -37,8 +37,18 @@ sudo python3 scripts/start_x_server.py start
 
 ### Generating Combinations
 
+Generate scenes without movement (static videos): 
 ```bash
 python3 -m simian.combiner --count 1000 --seed 42
+```
+
+Add movement to all or no objects:
+```bash
+python3 -m simian.combiner --count 1000 --seed 42 --movement all
+```
+
+```bash
+python3 -m simian.combiner --count 1000 --seed 42 --movement none
 ```
 
 ### Generating Videos or Images
