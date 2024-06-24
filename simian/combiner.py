@@ -287,7 +287,7 @@ def generate_relationship_captions(combination: Dict[str, Any]) -> List[str]:
     return selected_relationships
 
 
-def add_movement_to_objects(objects, movement="none", max_speed=0.5):
+def add_movement_to_objects(objects, movement="none", max_speed=0.25):
     if movement == "none":
         return objects
     for obj in objects:

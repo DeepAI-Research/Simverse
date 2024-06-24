@@ -4,6 +4,7 @@ from typing import Dict, List, Union
 import numpy as np
 
 import bpy
+import mathutils
 from mathutils import Vector, Matrix
 import math
 
@@ -307,61 +308,109 @@ def place_objects_on_grid(
         bring_objects_to_origin(objects)
 
 
-# def apply_movement(objects, yaw, start_frame, end_frame):
-#     """
-#     Apply movement based on yaw orientation and predefined movement parameters
-#     across the specified frame range.
-#     """
-#     yaw_radians = radians(yaw)
-#     rotation_matrix = Matrix.Rotation(yaw_radians, 4, 'Z')
+def get_camera_plane_vertices(camera):
+    scene = bpy.context.scene
+    cam_data = camera.data
+    cam_matrix_world = camera.matrix_world
 
-#     logger.info(f"Applying movement with yaw: {yaw_radians}")
+    # Log camera settings
+    logger.info(f"Camera Focal Length: {cam_data.lens}")
+    logger.info(f"Camera Sensor Width: {cam_data.sensor_width}")
+    logger.info(f"Camera Sensor Height: {cam_data.sensor_height}")
+    logger.info(f"Camera Aspect Ratio: {cam_data.sensor_width / cam_data.sensor_height}")
 
-#     for obj_dict in objects:
-#         obj = list(obj_dict.keys())[0]
-#         properties = list(obj_dict.values())[0]
+    # Get the camera's frustum
+    frame = cam_data.view_frame(scene=scene)
+    
+    # Convert the frame coordinates to world coordinates
+    frame_world = [cam_matrix_world @ v for v in frame]
+    
+    # Project the world coordinates to the plane
+    plane_normal = mathutils.Vector((0, 0, 1))  # Assuming the plane is the XY plane at Z=0
+    plane_point = mathutils.Vector((0, 0, 0))  # Point on the plane
+    
+    # Calculate intersection of rays with the plane
+    plane_vertices = []
+    for v in frame_world:
+        direction = v - cam_matrix_world.translation
+        denom = plane_normal.dot(direction)
+        if abs(denom) > 1e-6:
+            t = (plane_point - cam_matrix_world.translation).dot(plane_normal) / denom
+            intersection_point = cam_matrix_world.translation + t * direction
+            plane_vertices.append(intersection_point)
+    
+    # Ensure vertices form a rectangle
+    if len(plane_vertices) == 4:
+        plane_vertices = [plane_vertices[i] for i in [1, 0, 3, 2]]
+    
+    logger.info(f"Plane vertices: {plane_vertices}")
+    return plane_vertices
 
-#         print("This is the properties: ", properties)
-#         movement = properties.get('movement')
-#         print("This is the movement: ", movement)
 
-#         if not movement:
-#             continue
+def create_mesh_from_vertices(vertices, name="Plane_POV"):
+    mesh = bpy.data.meshes.new(name)
+    obj = bpy.data.objects.new(name, mesh)
+    bpy.context.collection.objects.link(obj)
+    
+    # Ensure we have 4 vertices
+    if len(vertices) == 4:
+        faces = [(0, 1, 2, 3)]
+    else:
+        faces = []
 
-        # direction_vector = Vector({
-        #     "forward": (1, 0, 0),
-        #     "backward": (-1, 0, 0),
-        #     "right": (0, 1, 0),
-        #     "left": (0, -1, 0)
-        # }[movement["direction"]])
+    mesh.from_pydata(vertices, [], faces)
+    mesh.update()
 
-        # # Rotate direction vector according to yaw
-        # rotated_vector = rotation_matrix @ direction_vector
-        # step_vector = (rotated_vector * movement["speed"])
 
-#        # Apply movement only within the designated frame range
-#         scene = bpy.context.scene
-#         for frame in range(start_frame, end_frame + 1):
-#             scene.frame_set(frame)
-#             if frame == start_frame:
-#                 # Reset object position at start_frame
-#                 obj.location = Vector((0, 0, 0))
-#                 obj.keyframe_insert(data_path="location", frame=frame)
-#             obj.location += step_vector
-#             obj.keyframe_insert(data_path="location", frame=frame)
+def visualize_frustum(camera, vertices):
+    curve_data = bpy.data.curves.new(name='FrustumLines', type='CURVE')
+    curve_data.dimensions = '3D'
+    curve_data.resolution_u = 2
 
-#         logger.info(f"Movement applied to {obj.name} from frame {start_frame} to {end_frame}")
+    obj = bpy.data.objects.new('FrustumLines', curve_data)
+    bpy.context.collection.objects.link(obj)
 
-#     bpy.context.view_layer.update()
+    polyline = curve_data.splines.new('POLY')
+    polyline.points.add(len(vertices) + 1)  # Add points for each vertex plus one for the camera location
+
+    polyline.points[0].co = (camera.location.x, camera.location.y, camera.location.z, 1)
+    for i, vertex in enumerate(vertices):
+        polyline.points[i + 1].co = (vertex.x, vertex.y, vertex.z, 1)
+
+
+def visualize_plane_vertices(vertices):
+    curve_data = bpy.data.curves.new(name='PlaneVerticesLines', type='CURVE')
+    curve_data.dimensions = '3D'
+    curve_data.resolution_u = 2
+
+    obj = bpy.data.objects.new('PlaneVerticesLines', curve_data)
+    bpy.context.collection.objects.link(obj)
+
+    polyline = curve_data.splines.new('POLY')
+    polyline.points.add(len(vertices) + 1)  # Add points for each vertex and close the loop
+
+    for i, vertex in enumerate(vertices):
+        polyline.points[i].co = (vertex.x, vertex.y, vertex.z, 1)
+    polyline.points[-1].co = (vertices[0].x, vertices[0].y, vertices[0].z, 1)  # Close the loop
+
 
 def apply_movement(objects, yaw, start_frame, end_frame):
-    """
-    Apply movement based on yaw orientation and predefined movement parameters
-    across the specified frame range, ensuring the object is centered at the midpoint.
-    """
     yaw_radians = radians(yaw)
-    rotation_matrix = Matrix.Rotation(yaw_radians, 4, 'Z')
+    rotation_matrix = mathutils.Matrix.Rotation(yaw_radians, 4, 'Z')
     scene = bpy.context.scene
+    camera = scene.camera
+
+    # Get camera plane vertices
+    plane_vertices = get_camera_plane_vertices(camera)
+    create_mesh_from_vertices(plane_vertices)
+    visualize_frustum(camera, plane_vertices)
+    visualize_plane_vertices(plane_vertices)
+
+    # Calculate midpoints of each edge
+    bottom_center = (plane_vertices[0] + plane_vertices[3]) / 2
+    top_center = (plane_vertices[1] + plane_vertices[2]) / 2
+    left_center = (plane_vertices[2] + plane_vertices[3]) / 2
+    right_center = (plane_vertices[0] + plane_vertices[1]) / 2
 
     for obj_dict in objects:
         obj = list(obj_dict.keys())[0]
@@ -371,24 +420,33 @@ def apply_movement(objects, yaw, start_frame, end_frame):
         if not movement:
             continue
         
-        direction_vector = Vector({
+        # Determine initial placement based on movement direction
+        if movement["direction"] == "right":
+            initial_position = left_center
+        elif movement["direction"] == "left":
+            initial_position = right_center
+        elif movement["direction"] == "forward":
+            initial_position = top_center
+        elif movement["direction"] == "backward":
+            initial_position = bottom_center
+
+        # Rotate direction vector according to yaw
+        direction_vector = mathutils.Vector({
             "forward": (1, 0, 0),
             "backward": (-1, 0, 0),
             "right": (0, 1, 0),
             "left": (0, -1, 0)
         }[movement["direction"]])
-
-        # Rotate direction vector according to yaw
         rotated_vector = rotation_matrix @ direction_vector
-        step_vector = (rotated_vector * movement["speed"])
+        step_vector = rotated_vector * movement["speed"]
 
-        # Calculate total movement to determine initial positioning
-        total_movement = step_vector * (end_frame - start_frame)
-        initial_position = -total_movement / 2  # Start halfway back
+        # Calculate offset
+        offset_multiplier = 2  # Adjust this value to increase or decrease the offset
+        offset = step_vector * offset_multiplier
 
         # Position object at initial location at the start frame
         scene.frame_set(start_frame)
-        obj.location = initial_position
+        obj.location = obj.location + initial_position - offset
         obj.keyframe_insert(data_path="location", frame=start_frame)
 
         # Animate object from start_frame to end_frame
