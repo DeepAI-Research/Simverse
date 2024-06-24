@@ -54,7 +54,7 @@ if __name__ == "__main__":
             "broker_pool_limit": args.broker_pool_limit
             or int(env_vars.get("BROKER_POOL_LIMIT", 1)),
             "render_batch_size": args.render_batch_size
-            or int(env_vars.get("RENDER_BATCH_SIZE", 2)),
+            or int(env_vars.get("RENDER_BATCH_SIZE", 1)),
         }
 
         # Load combinations from file
@@ -171,15 +171,6 @@ if __name__ == "__main__":
         # Wait for tasks to complete
         print("Tasks submitted to queue. Waiting for tasks to complete...")
 
-        def cleanup_redis():
-            patterns = ["celery-task*", "task_status*"]
-            redis_connection = distributaur.get_redis_connection()
-            for pattern in patterns:
-                for key in redis_connection.scan_iter(match=pattern):
-                    redis_connection.delete(key)
-
-        atexit.register(cleanup_redis)
-
         first_task_done = False
         # Wait for the tasks to complete
         print("Tasks submitted to queue. Initializing queue...")
@@ -203,7 +194,7 @@ if __name__ == "__main__":
                     pbar.set_postfix(
                         elapsed=f"{elapsed_time:.2f}s", time_left=f"{time_left:.2f}"
                     )
-                time.sleep(1)
+                time.sleep(2)
 
         print("All tasks have been completed!")
 
