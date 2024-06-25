@@ -287,7 +287,7 @@ def generate_relationship_captions(combination: Dict[str, Any]) -> List[str]:
     return selected_relationships
 
 
-def add_movement_to_objects(objects, movement="none", max_speed=0.25):
+def add_movement_to_objects(objects, movement="none", max_speed=0.5):
     if movement == "none":
         return objects
     for obj in objects:
@@ -498,20 +498,40 @@ def generate_animation_captions(combination: Dict[str, Any], camera_data) -> Lis
     return []
 
 
-def generate_movement_captions(combination: Dict[str, Any]) -> List[str]:
+def generate_movement_captions(combination: Dict[str, Any], object_data) -> List[str]:
     """
     Generate captions for object movement based on the combination data.
-    Copy codeArgs:
+    Args:
         combination (Dict[str, Any]): Combination data.
-
+        object_data (Dict[str, Any]): Object data including movement templates and speed descriptions.
     Returns:
         List[str]: List of movement captions.
     """
+
+    object_movement_data = object_data["movement_description_relationship"]
+    object_movement_speed_words = object_data["movement_speed_description"]
+
     movement_captions = []
     for obj in combination["objects"]:
         if "movement" in obj:
-            movement_description = f"{obj['name']} moves {obj['movement']['direction']} at {obj['movement']['speed']} units."
+            speed = obj['movement']['speed']
+            if speed <= 0.25:
+                speed_words = object_movement_speed_words["0.25"]
+            else:
+                speed_words = object_movement_speed_words["0.5"]
+            
+            speed_description = random.choice(speed_words)
+            
+            template = random.choice(object_movement_data)
+            movement_description = template.replace("<object>", obj["name"])
+            movement_description = movement_description.replace("<movement>", obj['movement']['direction'])
+            movement_description = movement_description.replace("<speed>", f"{speed:.2f}")
+            
+            if "<speed_description>" in movement_description:
+                movement_description = movement_description.replace("<speed_description>", speed_description)
+
             movement_captions.append(movement_description)
+    
     return movement_captions
 
 
@@ -557,7 +577,7 @@ def generate_caption(combination: Dict[str, Any], object_data, camera_data) -> s
     caption_parts.extend(animation_captions)
 
      # Add information about object movement
-    movement_captions = generate_movement_captions(combination)
+    movement_captions = generate_movement_captions(combination, object_data)
     caption_parts.extend(movement_captions)
 
     caption = " ".join(caption_parts)  # Join the caption parts into a single string
@@ -858,7 +878,7 @@ def generate_combinations(
     background_weights: List[int],
     texture_data: Dict[str, Any],
     movement: str,  
-    max_speed: float = 1.0 
+    max_speed: float = 0.5
 ) -> Dict[str, Any]:
     """
     Generate random combinations of camera settings, objects, background, and stage.
@@ -901,7 +921,7 @@ def generate_combinations(
 
         stage = generate_stage(texture_data)
 
-        objects = add_movement_to_objects(objects, movement, max_speed=1.0)
+        objects = add_movement_to_objects(objects, movement, max_speed=0.5)
 
         combination = {
             "index": i,
