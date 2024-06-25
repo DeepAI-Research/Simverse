@@ -335,29 +335,6 @@ def apply_and_remove_armatures():
 
                     # Deselect everything to clean up for the next iteration
                     bpy.ops.object.select_all(action="DESELECT")
-
-
-def get_terrain_height(location: Vector) -> float:
-    """
-    Get the height of the terrain at a specific location.
-    Args:
-        location (Vector): The location to get the height for.
-    Returns:
-        float: The height of the terrain at the specified location.
-    """
-    bpy.context.view_layer.update()
-    ray_origin = Vector((location.x, location.y, 100))  # Ray origin above the location
-    ray_direction = Vector((0, 0, -1))  # Ray direction downwards
-
-    depsgraph = bpy.context.evaluated_depsgraph_get()
-    result, hit_location, normal, index, obj, matrix = bpy.context.scene.ray_cast(depsgraph, ray_origin, ray_direction)
-
-    if result:
-        logger.info(f"Ray hit at {hit_location}")
-        return hit_location.z
-    else:
-        logger.info("Ray did not hit any terrain")
-        return 0.0  # Default to 0 if no intersection is found
     
 
 def apply_all_modifiers(obj: bpy.types.Object):
@@ -482,6 +459,50 @@ def join_objects_in_hierarchy(obj: bpy.types.Object) -> None:
         logger.info("No meshes found to set as active.")
 
 
+def get_terrain_height(location: Vector) -> float:
+    """
+    Get the height of the terrain at a specific location.
+    Args:
+        location (Vector): The location to get the height for.
+    Returns:
+        float: The height of the terrain at the specified location.
+    """
+    bpy.context.view_layer.update()
+    print("This is the get_terrain_height location.z", location.z)
+    ray_origin = Vector((location.x, location.y, 25))  # Ray origin below the location
+    ray_direction = Vector((0, 0, -1))  # Ray direction downwards
+
+    depsgraph = bpy.context.evaluated_depsgraph_get()
+    hit_objects = ['OpaqueTerrain', 'OpaqueTerrain_fine']
+    terrain_objects = [obj for obj in bpy.context.scene.objects if obj.name in hit_objects]
+
+    result = False
+    hit_location = None
+
+    for obj in terrain_objects:
+        if obj.hide_get():
+            continue
+
+        result_local, hit_location_local, normal, index, hit_obj, matrix = bpy.context.scene.ray_cast(
+            depsgraph, ray_origin, ray_direction)
+
+        if result_local and hit_obj.name in hit_objects:
+            if hit_obj.name == 'OpaqueTerrain_fine':
+                result = result_local
+                hit_location = hit_location_local
+                break
+            if hit_obj.name == 'OpaqueTerrain' and not result:
+                result = result_local
+                hit_location = hit_location_local
+
+    if result:
+        logger.info(f"Ray hit at {hit_location}")
+        return hit_location.z
+    else:
+        logger.info("Ray did not hit any terrain")
+        return 0.0  # Default to 0 if no intersection is found
+
+
 def set_pivot_to_bottom(obj: bpy.types.Object) -> None:
     """
     Set the pivot of the object to the center of mass, and place it on the terrain surface.
@@ -519,7 +540,7 @@ def set_pivot_to_bottom(obj: bpy.types.Object) -> None:
     # Apply transformations
     bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
     logger.info(f"Applied transformation to the object: {obj.location}")
-
+ 
 
 def unparent_keep_transform(obj: bpy.types.Object) -> None:
     """
