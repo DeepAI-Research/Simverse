@@ -95,11 +95,12 @@ if __name__ == "__main__":
             "redis_user": settings["redis_user"],
             "redis_password": settings["redis_password"],
             "broker_pool_limit": settings["broker_pool_limit"],
+            "render_batch_size": settings["render_batch_size"],
         }
 
         print("*** JOB CONFIG")
         for key, value in job_config.items():
-            if key != 'combinations':
+            if key != "combinations":
                 print(f"{key}: {value}")
 
         distributaur = Distributaur(
@@ -139,11 +140,11 @@ if __name__ == "__main__":
         for combination_index in range(
             job_config["start_index"],
             min(job_config["end_index"], len(job_config["combinations"])),
+            batch_size,
         ):
             task = distributaur.execute_function(
                 "run_job",
                 {
-                  # batch_size needs to evenly divide number of jobs
                     "combination_indeces": [
                         index
                         for index in range(
@@ -156,8 +157,6 @@ if __name__ == "__main__":
                             combination_index, combination_index + batch_size
                         )
                     ],
-                    "combination_index": combination_index,
-                    "combination": job_config["combinations"][combination_index],
                     "width": job_config["width"],
                     "height": job_config["height"],
                     "output_dir": job_config["output_dir"],
@@ -171,7 +170,6 @@ if __name__ == "__main__":
         print("Tasks submitted to queue. Waiting for tasks to complete...")
 
         first_task_done = False
-        queue_start_time = time.time()
         # Wait for the tasks to complete
         print("Tasks submitted to queue. Initializing queue...")
         with tqdm(total=len(tasks), unit="task") as pbar:
@@ -179,7 +177,6 @@ if __name__ == "__main__":
             while not all(task.ready() for task in tasks):
                 current_tasks = sum([task.ready() for task in tasks])
                 pbar.update(current_tasks - pbar.n)
-
                 if current_tasks > 0:
                     # Begin estimation from time remaining when first task is done
                     if not first_task_done:
@@ -197,7 +194,7 @@ if __name__ == "__main__":
                         elapsed=f"{elapsed_time:.2f}s", time_left=f"{time_left:.2f}"
                     )
                 time.sleep(2)
-                
+
         print("All tasks have been completed!")
 
     parser = argparse.ArgumentParser(description="Simian CLI")
@@ -223,6 +220,9 @@ if __name__ == "__main__":
     parser.add_argument("--hf_repo-id", help="Hugging Face repository ID")
     parser.add_argument(
         "--broker_pool_limit", type=int, help="Limit on redis pool size"
+    )
+    parser.add_argument(
+        "--render_batch_size", type=int, help="Batch size of simian rendering"
     )
     args = parser.parse_args()
 

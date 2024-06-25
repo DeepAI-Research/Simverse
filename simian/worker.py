@@ -3,15 +3,20 @@ import logging
 import os
 import sys
 import subprocess
-from typing import Any, Dict
+import time
+import random
+import shutil
+from huggingface_hub import HfApi
+from typing import Any, Dict, List
+
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
 
 
 def run_job(
-    combination_index: int,
-    combination: Dict[str, Any],
+    combination_indeces: List[Any],
+    combinations: List[Dict],
     width: int,
     height: int,
     output_dir: str,
