@@ -258,10 +258,6 @@ def bring_objects_to_origin(objects: List[Dict[bpy.types.Object, Dict]]) -> None
                     collision = True
                     break
 
-            logger.info(
-                f"Object {obj.name} position: {obj.location}, Collision: {collision}, Iterations: {iterations}"
-            )
-
             if collision or (obj.location.x == 0 and obj.location.y == 0):
                 break
 
@@ -270,10 +266,6 @@ def bring_objects_to_origin(objects: List[Dict[bpy.types.Object, Dict]]) -> None
             step_size = min(
                 distance_to_origin / 10, 0.5
             )  # Update step size dynamically
-
-        logger.info(
-            f"Final position of {obj.name}: {obj.location} after {iterations} iterations"
-        )
 
         for bbox_dict in object_bboxes:
             if list(bbox_dict.keys())[0] == obj:
@@ -307,66 +299,6 @@ def place_objects_on_grid(
         bring_objects_to_origin(objects)
 
 
-def get_camera_plane_vertices(camera):
-    scene = bpy.context.scene
-    cam_data = camera.data
-    cam_matrix_world = camera.matrix_world
-
-    # Log camera settings
-    logger.info(f"Camera Focal Length: {cam_data.lens}")
-    logger.info(f"Camera Sensor Width: {cam_data.sensor_width}")
-    logger.info(f"Camera Sensor Height: {cam_data.sensor_height}")
-    logger.info(f"Camera Aspect Ratio: {cam_data.sensor_width / cam_data.sensor_height}")
-
-    # Get the camera's frustum
-    frame = cam_data.view_frame(scene=scene)
-    logger.info(f"Camera frame: {frame}")
-    
-    # Convert the frame coordinates to world coordinates
-    frame_world = [cam_matrix_world @ v for v in frame]
-    logger.info(f"World frame: {frame_world}")
-
-    # Project the world coordinates to the plane
-    plane_normal = mathutils.Vector((0, 0, 1))  # Assuming the plane is the XY plane at Z=0
-    plane_point = mathutils.Vector((0, 0, 0))  # Point on the plane
-    
-    # Calculate intersection of rays with the plane
-    plane_vertices = []
-    for v in frame_world:
-        direction = v - cam_matrix_world.translation
-
-        logger.info(f"Direction: {direction}")
-
-        denom = plane_normal.dot(direction)
-
-        logger.info(f"Denominator: {denom}")
-        if abs(denom) > 1e-6:
-            logger.info(f"Denominator is not near zero")
-            t = (plane_point - cam_matrix_world.translation).dot(plane_normal) / denom
-
-            # Adding detailed debug information to check the calculations
-            logger.info(f"Ray origin (o): {cam_matrix_world.translation}")
-            logger.info(f"Vector (p0 - o): {plane_point - cam_matrix_world.translation}")
-            logger.info(f"Dot product (d . n): {direction.dot(plane_normal)}")
-
-            print("This is the t value: ", t)
-            intersection_point = cam_matrix_world.translation + t * direction
-
-            logger.info(f"Intersection point: {intersection_point}")
-            plane_vertices.append(intersection_point)
-        else:
-            logger.warning(f"Skipping vertex due to near-zero denominator: {v}")
-    
-    # Ensure vertices form a rectangle
-    if len(plane_vertices) == 4:
-        plane_vertices = [plane_vertices[i] for i in [1, 0, 3, 2]]
-    else:
-        logger.warning(f"Expected 4 plane vertices, got {len(plane_vertices)}")
-    
-    logger.info(f"Plane vertices: {plane_vertices}")
-    return plane_vertices
-
-
 def create_mesh_from_vertices(vertices, name="Plane_POV"):
     mesh = bpy.data.meshes.new(name)
     obj = bpy.data.objects.new(name, mesh)
@@ -396,6 +328,95 @@ def visualize_frustum(camera, vertices):
     polyline.points[0].co = (camera.location.x, camera.location.y, camera.location.z, 1)
     for i, vertex in enumerate(vertices):
         polyline.points[i + 1].co = (vertex.x, vertex.y, vertex.z, 1)
+
+
+def get_plane_dimensions(plane):
+    """Get the width and height of the plane."""
+    bbox = [plane.matrix_world @ Vector(corner) for corner in plane.bound_box]
+    min_x = min(v.x for v in bbox)
+    max_x = max(v.x for v in bbox)
+    min_y = min(v.y for v in bbox)
+    max_y = max(v.y for v in bbox)
+
+    width = max_x - min_x
+    height = max_y - min_y
+    return width, height
+
+
+def get_camera_plane_vertices(camera, frame_number):
+    scene = bpy.context.scene
+    depsgraph = bpy.context.evaluated_depsgraph_get()
+    cam_data = camera.data
+
+    # Set the frame and update the scene
+    bpy.context.scene.frame_set(frame_number)
+    bpy.context.view_layer.update()
+
+    cam_matrix_world = camera.matrix_world
+
+    # Log camera settings
+    # logger.info(f"Camera Focal Length: {cam_data.lens}")
+    # logger.info(f"Camera Sensor Width: {cam_data.sensor_width}")
+    # logger.info(f"Camera Sensor Height: {cam_data.sensor_height}")
+    # logger.info(f"Camera Aspect Ratio: {cam_data.sensor_width / cam_data.sensor_height}")
+
+    # Get the camera's frustum
+    frame = cam_data.view_frame(scene=scene)
+
+    # Convert the frame coordinates to world coordinates
+    frame_world = [cam_matrix_world @ v for v in frame]
+
+    # Get the stage's position
+    stage = bpy.data.objects.get("Stage")
+    if not stage:
+        logger.error("Stage object not found!")
+        return []
+
+    stage_position = stage.location
+    plane_point = stage_position
+
+    # Calculate intersection of rays with the plane
+    plane_vertices = []
+    for v in frame_world:
+        direction = v - cam_matrix_world.translation
+        direction.normalize()
+
+        result, location, normal, index, obj, matrix = scene.ray_cast(depsgraph, cam_matrix_world.translation, direction)
+
+        # Get plane dimensions
+        plane_width, plane_height = get_plane_dimensions(stage)
+        max_distance = min(plane_width, plane_height) / 2  # Define a maximum reasonable distance based on plane size
+        
+        if result:
+            # Flatten Z value to the plane height if above it
+            if location.z > plane_point.z:
+                location.z = plane_point.z
+                logger.warning(f"Flattened location to plane height: {location}")
+
+            # Check if the location extends beyond the plane boundaries
+            if (location - stage_position).length > max_distance:
+                location = cam_matrix_world.translation + direction * (max_distance / 2)
+                location.z = plane_point.z
+                logger.warning(f"Clamped location to half the maximum distance: {location}")
+            else:
+                logger.info(f"Ray hit at: {location}")
+            
+            plane_vertices.append(location)
+        else:
+            # If the ray does not hit the plane, use a default position on the plane
+            intersection_point = cam_matrix_world.translation + direction * 10.0  # Adjust as needed
+            intersection_point.z = plane_point.z
+            logger.warning(f"Ray did not hit the plane, using default position: {intersection_point}")
+            plane_vertices.append(intersection_point)
+
+    # Ensure vertices form a rectangle
+    if len(plane_vertices) == 4:
+        plane_vertices = [plane_vertices[i] for i in [1, 0, 3, 2]]
+    else:
+        logger.warning(f"Expected 4 plane vertices, got {len(plane_vertices)}")
+
+    logger.info(f"Plane vertices: {plane_vertices}")
+    return plane_vertices
 
 
 def visualize_plane_vertices(vertices):
@@ -450,12 +471,12 @@ def apply_movement(objects, yaw, start_frame, end_frame):
     logger.info(f"Camera location: {camera.location}")
 
     # Get camera plane vertices
-    plane_vertices = get_camera_plane_vertices(camera)
-    create_mesh_from_vertices(plane_vertices)
-    visualize_frustum(camera, plane_vertices)
-    visualize_plane_vertices(plane_vertices)
+    plane_vertices = get_camera_plane_vertices(camera, start_frame)
+    # create_mesh_from_vertices(plane_vertices)
+    # visualize_frustum(camera, plane_vertices)
+    # visualize_plane_vertices(plane_vertices)
 
-    draw_vector_from_camera(camera)
+    # draw_vector_from_camera(camera)
 
     logger.info(f"planer_vertices: {plane_vertices}")
 
@@ -464,11 +485,6 @@ def apply_movement(objects, yaw, start_frame, end_frame):
     top_center = (plane_vertices[1] + plane_vertices[2]) / 2
     left_center = (plane_vertices[2] + plane_vertices[3]) / 2
     right_center = (plane_vertices[0] + plane_vertices[1]) / 2
-
-    logger.info(f"Bottom center: {bottom_center}")
-    logger.info(f"Top center: {top_center}")
-    logger.info(f"Left center: {left_center}")
-    logger.info(f"Right center: {right_center}")
 
     for obj_dict in objects:
         obj = list(obj_dict.keys())[0]
@@ -499,8 +515,6 @@ def apply_movement(objects, yaw, start_frame, end_frame):
         }[movement["direction"]])
         rotated_vector = rotation_matrix @ direction_vector
         step_vector = rotated_vector * movement["speed"]
-
-        logger.info(f"Initial position: {initial_position}")
 
         # Calculate offset
         offset_multiplier = 2  # Adjust this value to increase or decrease the offset

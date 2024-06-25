@@ -177,14 +177,15 @@ def render_scene(
     set_camera_animation(combination, animation_length)
 
     yaw = combination["orientation"]["yaw"]
-    position_camera(combination, focus_object)
-    apply_movement(all_objects, yaw, scene.frame_start, scene.frame_end)
 
     if not user_blend_file:
         set_background(args.hdri_path, combination)
         create_photosphere(args.hdri_path, combination).scale = (10, 10, 10)
         stage = create_stage(combination)
         apply_stage_material(stage, combination)
+    
+    position_camera(combination, focus_object)
+    apply_movement(all_objects, yaw, scene.frame_start, scene.frame_end)
 
     # Randomize image sizes
     sizes = [
