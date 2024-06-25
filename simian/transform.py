@@ -273,31 +273,6 @@ def bring_objects_to_origin(objects: List[Dict[bpy.types.Object, Dict]]) -> None
                 break
 
 
-# def place_objects_on_grid(
-#     objects: List[Dict[bpy.types.Object, Dict]], largest_length: float
-# ) -> None:
-#     """Place objects on a grid based on their transformed positions.
-
-#     Args:
-#         objects (List[Dict[bpy.types.Object, Dict]]): List of object dictionaries.
-#         largest_length (float): Largest dimension among the objects.
-#     """
-#     for obj_dict in objects:
-#         obj = list(obj_dict.keys())[0]
-#         transformed_position = obj_dict[obj]["transformed_position"]
-#         obj.location = Vector(
-#             (
-#                 transformed_position[0] * largest_length,
-#                 transformed_position[1] * largest_length,
-#                 obj.location.z,
-#             )
-#         )
-#         logger.info(f"Placed object {obj.name} at {obj.location}")
-
-#     bpy.context.view_layer.update()
-#     if len(objects) > 1:
-#         bring_objects_to_origin(objects)
-
 def place_objects_on_grid(
     objects: List[Dict[bpy.types.Object, Dict]], largest_length: float
 ) -> None:
@@ -307,32 +282,34 @@ def place_objects_on_grid(
         objects (List[Dict[bpy.types.Object, Dict]]): List of object dictionaries.
         largest_length (float): Largest dimension among the objects.
     """
-    # Dictionary to keep track of current height at each grid position
     grid_heights = {}
 
     for obj_dict in objects:
         obj = list(obj_dict.keys())[0]
         transformed_position = obj_dict[obj]["transformed_position"]
         
-        # Round the transformed position to get a discrete grid position
         grid_x = round(transformed_position[0])
         grid_y = round(transformed_position[1])
         grid_pos = (grid_x, grid_y)
 
-        # Get the current height at this grid position
         current_height = grid_heights.get(grid_pos, 0)
 
-        # Place the object at the current height
+        # Use the object's current z-location for the first object at this position
+        if current_height == 0:
+            z_position = obj.location.z
+        else:
+            z_position = current_height
+
         obj.location = Vector(
             (
                 grid_x * largest_length,
                 grid_y * largest_length,
-                current_height + obj.dimensions.z / 2,  # Place object on top of others
+                z_position
             )
         )
 
-        # Update the height at this grid position
-        grid_heights[grid_pos] = current_height + obj.dimensions.z
+        # Update the height for the next object
+        grid_heights[grid_pos] = z_position + obj.dimensions.z
 
         logger.info(f"Placed object {obj.name} at {obj.location}")
 

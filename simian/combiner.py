@@ -547,7 +547,51 @@ def generate_movement_captions(combination: Dict[str, Any], object_data) -> List
     return movement_captions
 
 
-def generate_caption(combination: Dict[str, Any], object_data, camera_data) -> str:
+def generate_ontop_captions(combination: Dict[str, Any], ontop_data, object_data) -> List[str]:
+    """
+    Generate captions for objects being on top of each other based on the combination data.
+
+    Args:
+        combination (Dict[str, Any]): Combination data.
+        ontop_data (str): Flag indicating whether to allow objects on top of each other.
+        object_data (Dict[str, Any]): Object data containing ontop description relationships.
+
+    Returns:
+        List[str]: List of ontop captions.
+    """
+    if ontop_data == "none":
+        return []
+
+    ontop_captions = []
+    placement_stacks = {}
+
+    object_ontop_captions = object_data['ontop_description_relationship']
+
+    # Maintain the original order of objects
+    for obj in combination["objects"]:
+        placement = obj["placement"]
+        if placement not in placement_stacks:
+            placement_stacks[placement] = []
+        placement_stacks[placement].append(obj)
+
+    # Generate captions for objects at the same placement
+    for placement, objects in placement_stacks.items():
+        if len(objects) > 1:
+            for i in range(len(objects) - 1):
+                below_obj = objects[i]
+                above_obj = objects[i + 1]
+                
+                caption_template = random.choice(object_ontop_captions)
+                
+                # Always describe from bottom to top to maintain consistency
+                caption = caption_template.replace("<object1>", above_obj['name']).replace("<object2>", below_obj['name'])
+                
+                ontop_captions.append(caption)
+
+    return ontop_captions
+
+
+def generate_caption(combination: Dict[str, Any], object_data, camera_data, ontop_data) -> str:
     """
     Generate a complete caption based on the combination data.
     Copy codeArgs:
@@ -591,6 +635,9 @@ def generate_caption(combination: Dict[str, Any], object_data, camera_data) -> s
      # Add information about object movement
     movement_captions = generate_movement_captions(combination, object_data)
     caption_parts.extend(movement_captions)
+
+    ontop_captions = generate_ontop_captions(combination, ontop_data, object_data)
+    caption_parts.extend(ontop_captions)
 
     caption = " ".join(caption_parts)  # Join the caption parts into a single string
     caption = caption.strip()  # Remove leading and trailing whitespace
@@ -947,7 +994,7 @@ def generate_combinations(
             "postprocessing": postprocessing,
         }
 
-        combination["caption"] = generate_caption(combination, object_data, camera_data)
+        combination["caption"] = generate_caption(combination, object_data, camera_data, ontop_data)
 
         combinations.append(combination)
 
