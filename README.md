@@ -37,8 +37,18 @@ sudo python3 scripts/start_x_server.py start
 
 ### Generating Combinations
 
+Generate scenes without movement (static videos): 
 ```bash
 python3 -m simian.combiner --count 1000 --seed 42
+```
+
+Add movement to all or no objects:
+```bash
+python3 -m simian.combiner --count 1000 --seed 42 --movement all
+```
+
+```bash
+python3 -m simian.combiner --count 1000 --seed 42 --movement none
 ```
 
 ### Generating Videos or Images
@@ -59,7 +69,7 @@ Or generate all or part of the combination set using the `batch.py` script:
 
 To generate a video(s): 
 ```bash
-python3 -m simian.batch --start_index 0 --end_index 1000 --width 1024 --height 576 --start_frame 1 --end_frame 3 --animation_length 120
+python3 -m simian.batch --start_index 0 --end_index 1000 --width 1024 --height 576 --start_frame 1 --end_frame 2 --animation_length 120
 ```
 
 To generate an video(s) with your own blend file:
@@ -69,7 +79,7 @@ python3 -m simian.batch --start_index 0 --end_index 1000 --width 1024 --height 5
 
 To generate an image(s):
 ```bash
-python3 -m simian.batch --start_index 0 --end_index 1000 --width 1024 --height 576 --start_frame 1 --end_frame 65 --animation_length 120 --images
+python3 -m simian.batch --start_index 0 --end_index 1000 --width 1024 --height 576 --start_frame 1 --end_frame 2 --animation_length 120 --images
 ```
 
 You can also generate individually:

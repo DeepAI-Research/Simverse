@@ -18,7 +18,7 @@ from .camera import (
     set_camera_animation,
     set_camera_settings,
 )
-from .transform import find_largest_length, place_objects_on_grid
+from .transform import find_largest_length, place_objects_on_grid, apply_movement
 from .object import (
     apply_all_modifiers,
     apply_and_remove_armatures,
@@ -86,7 +86,7 @@ def render_scene(
     combination_index=0,
     combination=None,
     render_images=False,
-    user_blend_file=None
+    user_blend_file=None,
 ) -> None:
     """
     Renders a scene with specified parameters.
@@ -174,20 +174,24 @@ def render_scene(
     unlock_objects(initial_objects)
 
     set_camera_settings(combination)
-
     set_camera_animation(combination, animation_length)
+
+    yaw = combination["orientation"]["yaw"]
 
     if not user_blend_file:
         set_background(args.hdri_path, combination)
         create_photosphere(args.hdri_path, combination).scale = (10, 10, 10)
         stage = create_stage(combination)
         apply_stage_material(stage, combination)
+    
+    position_camera(combination, focus_object)
+    apply_movement(all_objects, yaw, scene.frame_start, scene.frame_end)
 
     # Randomize image sizes
     sizes = [
         (1920, 1080),
         (1024, 1024),
-        (512, 512),
+        # able to add more options here
     ]
 
     if render_images:
@@ -198,7 +202,6 @@ def render_scene(
         scene.render.resolution_x = size[0]
         scene.render.resolution_y = size[1]
         scene.render.resolution_percentage = 100
-        position_camera(combination, focus_object)
         render_path = os.path.join(
             output_dir,
             f"{combination_index}_frame_{middle_frame}_{size[0]}x{size[1]}.png",
@@ -216,13 +219,15 @@ def render_scene(
         scene.render.ffmpeg.codec = "H264"
         scene.render.ffmpeg.constant_rate_factor = "PERC_LOSSLESS"
         scene.render.ffmpeg.ffmpeg_preset = "BEST"
-        position_camera(combination, focus_object)
         render_path = os.path.join(output_dir, f"{combination_index}.mp4")
         scene.render.filepath = render_path
         bpy.ops.render.render(animation=True)
-        # bpy.ops.wm.save_as_mainfile(
-        #     filepath=os.path.join(output_dir, f"{combination_index}.blend")
-        # )
+
+        # uncomment this to prevent generation of blend files
+        bpy.ops.wm.save_as_mainfile(
+            filepath=os.path.join(output_dir, f"{combination_index}.blend")
+        )
+
         logger.info(f"Rendered video saved to {render_path}")
 
 

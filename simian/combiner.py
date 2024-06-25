@@ -5,6 +5,7 @@ import os
 import random
 import argparse
 from typing import Any, Dict, List, Optional
+from mathutils import Vector
 
 from .transform import determine_relationships, adjust_positions
 
@@ -93,6 +94,13 @@ def parse_args() -> argparse.Namespace:
         type=str,
         default="data/stage_data.json",
         help="Path to the JSON file containing stage data",
+    )
+    parser.add_argument(
+        "--movement",
+        type=str,
+        default="none",
+        choices=["none", "all"],
+        help="Apply movement to all, none, or random objects."
     )
     return parser.parse_args()
 
@@ -277,6 +285,17 @@ def generate_relationship_captions(combination: Dict[str, Any]) -> List[str]:
         selected_relationships = random.sample(relationships, threshold_relationships)
 
     return selected_relationships
+
+
+def add_movement_to_objects(objects, movement="none", max_speed=0.5):
+    if movement == "none":
+        return objects
+    for obj in objects:
+        if movement == "all":
+            direction = random.choice(["left", "right", "forward", "backward"])
+            speed = random.uniform(0.1, max_speed)
+            obj["movement"] = {"direction": direction, "speed": speed}
+    return objects
 
 
 def generate_fov_caption(combination: Dict[str, Any]) -> str:
@@ -479,6 +498,48 @@ def generate_animation_captions(combination: Dict[str, Any], camera_data) -> Lis
     return []
 
 
+def generate_movement_captions(combination: Dict[str, Any], object_data) -> List[str]:
+    """
+    Generate captions for object movement based on the combination data.
+
+    Args:
+        combination (Dict[str, Any]): Combination data.
+        object_data (Dict[str, Any]): Object data including movement templates and speed descriptions.
+
+    Returns:
+        List[str]: List of movement captions.
+    """
+
+    if 'movement_description_relationship' not in object_data:
+        return []
+
+    object_movement_data = object_data['movement_description_relationship']
+    object_movement_speed_words = object_data['movement_speed_description']
+
+    movement_captions = []
+    for obj in combination['objects']:
+        if 'movement' in obj:
+            speed = obj['movement']['speed']
+            if speed <= 0.25:
+                speed_words = object_movement_speed_words['0.25']
+            else:
+                speed_words = object_movement_speed_words['0.5']
+
+            speed_description = random.choice(speed_words)
+
+            template = random.choice(object_movement_data)
+            movement_description = template.replace('<object>', obj['name'])
+            movement_description = movement_description.replace('<movement>', obj['movement']['direction'])
+            movement_description = movement_description.replace('<speed>', f'{speed:.2f}')
+
+            if '<speed_description>' in movement_description:
+                movement_description = movement_description.replace('<speed_description>', speed_description)
+
+            movement_captions.append(movement_description)
+
+    return movement_captions
+
+
 def generate_caption(combination: Dict[str, Any], object_data, camera_data) -> str:
     """
     Generate a complete caption based on the combination data.
@@ -519,6 +580,10 @@ def generate_caption(combination: Dict[str, Any], object_data, camera_data) -> s
 
     animation_captions = generate_animation_captions(combination, camera_data)
     caption_parts.extend(animation_captions)
+
+     # Add information about object movement
+    movement_captions = generate_movement_captions(combination, object_data)
+    caption_parts.extend(movement_captions)
 
     caption = " ".join(caption_parts)  # Join the caption parts into a single string
     caption = caption.strip()  # Remove leading and trailing whitespace
@@ -817,6 +882,8 @@ def generate_combinations(
     background_names: List[str],
     background_weights: List[int],
     texture_data: Dict[str, Any],
+    movement: str,  
+    max_speed: float = 0.5
 ) -> Dict[str, Any]:
     """
     Generate random combinations of camera settings, objects, background, and stage.
@@ -858,6 +925,8 @@ def generate_combinations(
         animation = generate_animation(camera_data)  # speed is between 0.5 and 2
 
         stage = generate_stage(texture_data)
+
+        objects = add_movement_to_objects(objects, movement, max_speed=0.5)
 
         combination = {
             "index": i,
@@ -976,6 +1045,8 @@ if __name__ == "__main__":
     stage_data = read_json_file(args.stage_data_path)
     texture_data = read_json_file(args.texture_data_path)
     camera_data = read_json_file(args.camera_file_path)
+    movement_data = args.movement
+    speed = 1.0
 
     # Load backgrounds
     backgrounds = read_json_file(args.datasets_path)["backgrounds"]
@@ -1007,6 +1078,8 @@ if __name__ == "__main__":
         background_names,
         background_weights,
         texture_data,
+        movement_data,
+        speed
     )
 
     # Write to JSON file

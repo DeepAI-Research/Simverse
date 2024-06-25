@@ -17,7 +17,7 @@ def render_objects(
     end_frame: int = 65,
     images: bool = False,
     animation_length: int = 120,
-    blend_file: Optional[str] = "flat",
+    blend_file: Optional[str] = None,
 ) -> None:
     """
     Automates the rendering of objects using Blender based on predefined combinations.
@@ -75,7 +75,7 @@ def render_objects(
         else:
             args = f"--width {width} --height {height} --combination_index {i} --start_frame {start_frame} --end_frame {end_frame} --output_dir {target_directory} --hdri_path {hdri_path} --animation_length {animation_length}"
 
-        if blend_file != "flat":
+        if blend_file:
             args += f" --blend {blend_file}"
 
         command = f"{sys.executable} -m simian.render -- {args}"
