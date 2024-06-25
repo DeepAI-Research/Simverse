@@ -39,39 +39,34 @@ def run_job(
     Returns:
         None
     """
-    str_combinations = []
-    for combination in combinations:
-        str_combination = json.dumps(combination)
-        str_combination = '"' + str_combination.replace('"', '\\"') + '"'
-        str_combinations.append(str_combination)
+    combination_strings = []
+    for combo in combinations:
+        combination_string = json.dumps(combo)
+        combination_string = '"' + combination_string.replace('"', '\\"') + '"'
+        combination_strings.append(combination_string)
 
-    output_dir = output_dir + str(time.time())
-
+    # create output directory, add time to name so each new directory is unique
+    output_dir += str(time.time())
     os.makedirs(output_dir, exist_ok=True)
 
+    # render images in batches (batches to handle rate limiting of uploads)
     batch_size = len(combination_indeces)
     for i in range(batch_size):
 
-        args = f"--width {width} --height {height} --combination_index {combination_indeces[i]}"
+        args = f" --width {width} --height {height} --combination_index {combination_indeces[i]}"
         args += f" --output_dir {output_dir}"
         args += f" --hdri_path {hdri_path}"
         args += f" --start_frame {start_frame} --end_frame {end_frame}"
-        args += f" --combination {str_combinations[i]}"
+        args += f" --combination {combination_strings[i]}"
 
         command = f"{sys.executable} -m simian.render -- {args}"
-        logger.info(f"Worker running: {command}")
+        logger.info(f"Worker running simian.render")
 
         subprocess.run(["bash", "-c", command], check=True)
 
-    api = HfApi(token=os.getenv("HF_TOKEN"))
-    # Upload the directory using distributaur
-    api.upload_folder(
-        folder_path=output_dir,
-        repo_id=os.getenv("HF_REPO_ID"),
-        repo_type="dataset",
-    )
+    distributaur.upload_directory(output_dir)
 
-    return "Task done"
+    return "Task completed"
 
 
 # only run this is this file was started by celery or run directly
