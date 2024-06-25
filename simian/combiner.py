@@ -102,6 +102,13 @@ def parse_args() -> argparse.Namespace:
         choices=["none", "all"],
         help="Apply movement to all, none, or random objects."
     )
+    parser.add_argument(
+        "--ontop",
+        type=str,
+        default="none",
+        choices=["none", "all"],
+        help="Allow objects to be on top of each other."
+    )
     return parser.parse_args()
 
 
@@ -882,8 +889,9 @@ def generate_combinations(
     background_names: List[str],
     background_weights: List[int],
     texture_data: Dict[str, Any],
-    movement: str,  
-    max_speed: float = 0.5
+    movement: str  = "none",  
+    max_speed: float = 0.5,
+    ontop_data: str = "none"
 ) -> Dict[str, Any]:
     """
     Generate random combinations of camera settings, objects, background, and stage.
@@ -905,7 +913,7 @@ def generate_combinations(
     # Generate combinations on the fly up to the specified count
     for i in range(count):
         objects = generate_objects(
-            object_data, dataset_names, dataset_weights, dataset_dict, captions_data
+            object_data, dataset_names, dataset_weights, dataset_dict, captions_data, ontop_data
         )
         background = generate_background(
             background_dict, background_names, background_weights
@@ -926,7 +934,7 @@ def generate_combinations(
 
         stage = generate_stage(texture_data)
 
-        objects = add_movement_to_objects(objects, movement, max_speed=0.5)
+        objects = add_movement_to_objects(objects, movement, max_speed)
 
         combination = {
             "index": i,
@@ -948,7 +956,7 @@ def generate_combinations(
     return data
 
 def generate_objects(
-    object_data, dataset_names, dataset_weights, dataset_dict, captions_data
+    object_data, dataset_names, dataset_weights, dataset_dict, captions_data, ontop_data
 ) -> List[Dict[str, Any]]:
     """
     Generate a list of random objects.
@@ -1010,7 +1018,7 @@ def generate_objects(
             positions_taken.add(placement)
         else:
             possible_positions = [
-                pos for pos in range(0, 9) if pos not in positions_taken
+                pos for pos in range(0, 9) if pos not in positions_taken or ontop_data == "all"
             ]
             placement = random.choice(possible_positions)
             positions_taken.add(placement)
@@ -1046,6 +1054,7 @@ if __name__ == "__main__":
     texture_data = read_json_file(args.texture_data_path)
     camera_data = read_json_file(args.camera_file_path)
     movement_data = args.movement
+    ontop_data = args.ontop
     speed = 1.0
 
     # Load backgrounds
@@ -1079,7 +1088,8 @@ if __name__ == "__main__":
         background_weights,
         texture_data,
         movement_data,
-        speed
+        speed,
+        ontop_data
     )
 
     # Write to JSON file
