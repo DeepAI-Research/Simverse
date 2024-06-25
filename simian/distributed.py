@@ -148,13 +148,15 @@ if __name__ == "__main__":
                     "combination_indeces": [
                         index
                         for index in range(
-                            combination_index, combination_index + batch_size
+                            combination_index, 
+                            min(combination_index + batch_size, settings["end_index"])
                         )
                     ],
                     "combinations": [
                         job_config["combinations"][index]
                         for index in range(
-                            combination_index, combination_index + batch_size
+                            combination_index, 
+                            min(combination_index + batch_size, settings["end_index"])
                         )
                     ],
                     "width": job_config["width"],
