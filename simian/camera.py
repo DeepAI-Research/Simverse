@@ -251,6 +251,7 @@ def position_camera(combination: dict, focus_object: bpy.types.Object) -> None:
 
     # Get the bounding box of the focus object in world space
     bpy.context.view_layer.update()
+    
     bbox = [
         focus_object.matrix_world @ Vector(corner) for corner in focus_object.bound_box
     ]
@@ -283,9 +284,6 @@ def position_camera(combination: dict, focus_object: bpy.types.Object) -> None:
     else:
         camera.data.sensor_fit = "VERTICAL"
 
-    # Position the camera based on the computed distance
-    camera.location = Vector((camera_distance, 0, 0))  # Adjust this as needed
-
     bbox = [
         focus_object.matrix_world @ Vector(corner) for corner in focus_object.bound_box
     ]
@@ -294,6 +292,10 @@ def position_camera(combination: dict, focus_object: bpy.types.Object) -> None:
 
     # Calculate the height of the bounding box
     bbox_height = bbox_max.z - bbox_min.z
+
+    # Position the camera based on the computed distance
+    camera.location = Vector((camera_distance, 0, 0))  # Adjust this as needed
+
 
     # Set the position of the CameraAnimationRoot object to slightly above the focus object center, quasi-rule of thirds
     # bbox_height / 2 is the center of the bounding box, bbox_height / 1.66 is more aesthetically pleasing

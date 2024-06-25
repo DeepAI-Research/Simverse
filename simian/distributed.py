@@ -3,7 +3,6 @@ import json
 import logging
 import os
 import time
-import atexit
 from tqdm import tqdm
 from typing import Dict
 
@@ -30,7 +29,6 @@ if __name__ == "__main__":
     def get_settings(args):
         env_vars = get_env_vars(".env")
 
-        # Get settings from parsed argements or env, set defaults
         settings = {
             "start_index": args.start_index or int(env_vars.get("START_INDEX", 0)),
             "combinations_file": args.combinations_file
@@ -51,10 +49,9 @@ if __name__ == "__main__":
             "redis_password": args.redis_password or env_vars.get("REDIS_PASSWORD", ""),
             "hf_token": args.hf_token or env_vars.get("HF_TOKEN", ""),
             "hf_repo_id": args.hf_repo_id or env_vars.get("HF_REPO_ID", ""),
+            "hf_path": args.hf_path or env_vars.get("HF_PATH", ""),
             "broker_pool_limit": args.broker_pool_limit
             or int(env_vars.get("BROKER_POOL_LIMIT", 1)),
-            "render_batch_size": args.render_batch_size
-            or int(env_vars.get("RENDER_BATCH_SIZE", 1)),
         }
 
         # Load combinations from file
@@ -75,6 +72,7 @@ if __name__ == "__main__":
         os.environ["REDIS_PASSWORD"] = args.redis_password or settings["redis_password"]
         os.environ["HF_TOKEN"] = args.hf_token or settings["hf_token"]
         os.environ["HF_REPO_ID"] = args.hf_repo_id or settings["hf_repo_id"]
+        os.environ["HF_PATH"] = args.hf_path or settings["hf_path"]
 
         job_config = {
             "max_price": settings["max_price"],
@@ -91,18 +89,16 @@ if __name__ == "__main__":
             "api_key": settings["api_key"],
             "hf_token": settings["hf_token"],
             "hf_repo_id": settings["hf_repo_id"],
+            "hf_path": settings["hf_path"],
             "redis_host": settings["redis_host"],
             "redis_port": settings["redis_port"],
             "redis_user": settings["redis_user"],
             "redis_password": settings["redis_password"],
             "broker_pool_limit": settings["broker_pool_limit"],
-            "render_batch_size": settings["render_batch_size"],
         }
 
         print("*** JOB CONFIG")
-        for key, value in job_config.items():
-            if key != 'combinations':
-                print(f"{key}: {value}")
+        print(job_config)
 
         distributaur = Distributaur(
             hf_repo_id=job_config["hf_repo_id"],
@@ -117,47 +113,35 @@ if __name__ == "__main__":
 
         max_price = job_config["max_price"]
         max_nodes = job_config["max_nodes"]
-        docker_image = "antbaez/simian-worker:latest"
+        docker_image = "arfx/simian-worker:latest"
         module_name = "simian.worker"
 
-        # Rent and set up vastai nodes with docker image
-        print("Searching for nodes...")
+        print("MAX PRICE: ", max_price)
+        print("SEARCHING FOR NODES...")
         num_nodes_avail = len(distributaur.search_offers(max_price))
-        print("Total nodes available: ", num_nodes_avail)
+        print("TOTAL NODES AVAILABLE: ", num_nodes_avail)
 
         rented_nodes = distributaur.rent_nodes(
             max_price, max_nodes, docker_image, module_name
         )
 
-        print("Total nodes rented: ", len(rented_nodes))
+        print("TOTAL RENTED NODES: ", len(rented_nodes))
         print(rented_nodes)
 
         distributaur.register_function(run_job)
 
         tasks = []
 
-        batch_size = job_config["render_batch_size"]
-        # Submit tasks to queue in batches
+        # Submit tasks
         for combination_index in range(
             job_config["start_index"],
             min(job_config["end_index"], len(job_config["combinations"])),
-            batch_size,
         ):
             task = distributaur.execute_function(
                 "run_job",
                 {
-                    "combination_indeces": [
-                        index
-                        for index in range(
-                            combination_index, combination_index + batch_size
-                        )
-                    ],
-                    "combinations": [
-                        job_config["combinations"][index]
-                        for index in range(
-                            combination_index, combination_index + batch_size
-                        )
-                    ],
+                    "combination_index": combination_index,
+                    "combination": job_config["combinations"][combination_index],
                     "width": job_config["width"],
                     "height": job_config["height"],
                     "output_dir": job_config["output_dir"],
@@ -168,24 +152,28 @@ if __name__ == "__main__":
             )
             tasks.append(task)
 
+        # Wait for tasks to complete
         print("Tasks submitted to queue. Waiting for tasks to complete...")
 
+
+        prev_tasks = 0
         first_task_done = False
+        queue_start_time = time.time()
         # Wait for the tasks to complete
         print("Tasks submitted to queue. Initializing queue...")
         with tqdm(total=len(tasks), unit="task") as pbar:
-            # Check how many tasks are completed
             while not all(task.ready() for task in tasks):
                 current_tasks = sum([task.ready() for task in tasks])
                 pbar.update(current_tasks - pbar.n)
+
                 if current_tasks > 0:
-                    # Begin estimation from time remaining when first task is done
+                    # begin estimation from time of first task
                     if not first_task_done:
                         first_task_done = True
                         first_task_start_time = time.time()
                         print("Initialization completed. Tasks started...")
 
-                    # Calculate and print total elapsed time and estimated time left
+                    # calculate and print total elapsed time and estimated time left
                     end_time = time.time()
                     elapsed_time = end_time - first_task_start_time
                     time_per_tasks = elapsed_time / current_tasks
@@ -193,8 +181,7 @@ if __name__ == "__main__":
 
                     pbar.set_postfix(
                         elapsed=f"{elapsed_time:.2f}s", time_left=f"{time_left:.2f}"
-                    )
-                time.sleep(2)
+                    )            
 
         print("All tasks have been completed!")
 
@@ -219,11 +206,9 @@ if __name__ == "__main__":
     parser.add_argument("--redis_password", help="Redis password")
     parser.add_argument("--hf_token", help="Hugging Face token")
     parser.add_argument("--hf_repo-id", help="Hugging Face repository ID")
+    parser.add_argument("--hf_path", help="Hugging Face path")
     parser.add_argument(
         "--broker_pool_limit", type=int, help="Limit on redis pool size"
-    )
-    parser.add_argument(
-        "--render_batch_size", type=int, help="Batch size of simian rendering"
     )
     args = parser.parse_args()
 

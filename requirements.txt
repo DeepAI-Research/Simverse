@@ -1,8 +1,7 @@
-omegaconf==2.0.5
+omegaconf
 requests
 argparse
 numpy
 scipy
 distributaur
 bpy
-rr-infinigen
