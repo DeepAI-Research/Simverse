@@ -3,20 +3,14 @@ import logging
 import os
 import sys
 import subprocess
-import time
-import random
-import shutil
-from huggingface_hub import HfApi
-from typing import Any, Dict, List
-
+from typing import Any, Dict
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
 
-
 def run_job(
-    combination_indeces: List[Any],
-    combinations: List[Dict],
+    combination_index: int,
+    combination: Dict[str, Any],
     width: int,
     height: int,
     output_dir: str,
@@ -40,39 +34,30 @@ def run_job(
     Returns:
         None
     """
-    # format combinations json into string
-    combinations_string = []
-    for combo in combinations:
-        str_combination = json.dumps(combo)
-        str_combination = '"' + str_combination.replace('"', '\\"') + '"'
-        combinations_string.append(str_combination)
+    combination = json.dumps(combination)
+    combination = '"' + combination.replace('"', '\\"') + '"'
 
-    # create output directory, add time to name so each new directory is unique
-    os.makedirs(output_dir + str(time.time()), exist_ok=True)
+    os.makedirs(output_dir, exist_ok=True)
 
-    # render images in batches (batches to handle rate limiting of uploads)
-    batch_size = len(combination_indeces)
-    for i in range(batch_size):
+    args = f"--width {width} --height {height} --combination_index {combination_index}"
+    args += f" --output_dir {output_dir}"
+    args += f" --hdri_path {hdri_path}"
+    args += f" --start_frame {start_frame} --end_frame {end_frame}"
+    args += f" --combination {combination}"
 
-        args = f" --width {width} --height {height} --combination_index {combination_indeces[i]}"
-        args += f" --output_dir {output_dir}"
-        args += f" --hdri_path {hdri_path}"
-        args += f" --start_frame {start_frame} --end_frame {end_frame}"
-        args += f" --combination {combinations_string[i]}"
+    command = f"{sys.executable} -m simian.render -- {args}"
+    logger.info(f"Worker running: {command}")
 
-        command = f"{sys.executable} -m simian.render {args}"
-        logger.info(f"Worker running simian.render")
-
-        subprocess.run(["bash", "-c", command], check=True)
-
+    subprocess.run(["bash", "-c", command], check=False)
+    
     distributaur.upload_directory(output_dir)
-
-    return "Task completed"
+    
+    print("Job done")
 
 
 # only run this is this file was started by celery or run directly
 # check if celery is in sys.argv, it could be sys.argv[0] but might not be
-
+    
 if __name__ == "__main__" or any("celery" in arg for arg in sys.argv):
     from distributaur.distributaur import create_from_config
 
@@ -80,3 +65,4 @@ if __name__ == "__main__" or any("celery" in arg for arg in sys.argv):
     distributaur.register_function(run_job)
 
     celery = distributaur.app
+
