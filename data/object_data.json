@@ -98,6 +98,26 @@
         "The <object> slides <movement> at <speed>.",
         "The <object> moves <movement> at <speed_description> <speed> units."
     ],
+    "ontop_description_relationship": [
+        "<object1> is on top of <object2>",
+        "<object2> is below <object1>",
+        "<object1> is stacked above <object2>",
+        "<object2> is underneath <object1>",
+        "<object1> is placed over <object2>",
+        "<object2> is positioned under <object1>",
+        "<object1> is resting on <object2>",
+        "<object2> is supporting <object1>",
+        "<object1> is situated atop <object2>",
+        "<object2> is lying beneath <object1>",
+        "<object1> is layered above <object2>",
+        "<object2> is seated under <object1>",
+        "<object1> is on the top of <object2>",
+        "<object2> is at the bottom of <object1>",
+        "<object1> is elevated over <object2>",
+        "<object2> is settled below <object1>",
+        "<object1> is placed on <object2>",
+        "<object2> is arranged below <object1>"
+    ],
     "name_description_relationship": [
         "There is a <name>",
 

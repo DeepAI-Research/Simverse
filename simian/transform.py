@@ -276,22 +276,41 @@ def bring_objects_to_origin(objects: List[Dict[bpy.types.Object, Dict]]) -> None
 def place_objects_on_grid(
     objects: List[Dict[bpy.types.Object, Dict]], largest_length: float
 ) -> None:
-    """Place objects on a grid based on their transformed positions.
+    """Place objects on a grid based on their transformed positions, allowing stacking.
 
     Args:
         objects (List[Dict[bpy.types.Object, Dict]]): List of object dictionaries.
         largest_length (float): Largest dimension among the objects.
     """
+    grid_heights = {}
+
     for obj_dict in objects:
         obj = list(obj_dict.keys())[0]
         transformed_position = obj_dict[obj]["transformed_position"]
+        
+        grid_x = round(transformed_position[0])
+        grid_y = round(transformed_position[1])
+        grid_pos = (grid_x, grid_y)
+
+        current_height = grid_heights.get(grid_pos, 0)
+
+        # Use the object's current z-location for the first object at this position
+        if current_height == 0:
+            z_position = obj.location.z
+        else:
+            z_position = current_height
+
         obj.location = Vector(
             (
-                transformed_position[0] * largest_length,
-                transformed_position[1] * largest_length,
-                obj.location.z,
+                grid_x * largest_length,
+                grid_y * largest_length,
+                z_position
             )
         )
+
+        # Update the height for the next object
+        grid_heights[grid_pos] = z_position + obj.dimensions.z
+
         logger.info(f"Placed object {obj.name} at {obj.location}")
 
     bpy.context.view_layer.update()

@@ -850,8 +850,10 @@ def test_generate_objects():
     dataset_names = ["cap3d"]
     dataset_weights = [1]
 
+    ontop_data = "none"
+
     # Generate objects
-    objects = generate_objects(object_data, dataset_names, dataset_weights, dataset_dict, captions_data)
+    objects = generate_objects(object_data, dataset_names, dataset_weights, dataset_dict, captions_data, ontop_data)
 
     # Ensure the function generates the correct number of objects
     assert len(objects) > 0, "Objects generation should create more than 1 object."

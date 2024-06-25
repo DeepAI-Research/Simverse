@@ -168,7 +168,6 @@ def render_scene(
         all_objects.append({obj: object_data})
 
     largest_length = find_largest_length(all_objects)
-    place_objects_on_grid(all_objects, largest_length)
 
     # Unlock and unhide the initial objects
     unlock_objects(initial_objects)
@@ -184,6 +183,7 @@ def render_scene(
         stage = create_stage(combination)
         apply_stage_material(stage, combination)
     
+    place_objects_on_grid(all_objects, largest_length)
     position_camera(combination, focus_object)
     apply_movement(all_objects, yaw, scene.frame_start, scene.frame_end)
 
