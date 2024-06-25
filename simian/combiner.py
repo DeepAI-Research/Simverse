@@ -501,37 +501,42 @@ def generate_animation_captions(combination: Dict[str, Any], camera_data) -> Lis
 def generate_movement_captions(combination: Dict[str, Any], object_data) -> List[str]:
     """
     Generate captions for object movement based on the combination data.
+
     Args:
         combination (Dict[str, Any]): Combination data.
         object_data (Dict[str, Any]): Object data including movement templates and speed descriptions.
+
     Returns:
         List[str]: List of movement captions.
     """
 
-    object_movement_data = object_data["movement_description_relationship"]
-    object_movement_speed_words = object_data["movement_speed_description"]
+    if 'movement_description_relationship' not in object_data:
+        return []
+
+    object_movement_data = object_data['movement_description_relationship']
+    object_movement_speed_words = object_data['movement_speed_description']
 
     movement_captions = []
-    for obj in combination["objects"]:
-        if "movement" in obj:
+    for obj in combination['objects']:
+        if 'movement' in obj:
             speed = obj['movement']['speed']
             if speed <= 0.25:
-                speed_words = object_movement_speed_words["0.25"]
+                speed_words = object_movement_speed_words['0.25']
             else:
-                speed_words = object_movement_speed_words["0.5"]
-            
+                speed_words = object_movement_speed_words['0.5']
+
             speed_description = random.choice(speed_words)
-            
+
             template = random.choice(object_movement_data)
-            movement_description = template.replace("<object>", obj["name"])
-            movement_description = movement_description.replace("<movement>", obj['movement']['direction'])
-            movement_description = movement_description.replace("<speed>", f"{speed:.2f}")
-            
-            if "<speed_description>" in movement_description:
-                movement_description = movement_description.replace("<speed_description>", speed_description)
+            movement_description = template.replace('<object>', obj['name'])
+            movement_description = movement_description.replace('<movement>', obj['movement']['direction'])
+            movement_description = movement_description.replace('<speed>', f'{speed:.2f}')
+
+            if '<speed_description>' in movement_description:
+                movement_description = movement_description.replace('<speed_description>', speed_description)
 
             movement_captions.append(movement_description)
-    
+
     return movement_captions
 
 
