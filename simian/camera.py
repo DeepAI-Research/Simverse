@@ -300,5 +300,6 @@ def position_camera(combination: dict, focus_object: bpy.types.Object) -> None:
     # Set the position of the CameraAnimationRoot object to slightly above the focus object center, quasi-rule of thirds
     # bbox_height / 2 is the center of the bounding box, bbox_height / 1.66 is more aesthetically pleasing
     bpy.data.objects["CameraAnimationRoot"].location = focus_object.location + Vector(
-        (0, 0, bbox_height * 0.66)
+        (0, 0, bbox_height/2)
     )
+
