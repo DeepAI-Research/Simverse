@@ -540,17 +540,11 @@ def apply_movement(objects, yaw, start_frame, end_frame):
             offset.y = obj.dimensions.y
         elif movement["direction"] in ["left", "right"]:
             offset.x = obj.dimensions.x
-
-        offset = offset * rotated_vector
-
-        print("This is the rotated offset: ", offset)
-
+            
         # Position object at initial location at the start frame
         scene.frame_set(start_frame)
 
-        width = abs(obj.location.x) * rotated_vector 
-        height = abs(obj.location.y) * rotated_vector 
-        obj.location = initial_position - offset - width - height
+        obj.location += initial_position - (step_vector * 4)
         obj.keyframe_insert(data_path="location", frame=start_frame)
 
         # Animate object from start_frame to end_frame

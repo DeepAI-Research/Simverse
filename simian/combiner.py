@@ -595,6 +595,27 @@ def generate_ontop_captions(combination: Dict[str, Any], ontop_data, object_data
     return ontop_captions
 
 
+def generate_camerafollow_captions(combination: Dict[str, Any], camera_data) -> List[str]:
+    """
+    Generate captions for camera following objects based on the combination data.
+
+    Args:
+        combination (Dict[str, Any]): Combination data.
+        camera_data (Dict[str, Any]): Camera data containing camera follow options. 
+
+    Returns:
+        List[str]: List of camera follow captions.
+    """
+    camera_follow_options = camera_data['camera_follow']
+    camera_follow_captions = []
+    for obj in combination['objects']:
+        if 'camera_follow' in obj:
+            caption = random.choice(camera_follow_options)
+            caption = caption.replace('<object>', obj['name'])
+            camera_follow_captions.append(caption)        
+    return camera_follow_captions
+
+
 def generate_caption(combination: Dict[str, Any], object_data, camera_data, ontop_data) -> str:
     """
     Generate a complete caption based on the combination data.
@@ -642,6 +663,9 @@ def generate_caption(combination: Dict[str, Any], object_data, camera_data, onto
 
     ontop_captions = generate_ontop_captions(combination, ontop_data, object_data)
     caption_parts.extend(ontop_captions)
+
+    camerafollow_captions = generate_camerafollow_captions(combination, camera_data)
+    caption_parts.extend(camerafollow_captions)
 
     caption = " ".join(caption_parts)  # Join the caption parts into a single string
     caption = caption.strip()  # Remove leading and trailing whitespace
@@ -951,10 +975,10 @@ def generate_combinations(
     background_names: List[str],
     background_weights: List[int],
     texture_data: Dict[str, Any],
-    movement: str = None,  
+    movement: str = "",  
     max_speed: float = 0.5,
-    ontop_data: str = None,
-    camera_follow: int = "all",
+    ontop_data: str = "",
+    camera_follow: str = "",
 ) -> Dict[str, Any]:
     """
     Generate random combinations of camera settings, objects, background, and stage.
