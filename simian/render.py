@@ -6,7 +6,9 @@ import ssl
 import sys
 import bpy
 import random
+from rich.console import Console
 
+console = Console()
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
 

@@ -66,6 +66,8 @@ Configure the flags as needed:
 - `--hdri_path` is the directory containing the background images.
 - `--start_frame` and `--end_frame` are the start and end frames of the video.
 - `--images` adding this will output images instead of video at random frames. Creates multiple images per combination of varying sizes
+-  `blend_file <absolute path to blend file>` allows users to upload and use their own blend files as the terrain
+- `animation_length` is a percentage from 0-100 which describes how fast the animation should occur within the frames
 
 Or generate all or part of the combination set using the `batch.py` script:
 
