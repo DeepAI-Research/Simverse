@@ -6,7 +6,9 @@ import ssl
 import sys
 import bpy
 import random
+from rich.console import Console
 
+console = Console()
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
 
@@ -18,7 +20,7 @@ from .camera import (
     set_camera_animation,
     set_camera_settings,
 )
-from .transform import find_largest_length, place_objects_on_grid, apply_movement
+from .transform import find_largest_length, place_objects_on_grid, apply_movement, apply_animation
 from .object import (
     apply_all_modifiers,
     apply_and_remove_armatures,
@@ -42,10 +44,11 @@ def read_combination(combination_file: str, index: int = 0) -> dict:
     Reads a specified camera combination from a JSON file.
 
     Args:
-        None
+        combination_file (str): Path to the JSON file containing camera combinations.
+        index (int): Index of the camera combination to read from the JSON file. Defaults to 0.
 
     Returns:
-        None
+        dict: The camera combination data.
     """
     with open(combination_file, "r") as file:
         data = json.load(file)
@@ -69,7 +72,7 @@ def load_user_blend_file(user_blend_file):
 
     try:
         bpy.ops.wm.open_mainfile(filepath=user_blend_file)
-        logger.info(f"Opened user-specified Blender file {user_blend_file} as the base scene.")
+        # logger.info(f"Opened user-specified Blender file {user_blend_file} as the base scene.")
         return True
     except Exception as e:
         logger.error(f"Failed to load Blender file {user_blend_file}: {e}")
@@ -82,11 +85,11 @@ def render_scene(
     combination_file,
     start_frame: int = 1,
     end_frame: int = 65,
-    animation_length: int = 300,
     combination_index=0,
     combination=None,
-    render_images=False,
-    user_blend_file=None,
+    render_images: bool =False,
+    user_blend_file = None,
+    animation_length: int = 100
 ) -> None:
     """
     Renders a scene with specified parameters.
@@ -97,16 +100,17 @@ def render_scene(
         combination_file (str): Path to the JSON file containing camera combinations.
         start_frame (int): Start frame of the animation. Defaults to 1.
         end_frame (int): End frame of the animation. Defaults to 65.
-        animation_length (int): Length of the animation. Defaults to 300.
         combination_index (int): Index of the camera combination to use from the JSON file. Defaults to 0.
         render_images (bool): Flag to indicate if images should be rendered instead of videos.
-        user_blend_file (str): Path to the user-specified Blender file to use as the base scene.
+        user_blend_file (str): Path to the user-specified Blender file to use as the base scene
+        animation_length (int): Percentage animation length. Defaults to 100.
 
     Returns:
         None
     """
 
-    logger.info(f"Rendering scene with combination {combination_index}")
+    console.print("Rendering scene with combination ", style="orange_red1", end="")
+    console.print(f"{combination_index}", style="bold bright_green")
 
     os.makedirs(output_dir, exist_ok=True)
 
@@ -124,8 +128,8 @@ def render_scene(
 
     scene = context.scene
 
-    scene.frame_start = animation_length - (end_frame - start_frame)
-    scene.frame_end = animation_length
+    scene.frame_start = start_frame
+    scene.frame_end = end_frame
 
     # Lock and hide all scene objects before doing any object operations
     initial_objects = lock_all_objects()
@@ -173,9 +177,7 @@ def render_scene(
     unlock_objects(initial_objects)
 
     set_camera_settings(combination)
-    set_camera_animation(combination, animation_length)
-
-    yaw = combination["orientation"]["yaw"]
+    set_camera_animation(combination, end_frame-start_frame, animation_length)
 
     if not user_blend_file:
         set_background(args.hdri_path, combination)
@@ -184,8 +186,15 @@ def render_scene(
         apply_stage_material(stage, combination)
     
     place_objects_on_grid(all_objects, largest_length)
+    yaw = combination["orientation"]["yaw"]
+    all_objects, step_vector = apply_movement(all_objects, yaw, scene.frame_start)
+    for obj_dict in all_objects:
+        obj = list(obj_dict.keys())[0]
+        properties = obj_dict[obj]
+        if properties.get("camera_follow", {}).get("follow", False):
+            focus_object = obj
     position_camera(combination, focus_object)
-    apply_movement(all_objects, yaw, scene.frame_start, scene.frame_end)
+    apply_animation(all_objects, focus_object, step_vector, start_frame, end_frame)
 
     # Randomize image sizes
     sizes = [
@@ -274,13 +283,6 @@ if __name__ == "__main__":
         required=False,
     )
     parser.add_argument(
-        "--animation_length",
-        type=int,
-        default=120,
-        help="End frame of the animation.",
-        required=False,
-    )
-    parser.add_argument(
         "--width", type=int, default=1920, help="Render output width.", required=False
     )
     parser.add_argument(
@@ -300,6 +302,13 @@ if __name__ == "__main__":
         default=None,
         help="Path to the user-specified Blender file to use as the base scene.",
         required=False,
+    )
+    parser.add_argument(
+        "--animation_length",
+        type=int,
+        default=100,
+        help="Percentage animation length. Defaults to 100%.",
+        required=False
     )
 
     if "--" in sys.argv:
@@ -328,7 +337,6 @@ if __name__ == "__main__":
 
     # Render the images
     render_scene(
-        animation_length=args.animation_length,
         start_frame=args.start_frame,
         end_frame=args.end_frame,
         output_dir=args.output_dir,

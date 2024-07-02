@@ -6,6 +6,8 @@ import random
 import argparse
 from typing import Any, Dict, List, Optional
 from mathutils import Vector
+from rich.console import Console
+from rich.progress import Progress, SpinnerColumn, TextColumn
 
 from .transform import determine_relationships, adjust_positions
 
@@ -98,16 +100,20 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--movement",
         type=str,
-        default="none",
-        choices=["none", "all"],
+        default="all",
         help="Apply movement to all, none, or random objects."
     )
     parser.add_argument(
         "--ontop",
         type=str,
-        default="none",
-        choices=["none", "all"],
+        default="all",
         help="Allow objects to be on top of each other."
+    )
+    parser.add_argument(
+        "--camera_follow",
+        type=str,
+        default="all",
+        help="Camera will follow specified object as it moves (for individual objects)."
     )
     return parser.parse_args()
 
@@ -294,8 +300,8 @@ def generate_relationship_captions(combination: Dict[str, Any]) -> List[str]:
     return selected_relationships
 
 
-def add_movement_to_objects(objects, movement="none", max_speed=0.5):
-    if movement == "none":
+def add_movement_to_objects(objects, movement=None, max_speed=0.5):
+    if not movement:
         return objects
     for obj in objects:
         if movement == "all":
@@ -360,6 +366,7 @@ def generate_postprocessing_caption(combination: Dict[str, Any], camera_data) ->
 
     Args:
         combination (Dict[str, Any]): Combination data.
+        camera_data (Dict[str, Any]): Camera data.
 
     Returns:
         str: Postprocessing caption.
@@ -467,6 +474,7 @@ def generate_animation_captions(combination: Dict[str, Any], camera_data) -> Lis
     Generate captions for camera animations based on the combination data and speed factor.
     Copy codeArgs:
         combination (Dict[str, Any]): Combination data.
+        camera_data (Dict[str, Any]): Camera data.
 
     Returns:
         List[str]: List of animation captions.
@@ -559,7 +567,7 @@ def generate_ontop_captions(combination: Dict[str, Any], ontop_data, object_data
     Returns:
         List[str]: List of ontop captions.
     """
-    if ontop_data == "none":
+    if not ontop_data or 'ontop_description_relationship' not in object_data:
         return []
 
     ontop_captions = []
@@ -591,11 +599,38 @@ def generate_ontop_captions(combination: Dict[str, Any], ontop_data, object_data
     return ontop_captions
 
 
+def generate_camerafollow_captions(combination: Dict[str, Any], camera_data) -> List[str]:
+    """
+    Generate captions for camera following objects based on the combination data.
+
+    Args:
+        combination (Dict[str, Any]): Combination data.
+        camera_data (Dict[str, Any]): Camera data containing camera follow options. 
+
+    Returns:
+        List[str]: List of camera follow captions.
+    """
+    if 'camera_follow' not in camera_data:
+        return []
+    
+    camera_follow_options = camera_data['camera_follow']
+    camera_follow_captions = []
+    for obj in combination['objects']:
+        if 'camera_follow' in obj:
+            caption = random.choice(camera_follow_options)
+            caption = caption.replace('<object>', obj['name'])
+            camera_follow_captions.append(caption)        
+    return camera_follow_captions
+
+
 def generate_caption(combination: Dict[str, Any], object_data, camera_data, ontop_data) -> str:
     """
     Generate a complete caption based on the combination data.
     Copy codeArgs:
         combination (Dict[str, Any]): Combination data.
+        object_data (Dict[str, Any]): Object data.
+        camera_data (Dict[str, Any]): Camera data.
+        ontop_data (str): Flag indicating whether to allow objects on top of each other.
 
     Returns:
         str: Complete caption.
@@ -638,6 +673,9 @@ def generate_caption(combination: Dict[str, Any], object_data, camera_data, onto
 
     ontop_captions = generate_ontop_captions(combination, ontop_data, object_data)
     caption_parts.extend(ontop_captions)
+
+    camerafollow_captions = generate_camerafollow_captions(combination, camera_data)
+    caption_parts.extend(camerafollow_captions)
 
     caption = " ".join(caption_parts)  # Join the caption parts into a single string
     caption = caption.strip()  # Remove leading and trailing whitespace
@@ -880,6 +918,11 @@ def generate_background(
     """
     Generate a random background.
 
+    Args:
+        background_dict: Background data.
+        background_names: List of background names.
+        background_weights: List of background
+
     Returns:
         Dict[str, Any]: Generated background.
     """
@@ -903,6 +946,9 @@ def generate_stage(texture_data) -> Dict[str, Any]:
     """
     Generate a random stage.
 
+    Args:
+        texture_data: Texture data.
+
     Returns:
         Dict[str, Any]: Generated stage.
     """
@@ -923,6 +969,27 @@ def generate_stage(texture_data) -> Dict[str, Any]:
     return stage
 
 
+def add_camera_follow(objects, camera_follow):
+    """
+    Add camera follow to objects.
+
+    Args:
+        objects: List of objects.
+        camera_follow: Camera follow flag.
+
+    Returns:
+        List[Dict[str, Any]]: List of objects with camera follow.
+    """
+    if camera_follow == "all":  
+        # how many objects in array
+        num_objects = len(objects)
+        # randomly select an object to follow
+        random_index = random.randint(0, num_objects - 1)
+        objects[random_index]["camera_follow"] = {"follow": True}
+
+    return objects
+
+
 def generate_combinations(
     camera_data: Dict[str, Any],
     count: int,
@@ -936,9 +1003,10 @@ def generate_combinations(
     background_names: List[str],
     background_weights: List[int],
     texture_data: Dict[str, Any],
-    movement: str  = "none",  
+    movement: str = "",  
     max_speed: float = 0.5,
-    ontop_data: str = "none"
+    ontop_data: str = "",
+    camera_follow: str = "",
 ) -> Dict[str, Any]:
     """
     Generate random combinations of camera settings, objects, background, and stage.
@@ -947,6 +1015,19 @@ def generate_combinations(
         camera_data (Dict[str, Any]): Camera data.
         count (int): Number of combinations to generate.
         seed (Optional[int]): Seed for the random number generator.
+        dataset_names (List[str]): List of dataset names.
+        dataset_weights (List[int]): List of dataset weights.
+        object_data (Dict[str, Any]): Object data.
+        dataset_dict (Dict[str, Any]): Dataset dictionary.
+        captions_data (Dict[str, Any]): Captions data.
+        background_dict (Dict[str, Any]): Background data.
+        background_names (List[str]): List of background names.
+        background_weights (List[int]): List of background weights.
+        texture_data (Dict[str, Any]): Texture data.
+        movement (str): Movement flag.
+        max_speed (float): Maximum speed for movement.
+        ontop_data (str): Flag indicating whether to allow objects on top of each other.
+        camera_follow (str): Camera follow flag.
 
     Returns:
         Dict[str, Any]: Generated combinations data.
@@ -983,6 +1064,8 @@ def generate_combinations(
 
         objects = add_movement_to_objects(objects, movement, max_speed)
 
+        camera_follow = add_camera_follow(objects, camera_follow)
+
         combination = {
             "index": i,
             "objects": objects,
@@ -1007,6 +1090,14 @@ def generate_objects(
 ) -> List[Dict[str, Any]]:
     """
     Generate a list of random objects.
+
+    Args:
+        object_data (Dict[str, Any]): Object data.
+        dataset_names (List[str]): List of dataset names.
+        dataset_weights (List[int]): List of dataset weights.
+        dataset_dict (Dict[str, Any]): Dataset dictionary.
+        captions_data (Dict[str, Any]): Captions data.
+        ontop_data (str): Flag indicating whether to allow objects on top of each other.
 
     Returns:
         List[Dict[str, Any]]: List of generated objects.
@@ -1083,44 +1174,77 @@ def generate_objects(
 
     return objects
 
+
 if __name__ == "__main__":
+    console = Console()
+    logging.basicConfig(level=logging.INFO, format='%(message)s')
+    logging.getLogger().propagate = False
     args = parse_args()
+
+    simverse_ascii = """
+
+ ░▒▓███████▓▒░▒▓█▓▒░▒▓██████████████▓▒░░▒▓█▓▒░░▒▓█▓▒░▒▓████████▓▒░▒▓███████▓▒░ ░▒▓███████▓▒░▒▓████████▓▒░ 
+░▒▓█▓▒░      ░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░      ░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░      ░▒▓█▓▒░        
+░▒▓█▓▒░      ░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░░▒▓█▓▒░░▒▓█▓▒▒▓█▓▒░░▒▓█▓▒░      ░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░      ░▒▓█▓▒░        
+ ░▒▓██████▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░░▒▓█▓▒░░▒▓█▓▒▒▓█▓▒░░▒▓██████▓▒░ ░▒▓███████▓▒░ ░▒▓██████▓▒░░▒▓██████▓▒░   
+       ░▒▓█▓▒░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▓█▓▒░ ░▒▓█▓▒░      ░▒▓█▓▒░░▒▓█▓▒░      ░▒▓█▓▒░▒▓█▓▒░        
+       ░▒▓█▓▒░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▓█▓▒░ ░▒▓█▓▒░      ░▒▓█▓▒░░▒▓█▓▒░      ░▒▓█▓▒░▒▓█▓▒░        
+░▒▓███████▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░░▒▓█▓▒░  ░▒▓██▓▒░  ░▒▓████████▓▒░▒▓█▓▒░░▒▓█▓▒░▒▓███████▓▒░░▒▓████████▓▒░ 
+                                                                                                          
+    """
+
+    console.print(simverse_ascii)
+
 
     # Load only cap3d dataset
     cap3d_data_path = args.cap3d_captions_path
-    logger.info(f"Loading {cap3d_data_path}")
     cap3d_data = read_json_file(cap3d_data_path)
-    logger.info(f"Loaded {len(cap3d_data)} unique entries from cap3d")
-
-    # Ensure the dataset_dict contains only cap3d data
     dataset_dict = {"cap3d": list(cap3d_data.keys())}
 
-    object_data = read_json_file(args.object_data_path)
-    captions_data = read_json_file(args.cap3d_captions_path)
-    stage_data = read_json_file(args.stage_data_path)
-    texture_data = read_json_file(args.texture_data_path)
-    camera_data = read_json_file(args.camera_file_path)
-    movement_data = args.movement
-    ontop_data = args.ontop
-    speed = 1.0
+    tasks = [
+        ("Loading object data", args.object_data_path),
+        ("Loading stage data", args.stage_data_path),
+        ("Loading texture data", args.texture_data_path),
+        ("Loading camera data", args.camera_file_path)
+    ]
 
-    # Load backgrounds
-    backgrounds = read_json_file(args.datasets_path)["backgrounds"]
-    background_dict = {}
-    for bg in backgrounds:
-        bg_path = os.path.join(args.simdata_path, bg + ".json")
-        logger.info(f"Loading {bg_path}")
-        if os.path.exists(bg_path):
-            background_data = read_json_file(bg_path)
-            background_dict[bg] = background_data
-            logger.info(f"Loaded {len(background_data)} entries from {bg}")
-        else:
-            logger.info(f"Dataset file {bg_path} not found")
+    data_dict = {}
+
+    with Progress(
+        SpinnerColumn(),
+        TextColumn("[progress.description]{task.description}"),
+        console=console
+    ) as progress:
+        task_load = progress.add_task("[cyan]Processing tasks...", total=len(tasks))
+
+        for task, path in tasks:
+            data_dict[path] = read_json_file(path)
+            progress.update(task_load, advance=1)
+
+        object_data = data_dict[args.object_data_path]
+        captions_data = read_json_file(args.cap3d_captions_path)
+        stage_data = data_dict[args.stage_data_path]
+        texture_data = data_dict[args.texture_data_path]
+        camera_data = data_dict[args.camera_file_path]
+        movement_data = args.movement
+        ontop_data = args.ontop
+        speed = 1.0
+        camera_follow = args.camera_follow
+
+        backgrounds = read_json_file(args.datasets_path)["backgrounds"]
+        background_dict = {}
+        bg_task = progress.add_task("[cyan]Loading backgrounds...", total=len(backgrounds))
+
+        for bg in backgrounds:
+            bg_path = os.path.join(args.simdata_path, bg + ".json")
+            if os.path.exists(bg_path):
+                background_data = read_json_file(bg_path)
+                background_dict[bg] = background_data
+            progress.update(bg_task, advance=1)
 
     background_names = list(background_dict.keys())
     background_weights = [len(background_dict[name]) for name in background_names]
 
-    # Generate combinations
     combinations = generate_combinations(
         camera_data,
         args.count,
@@ -1136,11 +1260,12 @@ if __name__ == "__main__":
         texture_data,
         movement_data,
         speed,
-        ontop_data
+        ontop_data,
+        camera_follow
     )
 
     # Write to JSON file
     with open(args.output_path, "w") as f:
         json.dump(combinations, f, indent=4)
 
-    logger.info(f"Combinations have been successfully written to {args.output_path}")
+    console.print(f"[bold green]✓ Combinations have been successfully written to {args.output_path}")

@@ -45,15 +45,16 @@ python3 -m simian.combiner --count 1000 --seed 42
 Add movement to all or no objects:
 ```bash
 python3 -m simian.combiner --count 1000 --seed 42 --movement all
-
-python3 -m simian.combiner --count 1000 --seed 42 --movement none
 ```
 
 Allow objects to be on top of each other:
 ```bash
 python3 -m simian.combiner --count 1000 --seed 42 none --ontop all
+```
 
-python3 -m simian.combiner --count 1000 --seed 42 none --ontop none
+Make camera follow an object
+```bash
+python3 -m simian.combiner --count 1000 --seed 42 none --camera_follow all
 ```
 
 ### Generating Videos or Images
@@ -64,8 +65,9 @@ Configure the flags as needed:
 - `--output_dir` is the directory to save the rendered video.
 - `--hdri_path` is the directory containing the background images.
 - `--start_frame` and `--end_frame` are the start and end frames of the video.
-- `--animation_length` is the total number of frames, this as a result controls the how fast the animation will appear.
 - `--images` adding this will output images instead of video at random frames. Creates multiple images per combination of varying sizes
+-  `blend_file <absolute path to blend file>` allows users to upload and use their own blend files as the terrain
+- `animation_length` is a percentage from 0-100 which describes how fast the animation should occur within the frames
 
 Or generate all or part of the combination set using the `batch.py` script:
 
@@ -74,17 +76,17 @@ Or generate all or part of the combination set using the `batch.py` script:
 
 To generate a video(s): 
 ```bash
-python3 -m simian.batch --start_index 0 --end_index 1000 --width 1024 --height 576 --start_frame 1 --end_frame 2 --animation_length 120
+python3 -m simian.batch --start_index 0 --end_index 1000 --width 1024 --height 576 --start_frame 1 --end_frame 2
 ```
 
 To generate an video(s) with your own blend file:
 ```bash
-python3 -m simian.batch --start_index 0 --end_index 1000 --width 1024 --height 576 --start_frame 1 --end_frame 3 --animation_length 120 --blend <absolute path to blend file>
+python3 -m simian.batch --start_index 0 --end_index 1000 --width 1024 --height 576 --start_frame 1 --end_frame 3 ---blend <absolute path to blend file>
 ```
 
 To generate an image(s):
 ```bash
-python3 -m simian.batch --start_index 0 --end_index 1000 --width 1024 --height 576 --start_frame 1 --end_frame 2 --animation_length 120 --images
+python3 -m simian.batch --start_index 0 --end_index 1000 --width 1024 --height 576 --start_frame 1 --end_frame 2 --images
 ```
 
 You can also generate individually:
@@ -189,7 +191,7 @@ We welcome contributions! We're especially interested in help adding and refinin
 
 ### How to contribute
 
-1. Check out the issues <a href="https://github.com/RaccoonResearch/simian/issues">here</a>. 
+1. Check out the issues <a href="https://github.com/DeepAI-Research/Simverse/issues">here</a>. 
 2. Join our Discord <a href="https://discord.gg/JMfbmHdPNB">here</a>.
 3. Get in touch with us so we can coordinate on development.
 4. Or, you know, just YOLO a pull request. We're pretty chill.
@@ -201,12 +203,12 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 If you use it, please cite us:
 
 ```bibtex
-@misc{Simian,
-  author = {Raccoon Research},
-  title = {Simian: A Synthetic Data Generator for Video Caption Pairs},
+@misc{Simverse,
+  author = {Deep AI, Inc},
+  title = {Simverse: A Synthetic Data Generator for Video Caption Pairs},
   year = {2024},
   publisher = {GitHub},
-  howpublished = {\url{https://github.com/RaccoonResearch/simian}}
+  howpublished = {\url{https://github.com/DeepAI-Research/Simverse}}
 }
 ```
 

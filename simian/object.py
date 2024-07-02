@@ -199,9 +199,7 @@ def remove_small_geometry(
     bpy.ops.object.select_all(action="SELECT")
     bpy.ops.object.join()
     bpy.ops.object.mode_set(mode="OBJECT")
-    logger.info(
-        f"Processed geometry, removing parts with fewer than {min_vertex_count} vertices.",
-    )
+
     return obj
 
 
@@ -450,7 +448,6 @@ def join_objects_in_hierarchy(obj: bpy.types.Object) -> None:
                 # Join meshes using the bpy.ops.object.join() operator with a custom context override
                 if len(meshes) > 1:
                     bpy.ops.object.join()
-                    logger.info(f"Joined {len(meshes)} meshes.")
                 else:
                     logger.info("Not enough meshes to join.")
         else:
@@ -468,7 +465,6 @@ def get_terrain_height(location: Vector) -> float:
         float: The height of the terrain at the specified location.
     """
     bpy.context.view_layer.update()
-    print("This is the get_terrain_height location.z", location.z)
     ray_origin = Vector((location.x, location.y, 25))  # Ray origin below the location
     ray_direction = Vector((0, 0, -1))  # Ray direction downwards
 
@@ -496,10 +492,9 @@ def get_terrain_height(location: Vector) -> float:
                 hit_location = hit_location_local
 
     if result:
-        logger.info(f"Ray hit at {hit_location}")
         return hit_location.z
     else:
-        logger.info("Ray did not hit any terrain")
+        # logger.info("Ray did not hit any terrain")
         return 0.0  # Default to 0 if no intersection is found
 
 
@@ -529,7 +524,7 @@ def set_pivot_to_bottom(obj: bpy.types.Object) -> None:
 
     # Get the terrain height at the object's bounding box minimum location
     terrain_height = get_terrain_height(bbox_min)
-    logger.info(f"Terrain height at object location: {terrain_height}")
+    # logger.info(f"Terrain height at object location: {terrain_height}")
 
     # Calculate the object's height
     obj_height = center_of_mass.z - bbox_min.z
@@ -539,7 +534,7 @@ def set_pivot_to_bottom(obj: bpy.types.Object) -> None:
 
     # Apply transformations
     bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
-    logger.info(f"Applied transformation to the object: {obj.location}")
+    # logger.info(f"Applied transformation to the object: {obj.location}")
  
 
 def unparent_keep_transform(obj: bpy.types.Object) -> None:

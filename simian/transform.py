@@ -178,7 +178,7 @@ def get_world_bounding_box_xy(obj: bpy.types.Object) -> List[Vector]:
         Vector((min_x, max_y, 0)),
         Vector((max_x, max_y, 0)),
     ]
-    logger.info(f"Object {obj.name} bounding box: {corners_xy}")
+    # logger.info(f"Object {obj.name} bounding box: {corners_xy}")
     return corners_xy
 
 
@@ -213,9 +213,10 @@ def check_overlap_xy(
         or min1.y > max2.y + padding
         or max1.y < min2.y - padding
     )
-    logger.info(
-        f"Checking overlap between {bbox1} and {bbox2} with padding {padding}: {overlap}"
-    )
+
+    # logger.info(
+    #     f"Checking overlap between {bbox1} and {bbox2} with padding {padding}: {overlap}"
+    # )
     return overlap
 
 
@@ -311,8 +312,6 @@ def place_objects_on_grid(
         # Update the height for the next object
         grid_heights[grid_pos] = z_position + obj.dimensions.z
 
-        logger.info(f"Placed object {obj.name} at {obj.location}")
-
     bpy.context.view_layer.update()
     if len(objects) > 1:
         bring_objects_to_origin(objects)
@@ -404,37 +403,36 @@ def get_camera_plane_vertices(camera, frame_number):
 
         # Get plane dimensions
         plane_width, plane_height = get_plane_dimensions(stage)
-        max_distance = min(plane_width, plane_height) / 2  # Define a maximum reasonable distance based on plane size
+        max_distance = min(plane_width, plane_height) / 4  # Define a maximum reasonable distance based on plane size
         
         if result:
             # Flatten Z value to the plane height if above it
             if location.z > plane_point.z:
                 location.z = plane_point.z
-                logger.warning(f"Flattened location to plane height: {location}")
+                # logger.warning(f"Flattened location to plane height: {location}")
 
             # Check if the location extends beyond the plane boundaries
             if (location - stage_position).length > max_distance:
                 location = cam_matrix_world.translation + direction * (max_distance / 2)
                 location.z = plane_point.z
-                logger.warning(f"Clamped location to half the maximum distance: {location}")
-            else:
-                logger.info(f"Ray hit at: {location}")
+                # logger.warning(f"Clamped location to half the maximum distance: {location}")
             
+            # logger.info(f"Ray hit at: {location}")
             plane_vertices.append(location)
         else:
             # If the ray does not hit the plane, use a default position on the plane
             intersection_point = cam_matrix_world.translation + direction * 10.0  # Adjust as needed
             intersection_point.z = plane_point.z
-            logger.warning(f"Ray did not hit the plane, using default position: {intersection_point}")
+            # logger.warning(f"Ray did not hit the plane, using default position: {intersection_point}")
             plane_vertices.append(intersection_point)
 
     # Ensure vertices form a rectangle
     if len(plane_vertices) == 4:
         plane_vertices = [plane_vertices[i] for i in [1, 0, 3, 2]]
-    else:
-        logger.warning(f"Expected 4 plane vertices, got {len(plane_vertices)}")
+    
+    # logger.warning(f"Expected 4 plane vertices, got {len(plane_vertices)}")
 
-    logger.info(f"Plane vertices: {plane_vertices}")
+    # logger.info(f"Plane vertices: {plane_vertices}")
     return plane_vertices
 
 
@@ -480,24 +478,17 @@ def draw_vector_from_camera(camera_obj):
     bm.free()
 
 
-def apply_movement(objects, yaw, start_frame, end_frame):
+def apply_movement(objects, yaw, start_frame):
     yaw_radians = radians(yaw)
     rotation_matrix = mathutils.Matrix.Rotation(yaw_radians, 4, 'Z')
     scene = bpy.context.scene
     camera = scene.camera
-
-    # output camera's location
-    logger.info(f"Camera location: {camera.location}")
 
     # Get camera plane vertices
     plane_vertices = get_camera_plane_vertices(camera, start_frame)
     # create_mesh_from_vertices(plane_vertices)
     # visualize_frustum(camera, plane_vertices)
     # visualize_plane_vertices(plane_vertices)
-
-    # draw_vector_from_camera(camera)
-
-    logger.info(f"planer_vertices: {plane_vertices}")
 
     # Calculate midpoints of each edge
     bottom_center = (plane_vertices[0] + plane_vertices[3]) / 2
@@ -512,9 +503,7 @@ def apply_movement(objects, yaw, start_frame, end_frame):
 
         if not movement:
             continue
-        
-        logger.info(f"Applying movement to object")
-        
+
         # Determine initial placement based on movement direction
         if movement["direction"] == "right":
             initial_position = left_center
@@ -532,22 +521,50 @@ def apply_movement(objects, yaw, start_frame, end_frame):
             "right": (0, 1, 0),
             "left": (0, -1, 0)
         }[movement["direction"]])
+
         rotated_vector = rotation_matrix @ direction_vector
         step_vector = rotated_vector * movement["speed"]
 
-        # Calculate offset
-        offset_multiplier = 2  # Adjust this value to increase or decrease the offset
-        offset = step_vector * offset_multiplier
+        offset = Vector((0, 0, 0))
+        if movement["direction"] in ["forward", "backward"]:
+            offset.y = obj.dimensions.y
+        elif movement["direction"] in ["left", "right"]:
+            offset.x = obj.dimensions.x
 
         # Position object at initial location at the start frame
         scene.frame_set(start_frame)
-        obj.location = obj.location + initial_position - offset
-        obj.keyframe_insert(data_path="location", frame=start_frame)
 
-        # Animate object from start_frame to end_frame
+        obj.location += initial_position - (step_vector * 4)
+    
+    return objects, step_vector
+
+    
+def apply_animation(all_objects, focus_obj, step_vector, start_frame, end_frame):
+    """
+    Apply animation to objects based on the step vector.
+
+    Args:
+        all_objects (List[Dict[bpy.types.Object, Dict]]): List of object dictionaries.
+        focus_obj (bpy.types.Object): Camera object to focus
+        step_vector (mathutils.Vector): Vector representing the movement step.
+        start_frame (int): Starting frame number for the animation.
+        end_frame (int): Ending frame number for the animation.
+    
+    Returns:
+        None
+    """
+
+    scene = bpy.context.scene
+    camera = bpy.data.objects["CameraAnimationRoot"]
+
+    for obj_dict in all_objects:
+        obj = list(obj_dict.keys())[0]
         for frame in range(start_frame + 1, end_frame + 1):
+            if obj == focus_obj:
+                camera.location += step_vector
+                camera.keyframe_insert(data_path="location", frame=frame)
+
+            obj = list(obj_dict.keys())[0]
             obj.location += step_vector
             obj.keyframe_insert(data_path="location", frame=frame)
-
-    logger.info(f"Movement applied from frame {start_frame} to {end_frame}")
-    bpy.context.view_layer.update()
+            bpy.context.view_layer.update()
