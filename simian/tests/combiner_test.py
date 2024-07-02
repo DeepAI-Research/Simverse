@@ -415,7 +415,8 @@ def test_generate_combinations():
                                          background_names, 
                                          background_weights,
                                          texture_data,
-                                         movement
+                                         movement,
+                                         "none"
                                          )
     
     assert (

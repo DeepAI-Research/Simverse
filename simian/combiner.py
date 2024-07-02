@@ -610,6 +610,9 @@ def generate_camerafollow_captions(combination: Dict[str, Any], camera_data) -> 
     Returns:
         List[str]: List of camera follow captions.
     """
+    if 'camera_follow' not in camera_data:
+        return []
+    
     camera_follow_options = camera_data['camera_follow']
     camera_follow_captions = []
     for obj in combination['objects']:

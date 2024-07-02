@@ -191,7 +191,7 @@ We welcome contributions! We're especially interested in help adding and refinin
 
 ### How to contribute
 
-1. Check out the issues <a href="https://github.com/RaccoonResearch/simian/issues">here</a>. 
+1. Check out the issues <a href="https://github.com/DeepAI-Research/Simverse/issues">here</a>. 
 2. Join our Discord <a href="https://discord.gg/JMfbmHdPNB">here</a>.
 3. Get in touch with us so we can coordinate on development.
 4. Or, you know, just YOLO a pull request. We're pretty chill.
@@ -203,12 +203,12 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 If you use it, please cite us:
 
 ```bibtex
-@misc{Simian,
-  author = {Raccoon Research},
-  title = {Simian: A Synthetic Data Generator for Video Caption Pairs},
+@misc{Simverse,
+  author = {Deep AI, Inc},
+  title = {Simverse: A Synthetic Data Generator for Video Caption Pairs},
   year = {2024},
   publisher = {GitHub},
-  howpublished = {\url{https://github.com/RaccoonResearch/simian}}
+  howpublished = {\url{https://github.com/DeepAI-Research/Simverse}}
 }
 ```
 
