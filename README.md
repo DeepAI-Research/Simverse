@@ -23,7 +23,7 @@ pip install -r requirements.txt
 
 2. Download the datasets:
 ```bash
-./scripts/get_data.sh
+./scripts/data/get_data.sh
 ```
 
 3. [OPTIONAL] If you're on a headless Linux server, install Xorg and start it:
@@ -108,7 +108,7 @@ Make captions more prompt friendly.
 
 > **_NOTE:_** Create a .env file and add your OpenAI API key
 ```bash
-python3 scripts/rewrite_captions.py
+python3 scripts/filter/rewrite_captions.py
 ```
 
 ### Distributed rendering
