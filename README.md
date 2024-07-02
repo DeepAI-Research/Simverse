@@ -65,7 +65,6 @@ Configure the flags as needed:
 - `--output_dir` is the directory to save the rendered video.
 - `--hdri_path` is the directory containing the background images.
 - `--start_frame` and `--end_frame` are the start and end frames of the video.
-- `--animation_length` is the total number of frames, this as a result controls the how fast the animation will appear.
 - `--images` adding this will output images instead of video at random frames. Creates multiple images per combination of varying sizes
 
 Or generate all or part of the combination set using the `batch.py` script:
@@ -75,17 +74,17 @@ Or generate all or part of the combination set using the `batch.py` script:
 
 To generate a video(s): 
 ```bash
-python3 -m simian.batch --start_index 0 --end_index 1000 --width 1024 --height 576 --start_frame 1 --end_frame 2 --animation_length 120
+python3 -m simian.batch --start_index 0 --end_index 1000 --width 1024 --height 576 --start_frame 1 --end_frame 2
 ```
 
 To generate an video(s) with your own blend file:
 ```bash
-python3 -m simian.batch --start_index 0 --end_index 1000 --width 1024 --height 576 --start_frame 1 --end_frame 3 --animation_length 120 --blend <absolute path to blend file>
+python3 -m simian.batch --start_index 0 --end_index 1000 --width 1024 --height 576 --start_frame 1 --end_frame 3 ---blend <absolute path to blend file>
 ```
 
 To generate an image(s):
 ```bash
-python3 -m simian.batch --start_index 0 --end_index 1000 --width 1024 --height 576 --start_frame 1 --end_frame 2 --animation_length 120 --images
+python3 -m simian.batch --start_index 0 --end_index 1000 --width 1024 --height 576 --start_frame 1 --end_frame 2 --images
 ```
 
 You can also generate individually:

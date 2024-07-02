@@ -12,13 +12,33 @@ logger = logging.getLogger(__name__)
 
 
 def rotate_points(points, angles):
-    """Rotate points by given angles in degrees for (x, y, z) rotations."""
+    """
+    Rotate points by given angles in degrees for (x, y, z) rotations.
+
+    Args:
+        points (np.ndarray): The points to rotate.
+        angles (tuple): The angles to rotate by in degrees for (x, y, z) rotations.
+
+    Returns:
+        np.ndarray: The rotated points.
+    """
+
     rotation = R.from_euler("xyz", angles, degrees=True)
     return np.array([rotation.apply(point) for point in points])
 
 
 def compute_camera_distance(points, fov_deg):
-    """Calculate the camera distance required to frame the bounding sphere of the points."""
+    """
+    Calculate the camera distance required to frame the bounding sphere of the points.
+
+    Args:
+        points (np.ndarray): The points to frame.
+        fov_deg (float): The field of view in degrees.
+
+    Returns:
+        tuple: The camera distance, centroid of the points, and the radius of the bounding sphere.
+    
+    """
     # Calculate the center of the bounding sphere (use the centroid for simplicity)
     centroid = np.mean(points, axis=0)
     # Calculate the radius as the max distance from the centroid to any point
@@ -30,7 +50,18 @@ def compute_camera_distance(points, fov_deg):
 
 
 def perspective_project(points, camera_distance, fov_deg, aspect_ratio=1.0):
-    """Project points onto a 2D plane using a perspective projection considering the aspect ratio."""
+    """
+    Project points onto a 2D plane using a perspective projection considering the aspect ratio.
+
+    Args:
+        points (np.ndarray): The points to project.
+        camera_distance (float): The distance of the camera from the origin.
+        fov_deg (float): The field of view in degrees.
+        aspect_ratio (float): The aspect ratio of the screen. Defaults to 1.0.
+    
+    Returns:
+        np.ndarray: The screen space coordinates of the projected
+    """
     screen_points = []
     fov_rad = math.radians(fov_deg)
     f = 1.0 / math.tan(fov_rad / 2)
@@ -97,11 +128,6 @@ def create_camera_rig() -> bpy.types.Object:
 
     bpy.context.scene.camera = camera_object
 
-     # Add camera follow object
-    camera_follow = bpy.data.objects.new("CameraFollow", None)
-    camera_follow.parent = camera_animation_root
-    bpy.context.scene.collection.objects.link(camera_follow)
-
     return {
         "camera_animation_root": camera_animation_root,
         "camera_orientation_pivot_yaw": camera_orientation_pivot_yaw,
@@ -110,33 +136,7 @@ def create_camera_rig() -> bpy.types.Object:
         "camera_animation_pivot": camera_animation_pivot,
         "camera_object": camera_object,
         "camera": camera,
-        "camera_follow": camera_follow,
     }
-
-
-def update_camera_follow(combination: dict) -> None:
-    """
-    Update the camera position to follow the specified object.
-
-    Args:
-        combination (dict): A dictionary containing camera follow information.
-    """
-    follow_data = combination.get("camera_follow", {})
-    if follow_data:
-        for obj_name, follow in follow_data.items():
-            if follow.get("follow"):
-                obj = bpy.data.objects.get(obj_name)
-                if obj:
-                    camera_follow = bpy.data.objects.get("CameraFollow")
-                    if camera_follow:
-                        constraint = camera_follow.constraints.new(type='CHILD_OF')
-                        constraint.target = obj
-                        logger.info(f"Camera will follow {obj_name}")
-                        return
-                else:
-                    logger.warning(f"Object {obj_name} not found for camera follow")
-    else:
-        logger.info("No camera follow data found in combination")
 
 
 def set_camera_settings(combination: dict) -> None:
@@ -223,14 +223,13 @@ def set_camera_settings(combination: dict) -> None:
     bpy.context.scene.render.fps = 30
 
 
-def set_camera_animation(combination: dict, animation_length: int) -> None:
+def set_camera_animation(combination: dict, frame_interval: int, animation_length: int) -> None:
     """
     Applies the specified animation to the camera based on the keyframes from the camera_data.json file.
     The total animation frames are fixed to ensure consistent speed.
 
     Args:
         combination (dict): The combination dictionary containing animation data.
-        animation_length (int): Total number of frames for the entire animation.
 
     Returns:
         None
@@ -238,14 +237,14 @@ def set_camera_animation(combination: dict, animation_length: int) -> None:
     animation = combination["animation"]
     speed_factor = animation.get("speed_factor", 1)
     keyframes = animation["keyframes"]
-    frame_interval = animation_length
+    adjusted_frame_interval = frame_interval * (animation_length / 100)
 
     for i, keyframe in enumerate(keyframes):
         for obj_name, transforms in keyframe.items():
             obj = bpy.data.objects.get(obj_name)
             if obj is None:
                 raise ValueError(f"Object {obj_name} not found in the scene")
-            frame = int(i * frame_interval)
+            frame = int(i * adjusted_frame_interval)
             for transform_name, value in transforms.items():
                 if transform_name == "position":
                     obj.location = [coord * speed_factor for coord in value]
@@ -274,6 +273,7 @@ def position_camera(combination: dict, focus_object: bpy.types.Object) -> None:
 
     Args:
         combination (dict): The combination dictionary containing coverage factor and lens values.
+        focus_object (bpy.types.Object): The object to focus the camera on.
 
     Returns:
         None
@@ -333,4 +333,3 @@ def position_camera(combination: dict, focus_object: bpy.types.Object) -> None:
     bpy.data.objects["CameraAnimationRoot"].location = focus_object.location + Vector(
         (0, 0, bbox_height/2)
     )
-

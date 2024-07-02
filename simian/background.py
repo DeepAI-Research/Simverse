@@ -50,12 +50,12 @@ def get_background(hdri_path: str, combination: Dict) -> None:
     os.makedirs(os.path.dirname(hdri_path), exist_ok=True)
 
     if not os.path.exists(hdri_path):
-        logger.info(f"Downloading {background_url} to {hdri_path}")
+        # logger.info(f"Downloading {background_url} to {hdri_path}")
         response = requests.get(background_url)
         with open(hdri_path, "wb") as file:
             file.write(response.content)
-    else:
-        logger.info(f"Background {hdri_path} already exists")
+    # else:
+    #     logger.info(f"Background {hdri_path} already exists")
 
 
 def set_background(hdri_path: str, combination: Dict) -> None:
@@ -112,7 +112,7 @@ def set_background(hdri_path: str, combination: Dict) -> None:
     # Enable the world background in the render settings
     bpy.context.scene.render.film_transparent = False
 
-    logger.info(f"Set background to {hdri_path}")
+    # logger.info(f"Set background to {hdri_path}")
 
 
 def create_photosphere(
@@ -190,4 +190,4 @@ def create_photosphere_material(
     else:
         sphere.data.materials.append(mat)
 
-    logger.info("Material created and applied to Photosphere")
+    # logger.info("Material created and applied to Photosphere")

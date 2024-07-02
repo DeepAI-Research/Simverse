@@ -16,8 +16,8 @@ def render_objects(
     start_frame: int = 1,
     end_frame: int = 65,
     images: bool = False,
-    animation_length: int = 120,
     blend_file: Optional[str] = None,
+    animation_length: int = 100
 ) -> None:
     """
     Automates the rendering of objects using Blender based on predefined combinations.
@@ -37,8 +37,8 @@ def render_objects(
         start_frame (int): Starting frame number for the animation.
         end_frame (int): Ending frame number for the animation.
         images (bool): Generate images instead of videos.
-        animation_length (int): End frame of the animation.
         blend_file (Optional[str]): Path to the user-specified Blender file to use as the base scene.
+        animation_length (int): Percentage animation length.
 
     Raises:
         NotImplementedError: If the operating system is not supported.
@@ -140,24 +140,23 @@ def main():
         help="Generate images instead of videos.",
     )
     parser.add_argument(
-        "--animation_length",
-        type=int,
-        default=120,
-        help="End frame of the animation.",
-        required=False,
-    )
-    parser.add_argument(
         "--blend",
         type=str,
         default=None,
         help="Path to the user-specified Blender file to use as the base scene.",
         required=False,
     )
+    parser.add_argument(
+        "--animation_length",
+        type=int,
+        default=100,
+        help="Percentage animation length. Defaults to 100%.",
+        required=False
+    )
 
     args = parser.parse_args()
 
     render_objects(
-        animation_length=args.animation_length,
         processes=args.processes,
         render_timeout=args.render_timeout,
         width=args.width,
@@ -168,6 +167,7 @@ def main():
         end_frame=args.end_frame,
         images=args.images,
         blend_file=args.blend,
+        animation_length=args.animation_length
     )
 
 

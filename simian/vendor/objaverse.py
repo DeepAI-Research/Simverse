@@ -113,9 +113,9 @@ def _download_object(
     os.rename(tmp_local_path, local_path)
 
     files = glob.glob(os.path.join(_VERSIONED_PATH, "glbs", "*", "*.glb"))
-    logger.info(
-        f"Downloaded {len(files) - start_file_count}/{total_downloads} objects",
-    )
+    # logger.info(
+    #     f"Downloaded {len(files) - start_file_count}/{total_downloads} objects",
+    # )
 
     return uid, local_path
 
@@ -175,9 +175,9 @@ def load_objects(uids: List[str], download_processes: int = 1) -> Dict[str, str]
                 out[uid] = local_path
         if len(args) == 0:
             return out
-        logger.info(
-            f"starting download of {len(args)} objects with {download_processes} processes"
-        )
+        # logger.info(
+        #     f"starting download of {len(args)} objects with {download_processes} processes"
+        # )
         start_file_count = len(
             glob.glob(os.path.join(_VERSIONED_PATH, "glbs", "*", "*.glb"))
         )
