@@ -6,3 +6,4 @@ scipy
 distributaur
 bpy
 rich
+chromadb

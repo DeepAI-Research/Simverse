@@ -13,7 +13,7 @@ pip install -r requirements.txt
 
 2. Download the datasets:
 ```bash
-./scripts/get_data.sh
+./scripts/data/get_data.sh
 ```
 
 3. [OPTIONAL] If you're on a headless Linux server, install Xorg and start it:

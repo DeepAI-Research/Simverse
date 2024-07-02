@@ -1,0 +1,632 @@
+[33mWARNING[0m:  [02-07-2024 13:52:08] chroma_server_nofile is set to 65535, but this is less than current soft limit of 1048575. chroma_server_nofile will not be set.
+[32mINFO[0m:     [02-07-2024 13:52:09] Anonymized telemetry enabled. See                     https://docs.trychroma.com/telemetry for more information.
+[36mDEBUG[0m:    [02-07-2024 13:52:09] Starting component System
+[36mDEBUG[0m:    [02-07-2024 13:52:09] Starting component OpenTelemetryClient
+[36mDEBUG[0m:    [02-07-2024 13:52:09] Starting component SqliteDB
+[36mDEBUG[0m:    [02-07-2024 13:52:09] Starting component QuotaEnforcer
+[36mDEBUG[0m:    [02-07-2024 13:52:09] Starting component Posthog
+[36mDEBUG[0m:    [02-07-2024 13:52:09] Starting component LocalSegmentManager
+[36mDEBUG[0m:    [02-07-2024 13:52:09] Starting component SegmentAPI
+[32mINFO[0m:     [02-07-2024 13:52:09] Started server process [[36m14371[0m]
+[32mINFO[0m:     [02-07-2024 13:52:09] Waiting for application startup.
+[32mINFO[0m:     [02-07-2024 13:52:09] Application startup complete.
+[32mINFO[0m:     [02-07-2024 13:52:09] Uvicorn running on [1mhttp://localhost:8000[0m (Press CTRL+C to quit)
+[32mINFO[0m:     [02-07-2024 13:52:27] ::1:58746 - "GET / HTTP/1.1" 404
+[32mINFO[0m:     [02-07-2024 13:52:27] ::1:58746 - "GET /favicon.ico HTTP/1.1" 404
+[32mINFO[0m:     [02-07-2024 13:52:51] ::1:58753 - "GET /api/v1/tenants/default_tenant HTTP/1.1" 200
+[32mINFO[0m:     [02-07-2024 13:52:51] ::1:58753 - "GET /api/v1/databases/default_database?tenant=default_tenant HTTP/1.1" 200
+[32mINFO[0m:     [02-07-2024 13:52:51] ::1:58754 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [02-07-2024 13:52:56] ::1:58754 - "GET /api/v1/pre-flight-checks HTTP/1.1" 200
+[36mDEBUG[0m:    [02-07-2024 13:52:56] Starting component PersistentLocalHnswSegment
+[32mINFO[0m:     [02-07-2024 13:52:56] ::1:58754 - "POST /api/v1/collections/a9a890a1-f5be-4da6-bc64-76f81b0ea73a/add HTTP/1.1" 201
+[32mINFO[0m:     [02-07-2024 13:52:57] ::1:58754 - "POST /api/v1/collections/a9a890a1-f5be-4da6-bc64-76f81b0ea73a/query HTTP/1.1" 200
+[32mINFO[0m:     [02-07-2024 13:53:04] ::1:58763 - "GET /api/v1/tenants/default_tenant HTTP/1.1" 200
+[32mINFO[0m:     [02-07-2024 13:53:04] ::1:58763 - "GET /api/v1/databases/default_database?tenant=default_tenant HTTP/1.1" 200
+[31mERROR[0m:    [02-07-2024 13:53:04] Collection sample_collection already exists
+Traceback (most recent call last):
+  File "/opt/homebrew/lib/python3.11/site-packages/anyio/streams/memory.py", line 105, in receive
+    return self.receive_nowait()
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.11/site-packages/anyio/streams/memory.py", line 100, in receive_nowait
+    raise WouldBlock
+anyio.WouldBlock
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/opt/homebrew/lib/python3.11/site-packages/anyio/streams/memory.py", line 118, in receive
+    return receiver.item
+           ^^^^^^^^^^^^^
+AttributeError: 'MemoryObjectItemReceiver' object has no attribute 'item'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/opt/homebrew/lib/python3.11/site-packages/starlette/middleware/base.py", line 159, in call_next
+    message = await recv_stream.receive()
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.11/site-packages/anyio/streams/memory.py", line 120, in receive
+    raise EndOfStream
+anyio.EndOfStream
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/opt/homebrew/lib/python3.11/site-packages/chromadb/server/fastapi/__init__.py", line 75, in catch_exceptions_middleware
+    return await call_next(request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.11/site-packages/starlette/middleware/base.py", line 165, in call_next
+    raise app_exc
+  File "/opt/homebrew/lib/python3.11/site-packages/starlette/middleware/base.py", line 151, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "/opt/homebrew/lib/python3.11/site-packages/starlette/middleware/base.py", line 189, in __call__
+    with collapse_excgroups():
+  File "/opt/homebrew/Cellar/python@3.11/3.11.9/Frameworks/Python.framework/Versions/3.11/lib/python3.11/contextlib.py", line 158, in __exit__
+    self.gen.throw(typ, value, traceback)
+  File "/opt/homebrew/lib/python3.11/site-packages/starlette/_utils.py", line 93, in collapse_excgroups
+    raise exc
+  File "/opt/homebrew/lib/python3.11/site-packages/starlette/middleware/base.py", line 191, in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.11/site-packages/chromadb/server/fastapi/__init__.py", line 89, in check_http_version_middleware
+    return await call_next(request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.11/site-packages/starlette/middleware/base.py", line 165, in call_next
+    raise app_exc
+  File "/opt/homebrew/lib/python3.11/site-packages/starlette/middleware/base.py", line 151, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "/opt/homebrew/lib/python3.11/site-packages/starlette/middleware/exceptions.py", line 65, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/opt/homebrew/lib/python3.11/site-packages/starlette/_exception_handler.py", line 64, in wrapped_app
+    raise exc
+  File "/opt/homebrew/lib/python3.11/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    await app(scope, receive, sender)
+  File "/opt/homebrew/lib/python3.11/site-packages/starlette/routing.py", line 756, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/opt/homebrew/lib/python3.11/site-packages/starlette/routing.py", line 776, in app
+    await route.handle(scope, receive, send)
+  File "/opt/homebrew/lib/python3.11/site-packages/starlette/routing.py", line 297, in handle
+    await self.app(scope, receive, send)
+  File "/opt/homebrew/lib/python3.11/site-packages/starlette/routing.py", line 77, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/opt/homebrew/lib/python3.11/site-packages/starlette/_exception_handler.py", line 64, in wrapped_app
+    raise exc
+  File "/opt/homebrew/lib/python3.11/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    await app(scope, receive, sender)
+  File "/opt/homebrew/lib/python3.11/site-packages/starlette/routing.py", line 72, in app
+    response = await func(request)
+               ^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.11/site-packages/fastapi/routing.py", line 278, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.11/site-packages/fastapi/routing.py", line 191, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.11/site-packages/chromadb/telemetry/opentelemetry/__init__.py", line 133, in async_wrapper
+    return await f(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.11/site-packages/chromadb/server/fastapi/__init__.py", line 590, in create_collection
+    await to_thread.run_sync(
+  File "/opt/homebrew/lib/python3.11/site-packages/anyio/to_thread.py", line 56, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.11/site-packages/anyio/_backends/_asyncio.py", line 2177, in run_sync_in_worker_thread
+    return await future
+           ^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.11/site-packages/anyio/_backends/_asyncio.py", line 859, in run
+    result = context.run(func, *args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.11/site-packages/chromadb/server/fastapi/__init__.py", line 580, in process_create_collection
+    return self._api.create_collection(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.11/site-packages/chromadb/telemetry/opentelemetry/__init__.py", line 146, in wrapper
+    return f(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.11/site-packages/chromadb/api/segment.py", line 171, in create_collection
+    coll, created = self._sysdb.create_collection(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.11/site-packages/chromadb/telemetry/opentelemetry/__init__.py", line 146, in wrapper
+    return f(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.11/site-packages/chromadb/db/mixins/sysdb.py", line 220, in create_collection
+    raise UniqueConstraintError(f"Collection {name} already exists")
+chromadb.db.base.UniqueConstraintError: Collection sample_collection already exists
+[32mINFO[0m:     [02-07-2024 13:53:04] ::1:58764 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 500
+[32mINFO[0m:     [02-07-2024 13:53:48] ::1:58771 - "GET /api/v1/tenants/default_tenant HTTP/1.1" 200
+[32mINFO[0m:     [02-07-2024 13:53:48] ::1:58771 - "GET /api/v1/databases/default_database?tenant=default_tenant HTTP/1.1" 200
+[31mERROR[0m:    [02-07-2024 13:53:48] Collection sample_collection already exists
+Traceback (most recent call last):
+  File "/opt/homebrew/lib/python3.11/site-packages/anyio/streams/memory.py", line 105, in receive
+    return self.receive_nowait()
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.11/site-packages/anyio/streams/memory.py", line 100, in receive_nowait
+    raise WouldBlock
+anyio.WouldBlock
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/opt/homebrew/lib/python3.11/site-packages/anyio/streams/memory.py", line 118, in receive
+    return receiver.item
+           ^^^^^^^^^^^^^
+AttributeError: 'MemoryObjectItemReceiver' object has no attribute 'item'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/opt/homebrew/lib/python3.11/site-packages/starlette/middleware/base.py", line 159, in call_next
+    message = await recv_stream.receive()
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.11/site-packages/anyio/streams/memory.py", line 120, in receive
+    raise EndOfStream
+anyio.EndOfStream
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/opt/homebrew/lib/python3.11/site-packages/chromadb/server/fastapi/__init__.py", line 75, in catch_exceptions_middleware
+    return await call_next(request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.11/site-packages/starlette/middleware/base.py", line 165, in call_next
+    raise app_exc
+  File "/opt/homebrew/lib/python3.11/site-packages/starlette/middleware/base.py", line 151, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "/opt/homebrew/lib/python3.11/site-packages/starlette/middleware/base.py", line 189, in __call__
+    with collapse_excgroups():
+  File "/opt/homebrew/Cellar/python@3.11/3.11.9/Frameworks/Python.framework/Versions/3.11/lib/python3.11/contextlib.py", line 158, in __exit__
+    self.gen.throw(typ, value, traceback)
+  File "/opt/homebrew/lib/python3.11/site-packages/starlette/_utils.py", line 93, in collapse_excgroups
+    raise exc
+  File "/opt/homebrew/lib/python3.11/site-packages/starlette/middleware/base.py", line 191, in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.11/site-packages/chromadb/server/fastapi/__init__.py", line 89, in check_http_version_middleware
+    return await call_next(request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.11/site-packages/starlette/middleware/base.py", line 165, in call_next
+    raise app_exc
+  File "/opt/homebrew/lib/python3.11/site-packages/starlette/middleware/base.py", line 151, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "/opt/homebrew/lib/python3.11/site-packages/starlette/middleware/exceptions.py", line 65, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/opt/homebrew/lib/python3.11/site-packages/starlette/_exception_handler.py", line 64, in wrapped_app
+    raise exc
+  File "/opt/homebrew/lib/python3.11/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    await app(scope, receive, sender)
+  File "/opt/homebrew/lib/python3.11/site-packages/starlette/routing.py", line 756, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/opt/homebrew/lib/python3.11/site-packages/starlette/routing.py", line 776, in app
+    await route.handle(scope, receive, send)
+  File "/opt/homebrew/lib/python3.11/site-packages/starlette/routing.py", line 297, in handle
+    await self.app(scope, receive, send)
+  File "/opt/homebrew/lib/python3.11/site-packages/starlette/routing.py", line 77, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/opt/homebrew/lib/python3.11/site-packages/starlette/_exception_handler.py", line 64, in wrapped_app
+    raise exc
+  File "/opt/homebrew/lib/python3.11/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    await app(scope, receive, sender)
+  File "/opt/homebrew/lib/python3.11/site-packages/starlette/routing.py", line 72, in app
+    response = await func(request)
+               ^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.11/site-packages/fastapi/routing.py", line 278, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.11/site-packages/fastapi/routing.py", line 191, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.11/site-packages/chromadb/telemetry/opentelemetry/__init__.py", line 133, in async_wrapper
+    return await f(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.11/site-packages/chromadb/server/fastapi/__init__.py", line 590, in create_collection
+    await to_thread.run_sync(
+  File "/opt/homebrew/lib/python3.11/site-packages/anyio/to_thread.py", line 56, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.11/site-packages/anyio/_backends/_asyncio.py", line 2177, in run_sync_in_worker_thread
+    return await future
+           ^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.11/site-packages/anyio/_backends/_asyncio.py", line 859, in run
+    result = context.run(func, *args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.11/site-packages/chromadb/server/fastapi/__init__.py", line 580, in process_create_collection
+    return self._api.create_collection(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.11/site-packages/chromadb/telemetry/opentelemetry/__init__.py", line 146, in wrapper
+    return f(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.11/site-packages/chromadb/api/segment.py", line 171, in create_collection
+    coll, created = self._sysdb.create_collection(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.11/site-packages/chromadb/telemetry/opentelemetry/__init__.py", line 146, in wrapper
+    return f(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.11/site-packages/chromadb/db/mixins/sysdb.py", line 220, in create_collection
+    raise UniqueConstraintError(f"Collection {name} already exists")
+chromadb.db.base.UniqueConstraintError: Collection sample_collection already exists
+[32mINFO[0m:     [02-07-2024 13:53:48] ::1:58772 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 500
+[32mINFO[0m:     [02-07-2024 13:54:01] ::1:58787 - "GET /api/v1/tenants/default_tenant HTTP/1.1" 200
+[32mINFO[0m:     [02-07-2024 13:54:01] ::1:58787 - "GET /api/v1/databases/default_database?tenant=default_tenant HTTP/1.1" 200
+[31mERROR[0m:    [02-07-2024 13:54:01] Collection sample_collection already exists
+Traceback (most recent call last):
+  File "/opt/homebrew/lib/python3.11/site-packages/anyio/streams/memory.py", line 105, in receive
+    return self.receive_nowait()
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.11/site-packages/anyio/streams/memory.py", line 100, in receive_nowait
+    raise WouldBlock
+anyio.WouldBlock
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/opt/homebrew/lib/python3.11/site-packages/anyio/streams/memory.py", line 118, in receive
+    return receiver.item
+           ^^^^^^^^^^^^^
+AttributeError: 'MemoryObjectItemReceiver' object has no attribute 'item'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/opt/homebrew/lib/python3.11/site-packages/starlette/middleware/base.py", line 159, in call_next
+    message = await recv_stream.receive()
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.11/site-packages/anyio/streams/memory.py", line 120, in receive
+    raise EndOfStream
+anyio.EndOfStream
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/opt/homebrew/lib/python3.11/site-packages/chromadb/server/fastapi/__init__.py", line 75, in catch_exceptions_middleware
+    return await call_next(request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.11/site-packages/starlette/middleware/base.py", line 165, in call_next
+    raise app_exc
+  File "/opt/homebrew/lib/python3.11/site-packages/starlette/middleware/base.py", line 151, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "/opt/homebrew/lib/python3.11/site-packages/starlette/middleware/base.py", line 189, in __call__
+    with collapse_excgroups():
+  File "/opt/homebrew/Cellar/python@3.11/3.11.9/Frameworks/Python.framework/Versions/3.11/lib/python3.11/contextlib.py", line 158, in __exit__
+    self.gen.throw(typ, value, traceback)
+  File "/opt/homebrew/lib/python3.11/site-packages/starlette/_utils.py", line 93, in collapse_excgroups
+    raise exc
+  File "/opt/homebrew/lib/python3.11/site-packages/starlette/middleware/base.py", line 191, in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.11/site-packages/chromadb/server/fastapi/__init__.py", line 89, in check_http_version_middleware
+    return await call_next(request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.11/site-packages/starlette/middleware/base.py", line 165, in call_next
+    raise app_exc
+  File "/opt/homebrew/lib/python3.11/site-packages/starlette/middleware/base.py", line 151, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "/opt/homebrew/lib/python3.11/site-packages/starlette/middleware/exceptions.py", line 65, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/opt/homebrew/lib/python3.11/site-packages/starlette/_exception_handler.py", line 64, in wrapped_app
+    raise exc
+  File "/opt/homebrew/lib/python3.11/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    await app(scope, receive, sender)
+  File "/opt/homebrew/lib/python3.11/site-packages/starlette/routing.py", line 756, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/opt/homebrew/lib/python3.11/site-packages/starlette/routing.py", line 776, in app
+    await route.handle(scope, receive, send)
+  File "/opt/homebrew/lib/python3.11/site-packages/starlette/routing.py", line 297, in handle
+    await self.app(scope, receive, send)
+  File "/opt/homebrew/lib/python3.11/site-packages/starlette/routing.py", line 77, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/opt/homebrew/lib/python3.11/site-packages/starlette/_exception_handler.py", line 64, in wrapped_app
+    raise exc
+  File "/opt/homebrew/lib/python3.11/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    await app(scope, receive, sender)
+  File "/opt/homebrew/lib/python3.11/site-packages/starlette/routing.py", line 72, in app
+    response = await func(request)
+               ^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.11/site-packages/fastapi/routing.py", line 278, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.11/site-packages/fastapi/routing.py", line 191, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.11/site-packages/chromadb/telemetry/opentelemetry/__init__.py", line 133, in async_wrapper
+    return await f(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.11/site-packages/chromadb/server/fastapi/__init__.py", line 590, in create_collection
+    await to_thread.run_sync(
+  File "/opt/homebrew/lib/python3.11/site-packages/anyio/to_thread.py", line 56, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.11/site-packages/anyio/_backends/_asyncio.py", line 2177, in run_sync_in_worker_thread
+    return await future
+           ^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.11/site-packages/anyio/_backends/_asyncio.py", line 859, in run
+    result = context.run(func, *args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.11/site-packages/chromadb/server/fastapi/__init__.py", line 580, in process_create_collection
+    return self._api.create_collection(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.11/site-packages/chromadb/telemetry/opentelemetry/__init__.py", line 146, in wrapper
+    return f(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.11/site-packages/chromadb/api/segment.py", line 171, in create_collection
+    coll, created = self._sysdb.create_collection(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.11/site-packages/chromadb/telemetry/opentelemetry/__init__.py", line 146, in wrapper
+    return f(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.11/site-packages/chromadb/db/mixins/sysdb.py", line 220, in create_collection
+    raise UniqueConstraintError(f"Collection {name} already exists")
+chromadb.db.base.UniqueConstraintError: Collection sample_collection already exists
+[32mINFO[0m:     [02-07-2024 13:54:01] ::1:58788 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 500
+[32mINFO[0m:     [02-07-2024 13:54:04] ::1:58792 - "GET /api/v1/tenants/default_tenant HTTP/1.1" 200
+[32mINFO[0m:     [02-07-2024 13:54:04] ::1:58792 - "GET /api/v1/databases/default_database?tenant=default_tenant HTTP/1.1" 200
+[31mERROR[0m:    [02-07-2024 13:54:04] Collection sample_collection already exists
+Traceback (most recent call last):
+  File "/opt/homebrew/lib/python3.11/site-packages/anyio/streams/memory.py", line 105, in receive
+    return self.receive_nowait()
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.11/site-packages/anyio/streams/memory.py", line 100, in receive_nowait
+    raise WouldBlock
+anyio.WouldBlock
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/opt/homebrew/lib/python3.11/site-packages/anyio/streams/memory.py", line 118, in receive
+    return receiver.item
+           ^^^^^^^^^^^^^
+AttributeError: 'MemoryObjectItemReceiver' object has no attribute 'item'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/opt/homebrew/lib/python3.11/site-packages/starlette/middleware/base.py", line 159, in call_next
+    message = await recv_stream.receive()
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.11/site-packages/anyio/streams/memory.py", line 120, in receive
+    raise EndOfStream
+anyio.EndOfStream
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/opt/homebrew/lib/python3.11/site-packages/chromadb/server/fastapi/__init__.py", line 75, in catch_exceptions_middleware
+    return await call_next(request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.11/site-packages/starlette/middleware/base.py", line 165, in call_next
+    raise app_exc
+  File "/opt/homebrew/lib/python3.11/site-packages/starlette/middleware/base.py", line 151, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "/opt/homebrew/lib/python3.11/site-packages/starlette/middleware/base.py", line 189, in __call__
+    with collapse_excgroups():
+  File "/opt/homebrew/Cellar/python@3.11/3.11.9/Frameworks/Python.framework/Versions/3.11/lib/python3.11/contextlib.py", line 158, in __exit__
+    self.gen.throw(typ, value, traceback)
+  File "/opt/homebrew/lib/python3.11/site-packages/starlette/_utils.py", line 93, in collapse_excgroups
+    raise exc
+  File "/opt/homebrew/lib/python3.11/site-packages/starlette/middleware/base.py", line 191, in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.11/site-packages/chromadb/server/fastapi/__init__.py", line 89, in check_http_version_middleware
+    return await call_next(request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.11/site-packages/starlette/middleware/base.py", line 165, in call_next
+    raise app_exc
+  File "/opt/homebrew/lib/python3.11/site-packages/starlette/middleware/base.py", line 151, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "/opt/homebrew/lib/python3.11/site-packages/starlette/middleware/exceptions.py", line 65, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/opt/homebrew/lib/python3.11/site-packages/starlette/_exception_handler.py", line 64, in wrapped_app
+    raise exc
+  File "/opt/homebrew/lib/python3.11/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    await app(scope, receive, sender)
+  File "/opt/homebrew/lib/python3.11/site-packages/starlette/routing.py", line 756, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/opt/homebrew/lib/python3.11/site-packages/starlette/routing.py", line 776, in app
+    await route.handle(scope, receive, send)
+  File "/opt/homebrew/lib/python3.11/site-packages/starlette/routing.py", line 297, in handle
+    await self.app(scope, receive, send)
+  File "/opt/homebrew/lib/python3.11/site-packages/starlette/routing.py", line 77, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/opt/homebrew/lib/python3.11/site-packages/starlette/_exception_handler.py", line 64, in wrapped_app
+    raise exc
+  File "/opt/homebrew/lib/python3.11/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    await app(scope, receive, sender)
+  File "/opt/homebrew/lib/python3.11/site-packages/starlette/routing.py", line 72, in app
+    response = await func(request)
+               ^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.11/site-packages/fastapi/routing.py", line 278, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.11/site-packages/fastapi/routing.py", line 191, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.11/site-packages/chromadb/telemetry/opentelemetry/__init__.py", line 133, in async_wrapper
+    return await f(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.11/site-packages/chromadb/server/fastapi/__init__.py", line 590, in create_collection
+    await to_thread.run_sync(
+  File "/opt/homebrew/lib/python3.11/site-packages/anyio/to_thread.py", line 56, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.11/site-packages/anyio/_backends/_asyncio.py", line 2177, in run_sync_in_worker_thread
+    return await future
+           ^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.11/site-packages/anyio/_backends/_asyncio.py", line 859, in run
+    result = context.run(func, *args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.11/site-packages/chromadb/server/fastapi/__init__.py", line 580, in process_create_collection
+    return self._api.create_collection(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.11/site-packages/chromadb/telemetry/opentelemetry/__init__.py", line 146, in wrapper
+    return f(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.11/site-packages/chromadb/api/segment.py", line 171, in create_collection
+    coll, created = self._sysdb.create_collection(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.11/site-packages/chromadb/telemetry/opentelemetry/__init__.py", line 146, in wrapper
+    return f(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.11/site-packages/chromadb/db/mixins/sysdb.py", line 220, in create_collection
+    raise UniqueConstraintError(f"Collection {name} already exists")
+chromadb.db.base.UniqueConstraintError: Collection sample_collection already exists
+[32mINFO[0m:     [02-07-2024 13:54:04] ::1:58793 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 500
+[32mINFO[0m:     [02-07-2024 13:55:18] Shutting down
+[32mINFO[0m:     [02-07-2024 13:55:18] Finished server process [[36m14371[0m]
+[36mDEBUG[0m:    [02-07-2024 13:55:18] Stopping component System
+[36mDEBUG[0m:    [02-07-2024 13:55:18] Stopping component SegmentAPI
+[36mDEBUG[0m:    [02-07-2024 13:55:18] Stopping component PersistentLocalHnswSegment
+[36mDEBUG[0m:    [02-07-2024 13:55:18] Stopping component LocalSegmentManager
+[36mDEBUG[0m:    [02-07-2024 13:55:18] Stopping component Posthog
+[36mDEBUG[0m:    [02-07-2024 13:55:18] Stopping component QuotaEnforcer
+[36mDEBUG[0m:    [02-07-2024 13:55:18] Stopping component SqliteDB
+[31mERROR[0m:    [02-07-2024 13:55:18] Traceback (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.11/3.11.9/Frameworks/Python.framework/Versions/3.11/lib/python3.11/asyncio/runners.py", line 190, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.11/3.11.9/Frameworks/Python.framework/Versions/3.11/lib/python3.11/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "uvloop/loop.pyx", line 1511, in uvloop.loop.Loop.run_until_complete
+  File "uvloop/loop.pyx", line 1504, in uvloop.loop.Loop.run_until_complete
+  File "uvloop/loop.pyx", line 1377, in uvloop.loop.Loop.run_forever
+  File "uvloop/loop.pyx", line 555, in uvloop.loop.Loop._run
+  File "uvloop/loop.pyx", line 474, in uvloop.loop.Loop._on_idle
+  File "uvloop/cbhandles.pyx", line 83, in uvloop.loop.Handle._run
+  File "uvloop/cbhandles.pyx", line 63, in uvloop.loop.Handle._run
+  File "/opt/homebrew/lib/python3.11/site-packages/uvicorn/server.py", line 68, in serve
+    with self.capture_signals():
+  File "/opt/homebrew/Cellar/python@3.11/3.11.9/Frameworks/Python.framework/Versions/3.11/lib/python3.11/contextlib.py", line 144, in __exit__
+    next(self.gen)
+  File "/opt/homebrew/lib/python3.11/site-packages/uvicorn/server.py", line 328, in capture_signals
+    signal.raise_signal(captured_signal)
+  File "/opt/homebrew/Cellar/python@3.11/3.11.9/Frameworks/Python.framework/Versions/3.11/lib/python3.11/asyncio/runners.py", line 157, in _on_sigint
+    raise KeyboardInterrupt()
+KeyboardInterrupt
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/opt/homebrew/lib/python3.11/site-packages/starlette/routing.py", line 741, in lifespan
+    await receive()
+  File "/opt/homebrew/lib/python3.11/site-packages/uvicorn/lifespan/on.py", line 137, in receive
+    return await self.receive_queue.get()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.11/3.11.9/Frameworks/Python.framework/Versions/3.11/lib/python3.11/asyncio/queues.py", line 158, in get
+    await getter
+asyncio.exceptions.CancelledError
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/opt/homebrew/lib/python3.11/site-packages/starlette/routing.py", line 732, in lifespan
+    async with self.lifespan_context(app) as maybe_state:
+  File "/opt/homebrew/lib/python3.11/site-packages/starlette/routing.py", line 611, in __aexit__
+    await self._router.shutdown()
+  File "/opt/homebrew/lib/python3.11/site-packages/starlette/routing.py", line 721, in shutdown
+    handler()
+  File "/opt/homebrew/lib/python3.11/site-packages/chromadb/server/fastapi/__init__.py", line 284, in shutdown
+    self._system.stop()
+  File "/opt/homebrew/lib/python3.11/site-packages/chromadb/config.py", line 424, in stop
+    component.stop()
+  File "/opt/homebrew/lib/python3.11/site-packages/chromadb/telemetry/opentelemetry/__init__.py", line 146, in wrapper
+    return f(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.11/site-packages/chromadb/db/impl/sqlite.py", line 107, in stop
+    self._conn_pool.close()
+  File "/opt/homebrew/lib/python3.11/site-packages/chromadb/db/impl/sqlite_pool.py", line 153, in close
+    conn.close_actual()
+  File "/opt/homebrew/lib/python3.11/site-packages/chromadb/db/impl/sqlite_pool.py", line 41, in close_actual
+    self._conn.close()
+KeyboardInterrupt
+
+[33mWARNING[0m:  [02-07-2024 13:55:22] chroma_server_nofile is set to 65535, but this is less than current soft limit of 1048575. chroma_server_nofile will not be set.
+[32mINFO[0m:     [02-07-2024 13:55:22] Anonymized telemetry enabled. See                     https://docs.trychroma.com/telemetry for more information.
+[36mDEBUG[0m:    [02-07-2024 13:55:22] Starting component System
+[36mDEBUG[0m:    [02-07-2024 13:55:22] Starting component OpenTelemetryClient
+[36mDEBUG[0m:    [02-07-2024 13:55:22] Starting component SqliteDB
+[36mDEBUG[0m:    [02-07-2024 13:55:22] Starting component QuotaEnforcer
+[36mDEBUG[0m:    [02-07-2024 13:55:22] Starting component Posthog
+[36mDEBUG[0m:    [02-07-2024 13:55:22] Starting component LocalSegmentManager
+[36mDEBUG[0m:    [02-07-2024 13:55:22] Starting component SegmentAPI
+[32mINFO[0m:     [02-07-2024 13:55:22] Started server process [[36m14584[0m]
+[32mINFO[0m:     [02-07-2024 13:55:22] Waiting for application startup.
+[32mINFO[0m:     [02-07-2024 13:55:22] Application startup complete.
+[32mINFO[0m:     [02-07-2024 13:55:22] Uvicorn running on [1mhttp://localhost:8000[0m (Press CTRL+C to quit)
+[33mWARNING[0m:  [02-07-2024 14:05:19] chroma_server_nofile is set to 65535, but this is less than current soft limit of 1048575. chroma_server_nofile will not be set.
+[32mINFO[0m:     [02-07-2024 14:05:19] Anonymized telemetry enabled. See                     https://docs.trychroma.com/telemetry for more information.
+[36mDEBUG[0m:    [02-07-2024 14:05:19] Starting component System
+[36mDEBUG[0m:    [02-07-2024 14:05:19] Starting component OpenTelemetryClient
+[36mDEBUG[0m:    [02-07-2024 14:05:19] Starting component SqliteDB
+[36mDEBUG[0m:    [02-07-2024 14:05:19] Starting component QuotaEnforcer
+[36mDEBUG[0m:    [02-07-2024 14:05:19] Starting component Posthog
+[36mDEBUG[0m:    [02-07-2024 14:05:19] Starting component LocalSegmentManager
+[36mDEBUG[0m:    [02-07-2024 14:05:19] Starting component SegmentAPI
+[32mINFO[0m:     [02-07-2024 14:05:19] Started server process [[36m14827[0m]
+[32mINFO[0m:     [02-07-2024 14:05:19] Waiting for application startup.
+[32mINFO[0m:     [02-07-2024 14:05:19] Application startup complete.
+[31mERROR[0m:    [02-07-2024 14:05:19] [Errno 48] error while attempting to bind on address ('::1', 8000, 0, 0): address already in use
+[32mINFO[0m:     [02-07-2024 14:05:19] Waiting for application shutdown.
+[36mDEBUG[0m:    [02-07-2024 14:05:19] Stopping component System
+[36mDEBUG[0m:    [02-07-2024 14:05:19] Stopping component SegmentAPI
+[36mDEBUG[0m:    [02-07-2024 14:05:19] Stopping component LocalSegmentManager
+[36mDEBUG[0m:    [02-07-2024 14:05:19] Stopping component Posthog
+[36mDEBUG[0m:    [02-07-2024 14:05:19] Stopping component QuotaEnforcer
+[36mDEBUG[0m:    [02-07-2024 14:05:19] Stopping component SqliteDB
+[36mDEBUG[0m:    [02-07-2024 14:05:19] Stopping component OpenTelemetryClient
+[32mINFO[0m:     [02-07-2024 14:05:19] Application shutdown complete.
+[32mINFO[0m:     [02-07-2024 14:05:25] Shutting down
+[32mINFO[0m:     [02-07-2024 14:05:25] Finished server process [[36m14584[0m]
+[36mDEBUG[0m:    [02-07-2024 14:05:25] Stopping component System
+[36mDEBUG[0m:    [02-07-2024 14:05:25] Stopping component SegmentAPI
+[36mDEBUG[0m:    [02-07-2024 14:05:25] Stopping component LocalSegmentManager
+[36mDEBUG[0m:    [02-07-2024 14:05:25] Stopping component Posthog
+[36mDEBUG[0m:    [02-07-2024 14:05:25] Stopping component QuotaEnforcer
+[36mDEBUG[0m:    [02-07-2024 14:05:25] Stopping component SqliteDB
+[36mDEBUG[0m:    [02-07-2024 14:05:25] Stopping component OpenTelemetryClient
+[31mERROR[0m:    [02-07-2024 14:05:25] Traceback (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.11/3.11.9/Frameworks/Python.framework/Versions/3.11/lib/python3.11/asyncio/runners.py", line 190, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.11/3.11.9/Frameworks/Python.framework/Versions/3.11/lib/python3.11/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "uvloop/loop.pyx", line 1511, in uvloop.loop.Loop.run_until_complete
+  File "uvloop/loop.pyx", line 1504, in uvloop.loop.Loop.run_until_complete
+  File "uvloop/loop.pyx", line 1377, in uvloop.loop.Loop.run_forever
+  File "uvloop/loop.pyx", line 555, in uvloop.loop.Loop._run
+  File "uvloop/loop.pyx", line 474, in uvloop.loop.Loop._on_idle
+  File "uvloop/cbhandles.pyx", line 83, in uvloop.loop.Handle._run
+  File "uvloop/cbhandles.pyx", line 63, in uvloop.loop.Handle._run
+  File "/opt/homebrew/lib/python3.11/site-packages/uvicorn/server.py", line 68, in serve
+    with self.capture_signals():
+  File "/opt/homebrew/Cellar/python@3.11/3.11.9/Frameworks/Python.framework/Versions/3.11/lib/python3.11/contextlib.py", line 144, in __exit__
+    next(self.gen)
+  File "/opt/homebrew/lib/python3.11/site-packages/uvicorn/server.py", line 328, in capture_signals
+    signal.raise_signal(captured_signal)
+  File "/opt/homebrew/Cellar/python@3.11/3.11.9/Frameworks/Python.framework/Versions/3.11/lib/python3.11/asyncio/runners.py", line 157, in _on_sigint
+    raise KeyboardInterrupt()
+KeyboardInterrupt
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/opt/homebrew/lib/python3.11/site-packages/starlette/routing.py", line 741, in lifespan
+    await receive()
+  File "/opt/homebrew/lib/python3.11/site-packages/uvicorn/lifespan/on.py", line 137, in receive
+    return await self.receive_queue.get()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.11/3.11.9/Frameworks/Python.framework/Versions/3.11/lib/python3.11/asyncio/queues.py", line 158, in get
+    await getter
+asyncio.exceptions.CancelledError
+
+[33mWARNING[0m:  [02-07-2024 14:05:29] chroma_server_nofile is set to 65535, but this is less than current soft limit of 1048575. chroma_server_nofile will not be set.
+[32mINFO[0m:     [02-07-2024 14:05:29] Anonymized telemetry enabled. See                     https://docs.trychroma.com/telemetry for more information.
+[36mDEBUG[0m:    [02-07-2024 14:05:29] Starting component System
+[36mDEBUG[0m:    [02-07-2024 14:05:29] Starting component OpenTelemetryClient
+[36mDEBUG[0m:    [02-07-2024 14:05:29] Starting component SqliteDB
+[36mDEBUG[0m:    [02-07-2024 14:05:29] Starting component QuotaEnforcer
+[36mDEBUG[0m:    [02-07-2024 14:05:29] Starting component Posthog
+[36mDEBUG[0m:    [02-07-2024 14:05:29] Starting component LocalSegmentManager
+[36mDEBUG[0m:    [02-07-2024 14:05:29] Starting component SegmentAPI
+[32mINFO[0m:     [02-07-2024 14:05:29] Started server process [[36m14875[0m]
+[32mINFO[0m:     [02-07-2024 14:05:29] Waiting for application startup.
+[32mINFO[0m:     [02-07-2024 14:05:29] Application startup complete.
+[32mINFO[0m:     [02-07-2024 14:05:29] Uvicorn running on [1mhttp://localhost:8000[0m (Press CTRL+C to quit)
