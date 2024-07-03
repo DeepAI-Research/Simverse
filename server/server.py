@@ -1,16 +1,12 @@
 import json
 import chromadb
-from chromadb.config import Settings
 from chromadb.utils import embedding_functions
 from rich.progress import Progress, TextColumn, BarColumn, TimeRemainingColumn, MofNCompleteColumn
 from rich.console import Console
 from rich.panel import Panel
 
-# Initialize ChromaDB client with persistence
-chroma_client = chromadb.Client(Settings(
-    chroma_db_impl="duckdb+parquet",
-    persist_directory="./chroma_db"
-))
+# New client initialization
+chroma_client = chromadb.PersistentClient(path="./chroma_db")
 
 # Create or get the collection
 collection = chroma_client.get_or_create_collection(name="simversedb")
@@ -56,8 +52,6 @@ def process_in_batches(file_path, batch_size=1000):
             # Update progress
             progress.update(task, advance=len(batch_ids), current_batch=f"{i+1}-{min(i+batch_size, total_items)}")
 
-    # Persist after processing all batches
-    chroma_client.persist()
     console.print(Panel.fit("Data processing complete!", border_style="green"))
 
 # Process the data
