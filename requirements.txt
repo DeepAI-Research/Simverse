@@ -7,3 +7,4 @@ distributaur
 bpy
 rich
 chromadb
+sentence_transformers
