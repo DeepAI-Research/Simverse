@@ -8,3 +8,4 @@ bpy
 rich
 chromadb
 sentence_transformers
+questionary

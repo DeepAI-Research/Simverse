@@ -5,6 +5,41 @@ import subprocess
 import sys
 import argparse
 from typing import Optional
+from questionary import Style
+from questionary import Choice, select
+from rich.console import Console
+
+
+console = Console()
+
+
+def select_mode():
+    custom_style = Style([
+        ('question', 'fg:#FF9D00 bold'),  # Orange color for the question
+        ('pointer', 'fg:#FF9D00 bold'),   # Orange color for the pointer
+        ('highlighted', 'fg:#00FFFF bold'),  # Cyan color for highlighted option
+        ('default', 'fg:#FFFFFF'),  # White color for non-highlighted options
+    ])
+
+    options = [
+        Choice("Prompt Mode", value="Prompt Mode"),
+        Choice("Batch Mode", value="Batch Mode")
+    ]
+    
+    selected = select(
+        "Select Mode",
+        choices=options,
+        use_indicator=True,
+        style=custom_style,
+        instruction='Use ↑ and ↓ to navigate, Enter to select',
+        qmark="",  # Remove the question mark
+        pointer="▶",  # Use a triangle as a pointer
+    ).ask()
+
+    console.print(f"\nEntering {selected}", style="bold green")
+    
+    return selected
+
 
 def render_objects(
     processes: Optional[int] = None,
@@ -82,7 +117,7 @@ def render_objects(
         subprocess.run(["bash", "-c", command], timeout=render_timeout, check=False)
 
 
-def main():
+def parse_args(args_list=None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Automate the rendering of objects using Blender."
     )
@@ -154,21 +189,73 @@ def main():
         required=False
     )
 
-    args = parser.parse_args()
+    if args_list is None:
+        args = parser.parse_args()
+    else:
+        args = parser.parse_args(args_list)
+    
+    return args
 
-    render_objects(
-        processes=args.processes,
-        render_timeout=args.render_timeout,
-        width=args.width,
-        height=args.height,
-        start_index=args.start_index,
-        end_index=args.end_index,
-        start_frame=args.start_frame,
-        end_frame=args.end_frame,
-        images=args.images,
-        blend_file=args.blend,
-        animation_length=args.animation_length
-    )
+
+
+def prompt_based_rendering():
+    print("Prompt-based rendering mode coming soon... :)")
+
+    # while True:
+    #     prompt = input("Enter your prompt (or 'quit' to exit): ")
+    #     if prompt.lower() == 'quit':
+    #         break
+        
+    #     # Process the prompt here
+    #     # This could involve parsing the prompt, setting up parameters, and calling render_objects
+    #     print(f"Processing prompt: {prompt}")
+        
+    #     # Example (you'll need to implement the actual logic):
+    #     # params = parse_prompt(prompt)
+    #     # render_objects(**params)
+
+
+def main():
+    simverse_ascii = """
+
+ ░▒▓███████▓▒░▒▓█▓▒░▒▓██████████████▓▒░░▒▓█▓▒░░▒▓█▓▒░▒▓████████▓▒░▒▓███████▓▒░ ░▒▓███████▓▒░▒▓████████▓▒░ 
+░▒▓█▓▒░      ░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░      ░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░      ░▒▓█▓▒░        
+░▒▓█▓▒░      ░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░░▒▓█▓▒░░▒▓█▓▒▒▓█▓▒░░▒▓█▓▒░      ░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░      ░▒▓█▓▒░        
+ ░▒▓██████▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░░▒▓█▓▒░░▒▓█▓▒▒▓█▓▒░░▒▓██████▓▒░ ░▒▓███████▓▒░ ░▒▓██████▓▒░░▒▓██████▓▒░   
+       ░▒▓█▓▒░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▓█▓▒░ ░▒▓█▓▒░      ░▒▓█▓▒░░▒▓█▓▒░      ░▒▓█▓▒░▒▓█▓▒░        
+       ░▒▓█▓▒░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▓█▓▒░ ░▒▓█▓▒░      ░▒▓█▓▒░░▒▓█▓▒░      ░▒▓█▓▒░▒▓█▓▒░        
+░▒▓███████▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░░▒▓█▓▒░  ░▒▓██▓▒░  ░▒▓████████▓▒░▒▓█▓▒░░▒▓█▓▒░▒▓███████▓▒░░▒▓████████▓▒░ 
+                                                                                                          
+    """
+
+    console.print(simverse_ascii)
+    selected_mode = select_mode()
+
+    if selected_mode == "Prompt Mode":
+        prompt_based_rendering()
+    else:
+        while True:
+            console.print("Command arguments (e.g., --start_index 0 --end_index 1000 --width 1024 --height 576 --start_frame 1 --end_frame 2). Type 'quit' to exit.")
+            command = input("Enter command: ")
+            if command.lower() == 'quit':
+                break
+            try:
+                args = parse_args(command.split())
+                render_objects(
+                    processes=args.processes,
+                    render_timeout=args.render_timeout,
+                    width=args.width,
+                    height=args.height,
+                    start_index=args.start_index,
+                    end_index=args.end_index,
+                    start_frame=args.start_frame,
+                    end_frame=args.end_frame,
+                    images=args.images,
+                    blend_file=args.blend,
+                    animation_length=args.animation_length
+                )
+            except SystemExit:
+                console.print("Invalid command. Please try again.", style="bold red")
 
 
 if __name__ == "__main__":

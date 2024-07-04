@@ -61,6 +61,7 @@ python3 -m simian.combiner --count 1000 --seed 42 none --camera_follow all
 
 Configure the flags as needed:
 - `--width` and `--height` are the resolution of the video.
+- `--start_index` and `--end_index` are the number of videos in the combinations you want to run. 0-100 will compile all 100 videos.
 - `--combination_index` is the index of the combination to render.
 - `--output_dir` is the directory to save the rendered video.
 - `--hdri_path` is the directory containing the background images.
@@ -74,33 +75,33 @@ Or generate all or part of the combination set using the `batch.py` script:
 
 ### Generating Videos or Images
 
+Run:
+```
+python3 simian/batch.py
+```
+
+#### Batched Option
+
+To generate videos use the arrow keys and select enter. Then 
+
 To generate a video(s): 
 ```bash
-python3 -m simian.batch --start_index 0 --end_index 1000 --width 1024 --height 576 --start_frame 1 --end_frame 2
+--start_index 0 --end_index 1000 --width 1024 --height 576 --start_frame 1 --end_frame 2
 ```
 
 To generate an video(s) with your own blend file:
 ```bash
-python3 -m simian.batch --start_index 0 --end_index 1000 --width 1024 --height 576 --start_frame 1 --end_frame 3 ---blend <absolute path to blend file>
+--start_index 0 --end_index 1000 --width 1024 --height 576 --start_frame 1 --end_frame 3 ---blend <absolute path to blend file>
 ```
 
 To generate an image(s):
 ```bash
-python3 -m simian.batch --start_index 0 --end_index 1000 --width 1024 --height 576 --start_frame 1 --end_frame 2 --images
+--start_index 0 --end_index 1000 --width 1024 --height 576 --start_frame 1 --end_frame 2 --images
 ```
 
-You can also generate individually:
-```bash
-# MacOS
-python -m simian.render
+#### Prompt Option
 
-# Linux
-python -m simian.render
-
-## Kitchen sink
-python -m simian.render -- --width 1920 --height 1080 --combination_index 0 --output_dir ./renders --hdri_path ./backgrounds --start_frame 1 --end_frame 65
-```
-
+Coming soon...
 
 ### Clean up Captions
 

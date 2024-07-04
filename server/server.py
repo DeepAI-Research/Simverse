@@ -54,12 +54,12 @@ def process_in_batches(file_path, batch_size=1000):
 
     console.print(Panel.fit("Data processing complete!", border_style="green"))
 
-# Process the data
-process_in_batches('./datasets/cap3d_captions.json', batch_size=1000)
+# # Process the data
+# process_in_batches('./datasets/cap3d_captions.json', batch_size=1000)
 
 # Verify the upsert by querying
 console = Console()
-query = "A query document example"
+query = "A person is playing the guitar."
 query_embedding = sentence_transformer_ef([query])
 results = collection.query(
     query_embeddings=query_embedding,
