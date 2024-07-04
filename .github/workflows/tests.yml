@@ -32,7 +32,7 @@ jobs:
         pip install -r requirements.txt
 
     - name: Get the data
-      run: bash scripts/get_data.sh
+      run: bash scripts/data/get_data.sh
 
     - name: Generate combinations
       run: python3.11 -m simian.combiner

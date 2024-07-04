@@ -27,7 +27,7 @@ RUN apt-get update && \
     && rm -rf /var/lib/apt/lists/*
 
 COPY scripts/ ./scripts/
-RUN bash scripts/get_data.sh
+RUN bash scripts/data/get_data.sh
 
 COPY requirements.txt .
 RUN python3.11 -m pip install --upgrade --ignore-installed setuptools wheel

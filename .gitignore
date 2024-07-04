@@ -22,3 +22,6 @@ venv/
 version.txt
 dist
 config.json
+chroma_data
+chroma_db
+chroma.log
