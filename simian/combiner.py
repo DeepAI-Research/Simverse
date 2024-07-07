@@ -399,11 +399,15 @@ def generate_postprocessing_caption(combination: Dict[str, Any], camera_data) ->
             )
             caption_parts.append(motionblur_caption)
 
-    # randomly determine how many values (1-4 inclusive) to pop
-    num_to_pop = random.randint(1, len(caption_parts))
-    for _ in range(num_to_pop):
-        random_index_to_remove_from_end = random.randint(0, len(caption_parts) - 1)
-        caption_parts.pop(random_index_to_remove_from_end)
+    # Ensure at least 1-2 captions remain
+    # min_captions = random.randint(1, 2)
+    min_captions = 2
+    if len(caption_parts) > min_captions:
+        num_to_pop = random.randint(1, len(caption_parts) - min_captions)
+        for _ in range(num_to_pop):
+            random_index_to_remove_from_end = random.randint(0, len(caption_parts) - 1)
+            caption_parts.pop(random_index_to_remove_from_end)
+
     return " ".join(caption_parts)
 
 
@@ -861,7 +865,7 @@ def generate_background(
     Args:
         background_dict: Background data.
         background_names: List of background names.
-        background_weights: List of background
+        background_weigh ts: List of background
 
     Returns:
         Dict[str, Any]: Generated background.
@@ -958,7 +962,7 @@ def generate_combinations(
         combination = {"index": i}
 
         # Generate objects
-        combination["objects_caption"] = "Objects in the scene:"
+        combination["objects_caption"] = "Object caption: "
         objects = generate_objects(
             object_data, dataset_names, dataset_weights, dataset_dict, captions_data, ontop_data
         )
@@ -1020,7 +1024,7 @@ def generate_combinations(
         scene_relationship_description = generate_relationship_captions(combination)
         scene_relationship_description_str = " ".join(scene_relationship_description)
         caption_parts.append(scene_relationship_description_str)
-        combination["objects_caption"] += " " + scene_relationship_description_str
+        combination["objects_caption"] +=  scene_relationship_description_str
         # Ontop captions
         ontop_captions = generate_ontop_captions(combination, ontop_data, object_data)
         caption_parts.extend(ontop_captions)
@@ -1028,7 +1032,7 @@ def generate_combinations(
         # Camera follow captions
         camerafollow_captions = generate_camerafollow_captions(combination, camera_data)
         caption_parts.extend(camerafollow_captions)
-        combination["objects_caption"] += " " + " ".join(camerafollow_captions)
+        combination["animation_caption"] += " " + " ".join(camerafollow_captions)
         # Movement captions
         movement_captions = generate_movement_captions(combination, object_data)
         caption_parts.extend(movement_captions)
