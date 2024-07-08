@@ -25,3 +25,6 @@ config.json
 chroma_data
 chroma_db
 chroma.log
+get_captions_1.json
+get_captions_2.json
+get_captions_processed.json

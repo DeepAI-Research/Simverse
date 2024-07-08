@@ -4,26 +4,41 @@ import google.generativeai as genai
 from dotenv import load_dotenv
 
 load_dotenv()
-MODEL = "gemini-pro"
+MODEL = "gemini-1.5-pro"
 
 def setup_gemini():
     genai.configure(api_key=os.getenv('GOOGLE_API_KEY'))
-    model = genai.GenerativeModel(MODEL)
+    generation_config = {
+        "temperature": 1,
+        "top_p": 0.95,
+        "top_k": 64,
+        "max_output_tokens": 8192,
+        "response_mime_type": "text/plain",
+    }
+    model = genai.GenerativeModel(
+        model_name=MODEL,
+        generation_config=generation_config,
+    )
     return model
 
-def rewrite_caption(model, caption_arr, context_string):
-    split_captions = [caption.split(", ") for caption in caption_arr]
-    caption_string = json.dumps(split_captions)
-
-    content = f"{context_string}\n\n{caption_string}"
+def rewrite_caption(model, caption_batch, context_string):
+    content = f"{context_string}\n\n{json.dumps(caption_batch)}"
 
     print("Caption context:")
     print(content)
 
     try:
-        response = model.generate_content(content)
+        chat_session = model.start_chat(history=[])
+        response = chat_session.send_message(content)
         captions_content = response.text.strip()
         print("API Response:\n", captions_content)  # Debug print
+
+        # Remove Markdown code block syntax if present
+        if captions_content.startswith("```json"):
+            captions_content = captions_content.replace("```json", "", 1)
+        if captions_content.endswith("```"):
+            captions_content = captions_content.rsplit("```", 1)[0]
+        captions_content = captions_content.strip()
 
         try:
             # Try parsing the response as a JSON list
@@ -32,45 +47,34 @@ def rewrite_caption(model, caption_arr, context_string):
                 raise ValueError("Parsed JSON is not a list")
         except (json.JSONDecodeError, ValueError) as e:
             print("JSON Decode Error or Value Error:", e)
-            # Fallback to splitting the response by newlines, assuming each line is a caption
-            rewritten_captions_content = captions_content.split("\n")
+            print("Fallback: Returning original captions")
+            return caption_batch
 
         print("==== Captions rewritten by Google Gemini ====")
         return rewritten_captions_content
     except Exception as e:
         print(f"Error: {str(e)}")
-        return []
+        return caption_batch
 
-def read_combinations_and_get_array_of_just_captions():
-    with open("combinations.json") as file:
+def read_combinations():
+    with open("./get_captions_1.json") as file:
         data = json.load(file)
-        combinations = data.get("combinations")
-        captions = [obj.get("caption") for obj in combinations]
-        print("==== File read, captions extracted ====")
-        return captions
+        print("==== File read, combinations extracted ====")
+        return data
 
-def write_to_file(i, rewritten_captions):
-    with open("./combinations_processed.json", "r+") as file:
-        data = json.load(file)
-        combinations = data.get("combinations")
-
-        for j, caption in enumerate(rewritten_captions):
-            print(f"==> Rewriting caption: {i + j}")
-            combinations[i + j]["caption"] = caption
-
-        data["combinations"] = combinations
-        file.seek(0)
-        json.dump(data, file, indent=4)
-        file.truncate()
-
-    print("==== File captions rewritten, check file ====")
+def write_to_file(rewritten_combinations):
+    with open("./get_captions_processed.json", "w") as file:
+        json.dump(rewritten_combinations, file, indent=4)
+    print("==== File combinations rewritten, check file ====")
 
 def rewrite_captions_in_batches(model, combinations, context_string):
-    batch_size = 10
+    batch_size = 5
+    rewritten_combinations = []
     for i in range(0, len(combinations), batch_size):
-        captions_batch = combinations[i : i + batch_size]
-        rewritten_captions = rewrite_caption(model, captions_batch, context_string)
-        write_to_file(i, rewritten_captions)
+        caption_batch = combinations[i : i + batch_size]
+        rewritten_captions = rewrite_caption(model, caption_batch, context_string)
+        rewritten_combinations.extend(rewritten_captions)
+    return rewritten_combinations
 
 if __name__ == "__main__":
     CONTEXT_STRING = """
@@ -91,9 +95,11 @@ if __name__ == "__main__":
     Feel free to change/remove exact values like degrees. Instead of 32 degrees left you can say slightly to the left. Combine sentences maybe.
     Use synonyms/words to use. You can even remove some words/sentences but capture some of the holistic important details.
 
-    Below are captions that NEED to be shortened/simplified, and more human-like. Return an array of rewritten captions. DO NOT wrap the strings in quotes in the array and return in format: ["caption1", "caption2", "caption3"]
+    Below are captions that NEED to be shortened/simplified, and more human-like. Return an array of rewritten captions. 
+    Process the input array and return a new array with rewritten captions in the same format.
     """
 
     model = setup_gemini()
-    combinations = read_combinations_and_get_array_of_just_captions()
-    rewrite_captions_in_batches(model, combinations, CONTEXT_STRING)
+    combinations = read_combinations()
+    rewritten_combinations = rewrite_captions_in_batches(model, combinations, CONTEXT_STRING)
+    write_to_file(rewritten_combinations)
