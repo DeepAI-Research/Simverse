@@ -114,7 +114,7 @@ python3 scripts/filter/combo_placeholder.py
 
 > **_NOTE:_** Create a .env file and add your OpenAI API key
 ```bash
-python3 scripts/filter/rewrite_captions.py
+python3 scripts/filter/rewrite_captions_gpt.py
 ```
 
 > **_NOTE:_** Create a .env file and add your Google Generative Language API key
