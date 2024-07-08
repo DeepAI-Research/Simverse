@@ -107,19 +107,25 @@ Coming soon...
 
 Make captions more prompt friendly.
 
-Preparing dataset:
-```bash
-python3 scripts/filter/combo_placeholder.py
-```
+This is a multi-stage process:
 
-> **_NOTE:_** Create a .env file and add your OpenAI API key
-```bash
-python3 scripts/filter/rewrite_captions_gpt.py
-```
+> **_NOTE:_** Create a .env file and add your Google Generative Language API key / OpenAI API key
 
-> **_NOTE:_** Create a .env file and add your Google Generative Language API key
-```bash
+```
+# Create the combinations.json file:
+python3 -m simian.combiner --count 1000 --seed 42
+
+# add placeholder values
+python3 scripts/filter/combinations_add_placeholder.py
+
+# get captions to rewrite
+python3 scripts/filter/get_captions.py
+
+# rewrite captions with Google's Gemini
 python3 scripts/filter/rewrite_captions_gem.py
+
+# write those rewritten captions to the combinations
+python3 scripts/filter/rewrite_captions_to_combinations.py
 ```
 
 ### Distributed rendering
