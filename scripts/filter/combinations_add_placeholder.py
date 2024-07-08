@@ -6,12 +6,19 @@ def replace_background_values(background):
     background["id"] = "<id_placeholder>"
     background["from"] = "<from_placeholder>"
 
+def replace_object_ids(objects):
+    for obj in objects:
+        obj["uid"] = "<uid_placeholder>"
+
 def replace_map_values(maps):
     for key in maps:
         maps[key] = f"<{key.lower()}_placeholder>"
 
 def process_combinations(data):
     for combination in data["combinations"]:
+        if "objects" in combination:
+            replace_object_ids(combination["objects"])
+
         if "background" in combination:
             replace_background_values(combination["background"])
         

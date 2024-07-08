@@ -115,10 +115,10 @@ This is a multi-stage process:
 # Create the combinations.json file:
 python3 -m simian.combiner --count 1000 --seed 42
 
-# add placeholder values
+# add placeholder values (saved  to combinations_processed.json)
 python3 scripts/filter/combinations_add_placeholder.py
 
-# get captions to rewrite
+# get captions to rewrite (gets captions from combinations.json and saves to get_captions_<index>.json in batches of 500 combinations)
 python3 scripts/filter/get_captions.py
 
 # rewrite captions with Google's Gemini
