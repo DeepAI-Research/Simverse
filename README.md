@@ -107,9 +107,19 @@ Coming soon...
 
 Make captions more prompt friendly.
 
+Preparing dataset:
+```bash
+python3 scripts/filter/combo_placeholder.py
+```
+
 > **_NOTE:_** Create a .env file and add your OpenAI API key
 ```bash
 python3 scripts/filter/rewrite_captions.py
+```
+
+> **_NOTE:_** Create a .env file and add your Google Generative Language API key
+```bash
+python3 scripts/filter/rewrite_captions_gem.py
 ```
 
 ### Distributed rendering
