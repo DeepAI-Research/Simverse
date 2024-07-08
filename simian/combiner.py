@@ -399,14 +399,17 @@ def generate_postprocessing_caption(combination: Dict[str, Any], camera_data) ->
             )
             caption_parts.append(motionblur_caption)
 
+    # Ensure we have at least one caption
+    if not caption_parts:
+        return "No significant post-processing effects applied."
+
     # Ensure at least 1-2 captions remain
-    # min_captions = random.randint(1, 2)
-    min_captions = 2
+    min_captions = min(2, len(caption_parts))
     if len(caption_parts) > min_captions:
         num_to_pop = random.randint(1, len(caption_parts) - min_captions)
         for _ in range(num_to_pop):
-            random_index_to_remove_from_end = random.randint(0, len(caption_parts) - 1)
-            caption_parts.pop(random_index_to_remove_from_end)
+            random_index_to_remove = random.randint(0, len(caption_parts) - 1)
+            caption_parts.pop(random_index_to_remove)
 
     return " ".join(caption_parts)
 
