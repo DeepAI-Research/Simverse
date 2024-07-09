@@ -122,9 +122,9 @@ python3 scripts/filter/combinations_add_placeholder.py
 python3 scripts/filter/get_captions.py
 
 # rewrite captions with Google's Gemini
-python3 scripts/filter/rewrite_captions_gem.py
+python3 scripts/filter/rewrite_captions_gem.py OR python3 scripts/filter/rewrite_captions_gpt.py
 
-# write those rewritten captions to the combinations
+# write those rewritten captions to the combinations_processed.json
 python3 scripts/filter/rewrite_captions_to_combinations.py
 ```
 

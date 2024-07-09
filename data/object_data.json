@@ -1,7 +1,6 @@
 {
     "descriptions": [
         "The subject is <objects>",
-        "[subject: <objects>]",
         "The focus is on <objects>",
         "The view is focused on <objects>",
         "The camera is pointed at <objects>",
@@ -120,47 +119,32 @@
     ],
     "name_description_relationship": [
         "There is a <name>",
-
-        "The <name> is <description>",
-        "<name> is <description>",
-        "The <name> is described as <description>",
-        "<name> is <description>",
-        "<name>: <description>",
-        "<name> = <description>",
-        "<name> (<description>)",
-
-        "The <size> <description>",
-        "<description> is <size>",
-        "<size> <description>",
-        "<description> of <size>",
-        "<name> is <size> and <description>",
-        "A <size> <name> is <description>",
-        "The <name>, <size>, is <description>",
-
-        "<name> is <size_in_feet> and <description>",
-        "A <size_in_feet> <name> is <description>",
-        "The <name>, <size_in_feet>, is <description>",
-
-        "There is a <size_in_feet> <name>, described as <description>",
-        "The <name> is <size_in_feet> <size> and <description>",
-        "<size_in_feet> <name>: <description>",
-        "<name> (height: <size_in_feet>) is <description>",
-        "[<name> - <description> - <size_in_feet>]",
-        "<description> (size: <size_in_feet>)",
-
-        "<name> is <size_in_meters> and <description>",
-        "A <size_in_meters> <name> is <description>",
-        "The <name>, <size_in_meters>, is <description>",
-        "There is a <size_in_meters> <name>, described as <description>",
-        "The <name> is <size_in_meters> <size> and <description>",
-        "<size_in_meters> <name>: <description>",
-        "<name> (height: <size_in_meters>) is <description>",
-        "[<name> - <description> - <size_in_meters>]",
-        "<description> (size: <size_in_meters>)",
-        
-        "There is a <description>",
-        "<description> (size: <size_in_meters>)"
-        
+        "The <name> is present in the scene",
+        "<name> can be observed",
+        "The <name> is a notable element",
+        "<name> stands out in the image",
+        "The scene features a <name>",
+        "A <name> is visible",
+        "The <size> <name>",
+        "<name> is <size>",
+        "<size> <name>",
+        "<name> of <size> proportions",
+        "<name> is <size> in scale",
+        "A <size> version of <name>",
+        "The <name>, <size> in dimension",
+        "<name> measures <size_in_feet>",
+        "A <size_in_feet> tall <name>",
+        "The <name>, standing at <size_in_feet>",
+        "There is a <size_in_feet> high <name>",
+        "The <name> reaches <size_in_feet> in height",
+        "<size_in_feet> <name>",
+        "<name> spans <size_in_meters>",
+        "A <size_in_meters> long <name>",
+        "The <name>, measuring <size_in_meters>",
+        "There is a <size_in_meters> wide <name>",
+        "The <name> extends <size_in_meters>",
+        "<size_in_meters> <name>",
+        "<name> occupies space"
     ],
     "relationships": {
         "to_the_left": [

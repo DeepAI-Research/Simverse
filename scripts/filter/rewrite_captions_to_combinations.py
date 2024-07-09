@@ -2,7 +2,7 @@ import json
 
 def update_combinations_with_new_captions():
     # Load the original combinations file
-    with open('./combinations.json', 'r') as f:
+    with open('./combinations_processed.json', 'r') as f:
         combinations = json.load(f)
 
     # Load the processed captions file

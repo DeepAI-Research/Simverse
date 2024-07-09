@@ -1,7 +1,7 @@
 import json
 
 # Load the existing combinations.json file
-with open('./combinations.json', 'r') as file:
+with open('./combinations_processed.json', 'r') as file:
     data = json.load(file)
 
 # Initialize a list to store the extracted captions

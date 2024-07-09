@@ -224,7 +224,6 @@ def generate_object_name_description_captions(
     """
     object_name_descriptions = []
     for obj in combination["objects"]:
-        object_name = obj["name"]
         object_description = obj["description"]
 
         object_scale = obj["scale"]
@@ -237,8 +236,7 @@ def generate_object_name_description_captions(
 
         # Replace placeholders with actual values
         object_name_description_relationship = (
-            object_name_description_relationship.replace("<name>", object_name)
-            .replace("<description>", object_description)
+            object_name_description_relationship.replace("<name>", object_description)
             .replace("<size>", scale_name, 1)
         )
 
@@ -264,6 +262,9 @@ def generate_object_name_description_captions(
     random.shuffle(object_name_descriptions)
     # Join the object descriptions
     object_name_descriptions = " ".join(object_name_descriptions)
+
+    print(object_name_descriptions)
+
     return object_name_descriptions
 
 

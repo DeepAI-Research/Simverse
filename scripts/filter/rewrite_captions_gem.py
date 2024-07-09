@@ -95,6 +95,95 @@ if __name__ == "__main__":
     Feel free to change/remove exact values like degrees. Instead of 32 degrees left you can say slightly to the left. Combine sentences maybe.
     Use synonyms/words to use. You can even remove some words/sentences but capture some of the holistic important details.
 
+    Example 1:
+    Before:
+        "index": 0,
+        "objects_caption": "Object caption:   The Mario Bros model compatible with 3ds Max, Maya, Blender, and other modeling and animation software. shifts to the right at quickly 0.29 each second.",
+        "background_caption": "Scene background: The landscape is Brown Photostudio 07.",
+        "orientation_caption": "Camera orientation: Direct the camera far right front, set tilt to mildly downward.",
+        "framing_caption": "Camera framing: Full perspective Set the fov of the camera to 57 degrees. (32.00 mm focal length)",
+        "animation_caption": "Camera animation: The camera pans alongside Mario Bros model compatible with 3ds Max, Maya, Blender, and other modeling and animation software., capturing every move. The scene is rendered with a moderate animation speed of 83%.",
+        "stage_caption": "Scene stage: The background scene is Brown Photostudio. The floor material is Medieval Blocks.",
+        "postprocessing_caption": "Post-processing effects: The scene has a moderate bloom effect. No screen-space ray tracing is used in the scene.",
+        "caption": "Mario Bros model compatible with 3ds Max, Maya, Blender, and other modeling and animation software. = Mario Bros model compatible with 3ds Max, Maya, Blender, and other modeling and animation software.  The camera pans alongside Mario Bros model compatible with 3ds Max, Maya, Blender, and other modeling and animation software., capturing every move. The Mario Bros model compatible with 3ds Max, Maya, Blender, and other modeling and animation software. shifts to the right at quickly 0.29 each second. Direct the camera far right front, set tilt to mildly downward. Full perspective Set the fov of the camera to 57 degrees. (32.00 mm focal length) The scene has a moderate bloom effect. No screen-space ray tracing is used in the scene. The background scene is Brown Photostudio. The floor material is Medieval Blocks. The scene is rendered with a moderate animation speed of 83%."
+    After:
+        "index": 0,
+        "objects_caption": "Object caption: Mario Bros model shifts to the right quickly each second.",
+        "background_caption": "Scene background: The landscape is Brown Photostudio 07.",
+        "orientation_caption": "Camera orientation: Direct the camera far right front, set tilt to mildly downward.",
+        "framing_caption": "Camera framing: Full perspective fov of the camera",
+        "animation_caption": "Camera animation: The camera pans alongside Mario Bros model, capturing every move. The scene is rendered with a moderate animation speed.",
+        "stage_caption": "Scene stage: The background scene is Brown Photostudio. The floor material is Medieval Blocks.",
+        "postprocessing_caption": "Post-processing effects: The scene has a moderate bloom effect. No screen-space ray tracing is used in the scene.",
+        "caption": "Camera pans alongside Mario Bros model capturing every move. The Mario Bros model compatible shifts right at quickly 0.29 per second. The camera far right front, set tilt to mildly downward. Full perspective fov of camera. Scene has a moderate bloom effect. No screen-space ray tracing is used in the scene. The background scene is Brown Photostudio. The floor material is Medieval Blocks. The scene is rendered with a moderate animation speed of 83%."
+
+    Example 2: 
+    Before:
+        "index": 1,
+        "objects_caption": "Object caption:   The a white ornate corbel and column. drifts forward at brisk 0.46 units.",
+        "background_caption": "Scene background: The landscape is Theater 01.",
+        "orientation_caption": "Camera orientation: Yaw: flat left, Pitch: 47 degrees downward.",
+        "framing_caption": "Camera framing: Balanced perspective The field of view is 38 degrees. (50.00 mm focal length)",
+        "animation_caption": "Camera animation: Tracking a white ornate corbel and column., the camera provides a dynamic view of its actions. Fast animation of 141% is used in the scene.",
+        "stage_caption": "Scene stage: The scene is Theater. The ground is Coast Sand.",
+        "postprocessing_caption": "Post-processing effects: Bloom effect is set to high intensity. The scene is rendered with a strong ambient occlusion effect.",
+        "caption": "A massive a white ornate corbel and column. is a white ornate corbel and column.  Tracking a white ornate corbel and column., the camera provides a dynamic view of its actions. The a white ornate corbel and column. drifts forward at brisk 0.46 units. Yaw: flat left, Pitch: 47 degrees downward. Balanced perspective The field of view is 38 degrees. (50.00 mm focal length) Bloom effect is set to high intensity. The scene is rendered with a strong ambient occlusion effect. The scene is Theater. The ground is Coast Sand. Fast animation of 141% is used in the scene."
+    After:
+        "index": 1,
+        "objects_caption": "Object caption: The a white ornate corbel and column moves forward quick",
+        "background_caption": "Scene background: The landscape is Theater 01.",
+        "orientation_caption": "Camera orientation: flat left with downward pitch roughly",
+        "framing_caption": "Camera framing: even field of view",
+        "animation_caption": "Camera animation: Tracking a white ornate corbel and column. Camera provides dynamic view of its actions in a fast paced animation.",
+        "stage_caption": "Scene stage: The scene is Theater and the ground is Coast Sand.",
+        "postprocessing_caption": "Post-processing effects: high intensity lighting plus strong ambient occlusion effect.",
+        "caption": "Track the massive white ornate corbel and column as camera provides dynamic view of movement. Make white ornate drift forward quickly and make camera flat left with downward pointing , Pitch: 47 degrees downward. The scene is Theater with Coast Sand ground"
+        
+    Example 3:
+    Before:
+        "index": 499,
+        "objects_caption": "Object caption: a lion wearing a t-shirt, accompanied by a white piece of paper with writing on it. is to the left of a small house with a purple roof and a ceiling light fixture.. a small house with a purple roof and a ceiling light fixture. is to the right of a lion wearing a t-shirt, accompanied by a white piece of paper with writing on it.. a lion wearing a t-shirt, accompanied by a white piece of paper with writing on it. is to the left of and behind a square table with a square base and light fixture..  The a square table with a square base and light fixture. heads to the left at 0.15. The a small house with a purple roof and a ceiling light fixture. heads right at 0.27 units. Moving forward at speedily 0.30, the a lion wearing a t-shirt, accompanied by a white piece of paper with writing on it. progresses.",
+        "background_caption": "Scene background: The landscape is Harvest.",
+        "orientation_caption": "Camera orientation: Yaw: sharply forward left, Pitch: horizontally level.",
+        "framing_caption": "Camera framing: Fully zoomed out The focal length is 30 mm.",
+        "animation_caption": "Camera animation: Tracking a square table with a square base and light fixture., the camera provides a dynamic view of its actions. Animations are intentionally slowed down.",
+        "stage_caption": "Scene stage: The background view is Harvest. The flooring texture is Stone Floor.",
+        "postprocessing_caption": "Post-processing effects: High screen-space ray tracing is used in the scene. High motion blur is used in the scene.",
+        "caption": "a square table with a square base and light fixture. is a square table with a square base and light fixture. A hefty a lion wearing a t-shirt, accompanied by a white piece of paper with writing on it. is a lion wearing a t-shirt, accompanied by a white piece of paper with writing on it. The a small house with a purple roof and a ceiling light fixture. is described as a small house with a purple roof and a ceiling light fixture. a lion wearing a t-shirt, accompanied by a white piece of paper with writing on it. is to the left of a small house with a purple roof and a ceiling light fixture.. a small house with a purple roof and a ceiling light fixture. is to the right of a lion wearing a t-shirt, accompanied by a white piece of paper with writing on it.. a lion wearing a t-shirt, accompanied by a white piece of paper with writing on it. is to the left of and behind a square table with a square base and light fixture.. Tracking a square table with a square base and light fixture., the camera provides a dynamic view of its actions. The a square table with a square base and light fixture. heads to the left at 0.15. The a small house with a purple roof and a ceiling light fixture. heads right at 0.27 units. Moving forward at speedily 0.30, the a lion wearing a t-shirt, accompanied by a white piece of paper with writing on it. progresses. Yaw: sharply forward left, Pitch: horizontally level. Fully zoomed out The focal length is 30 mm. High screen-space ray tracing is used in the scene. High motion blur is used in the scene. The background view is Harvest. The flooring texture is Stone Floor. Animations are intentionally slowed down."
+    After:
+        "index": 499,
+        "objects_caption": "Object caption: 3 objects: A lion wearing a t-shirt with white piece of paper with writing on it is to the left of a small house with a purple roof and a ceiling light fixture. The small house with a purple roof and a ceiling light fixture is to the right of a lion wearing a t-shirt with white piece of paper with writing on it. Lion is to the left of and behind a square table. The square table goes to the left in the screen. The a small house with a purple roof shifts right. The lion wearing a t-shit with paper moves forward at speedily",
+        "background_caption": "Scene background: The landscape is Harvest.",
+        "orientation_caption": "Camera orientation: forward left, leveled nicely.",
+        "framing_caption": "Camera framing: Fully zoomed out",
+        "animation_caption": "Camera animation: Track the square table with a square base and light fixture. Slow animation",
+        "stage_caption": "Scene stage: The background view is Harvest. The flooring texture is Stone Floor.",
+        "postprocessing_caption": "Post-processing effects: Strong motion blur and ray tracing",
+        "caption": "There's a total of 3 objects: a square table with a square base and light fixture, lion wearing a t-shirt with white piece of paper with writing on it, and small house with a purple roof and a ceiling light fixture. Lion wearing a t-shirt is left of small house with a purple roof. Small house is to the right of a lion. Lion is left of and behind a square table with a square base. Camera should track the square table as it heads to the left. 
+                    Small house moves right at 0.27 units. Moving forward at speedily is the lion. Camera is forward left and fully zoomed out. Btw scene has high screen-space ray tracing and motion blur. Background view is Harvest with Stone Floor texture. Animations are intentionally slowed down."
+    
+    Example 4:
+        Before:
+        "index": 495,
+        "objects_caption": "Object caption: a house with a roof. is to the left of and in front of a man wearing a blue and black outfit.. a white Chevrolet Suburban SUV is to the right of and behind a man wearing a blue and black outfit.. a man wearing a blue and black outfit. is to the left of and in front of a white Chevrolet Suburban SUV. a brick and stone wall. is to the right of and behind a house with a roof..  The a man wearing a blue and black outfit. travels right at a rate of 0.32 per second. The a brick and stone wall. proceeds left at a speed of speedily 0.91. The a white Chevrolet Suburban SUV moves at swiftly 0.93 units/s towards the left. The a house with a roof. advances forward at quickly 0.70 units.",
+        "background_caption": "Scene background: The landscape is White Cliff Top.",
+        "orientation_caption": "Camera orientation: Align the camera to 330\u00b0 to the right, and adjust the pitch to 67 sharply downward.",
+        "framing_caption": "Camera framing: Medium-wide angle Set the fov of the camera to 44 degrees. (43.00 mm focal length)",
+        "animation_caption": "Camera animation: The camera pans alongside a house with a roof., capturing every move. Animations are intentionally slowed down.",
+        "stage_caption": "Scene stage: The background setting is White Cliff Top. The ground is Running Track.",
+        "postprocessing_caption": "Post-processing effects: Medium ambient occlusion is present in the scene. The scene is rendered with a mild screen-space ray tracing effect.",
+        "caption": "a house with a roof. (size: 7) [a man wearing a blue and black outfit. - a man wearing a blue and black outfit. - 2] a brick and stone wall. (size: 0.5m) There is a a white Chevrolet Suburban SUV a house with a roof. is to the left of and in front of a man wearing a blue and black outfit.. a white Chevrolet Suburban SUV is to the right of and behind a man wearing a blue and black outfit.. a man wearing a blue and black outfit. is to the left of and in front of a white Chevrolet Suburban SUV. a brick and stone wall. is to the right of and behind a house with a roof.. The camera pans alongside a house with a roof., capturing every move. The a man wearing a blue and black outfit. travels right at a rate of 0.32 per second. The a brick and stone wall. proceeds left at a speed of speedily 0.91. The a white Chevrolet Suburban SUV moves at swiftly 0.93 units/s towards the left. The a house with a roof. advances forward at quickly 0.70 units. Align the camera to 330\u00b0 to the right, and adjust the pitch to 67 sharply downward. Medium-wide angle Set the fov of the camera to 44 degrees. (43.00 mm focal length) Medium ambient occlusion is present in the scene. The scene is rendered with a mild screen-space ray tracing effect. The background setting is White Cliff Top. The ground is Running Track. Animations are intentionally slowed down."
+    After:
+        "index": 495,
+        "objects_caption": "Object caption: a house with a roof is to the left of and in front of a man wearing a blue and black outfit. There's also a white Chevrolet Suburban SUV to the right of and behind the man wearing black outfit. The man is left of and in front of a white Chevrolet Suburban SUV. The brick and stone wall is to the right of and behind the house. The man travels right at a rate of 0.32 per second. The stone wall proceeds left really fast. The white Chevrolet moves swiftly leftward. The house moves forward quickly too",
+        "background_caption": "Scene background: The landscape is White Cliff Top.",
+        "orientation_caption": "Camera orientation: Align camera right and adjust the pitch sharply downward. OR Camera captures most things and show downward",
+        "framing_caption": "Camera framing: Medium-wide angle fov of the camera",
+        "animation_caption": "Camera animation: The camera pans alongside the house with a roof",
+        "stage_caption": "Scene stage: White Cliff Top backgroung and Running Track.",
+        "postprocessing_caption": "Post-processing effects: Medium ambient occlusion is present in the scene. The scene is rendered with a mild screen-space ray tracing effect.",
+        "caption": "a house with a roof, a man wearing a blue and black outfit, a brick and stone wall (size: 0.5m), and white Chevrolet Suburban SUV. a house with a roof is to the left of and in front of a man wearing a blue and black outfit. There's also a white Chevrolet Suburban SUV to the right of and behind the man wearing black outfit. The man is left of and in front of a white Chevrolet Suburban SUV. The brick and stone wall is to the right of and behind the house. The man travels right at a rate of 0.32 per second. The stone wall proceeds left really fast. The white Chevrolet moves swiftly leftward. The house moves forward quickly too. Align camera right and adjust the pitch sharply downward with camera capturing most things. White background and track floor."
+    
     Below are captions that NEED to be shortened/simplified, and more human-like. Return an array of rewritten captions. 
     Process the input array and return a new array with rewritten captions in the same format.
     """
