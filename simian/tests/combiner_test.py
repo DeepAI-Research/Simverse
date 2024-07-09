@@ -500,7 +500,7 @@ def test_generate_object_name_description_captions():
     combination = {
         "objects": [
             {
-                "name": "Box",
+                "name": "A simple box",
                 "description": "A simple box",
                 "scale": {
                     "factor": 0.75,
@@ -529,7 +529,7 @@ def test_generate_object_name_description_captions():
 
     # Construct possible expected captions
     expected_captions = [
-        template.replace("<name>", "Box").replace("<description>", "A simple box").replace("<size>", "medium-small")
+        template.replace("<name>", "A simple box").replace("<description>", "A simple box").replace("<size>", "medium-small")
         for template in expected_relationship_templates
     ]
 

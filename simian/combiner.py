@@ -263,8 +263,6 @@ def generate_object_name_description_captions(
     # Join the object descriptions
     object_name_descriptions = " ".join(object_name_descriptions)
 
-    print(object_name_descriptions)
-
     return object_name_descriptions
 
 
@@ -966,7 +964,7 @@ def generate_combinations(
         combination = {"index": i}
 
         # Generate objects
-        combination["objects_caption"] = "Object caption: "
+        combination["objects_caption"] = "Object caption:"
         objects = generate_objects(
             object_data, dataset_names, dataset_weights, dataset_dict, captions_data, ontop_data
         )
@@ -1028,7 +1026,7 @@ def generate_combinations(
         scene_relationship_description = generate_relationship_captions(combination)
         scene_relationship_description_str = " ".join(scene_relationship_description)
         caption_parts.append(scene_relationship_description_str)
-        combination["objects_caption"] +=  scene_relationship_description_str
+        combination["objects_caption"] += scene_relationship_description_str
         # Ontop captions
         ontop_captions = generate_ontop_captions(combination, ontop_data, object_data)
         caption_parts.extend(ontop_captions)
