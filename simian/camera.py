@@ -235,7 +235,7 @@ def set_camera_animation(combination: dict, frame_interval: int, animation_lengt
         None
     """
     animation = combination["animation"]
-    speed_factor = animation.get("speed_factor", 1)
+    speed_factor = animation.get("speed_factor", 1)/1.5
     keyframes = animation["keyframes"]
     adjusted_frame_interval = frame_interval * (animation_length / 100)
 

@@ -100,19 +100,19 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--movement",
         type=str,
-        default="all",
+        default=["none", "all"],
         help="Apply movement to all, none, or random objects."
     )
     parser.add_argument(
         "--ontop",
         type=str,
-        default="all",
+        default=["none", "all"],
         help="Allow objects to be on top of each other."
     )
     parser.add_argument(
         "--camera_follow",
         type=str,
-        default="all",
+        default=["none", "all"],
         help="Camera will follow specified object as it moves (for individual objects)."
     )
     return parser.parse_args()
@@ -305,7 +305,7 @@ def add_movement_to_objects(objects, movement=None, max_speed=0.5):
     for obj in objects:
         if movement == "all":
             direction = random.choice(["left", "right", "forward", "backward"])
-            speed = random.uniform(0.1, max_speed)
+            speed = random.uniform(0.1, max_speed)/1.5
             obj["movement"] = {"direction": direction, "speed": speed}
     return objects
 
@@ -949,10 +949,10 @@ def generate_combinations(
     background_names: List[str],
     background_weights: List[int],
     texture_data: Dict[str, Any],
-    movement: str = "",  
+    movement: str = "none",  
     max_speed: float = 0.5,
-    ontop_data: str = "",
-    camera_follow: str = "",
+    ontop_data: str = "none",
+    camera_follow: str = "none",
 ) -> Dict[str, Any]:
     if seed is None:
         seed = -1
@@ -1008,10 +1008,14 @@ def generate_combinations(
         combination["postprocessing"] = postprocessing
 
         # Add movement to objects
-        objects = add_movement_to_objects(objects, movement, max_speed)
+        if movement in ["all", "random"]:
+            objects = add_movement_to_objects(objects, movement, max_speed)
+        else:
+            combination["no_movement"] = True
 
         # Add camera follow
-        objects = add_camera_follow(objects, camera_follow)
+        if camera_follow in ["all", "random"]:
+            objects = add_camera_follow(objects, camera_follow)
 
         # Generate captions
         caption_parts = []
