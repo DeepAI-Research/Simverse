@@ -128,6 +128,26 @@ python3 scripts/filter/rewrite_captions_gem.py OR python3 scripts/filter/rewrite
 python3 scripts/filter/rewrite_captions_to_combinations.py
 ```
 
+### SimJSON Dataset Curation
+
+1. 200 rows of stationary objects:
+```
+# Create the combinations.json file:
+python3 -m simian.combiner --count 200 --seed 32
+
+# add placeholder values (saved  to combinations_processed.json)
+python3 scripts/filter/combinations_add_placeholder.py
+
+# get captions to rewrite (gets captions from combinations.json and saves to get_captions_<index>.json in batches of 500 combinations)
+python3 scripts/filter/get_captions.py
+
+# rewrite captions with Google's Gemini
+python3 scripts/filter/rewrite_captions_gem.py OR python3 scripts/filter/rewrite_captions_gpt.py
+
+# write those rewritten captions to the combinations_processed.json
+python3 scripts/filter/rewrite_captions_to_combinations.py
+```
+
 ### Distributed rendering
 Rendering can be distributed across multiple machines using the "simian.py" and "worker.py" scripts.
 

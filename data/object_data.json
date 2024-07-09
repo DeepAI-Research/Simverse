@@ -1,4 +1,26 @@
 {
+    "object_list_intro": [
+        "The scene features <object_list>",
+        "Present in this scene are <object_list>",
+        "Objects visible in the environment include <object_list>",
+        "The composition contains <object_list>",
+        "Arranged within the scene are <object_list>",
+        "Key elements in this setting comprise <object_list>",
+        "The visual space is occupied by <object_list>",
+        "Notable items in the scene are <object_list>",
+        "The frame encompasses <object_list>",
+        "Captured in this view are <object_list>",
+        "The scene is populated with <object_list>",
+        "Central to this composition are <object_list>",
+        "Prominently displayed are <object_list>",
+        "The environment showcases <object_list>",
+        "Focal points of the scene include <object_list>",
+        "Among the objects present are <object_list>",
+        "The visual narrative includes <object_list>",
+        "Constituting the scene's elements are <object_list>",
+        "Depicted in this setting are <object_list>",
+        "The scene is characterized by the presence of <object_list>"
+    ],
     "descriptions": [
         "The subject is <objects>",
         "The focus is on <objects>",

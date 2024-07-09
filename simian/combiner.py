@@ -936,6 +936,10 @@ def add_camera_follow(objects, camera_follow):
     return objects
 
 
+def generate_object_list(objects):
+    return ", ".join([obj["description"] for obj in objects])
+
+
 def generate_combinations(
     camera_data: Dict[str, Any],
     count: int,
@@ -969,6 +973,10 @@ def generate_combinations(
             object_data, dataset_names, dataset_weights, dataset_dict, captions_data, ontop_data
         )
         combination["objects"] = objects
+        object_list = generate_object_list(objects)
+        object_list_intro = object_data["object_list_intro"]
+        intro = random.choice(object_list_intro)
+        combination["objects_caption"] = intro.replace("<object_list>", object_list)
 
         # Generate background
         combination["background_caption"] = "Scene background:"
