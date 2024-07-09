@@ -62,19 +62,26 @@ def read_combinations():
         print("==== File read, combinations extracted ====")
         return data
 
-def write_to_file(rewritten_combinations):
-    with open("./get_captions_processed.json", "w") as file:
+def write_to_file(rewritten_combinations, mode='w'):
+    with open("./get_captions_processed.json", mode) as file:
+        if mode == 'a':
+            file.write(',\n')
         json.dump(rewritten_combinations, file, indent=4)
-    print("==== File combinations rewritten, check file ====")
+    print(f"==== Batch of {len(rewritten_combinations)} combinations written to file ====")
 
 def rewrite_captions_in_batches(model, combinations, context_string):
     batch_size = 5
-    rewritten_combinations = []
+    all_rewritten_combinations = []
     for i in range(0, len(combinations), batch_size):
         caption_batch = combinations[i : i + batch_size]
         rewritten_captions = rewrite_caption(model, caption_batch, context_string)
-        rewritten_combinations.extend(rewritten_captions)
-    return rewritten_combinations
+        
+        # Write this batch to the file
+        write_mode = 'w' if i == 0 else 'a'
+        write_to_file(rewritten_captions, mode=write_mode)
+        
+        all_rewritten_combinations.extend(rewritten_captions)
+    return all_rewritten_combinations
 
 if __name__ == "__main__":
     CONTEXT_STRING = """
@@ -146,6 +153,8 @@ if __name__ == "__main__":
         "postprocessing_caption": "Post-processing effects: High bloom is present in the scene. Ambient occlusion is set to low intensity.",
         "caption": "The white marble fountain moves forward. There is a 2ft lizard that moves left and Homer Simpson in a green bathing suit. Homer Simpson is to the left and behind white cube, while white cube is right of a lizard. Camera follows Homer Simpson as it moves backward with a large view and pointing down. Background scene is an abandoned Hopper Terminal with Gravel Embedded Concrete."
 
+    In the "caption" YOU MUST AT LEAST CAPTURE the position of the objects relative to each other. YOU MUST. 
+
     Just strictly caption examples:
     caption Before: "2ft Vehicle Mine GTA2 3d remake: A green and red spaceship with a circular design and a red button. 7 LOW POLY PROPS: a pink square with a small brown box and a stick on it, resembling a basketball court. Modified Colt 1911 Pistol is a gun LOW POLY PROPS is to the left of and behind Modified Colt 1911 Pistol. Modified Colt 1911 Pistol is to the right of and in front of LOW POLY PROPS. Vehicle Mine GTA2 3d remake is  and in front of LOW POLY PROPS. The view is set sharply downward, looking 189\u00b0 to the right. Set the focal length of the camera to 75 mm. Semi-close perspective  The panorama is Monbachtal Riverbank. The floor is Shell Floor. The scene transitions swiftly with enhanced animation speed."
     caption After: "Vehicle Mine GTA2 3d remake is a green and red spaceship with a circular design and a red button. LOW POLY PROPS is pink square with a small brown box and a stick on it, resembling a basketball court. Modified Colt 1911 Pistol is a gun LOW POLY PROPS is to the left of and behind Modified Colt 1911 Pistol. Modified Colt 1911 Pistol is to the right of and in front of LOW POLY PROPS. Vehicle Mine GTA2 3d remake is  and in front of LOW POLY PROPS. The view is set sharply downward and looking 189 degrees to the right. Somewhat close perspective and the floor is a Shell Floor. Scene transitions swiftly with enhanced animation speed."
@@ -162,6 +171,8 @@ if __name__ == "__main__":
     Above are caption example before and after. Go through array of captions and make it sound more human. Change complex director-like words like "bloom" or "pitch", change them to synonyms that are easier to understand and that any person would most likely use.
     Feel free to change/remove exact values like degrees. Instead of 32 degrees left you can say slightly to the left. Combine sentences maybe.
     Use synonyms/words to use. You can even remove some words/sentences but capture some of the holistic important details.
+
+    In the "caption" YOU MUST AT LEAST CAPTURE the position of the objects relative to each other.
 
     Below are captions that NEED to be shortened/simplified, and more human-like. Return an array of rewritten captions. 
     Process the input array and return a new array with rewritten captions in the same format.
