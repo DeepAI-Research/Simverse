@@ -357,6 +357,11 @@ def test_generate_combinations():
         },
         "name_description_relationship": [
             "<name> is a <size> object. <description>"
+        ],
+        "object_list_intro": [
+            "The scene features <object_list>",
+            "Present in this scene are <object_list>",
+            "Objects visible in the environment include <object_list>"
         ]
     }
 
