@@ -123,8 +123,12 @@ def determine_relationships(objects: List[Dict], camera_yaw: float) -> List[str]
                     relationship += " and in front of"
 
                 if relationship:
+                    # Remove trailing periods from object names
+                    obj1_name = obj1['name'].rstrip('.')
+                    obj2_name = obj2['name'].rstrip('.')
+
                     relationships.append(
-                        f"{obj1['name']} is {relationship} {obj2['name']}."
+                        f"{obj1_name} is {relationship} {obj2_name}."
                     )
 
     return relationships

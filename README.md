@@ -42,19 +42,19 @@ Generate scenes without movement (static videos):
 python3 -m simian.combiner --count 1000 --seed 42
 ```
 
-Add movement to all or no objects:
+Add movement to all or no objects (camera is stationary):
 ```bash
-python3 -m simian.combiner --count 1000 --seed 42 --movement all
+python3 -m simian.combiner --count 1000 --seed 42 --movement ["all" or "none"]
 ```
 
-Allow objects to be on top of each other:
+Allow objects to be on top of each other (static or movement):
 ```bash
-python3 -m simian.combiner --count 1000 --seed 42 none --ontop all
+python3 -m simian.combiner --count 1000 --seed 42 --ontop ["all" or "none"]
 ```
 
-Make camera follow an object
+Make camera follow an object (camera follows object)
 ```bash
-python3 -m simian.combiner --count 1000 --seed 42 none --camera_follow all
+python3 -m simian.combiner --count 1000 --seed 42 --camera_follow ["all" or "none"]
 ```
 
 ### Generating Videos or Images
@@ -103,13 +103,48 @@ To generate an image(s):
 
 Coming soon...
 
-### Clean up Captions
+### SimJSON Dataset Curation
 
 Make captions more prompt friendly.
 
-> **_NOTE:_** Create a .env file and add your OpenAI API key
-```bash
-python3 scripts/filter/rewrite_captions.py
+This is a multi-stage process:
+
+> **_NOTE:_** Create a .env file and add your Google Generative Language API key / OpenAI API key
+
+1. 200 rows of stationary objects:
+```
+# Create the combinations.json file:
+python3 -m simian.combiner --count 200 --seed 32
+```
+
+2. 200 rows of moving objects:
+```
+# Create the combinations.json file:
+python3 -m simian.combiner --count 200 --seed 42 --movement all
+```
+
+3. 150 (reduces to 50) rows of ontop objects:
+```
+python3 -m simian.combiner --count 150 --seed 21 --ontop all
+python3 scripts/filter/get_ontop_captions.py 
+```
+
+4. 150 movement with camera_follow:
+```
+python3 -m simian.combiner --count 150 --seed 80 --movement all --camera_follow all
+```
+
+Run the following commands bellow after each combination is genereated: 
+
+```
+# add placeholder values (saved  to combinations_processed.json)
+python3 scripts/filter/combinations_add_placeholder.py
+
+# get captions to rewrite (gets captions from combinations.json and saves to get_captions_<index>.json in batches of 500 combinations)
+python3 scripts/filter/get_captions.py
+
+# rewrite captions with Google's Gemini
+python3 scripts/filter/rewrite_captions_gem.py OR python3 scripts/filter/rewrite_captions_gpt.py
 ```
 
 ### Distributed rendering
@@ -216,7 +251,7 @@ If you use it, please cite us:
 ## Contributors ✨
 
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-3-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-2-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
@@ -227,9 +262,8 @@ This project follows the [all-contributors](https://github.com/all-contributors/
 <table>
   <tbody>
     <tr>
-      <td align="center" valign="top" width="14.28%"><a href="https://github.com/lalalune"><img src="https://avatars.githubusercontent.com/u/18633264?v=4?s=100" width="100px;" alt="M̵̞̗̝̼̅̏̎͝Ȯ̴̝̻̊̃̋̀Õ̷̼͋N̸̩̿͜ ̶̜̠̹̼̩͒"/><br /><sub><b>M̵̞̗̝̼̅̏̎͝Ȯ̴̝̻̊̃̋̀Õ̷̼͋N̸̩̿͜ ̶̜̠̹̼̩͒</b></sub></a><br /><a href="#infra-lalalune" title="Infrastructure (Hosting, Build-Tools, etc)">🚇</a> <a href="https://github.com/RaccoonResearch/Simian/commits?author=lalalune" title="Code">💻</a> <a href="https://github.com/RaccoonResearch/Simian/commits?author=lalalune" title="Tests">⚠️</a> <a href="https://github.com/RaccoonResearch/Simian/commits?author=lalalune" title="Documentation">📖</a></td>
-      <td align="center" valign="top" width="14.28%"><a href="https://ericsheen.tech/"><img src="https://avatars.githubusercontent.com/u/59460685?v=4?s=100" width="100px;" alt="Eric S"/><br /><sub><b>Eric S</b></sub></a><br /><a href="#infra-lalalune" title="Infrastructure (Hosting, Build-Tools, etc)">🚇</a><a href="https://github.com/RaccoonResearch/Simian/commits?author=eric-prog" title="Code">💻</a> <a href="https://github.com/RaccoonResearch/Simian/commits?author=eric-prog" title="Tests">⚠️</a> <a href="https://github.com/RaccoonResearch/Simian/commits?author=eric-prog" title="Documentation">📖</a></td>
-      <td align="center" valign="top" width="14.28%"><a href="https://github.com/antbaez9"><img src="https://avatars.githubusercontent.com/u/97056049?v=4?s=100" width="100px;" alt="Anthony"/><br /><sub><b>Anthony</b></sub></a><br /><a href="https://github.com/RaccoonResearch/Simian/commits?author=antbaez9" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://ericsheen.tech/"><img src="https://avatars.githubusercontent.com/u/59460685?v=4?s=100" width="100px;" alt="Eric S"/><br /><sub><b>Eric S</b></sub></a><br /><a href="#infra-lalalune" title="Infrastructure (Hosting, Build-Tools, etc)">🚇</a><a href="https://github.com/DeepAI-Research/Simverse/commits?author=eric-prog" title="Code">💻</a> <a href="https://github.com/DeepAI-Research/Simverse/commits?author=eric-prog" title="Tests">⚠️</a> <a href="https://github.com/DeepAI-Research/Simverse/commits?author=eric-prog" title="Documentation">📖</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/lalalune"><img src="https://avatars.githubusercontent.com/u/18633264?v=4?s=100" width="100px;" alt="M̵̞̗̝̼̅̏̎͝Ȯ̴̝̻̊̃̋̀Õ̷̼͋N̸̩̿͜ ̶̜̠̹̼̩͒"/><br /><sub><b>M̵̞̗̝̼̅̏̎͝Ȯ̴̝̻̊̃̋̀Õ̷̼͋N̸̩̿͜ ̶̜̠̹̼̩͒</b></sub></a><br /><a href="#infra-lalalune" title="Infrastructure (Hosting, Build-Tools, etc)">🚇</a> <a href="https://github.com/DeepAI-Research/Simverse/commits?author=lalalune" title="Code">💻</a> <a href="https://github.com/DeepAI-Research/Simverse/commits?author=lalalune" title="Tests">⚠️</a> <a href="https://github.com/DeepAI-Research/Simverse/commits?author=lalalune" title="Documentation">📖</a></td>
     </tr>
   </tbody>
 </table>
@@ -242,11 +276,11 @@ This project follows the [all-contributors](https://github.com/all-contributors/
 ## Sponsors
 
 <p style="text-align: center; margin-left: auto; margin-right: auto; max-width:800px;">
-<center>Raccoon Research is sponsored by the following organizations:</center>
+<center>Deep AI Research is sponsored by the following organizations:</center>
 </p>
 <p style="text-align: center; margin-left: auto; margin-right: auto; max-width:800px;">
 <center><img src="docs/assets/DeepAI.png" width="200" alt="DeepAI" style="margin-left: auto; margin-right: auto;" /></center>
 </p>
 <p style="text-align: center; margin-left: auto; margin-right: auto; max-width:800px;">
-<center>Interested in working with us? Join our <a href="https://discord.gg/JMfbmHdPNB">Discord</a> or post an <a href="https://github.com/RaccoonResearch/Simian/issues/new">issue</a> to get in touch.</center>
+<center>Interested in working with us? Join our <a href="https://discord.gg/JMfbmHdPNB">Discord</a> or post an <a href=https://github.com/DeepAI-Research/Simverse/issues/new">issue</a> to get in touch.</center>
 </p>

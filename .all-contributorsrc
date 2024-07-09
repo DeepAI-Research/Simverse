@@ -8,18 +8,6 @@
   "commitConvention": "angular",
   "contributors": [
     {
-      "login": "lalalune",
-      "name": "M̵̞̗̝̼̅̏̎͝Ȯ̴̝̻̊̃̋̀Õ̷̼͋N̸̩̿͜ ̶̜̠̹̼̩͒",
-      "avatar_url": "https://avatars.githubusercontent.com/u/18633264?v=4",
-      "profile": "https://github.com/lalalune",
-      "contributions": [
-        "infra",
-        "code",
-        "test",
-        "doc"
-      ]
-    },
-    {
       "login": "eric-prog",
       "name": "Eric S",
       "avatar_url": "https://avatars.githubusercontent.com/u/59460685?v=4",
@@ -32,12 +20,15 @@
       ]
     },
     {
-      "login": "antbaez9",
-      "name": "Anthony",
-      "avatar_url": "https://avatars.githubusercontent.com/u/97056049?v=4",
-      "profile": "https://github.com/antbaez9",
+      "login": "lalalune",
+      "name": "M̵̞̗̝̼̅̏̎͝Ȯ̴̝̻̊̃̋̀Õ̷̼͋N̸̩̿͜ ̶̜̠̹̼̩͒",
+      "avatar_url": "https://avatars.githubusercontent.com/u/18633264?v=4",
+      "profile": "https://github.com/lalalune",
       "contributions": [
-        "code"
+        "infra",
+        "code",
+        "test",
+        "doc"
       ]
     }
   ],
@@ -46,5 +37,5 @@
   "repoType": "github",
   "repoHost": "https://github.com",
   "projectName": "Simian",
-  "projectOwner": "RaccoonResearch"
+  "projectOwner": "DeepAI Research"
 }

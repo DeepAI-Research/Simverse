@@ -100,19 +100,19 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--movement",
         type=str,
-        default="all",
+        default=["none", "all"],
         help="Apply movement to all, none, or random objects."
     )
     parser.add_argument(
         "--ontop",
         type=str,
-        default="all",
+        default=["none", "all"],
         help="Allow objects to be on top of each other."
     )
     parser.add_argument(
         "--camera_follow",
         type=str,
-        default="all",
+        default=["none", "all"],
         help="Camera will follow specified object as it moves (for individual objects)."
     )
     return parser.parse_args()
@@ -224,7 +224,6 @@ def generate_object_name_description_captions(
     """
     object_name_descriptions = []
     for obj in combination["objects"]:
-        object_name = obj["name"]
         object_description = obj["description"]
 
         object_scale = obj["scale"]
@@ -237,8 +236,7 @@ def generate_object_name_description_captions(
 
         # Replace placeholders with actual values
         object_name_description_relationship = (
-            object_name_description_relationship.replace("<name>", object_name)
-            .replace("<description>", object_description)
+            object_name_description_relationship.replace("<name>", object_description)
             .replace("<size>", scale_name, 1)
         )
 
@@ -264,6 +262,7 @@ def generate_object_name_description_captions(
     random.shuffle(object_name_descriptions)
     # Join the object descriptions
     object_name_descriptions = " ".join(object_name_descriptions)
+
     return object_name_descriptions
 
 
@@ -306,7 +305,7 @@ def add_movement_to_objects(objects, movement=None, max_speed=0.5):
     for obj in objects:
         if movement == "all":
             direction = random.choice(["left", "right", "forward", "backward"])
-            speed = random.uniform(0.1, max_speed)
+            speed = random.uniform(0.1, max_speed)/1.5
             obj["movement"] = {"direction": direction, "speed": speed}
     return objects
 
@@ -399,11 +398,18 @@ def generate_postprocessing_caption(combination: Dict[str, Any], camera_data) ->
             )
             caption_parts.append(motionblur_caption)
 
-    # randomly determine how many values (1-4 inclusive) to pop
-    num_to_pop = random.randint(1, len(caption_parts))
-    for _ in range(num_to_pop):
-        random_index_to_remove_from_end = random.randint(0, len(caption_parts) - 1)
-        caption_parts.pop(random_index_to_remove_from_end)
+    # Ensure we have at least one caption
+    if not caption_parts:
+        return "No significant post-processing effects applied."
+
+    # Ensure at least 1-2 captions remain
+    min_captions = min(2, len(caption_parts))
+    if len(caption_parts) > min_captions:
+        num_to_pop = random.randint(1, len(caption_parts) - min_captions)
+        for _ in range(num_to_pop):
+            random_index_to_remove = random.randint(0, len(caption_parts) - 1)
+            caption_parts.pop(random_index_to_remove)
+
     return " ".join(caption_parts)
 
 
@@ -621,67 +627,7 @@ def generate_camerafollow_captions(combination: Dict[str, Any], camera_data) -> 
             caption = caption.replace('<object>', obj['name'])
             camera_follow_captions.append(caption)        
     return camera_follow_captions
-
-
-def generate_caption(combination: Dict[str, Any], object_data, camera_data, ontop_data) -> str:
-    """
-    Generate a complete caption based on the combination data.
-    Copy codeArgs:
-        combination (Dict[str, Any]): Combination data.
-        object_data (Dict[str, Any]): Object data.
-        camera_data (Dict[str, Any]): Camera data.
-        ontop_data (str): Flag indicating whether to allow objects on top of each other.
-
-    Returns:
-        str: Complete caption.
-    """
-    caption_parts = []
-
-    # Add object name and description captions to the caption
-    object_name_descriptions = generate_object_name_description_captions(
-        combination, object_data
-    )
-    caption_parts.append(object_name_descriptions)
-
-    scene_relationship_description = generate_relationship_captions(combination)
-    scene_relationship_description_str = " ".join(scene_relationship_description)
-    caption_parts.append(scene_relationship_description_str)
-
-    # Add the camera orientation to the caption
-    orientation_text = generate_orientation_caption(camera_data, combination)
-    caption_parts.append(orientation_text)
-
-    fov_caption = generate_fov_caption(combination)
-    caption_parts.append(fov_caption)
-
-    framing_caption = generate_framing_caption(camera_data, combination)
-    caption_parts.append(framing_caption)
-
-    postprocessing_caption = generate_postprocessing_caption(combination, camera_data)
-    caption_parts.append(postprocessing_caption)
-
-    # Add the stage caption
-    stage_captions = generate_stage_captions(combination)
-    caption_parts.extend(stage_captions)
-
-    animation_captions = generate_animation_captions(combination, camera_data)
-    caption_parts.extend(animation_captions)
-
-     # Add information about object movement
-    movement_captions = generate_movement_captions(combination, object_data)
-    caption_parts.extend(movement_captions)
-
-    ontop_captions = generate_ontop_captions(combination, ontop_data, object_data)
-    caption_parts.extend(ontop_captions)
-
-    camerafollow_captions = generate_camerafollow_captions(combination, camera_data)
-    caption_parts.extend(camerafollow_captions)
-
-    caption = " ".join(caption_parts)  # Join the caption parts into a single string
-    caption = caption.strip()  # Remove leading and trailing whitespace
-
-    return caption
-
+    
 
 def generate_postprocessing(camera_data: Dict[str, Any]) -> Dict[str, Any]:
     """
@@ -921,7 +867,7 @@ def generate_background(
     Args:
         background_dict: Background data.
         background_names: List of background names.
-        background_weights: List of background
+        background_weigh ts: List of background
 
     Returns:
         Dict[str, Any]: Generated background.
@@ -990,6 +936,10 @@ def add_camera_follow(objects, camera_follow):
     return objects
 
 
+def generate_object_list(objects):
+    return ", ".join([obj["description"] for obj in objects])
+
+
 def generate_combinations(
     camera_data: Dict[str, Any],
     count: int,
@@ -1003,87 +953,143 @@ def generate_combinations(
     background_names: List[str],
     background_weights: List[int],
     texture_data: Dict[str, Any],
-    movement: str = "",  
+    movement: str = "none",  
     max_speed: float = 0.5,
-    ontop_data: str = "",
-    camera_follow: str = "",
+    ontop_data: str = "none",
+    camera_follow: str = "none",
 ) -> Dict[str, Any]:
-    """
-    Generate random combinations of camera settings, objects, background, and stage.
-
-    Args:
-        camera_data (Dict[str, Any]): Camera data.
-        count (int): Number of combinations to generate.
-        seed (Optional[int]): Seed for the random number generator.
-        dataset_names (List[str]): List of dataset names.
-        dataset_weights (List[int]): List of dataset weights.
-        object_data (Dict[str, Any]): Object data.
-        dataset_dict (Dict[str, Any]): Dataset dictionary.
-        captions_data (Dict[str, Any]): Captions data.
-        background_dict (Dict[str, Any]): Background data.
-        background_names (List[str]): List of background names.
-        background_weights (List[int]): List of background weights.
-        texture_data (Dict[str, Any]): Texture data.
-        movement (str): Movement flag.
-        max_speed (float): Maximum speed for movement.
-        ontop_data (str): Flag indicating whether to allow objects on top of each other.
-        camera_follow (str): Camera follow flag.
-
-    Returns:
-        Dict[str, Any]: Generated combinations data.
-    """
     if seed is None:
         seed = -1
     random.seed(seed)
 
     combinations = []
 
-    # Generate combinations on the fly up to the specified count
     for i in range(count):
+        combination = {"index": i}
+
+        # Generate objects
+        combination["objects_caption"] = "Object caption:"
         objects = generate_objects(
             object_data, dataset_names, dataset_weights, dataset_dict, captions_data, ontop_data
         )
+        combination["objects"] = objects
+        object_list = generate_object_list(objects)
+        object_list_intro = object_data["object_list_intro"]
+        intro = random.choice(object_list_intro)
+        combination["objects_caption"] = intro.replace("<object_list>", object_list)
+
+        # Generate background
+        combination["background_caption"] = "Scene background:"
         background = generate_background(
             background_dict, background_names, background_weights
         )
+        combination["background"] = background
+        combination["background_caption"] += f" The landscape is {background['name']}."
 
-        # Calculate the transformed positions of the objects
+        # Calculate transformed positions
         adjusted_objects = adjust_positions(objects, random.randint(0, 360))
         for obj, adjusted_obj in zip(objects, adjusted_objects):
             obj["transformed_position"] = adjusted_obj["transformed_position"]
 
+        # Generate orientation and framing
+        combination["orientation_caption"] = "Camera orientation:"
         orientation = generate_orientation(camera_data, objects, background)
-
         framing = generate_framing(camera_data)
+        combination["orientation"] = orientation
 
-        postprocessing = generate_postprocessing(camera_data)
+        combination["framing_caption"] = "Camera framing:"
+        combination["framing"] = framing
 
-        animation = generate_animation(camera_data)  # speed is between 0.5 and 2
+        # Generate animation
+        combination["animation_caption"] = "Camera animation:"
+        animation = generate_animation(camera_data)
+        combination["animation"] = animation
 
+        # Generate stage
+        combination["stage_caption"] = "Scene stage:"
         stage = generate_stage(texture_data)
+        combination["stage"] = stage
 
-        objects = add_movement_to_objects(objects, movement, max_speed)
+        # Generate postprocessing
+        combination["postprocessing_caption"] = "Post-processing effects:"
+        postprocessing = generate_postprocessing(camera_data)
+        combination["postprocessing"] = postprocessing
 
-        camera_follow = add_camera_follow(objects, camera_follow)
+        # Add movement to objects
+        if movement in ["all", "random"]:
+            objects = add_movement_to_objects(objects, movement, max_speed)
+        else:
+            combination["no_movement"] = True
 
-        combination = {
-            "index": i,
-            "objects": objects,
-            "background": background,
-            "orientation": orientation,
-            "framing": framing,
-            "animation": animation,
-            "stage": stage,
-            "postprocessing": postprocessing,
-        }
+        # Add camera follow
+        if camera_follow in ["all", "random"]:
+            objects = add_camera_follow(objects, camera_follow)
 
-        combination["caption"] = generate_caption(combination, object_data, camera_data, ontop_data)
+        # Generate captions
+        caption_parts = []
+
+        # Object captions
+        object_name_descriptions = generate_object_name_description_captions(
+            combination, object_data
+        )
+        caption_parts.append(object_name_descriptions)
+
+        # Relationship captions
+        scene_relationship_description = generate_relationship_captions(combination)
+        scene_relationship_description_str = " ".join(scene_relationship_description)
+        caption_parts.append(scene_relationship_description_str)
+        combination["objects_caption"] += scene_relationship_description_str
+        # Ontop captions
+        ontop_captions = generate_ontop_captions(combination, ontop_data, object_data)
+        caption_parts.extend(ontop_captions)
+        combination["objects_caption"] += " " + " ".join(ontop_captions)
+        # Camera follow captions
+        camerafollow_captions = generate_camerafollow_captions(combination, camera_data)
+        caption_parts.extend(camerafollow_captions)
+        combination["animation_caption"] += " " + " ".join(camerafollow_captions)
+        # Movement captions
+        movement_captions = generate_movement_captions(combination, object_data)
+        caption_parts.extend(movement_captions)
+        combination["objects_caption"] += " " + " ".join(movement_captions)
+
+        # Orientation caption
+        orientation_text = generate_orientation_caption(camera_data, combination)
+        caption_parts.append(orientation_text)
+        combination["orientation_caption"] += " " + orientation_text
+
+        # Framing caption
+        framing_caption = generate_framing_caption(camera_data, combination)
+        caption_parts.append(framing_caption)
+        combination["framing_caption"] += " " + framing_caption
+        # FOV caption
+        fov_caption = generate_fov_caption(combination)
+        caption_parts.append(fov_caption)
+        combination["framing_caption"] += " " + fov_caption
+
+        # Postprocessing caption
+        postprocessing_caption = generate_postprocessing_caption(combination, camera_data)
+        caption_parts.append(postprocessing_caption)
+        combination["postprocessing_caption"] += " " + postprocessing_caption
+
+        # Stage captions
+        stage_captions = generate_stage_captions(combination)
+        caption_parts.extend(stage_captions)
+        combination["stage_caption"] += " " + " ".join(stage_captions)
+
+        # Animation captions
+        animation_captions = generate_animation_captions(combination, camera_data)
+        caption_parts.extend(animation_captions)
+        combination["animation_caption"] += " " + " ".join(animation_captions)
+
+        # Generate overall caption
+        combination["caption"] = " ".join(caption_parts).strip()
 
         combinations.append(combination)
 
     data = {"seed": seed, "count": count, "combinations": combinations}
 
     return data
+
 
 def generate_objects(
     object_data, dataset_names, dataset_weights, dataset_dict, captions_data, ontop_data
@@ -1138,6 +1144,7 @@ def generate_objects(
     for i in range(number_of_objects):
         object_uid = random.choice(dataset_dict[chosen_dataset])
         object_description = captions_data[object_uid]
+        object_description = captions_data[object_uid].rstrip('.')  # Remove trailing period
         
         scale_choice = random.choices(
             list(object_scales.items()), weights=normalized_weights, k=1
@@ -1194,7 +1201,6 @@ if __name__ == "__main__":
     """
 
     console.print(simverse_ascii)
-
 
     # Load only cap3d dataset
     cap3d_data_path = args.cap3d_captions_path

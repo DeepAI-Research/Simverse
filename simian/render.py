@@ -173,28 +173,33 @@ def render_scene(
 
     largest_length = find_largest_length(all_objects)
 
-    # Unlock and unhide the initial objects
-    unlock_objects(initial_objects)
-
-    set_camera_settings(combination)
-    set_camera_animation(combination, end_frame-start_frame, animation_length)
-
     if not user_blend_file:
         set_background(args.hdri_path, combination)
         create_photosphere(args.hdri_path, combination).scale = (10, 10, 10)
         stage = create_stage(combination)
         apply_stage_material(stage, combination)
+
+    # Unlock and unhide the initial objects
+    unlock_objects(initial_objects)
+
+    set_camera_settings(combination)
+    set_camera_animation(combination, end_frame-start_frame, animation_length)
     
     place_objects_on_grid(all_objects, largest_length)
-    yaw = combination["orientation"]["yaw"]
-    all_objects, step_vector = apply_movement(all_objects, yaw, scene.frame_start)
+    yaw = combination["orientation"]["yaw"]\
+    
+    # check if combination["no_movement"] exists and is True
+    if not combination.get("no_movement", False):
+        all_objects, step_vector = apply_movement(all_objects, yaw, scene.frame_start)
+        
     for obj_dict in all_objects:
         obj = list(obj_dict.keys())[0]
         properties = obj_dict[obj]
         if properties.get("camera_follow", {}).get("follow", False):
             focus_object = obj
     position_camera(combination, focus_object)
-    apply_animation(all_objects, focus_object, step_vector, start_frame, end_frame)
+    if not combination.get("no_movement", False):
+        apply_animation(all_objects, focus_object, step_vector, start_frame, end_frame)
 
     # Randomize image sizes
     sizes = [
