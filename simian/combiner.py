@@ -1132,6 +1132,7 @@ def generate_objects(
     for i in range(number_of_objects):
         object_uid = random.choice(dataset_dict[chosen_dataset])
         object_description = captions_data[object_uid]
+        object_description = captions_data[object_uid].rstrip('.')  # Remove trailing period
         
         scale_choice = random.choices(
             list(object_scales.items()), weights=normalized_weights, k=1
