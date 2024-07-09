@@ -49,12 +49,12 @@ python3 -m simian.combiner --count 1000 --seed 42 --movement ["all" or "none"]
 
 Allow objects to be on top of each other (static or movement):
 ```bash
-python3 -m simian.combiner --count 1000 --seed 42 none --ontop ["all" or "none"]
+python3 -m simian.combiner --count 1000 --seed 42 --ontop ["all" or "none"]
 ```
 
 Make camera follow an object (camera follows object)
 ```bash
-python3 -m simian.combiner --count 1000 --seed 42 none --camera_follow ["all" or "none"]
+python3 -m simian.combiner --count 1000 --seed 42 --camera_follow ["all" or "none"]
 ```
 
 ### Generating Videos or Images
@@ -103,7 +103,7 @@ To generate an image(s):
 
 Coming soon...
 
-### Clean up Captions
+### SimJSON Dataset Curation
 
 Make captions more prompt friendly.
 
@@ -111,30 +111,27 @@ This is a multi-stage process:
 
 > **_NOTE:_** Create a .env file and add your Google Generative Language API key / OpenAI API key
 
-```
-# Create the combinations.json file:
-python3 -m simian.combiner --count 300 --seed 42
-
-# add placeholder values (saved  to combinations_processed.json)
-python3 scripts/filter/combinations_add_placeholder.py
-
-# get captions to rewrite (gets captions from combinations.json and saves to get_captions_<index>.json in batches of 500 combinations)
-python3 scripts/filter/get_captions.py
-
-# rewrite captions with Google's Gemini
-python3 scripts/filter/rewrite_captions_gem.py OR python3 scripts/filter/rewrite_captions_gpt.py
-
-# write those rewritten captions to the combinations_processed.json
-python3 scripts/filter/rewrite_captions_to_combinations.py
-```
-
-### SimJSON Dataset Curation
-
 1. 200 rows of stationary objects:
 ```
 # Create the combinations.json file:
 python3 -m simian.combiner --count 200 --seed 32
+```
 
+2. 200 rows of stationary objects:
+```
+# Create the combinations.json file:
+python3 -m simian.combiner --count 200 --seed 42 --movement all
+```
+
+3. 200 rows of ontop objects:
+```
+python3 -m simian.combiner --count 40 --seed 21 --ontop all
+python3 scripts/filter/get_ontop_captions.py 
+```
+
+Run the following commands bellow after each combination is genereated: 
+
+```
 # add placeholder values (saved  to combinations_processed.json)
 python3 scripts/filter/combinations_add_placeholder.py
 
@@ -143,9 +140,6 @@ python3 scripts/filter/get_captions.py
 
 # rewrite captions with Google's Gemini
 python3 scripts/filter/rewrite_captions_gem.py OR python3 scripts/filter/rewrite_captions_gpt.py
-
-# write those rewritten captions to the combinations_processed.json
-python3 scripts/filter/rewrite_captions_to_combinations.py
 ```
 
 ### Distributed rendering
@@ -252,7 +246,7 @@ If you use it, please cite us:
 ## Contributors ✨
 
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-3-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-2-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
@@ -263,8 +257,8 @@ This project follows the [all-contributors](https://github.com/all-contributors/
 <table>
   <tbody>
     <tr>
-      <td align="center" valign="top" width="14.28%"><a href="https://github.com/lalalune"><img src="https://avatars.githubusercontent.com/u/18633264?v=4?s=100" width="100px;" alt="M̵̞̗̝̼̅̏̎͝Ȯ̴̝̻̊̃̋̀Õ̷̼͋N̸̩̿͜ ̶̜̠̹̼̩͒"/><br /><sub><b>M̵̞̗̝̼̅̏̎͝Ȯ̴̝̻̊̃̋̀Õ̷̼͋N̸̩̿͜ ̶̜̠̹̼̩͒</b></sub></a><br /><a href="#infra-lalalune" title="Infrastructure (Hosting, Build-Tools, etc)">🚇</a> <a href="https://github.com/RaccoonResearch/Simian/commits?author=lalalune" title="Code">💻</a> <a href="https://github.com/RaccoonResearch/Simian/commits?author=lalalune" title="Tests">⚠️</a> <a href="https://github.com/RaccoonResearch/Simian/commits?author=lalalune" title="Documentation">📖</a></td>
-      <td align="center" valign="top" width="14.28%"><a href="https://ericsheen.tech/"><img src="https://avatars.githubusercontent.com/u/59460685?v=4?s=100" width="100px;" alt="Eric S"/><br /><sub><b>Eric S</b></sub></a><br /><a href="#infra-lalalune" title="Infrastructure (Hosting, Build-Tools, etc)">🚇</a><a href="https://github.com/RaccoonResearch/Simian/commits?author=eric-prog" title="Code">💻</a> <a href="https://github.com/RaccoonResearch/Simian/commits?author=eric-prog" title="Tests">⚠️</a> <a href="https://github.com/RaccoonResearch/Simian/commits?author=eric-prog" title="Documentation">📖</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://ericsheen.tech/"><img src="https://avatars.githubusercontent.com/u/59460685?v=4?s=100" width="100px;" alt="Eric S"/><br /><sub><b>Eric S</b></sub></a><br /><a href="#infra-lalalune" title="Infrastructure (Hosting, Build-Tools, etc)">🚇</a><a href="https://github.com/DeepAI-Research/Simverse/commits?author=eric-prog" title="Code">💻</a> <a href="https://github.com/DeepAI-Research/Simverse/commits?author=eric-prog" title="Tests">⚠️</a> <a href="https://github.com/DeepAI-Research/Simverse/commits?author=eric-prog" title="Documentation">📖</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/lalalune"><img src="https://avatars.githubusercontent.com/u/18633264?v=4?s=100" width="100px;" alt="M̵̞̗̝̼̅̏̎͝Ȯ̴̝̻̊̃̋̀Õ̷̼͋N̸̩̿͜ ̶̜̠̹̼̩͒"/><br /><sub><b>M̵̞̗̝̼̅̏̎͝Ȯ̴̝̻̊̃̋̀Õ̷̼͋N̸̩̿͜ ̶̜̠̹̼̩͒</b></sub></a><br /><a href="#infra-lalalune" title="Infrastructure (Hosting, Build-Tools, etc)">🚇</a> <a href="https://github.com/DeepAI-Research/Simverse/commits?author=lalalune" title="Code">💻</a> <a href="https://github.com/DeepAI-Research/Simverse/commits?author=lalalune" title="Tests">⚠️</a> <a href="https://github.com/DeepAI-Research/Simverse/commits?author=lalalune" title="Documentation">📖</a></td>
     </tr>
   </tbody>
 </table>
