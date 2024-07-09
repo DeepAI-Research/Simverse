@@ -154,7 +154,7 @@ if __name__ == "__main__":
     Feel free to change/remove exact values like degrees. Instead of 32 degrees left you can say slightly to the left. Combine sentences maybe.
     Use synonyms/words to use. You can even remove some words/sentences but capture some of the holistic important details.
 
-    In the "caption" YOU MUST AT LEAST CAPTURE the position of the objects relative to each other.
+    In the "caption" YOU MUST AT LEAST CAPTURE the position of the objects relative to each other. If camera follows object as it moves you MUST mention that in some way! There needs to be a distinction.
 
     Below are captions that NEED to be shortened/simplified, and more human-like. Return an array of rewritten captions. 
     Process the input array and return a new array with rewritten captions in the same format.

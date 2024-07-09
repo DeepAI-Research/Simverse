@@ -117,16 +117,21 @@ This is a multi-stage process:
 python3 -m simian.combiner --count 200 --seed 32
 ```
 
-2. 200 rows of stationary objects:
+2. 200 rows of moving objects:
 ```
 # Create the combinations.json file:
 python3 -m simian.combiner --count 200 --seed 42 --movement all
 ```
 
-3. 200 rows of ontop objects:
+3. 150 (reduces to 50) rows of ontop objects:
 ```
-python3 -m simian.combiner --count 40 --seed 21 --ontop all
+python3 -m simian.combiner --count 150 --seed 21 --ontop all
 python3 scripts/filter/get_ontop_captions.py 
+```
+
+4. 150 movement with camera_follow:
+```
+python3 -m simian.combiner --count 150 --seed 80 --movement all --camera_follow all
 ```
 
 Run the following commands bellow after each combination is genereated: 
