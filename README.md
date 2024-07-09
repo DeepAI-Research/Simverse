@@ -113,7 +113,7 @@ This is a multi-stage process:
 
 ```
 # Create the combinations.json file:
-python3 -m simian.combiner --count 1000 --seed 42
+python3 -m simian.combiner --count 300 --seed 42
 
 # add placeholder values (saved  to combinations_processed.json)
 python3 scripts/filter/combinations_add_placeholder.py
