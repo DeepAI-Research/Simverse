@@ -42,19 +42,19 @@ Generate scenes without movement (static videos):
 python3 -m simian.combiner --count 1000 --seed 42
 ```
 
-Add movement to all or no objects:
+Add movement to all or no objects (camera is stationary):
 ```bash
-python3 -m simian.combiner --count 1000 --seed 42 --movement all
+python3 -m simian.combiner --count 1000 --seed 42 --movement ["all" or "none"]
 ```
 
-Allow objects to be on top of each other:
+Allow objects to be on top of each other (static or movement):
 ```bash
-python3 -m simian.combiner --count 1000 --seed 42 none --ontop all
+python3 -m simian.combiner --count 1000 --seed 42 none --ontop ["all" or "none"]
 ```
 
-Make camera follow an object
+Make camera follow an object (camera follows object)
 ```bash
-python3 -m simian.combiner --count 1000 --seed 42 none --camera_follow all
+python3 -m simian.combiner --count 1000 --seed 42 none --camera_follow ["all" or "none"]
 ```
 
 ### Generating Videos or Images
