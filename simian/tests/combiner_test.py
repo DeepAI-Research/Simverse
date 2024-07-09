@@ -518,7 +518,7 @@ def test_generate_object_name_description_captions():
             "large": {"factor": 1.5, "names": ["big", "huge"]}
         },
         "name_description_relationship": [
-            "<name> is a <size> object. <description>"
+            "<name> is a <size> object."
         ]
     }
 

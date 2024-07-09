@@ -245,7 +245,6 @@ This project follows the [all-contributors](https://github.com/all-contributors/
     <tr>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/lalalune"><img src="https://avatars.githubusercontent.com/u/18633264?v=4?s=100" width="100px;" alt="M̵̞̗̝̼̅̏̎͝Ȯ̴̝̻̊̃̋̀Õ̷̼͋N̸̩̿͜ ̶̜̠̹̼̩͒"/><br /><sub><b>M̵̞̗̝̼̅̏̎͝Ȯ̴̝̻̊̃̋̀Õ̷̼͋N̸̩̿͜ ̶̜̠̹̼̩͒</b></sub></a><br /><a href="#infra-lalalune" title="Infrastructure (Hosting, Build-Tools, etc)">🚇</a> <a href="https://github.com/RaccoonResearch/Simian/commits?author=lalalune" title="Code">💻</a> <a href="https://github.com/RaccoonResearch/Simian/commits?author=lalalune" title="Tests">⚠️</a> <a href="https://github.com/RaccoonResearch/Simian/commits?author=lalalune" title="Documentation">📖</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://ericsheen.tech/"><img src="https://avatars.githubusercontent.com/u/59460685?v=4?s=100" width="100px;" alt="Eric S"/><br /><sub><b>Eric S</b></sub></a><br /><a href="#infra-lalalune" title="Infrastructure (Hosting, Build-Tools, etc)">🚇</a><a href="https://github.com/RaccoonResearch/Simian/commits?author=eric-prog" title="Code">💻</a> <a href="https://github.com/RaccoonResearch/Simian/commits?author=eric-prog" title="Tests">⚠️</a> <a href="https://github.com/RaccoonResearch/Simian/commits?author=eric-prog" title="Documentation">📖</a></td>
-      <td align="center" valign="top" width="14.28%"><a href="https://github.com/antbaez9"><img src="https://avatars.githubusercontent.com/u/97056049?v=4?s=100" width="100px;" alt="Anthony"/><br /><sub><b>Anthony</b></sub></a><br /><a href="https://github.com/RaccoonResearch/Simian/commits?author=antbaez9" title="Code">💻</a></td>
     </tr>
   </tbody>
 </table>
@@ -258,11 +257,11 @@ This project follows the [all-contributors](https://github.com/all-contributors/
 ## Sponsors
 
 <p style="text-align: center; margin-left: auto; margin-right: auto; max-width:800px;">
-<center>Raccoon Research is sponsored by the following organizations:</center>
+<center>Deep AI Research is sponsored by the following organizations:</center>
 </p>
 <p style="text-align: center; margin-left: auto; margin-right: auto; max-width:800px;">
 <center><img src="docs/assets/DeepAI.png" width="200" alt="DeepAI" style="margin-left: auto; margin-right: auto;" /></center>
 </p>
 <p style="text-align: center; margin-left: auto; margin-right: auto; max-width:800px;">
-<center>Interested in working with us? Join our <a href="https://discord.gg/JMfbmHdPNB">Discord</a> or post an <a href="https://github.com/RaccoonResearch/Simian/issues/new">issue</a> to get in touch.</center>
+<center>Interested in working with us? Join our <a href="https://discord.gg/JMfbmHdPNB">Discord</a> or post an <a href=https://github.com/DeepAI-Research/Simverse/issues/new">issue</a> to get in touch.</center>
 </p>
