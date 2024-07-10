@@ -61,7 +61,7 @@ def run_job(
 
         subprocess.run(["bash", "-c", command], check=True)
 
-    distributaur.upload_directory(output_dir)
+    distributask.upload_directory(output_dir)
 
     return "Task completed"
 
@@ -70,9 +70,9 @@ def run_job(
 # check if celery is in sys.argv, it could be sys.argv[0] but might not be
 
 if __name__ == "__main__" or any("celery" in arg for arg in sys.argv):
-    from distributaur.distributaur import create_from_config
+    from distributask.distributask import create_from_config
 
-    distributaur = create_from_config()
-    distributaur.register_function(run_job)
+    distributask = create_from_config()
+    distributask.register_function(run_job)
 
-    celery = distributaur.app
+    celery = distributask.app

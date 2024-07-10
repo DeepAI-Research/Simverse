@@ -6,7 +6,7 @@ import time
 from tqdm import tqdm
 from typing import Dict
 
-from distributaur.distributaur import Distributaur
+from distributask.distributask import Distributask
 
 from .worker import run_job
 
@@ -103,7 +103,7 @@ if __name__ == "__main__":
             if key != "combinations":
                 print(f"{key}: {value}")
 
-        distributaur = Distributaur(
+        distributask = Distributask(
             hf_repo_id=job_config["hf_repo_id"],
             hf_token=job_config["hf_token"],
             vast_api_key=job_config["api_key"],
@@ -121,17 +121,17 @@ if __name__ == "__main__":
 
         # Rent and set up vastai nodes with docker image
         print("Searching for nodes...")
-        num_nodes_avail = len(distributaur.search_offers(max_price))
+        num_nodes_avail = len(distributask.search_offers(max_price))
         print("Total nodes available: ", num_nodes_avail)
 
-        rented_nodes = distributaur.rent_nodes(
+        rented_nodes = distributask.rent_nodes(
             max_price, max_nodes, docker_image, module_name
         )
 
         print("Total nodes rented: ", len(rented_nodes))
         print(rented_nodes)
 
-        distributaur.register_function(run_job)
+        distributask.register_function(run_job)
 
         tasks = []
 
@@ -142,7 +142,7 @@ if __name__ == "__main__":
             min(job_config["end_index"], len(job_config["combinations"])),
             batch_size,
         ):
-            task = distributaur.execute_function(
+            task = distributask.execute_function(
                 "run_job",
                 {
                     "combination_indeces": [
@@ -169,34 +169,38 @@ if __name__ == "__main__":
             )
             tasks.append(task)
 
-        print("Tasks submitted to queue. Waiting for tasks to complete...")
 
-        first_task_done = False
-        # Wait for the tasks to complete
-        print("Tasks submitted to queue. Initializing queue...")
+        print("Tasks sent. Starting monitoring")
+        inactivity_log = {node["instance_id"]: 0 for node in rented_nodes}
+
+        start_time = time.time()
         with tqdm(total=len(tasks), unit="task") as pbar:
-            # Check how many tasks are completed
             while not all(task.ready() for task in tasks):
+
                 current_tasks = sum([task.ready() for task in tasks])
                 pbar.update(current_tasks - pbar.n)
-                if current_tasks > 0:
-                    # Begin estimation from time remaining when first task is done
-                    if not first_task_done:
-                        first_task_done = True
-                        first_task_start_time = time.time()
-                        print("Initialization completed. Tasks started...")
 
-                    # Calculate and print total elapsed time and estimated time left
-                    end_time = time.time()
-                    elapsed_time = end_time - first_task_start_time
-                    time_per_tasks = elapsed_time / current_tasks
-                    time_left = time_per_tasks * (len(tasks) - current_tasks)
+                time.sleep(1)
 
-                    pbar.set_postfix(
-                        elapsed=f"{elapsed_time:.2f}s", time_left=f"{time_left:.2f}"
-                    )
-                time.sleep(2)
-
+                current_time = time.time()
+                if current_time - start_time > 30:
+                    start_time = time.time()
+                    
+                    for node in rented_nodes:
+                        log_response = distributask.get_node_log(node)
+                        if log_response.status_code == 200:
+                            try:
+                                last_msg = log_response.text.splitlines()[-1]
+                                if ("Task complete" in last_msg and inactivity_log[node["instance_id"]] == 0):
+                                    inactivity_log[node["instance_id"]] = 1
+                                elif ("Task complete" in last_msg and inactivity_log[node["instance_id"]] == 1):
+                                    distributask.terminate_nodes([node])
+                                    print("node terminated")
+                                else:
+                                    inactivity_log[node["instance_id"]] == 0
+                            except:
+                                pass
+                            
         print("All tasks have been completed!")
 
     parser = argparse.ArgumentParser(description="Simian CLI")
