@@ -5,15 +5,8 @@ ENV TZ=UTC
 
 RUN apt-get update && \
     apt-get install -y \
-    wget \
-    xz-utils \
-    bzip2 \
     python3-pip \
     python3 \
-    libxrender1 \
-    libxxf86vm-dev \
-    libxfixes3 \
-    libxi6 \
     xorg \
     git \
     && apt-get install -y software-properties-common && \
@@ -22,16 +15,18 @@ RUN apt-get update && \
     apt-get install -y python3.11 python3.11-distutils python3.11-dev && \
     update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1 && \
     update-alternatives --install /usr/bin/python python /usr/bin/python3.11 1 && \
-    python3.11 -m pip install --upgrade pip \
-    && apt-get clean \
+    apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
 COPY scripts/ ./scripts/
 RUN bash scripts/data/get_data.sh
 
 COPY requirements.txt .
+
 RUN python3.11 -m pip install --upgrade --ignore-installed setuptools wheel
 RUN python3.11 -m pip install -r requirements.txt
+
+RUN python3.11 -m pip install distributask
 
 COPY simian/ ./simian/
 COPY data/ ./data/

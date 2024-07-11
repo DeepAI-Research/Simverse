@@ -3,7 +3,7 @@ requests
 argparse
 numpy
 scipy
-distributaur
+# distributask
 bpy
 rich
 chromadb

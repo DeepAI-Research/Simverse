@@ -129,9 +129,14 @@ if __name__ == "__main__":
         )
 
         print("Total nodes rented: ", len(rented_nodes))
-        print(rented_nodes)
 
         distributask.register_function(run_job)
+        
+        while True:
+            user_input = input("press r when workers are ready: ")
+            if user_input == "r":
+                break
+
 
         tasks = []
 
@@ -169,7 +174,8 @@ if __name__ == "__main__":
             )
             tasks.append(task)
 
-
+        # distributask.monitor_tasks(tasks, show_time_left=False)
+        
         print("Tasks sent. Starting monitoring")
         inactivity_log = {node["instance_id"]: 0 for node in rented_nodes}
 
@@ -188,19 +194,21 @@ if __name__ == "__main__":
                     
                     for node in rented_nodes:
                         log_response = distributask.get_node_log(node)
-                        if log_response.status_code == 200:
-                            try:
-                                last_msg = log_response.text.splitlines()[-1]
-                                if ("Task complete" in last_msg and inactivity_log[node["instance_id"]] == 0):
-                                    inactivity_log[node["instance_id"]] = 1
-                                elif ("Task complete" in last_msg and inactivity_log[node["instance_id"]] == 1):
-                                    distributask.terminate_nodes([node])
-                                    print("node terminated")
-                                else:
-                                    inactivity_log[node["instance_id"]] == 0
-                            except:
-                                pass
-                            
+                        if log_response:
+                            if log_response.status_code == 200:
+                                try:
+                                    last_msg = log_response.text.splitlines()[-1]
+                                    if ("Task complete" in last_msg and inactivity_log[node["instance_id"]] == 0):
+                                        inactivity_log[node["instance_id"]] = 1
+                                    elif ("Task complete" in last_msg and inactivity_log[node["instance_id"]] == 1):
+                                        distributask.terminate_nodes([node])
+                                        print("node terminated")
+                                    else:
+                                        inactivity_log[node["instance_id"]] == 0
+                                except:
+                                    pass
+
+
         print("All tasks have been completed!")
 
     parser = argparse.ArgumentParser(description="Simian CLI")
