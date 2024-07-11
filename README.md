@@ -44,17 +44,22 @@ python3 -m simian.combiner --count 1000 --seed 42
 
 Add movement to all or no objects (camera is stationary):
 ```bash
-python3 -m simian.combiner --count 1000 --seed 42 --movement ["all" or "none"]
+python3 -m simian.combiner --count 1000 --seed 42 --movement
 ```
 
 Allow objects to be on top of each other (static or movement):
 ```bash
-python3 -m simian.combiner --count 1000 --seed 42 --ontop ["all" or "none"]
+python3 -m simian.combiner --count 1000 --seed 42 --ontop
 ```
 
-Make camera follow an object (camera follows object)
+Make camera follow an object (camera follows object):
 ```bash
-python3 -m simian.combiner --count 1000 --seed 42 --camera_follow ["all" or "none"]
+python3 -m simian.combiner --count 1000 --seed 42 --camera_follow
+```
+
+Randomly apply movement, object stacking, and camera follow effects:
+```
+python3 -m simian.combiner --count 150 --seed 80 --random
 ```
 
 ### Generating Videos or Images
@@ -120,18 +125,23 @@ python3 -m simian.combiner --count 200 --seed 32
 2. 200 rows of moving objects:
 ```
 # Create the combinations.json file:
-python3 -m simian.combiner --count 200 --seed 42 --movement all
+python3 -m simian.combiner --count 200 --seed 42 --movement
 ```
 
 3. 150 (reduces to 50) rows of ontop objects:
 ```
-python3 -m simian.combiner --count 150 --seed 21 --ontop all
+python3 -m simian.combiner --count 150 --seed 21 --ontop
 python3 scripts/filter/get_ontop_captions.py 
 ```
 
 4. 150 movement with camera_follow:
 ```
-python3 -m simian.combiner --count 150 --seed 80 --movement all --camera_follow all
+python3 -m simian.combiner --count 150 --seed 80 --movement --camera_follow
+```
+
+5. 600 truly all random
+```
+python3 -m simian.combiner --count 150 --seed 80 --random
 ```
 
 Run the following commands bellow after each combination is genereated: 
@@ -143,7 +153,7 @@ python3 scripts/filter/combinations_add_placeholder.py
 # get captions to rewrite (gets captions from combinations.json and saves to get_captions_<index>.json in batches of 500 combinations)
 python3 scripts/filter/get_captions.py
 
-# rewrite captions with Google's Gemini
+# rewrite captions with Google's Gemini (choose a prompt template )
 python3 scripts/filter/rewrite_captions_gem.py OR python3 scripts/filter/rewrite_captions_gpt.py
 ```
 
