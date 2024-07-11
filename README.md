@@ -52,9 +52,14 @@ Allow objects to be on top of each other (static or movement):
 python3 -m simian.combiner --count 1000 --seed 42 --ontop ["all" or "none"]
 ```
 
-Make camera follow an object (camera follows object)
+Make camera follow an object (camera follows object):
 ```bash
 python3 -m simian.combiner --count 1000 --seed 42 --camera_follow ["all" or "none"]
+```
+
+Randomly apply movement, object stacking, and camera follow effects:
+```
+python3 -m simian.combiner --count 150 --seed 80 --random
 ```
 
 ### Generating Videos or Images
@@ -134,6 +139,11 @@ python3 scripts/filter/get_ontop_captions.py
 python3 -m simian.combiner --count 150 --seed 80 --movement all --camera_follow all
 ```
 
+5. 600 truly all random
+```
+python3 -m simian.combiner --count 150 --seed 80 --random
+```
+
 Run the following commands bellow after each combination is genereated: 
 
 ```
@@ -143,7 +153,7 @@ python3 scripts/filter/combinations_add_placeholder.py
 # get captions to rewrite (gets captions from combinations.json and saves to get_captions_<index>.json in batches of 500 combinations)
 python3 scripts/filter/get_captions.py
 
-# rewrite captions with Google's Gemini
+# rewrite captions with Google's Gemini (choose a prompt template )
 python3 scripts/filter/rewrite_captions_gem.py OR python3 scripts/filter/rewrite_captions_gpt.py
 ```
 

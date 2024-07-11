@@ -84,7 +84,7 @@ def rewrite_captions_in_batches(model, combinations, context_string):
     return all_rewritten_combinations
 
 if __name__ == "__main__":
-    CONTEXT_STRING = """
+    CONTEXT_STRING_1 = """
     Here are some examples of a task I want you to do which involves rewriting captions.
 
     Example 1:
@@ -160,7 +160,14 @@ if __name__ == "__main__":
     Process the input array and return a new array with rewritten captions in the same format.
     """
 
+
+    CONTEXT_STRING_2 = """
+        Go back and check the prompt that you rewrote.
+        You may rewrite the language in the prompt so that it sounds more modern and human-like but make sure to recheck and rewrite the captions to makes sure that you captured
+        all objects and their relative positions. Make sure to simplify and reduce sentences where need be.
+    """
+
     model = setup_gemini()
     combinations = read_combinations()
-    rewritten_combinations = rewrite_captions_in_batches(model, combinations, CONTEXT_STRING)
+    rewritten_combinations = rewrite_captions_in_batches(model, combinations, CONTEXT_STRING_1)
     write_to_file(rewritten_combinations)

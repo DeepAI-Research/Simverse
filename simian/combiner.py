@@ -115,6 +115,12 @@ def parse_args() -> argparse.Namespace:
         default=["none", "all"],
         help="Camera will follow specified object as it moves (for individual objects)."
     )
+    parser.add_argument(
+        "--random",
+        type=bool,
+        default=True,
+        help="Randomly apply movement, object stacking, and camera follow effects"
+    )
     return parser.parse_args()
 
 
@@ -957,6 +963,7 @@ def generate_combinations(
     max_speed: float = 0.5,
     ontop_data: str = "none",
     camera_follow: str = "none",
+    random_flag: bool = False,
 ) -> Dict[str, Any]:
     if seed is None:
         seed = -1
@@ -966,6 +973,12 @@ def generate_combinations(
 
     for i in range(count):
         combination = {"index": i}
+
+        if random_flag:
+            movement = random.choice(["none", "all"])
+            ontop_data = random.choice(["none", "all"])
+            camera_follow = random.choice(["none", "all"])
+            max_speed = random.uniform(0.1, 0.5)
 
         # Generate objects
         combination["objects_caption"] = "Object caption:"
@@ -1236,6 +1249,7 @@ if __name__ == "__main__":
         ontop_data = args.ontop
         speed = 1.0
         camera_follow = args.camera_follow
+        random_flag = args.random 
 
         backgrounds = read_json_file(args.datasets_path)["backgrounds"]
         background_dict = {}
@@ -1267,7 +1281,8 @@ if __name__ == "__main__":
         movement_data,
         speed,
         ontop_data,
-        camera_follow
+        camera_follow,
+        random_flag
     )
 
     # Write to JSON file
