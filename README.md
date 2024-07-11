@@ -59,7 +59,7 @@ python3 -m simian.combiner --count 1000 --seed 42 --camera_follow
 
 Randomly apply movement, object stacking, and camera follow effects:
 ```
-python3 -m simian.combiner --count 150 --seed 80 --random
+python3 -m simian.combiner --count 150 --seed 42 --random
 ```
 
 ### Generating Videos or Images
