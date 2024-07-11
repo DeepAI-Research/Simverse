@@ -99,26 +99,22 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--movement",
-        type=str,
-        default=["none", "all"],
+        action="store_true",
         help="Apply movement to all, none, or random objects."
     )
     parser.add_argument(
         "--ontop",
-        type=str,
-        default=["none", "all"],
+        action="store_true",
         help="Allow objects to be on top of each other."
     )
     parser.add_argument(
         "--camera_follow",
-        type=str,
-        default=["none", "all"],
+        action="store_true",
         help="Camera will follow specified object as it moves (for individual objects)."
     )
     parser.add_argument(
         "--random",
-        type=bool,
-        default=True,
+        action="store_true",
         help="Randomly apply movement, object stacking, and camera follow effects"
     )
     return parser.parse_args()
@@ -305,16 +301,13 @@ def generate_relationship_captions(combination: Dict[str, Any]) -> List[str]:
     return selected_relationships
 
 
-def add_movement_to_objects(objects, movement=None, max_speed=0.5):
-    if not movement:
-        return objects
-    for obj in objects:
-        if movement == "all":
+def add_movement_to_objects(objects, movement=False, max_speed=0.5):
+    if movement:
+        for obj in objects:
             direction = random.choice(["left", "right", "forward", "backward"])
             speed = random.uniform(0.1, max_speed)/1.5
             obj["movement"] = {"direction": direction, "speed": speed}
     return objects
-
 
 def generate_fov_caption(combination: Dict[str, Any]) -> str:
     """
@@ -932,7 +925,7 @@ def add_camera_follow(objects, camera_follow):
     Returns:
         List[Dict[str, Any]]: List of objects with camera follow.
     """
-    if camera_follow == "all":  
+    if camera_follow:  
         # how many objects in array
         num_objects = len(objects)
         # randomly select an object to follow
@@ -959,10 +952,10 @@ def generate_combinations(
     background_names: List[str],
     background_weights: List[int],
     texture_data: Dict[str, Any],
-    movement: str = "none",  
+    movement: bool = False,  
     max_speed: float = 0.5,
-    ontop_data: str = "none",
-    camera_follow: str = "none",
+    ontop_data: bool = False,
+    camera_follow: bool = False,
     random_flag: bool = False,
 ) -> Dict[str, Any]:
     if seed is None:
@@ -975,10 +968,12 @@ def generate_combinations(
         combination = {"index": i}
 
         if random_flag:
-            movement = random.choice(["none", "all"])
-            ontop_data = random.choice(["none", "all"])
-            camera_follow = random.choice(["none", "all"])
+            movement = random.choice([True, False])
+            ontop = random.choice([True, False])
+            camera_follow = random.choice([True, False])
             max_speed = random.uniform(0.1, 0.5)
+
+            print("These are all the random values: ", movement, ontop_data, camera_follow, max_speed)
 
         # Generate objects
         combination["objects_caption"] = "Object caption:"
@@ -1029,13 +1024,13 @@ def generate_combinations(
         combination["postprocessing"] = postprocessing
 
         # Add movement to objects
-        if movement in ["all", "random"]:
+        if movement:
             objects = add_movement_to_objects(objects, movement, max_speed)
         else:
             combination["no_movement"] = True
 
         # Add camera follow
-        if camera_follow in ["all", "random"]:
+        if camera_follow:
             objects = add_camera_follow(objects, camera_follow)
 
         # Generate captions
@@ -1176,7 +1171,7 @@ def generate_objects(
             positions_taken.add(placement)
         else:
             possible_positions = [
-                pos for pos in range(0, 9) if pos not in positions_taken or ontop_data == "all"
+                pos for pos in range(0, 9) if pos not in positions_taken or ontop_data
             ]
             placement = random.choice(possible_positions)
             positions_taken.add(placement)
