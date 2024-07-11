@@ -118,13 +118,11 @@ This is a multi-stage process:
 
 1. 200 rows of stationary objects:
 ```
-# Create the combinations.json file:
 python3 -m simian.combiner --count 200 --seed 32
 ```
 
 2. 200 rows of moving objects:
 ```
-# Create the combinations.json file:
 python3 -m simian.combiner --count 200 --seed 42 --movement
 ```
 
@@ -139,21 +137,22 @@ python3 scripts/filter/get_ontop_captions.py
 python3 -m simian.combiner --count 150 --seed 80 --movement --camera_follow
 ```
 
-5. 600 truly all random
+5. 1000 truly all random
 ```
-python3 -m simian.combiner --count 150 --seed 80 --random
+python3 -m simian.combiner --count 150 --seed 37 --random
 ```
 
 Run the following commands bellow after each combination is genereated: 
 
+What the scripts are doing in order:
+- add placeholder values (saved  to combinations_processed.json)
+- get captions to rewrite (gets captions from combinations.json and saves to get_captions_<index>.json in batches of 500 combinations)
+- rewrite captions with Google's Gemini (choose a prompt template)
 ```
-# add placeholder values (saved  to combinations_processed.json)
 python3 scripts/filter/combinations_add_placeholder.py
 
-# get captions to rewrite (gets captions from combinations.json and saves to get_captions_<index>.json in batches of 500 combinations)
 python3 scripts/filter/get_captions.py
 
-# rewrite captions with Google's Gemini (choose a prompt template )
 python3 scripts/filter/rewrite_captions_gem.py OR python3 scripts/filter/rewrite_captions_gpt.py
 ```
 
