@@ -195,39 +195,40 @@ if __name__ == "__main__":
             )
             tasks.append(task)
 
-        distributask.monitor_tasks(tasks, show_time_left=False)
+        # distributask.monitor_tasks(tasks, show_time_left=False)
 
-        # print("Tasks sent. Starting monitoring")
-        # inactivity_log = {node["instance_id"]: 0 for node in rented_nodes}
+        print("Tasks sent. Starting monitoring")
+        inactivity_log = {node["instance_id"]: 0 for node in rented_nodes}
 
-        # start_time = time.time()
-        # with tqdm(total=len(tasks), unit="task") as pbar:
-        #     while not all(task.ready() for task in tasks):
+        start_time = time.time()
+        with tqdm(total=len(tasks), unit="task") as pbar:
+            while not all(task.ready() for task in tasks):
 
-        #         current_tasks = sum([task.ready() for task in tasks])
-        #         pbar.update(current_tasks - pbar.n)
+                current_tasks = sum([task.ready() for task in tasks])
+                pbar.update(current_tasks - pbar.n)
 
-        #         time.sleep(1)
-
-        #         current_time = time.time()
-        #         if current_time - start_time > 30:
-        #             start_time = time.time()
-                    
-        #             for node in rented_nodes:
-        #                 log_response = distributask.get_node_log(node)
-        #                 if log_response:
-        #                     if log_response.status_code == 200:
-        #                         try:
-        #                             last_msg = log_response.text.splitlines()[-1]
-        #                             if ("Task complete" in last_msg and inactivity_log[node["instance_id"]] == 0):
-        #                                 inactivity_log[node["instance_id"]] = 1
-        #                             elif ("Task complete" in last_msg and inactivity_log[node["instance_id"]] == 1):
-        #                                 distributask.terminate_nodes([node])
-        #                                 print("node terminated")
-        #                             else:
-        #                                 inactivity_log[node["instance_id"]] == 0
-        #                         except:
-        #                             pass
+                time.sleep(1)
+                current_time = time.time()
+                # check if node is inactive every interval
+                if current_time - start_time > 30:
+                    start_time = time.time()
+                    for node in rented_nodes:
+                        # get log with api call
+                        log_response = distributask.get_node_log(node)
+                        if log_response:
+                            if log_response.status_code == 200:
+                                # if "Task completed" in two consecutive logs, terminate node
+                                try:
+                                    last_msg = log_response.text.splitlines()[-3:]
+                                    if any("Task completed" in msg for msg in last_msg) and inactivity_log[node["instance_id"]] == 0:
+                                        inactivity_log[node["instance_id"]] = 1
+                                    elif any("Task completed" in msg for msg in last_msg) and inactivity_log[node["instance_id"]] == 1:
+                                        distributask.terminate_nodes([node])
+                                        print("node terminated")
+                                    else:
+                                        inactivity_log[node["instance_id"]] == 0
+                                except:
+                                    pass
 
 
         print("All tasks have been completed!")

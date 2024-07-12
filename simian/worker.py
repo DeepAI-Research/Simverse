@@ -4,6 +4,7 @@ import os
 import sys
 import subprocess
 import boto3
+import shlex
 from typing import Any, Dict
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
@@ -39,8 +40,9 @@ def run_job(
     combination_strings = []
     for combo in combinations:
         combination_string = json.dumps(combo)
-        combination_string = '"' + combination_string.replace('"', '\\"') + '"'
+        combination_string = shlex.quote(combination_string)
         combination_strings.append(combination_string)
+
 
     # huggingface
 
@@ -83,6 +85,7 @@ def run_job(
     logger.info(f"Worker running simian.render")
 
     subprocess.run(["bash", "-c", command], check=True)
+
 
     file_location = f"{output_dir}/{combination_index}.mp4"
 
