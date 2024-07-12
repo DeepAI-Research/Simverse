@@ -48,6 +48,9 @@ if __name__ == "__main__":
             "redis_port": args.redis_port or int(env_vars.get("REDIS_PORT", 6379)),
             "redis_user": args.redis_user or env_vars.get("REDIS_USER", ""),
             "redis_password": args.redis_password or env_vars.get("REDIS_PASSWORD", ""),
+            "amazon_key_id": args.amazon_key_id or env_vars.get("AMAZON_KEY_ID", ""),
+            "amazon_secret_key": args.amazon_secret_key or env_vars.get("AMAZON_SECRET_KEY", ""),
+            "s3_bucket_name": args.s3_bucket_name or env_vars.get("S3_BUCKET_NAME", ""),
             "hf_token": args.hf_token or env_vars.get("HF_TOKEN", ""),
             "hf_repo_id": args.hf_repo_id or env_vars.get("HF_REPO_ID", ""),
             "broker_pool_limit": args.broker_pool_limit
@@ -94,14 +97,32 @@ if __name__ == "__main__":
             "redis_port": settings["redis_port"],
             "redis_user": settings["redis_user"],
             "redis_password": settings["redis_password"],
+            "amazon_key_id": settings["amazon_key_id"],
+            "s3_bucket_name": settings["s3_bucket_name"],
+            "amazon_secret_key": settings["amazon_secret_key"],
             "broker_pool_limit": settings["broker_pool_limit"],
             "render_batch_size": settings["render_batch_size"],
+        }
+
+        instance_env = {
+            "VAST_API_KEY": settings["api_key"],
+            "HF_TOKEN": settings["hf_token"],
+            "HF_REPO_ID": settings["hf_repo_id"],
+            "REDIS_HOST": settings["redis_host"],
+            "REDIS_PORT": settings["redis_port"],
+            "REDIS_USER": settings["redis_user"],
+            "REDIS_PASSWORD": settings["redis_password"],
+            "AWS_ACCESS_KEY_ID": settings["amazon_key_id"],
+            "AWS_SECRET_ACCESS_KEY": settings["amazon_secret_key"],
+            "S3_BUCKET_NAME": settings["s3_bucket_name"],
+            "BROKER_POOL_LIMIT": settings["broker_pool_limit"],
         }
 
         print("*** JOB CONFIG")
         for key, value in job_config.items():
             if key != "combinations":
                 print(f"{key}: {value}")
+
 
         distributask = Distributask(
             hf_repo_id=job_config["hf_repo_id"],
@@ -125,7 +146,7 @@ if __name__ == "__main__":
         print("Total nodes available: ", num_nodes_avail)
 
         rented_nodes = distributask.rent_nodes(
-            max_price, max_nodes, docker_image, module_name
+            max_price, max_nodes, docker_image, module_name, env_settings=instance_env
         )
 
         print("Total nodes rented: ", len(rented_nodes))
@@ -174,39 +195,39 @@ if __name__ == "__main__":
             )
             tasks.append(task)
 
-        # distributask.monitor_tasks(tasks, show_time_left=False)
-        
-        print("Tasks sent. Starting monitoring")
-        inactivity_log = {node["instance_id"]: 0 for node in rented_nodes}
+        distributask.monitor_tasks(tasks, show_time_left=False)
 
-        start_time = time.time()
-        with tqdm(total=len(tasks), unit="task") as pbar:
-            while not all(task.ready() for task in tasks):
+        # print("Tasks sent. Starting monitoring")
+        # inactivity_log = {node["instance_id"]: 0 for node in rented_nodes}
 
-                current_tasks = sum([task.ready() for task in tasks])
-                pbar.update(current_tasks - pbar.n)
+        # start_time = time.time()
+        # with tqdm(total=len(tasks), unit="task") as pbar:
+        #     while not all(task.ready() for task in tasks):
 
-                time.sleep(1)
+        #         current_tasks = sum([task.ready() for task in tasks])
+        #         pbar.update(current_tasks - pbar.n)
 
-                current_time = time.time()
-                if current_time - start_time > 30:
-                    start_time = time.time()
+        #         time.sleep(1)
+
+        #         current_time = time.time()
+        #         if current_time - start_time > 30:
+        #             start_time = time.time()
                     
-                    for node in rented_nodes:
-                        log_response = distributask.get_node_log(node)
-                        if log_response:
-                            if log_response.status_code == 200:
-                                try:
-                                    last_msg = log_response.text.splitlines()[-1]
-                                    if ("Task complete" in last_msg and inactivity_log[node["instance_id"]] == 0):
-                                        inactivity_log[node["instance_id"]] = 1
-                                    elif ("Task complete" in last_msg and inactivity_log[node["instance_id"]] == 1):
-                                        distributask.terminate_nodes([node])
-                                        print("node terminated")
-                                    else:
-                                        inactivity_log[node["instance_id"]] == 0
-                                except:
-                                    pass
+        #             for node in rented_nodes:
+        #                 log_response = distributask.get_node_log(node)
+        #                 if log_response:
+        #                     if log_response.status_code == 200:
+        #                         try:
+        #                             last_msg = log_response.text.splitlines()[-1]
+        #                             if ("Task complete" in last_msg and inactivity_log[node["instance_id"]] == 0):
+        #                                 inactivity_log[node["instance_id"]] = 1
+        #                             elif ("Task complete" in last_msg and inactivity_log[node["instance_id"]] == 1):
+        #                                 distributask.terminate_nodes([node])
+        #                                 print("node terminated")
+        #                             else:
+        #                                 inactivity_log[node["instance_id"]] == 0
+        #                         except:
+        #                             pass
 
 
         print("All tasks have been completed!")
@@ -232,6 +253,9 @@ if __name__ == "__main__":
     parser.add_argument("--redis_password", help="Redis password")
     parser.add_argument("--hf_token", help="Hugging Face token")
     parser.add_argument("--hf_repo-id", help="Hugging Face repository ID")
+    parser.add_argument("--amazon_key_id", help="amazon secret key id")
+    parser.add_argument("--amazon_secret_key", help="amazon secret access key")
+    parser.add_argument("--s3_bucket_name", help="amazon s3 bucket name")
     parser.add_argument(
         "--broker_pool_limit", type=int, help="Limit on redis pool size"
     )

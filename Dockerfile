@@ -24,9 +24,8 @@ RUN bash scripts/data/get_data.sh
 COPY requirements.txt .
 
 RUN python3.11 -m pip install --upgrade --ignore-installed setuptools wheel
-RUN python3.11 -m pip install -r requirements.txt
-
-RUN python3.11 -m pip install distributask
+RUN python3.11 -m pip install omegaconf requests argparse numpy scipy rich chromadb bpy boto3
+RUN python3.11 -m pip install distributask==0.0.38
 
 COPY simian/ ./simian/
 COPY data/ ./data/

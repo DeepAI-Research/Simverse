@@ -3,7 +3,7 @@ import logging
 import os
 import sys
 import subprocess
-import time
+import boto3
 from typing import Any, Dict
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
@@ -42,26 +42,53 @@ def run_job(
         combination_string = '"' + combination_string.replace('"', '\\"') + '"'
         combination_strings.append(combination_string)
 
-    # create output directory, add time to name so each new directory is unique
-    output_dir += str(time.time())
+    # huggingface
+
+    # # create output directory, add time to name so each new directory is unique
+    # output_dir += str(time.time())
+    # os.makedirs(output_dir, exist_ok=True)
+
+    # # render images in batches (batches to handle rate limiting of uploads)
+    # batch_size = len(combination_indeces)
+    # for i in range(batch_size):
+
+    #     args = f" --width {width} --height {height} --combination_index {combination_indeces[i]}"
+    #     args += f" --output_dir {output_dir}"
+    #     args += f" --hdri_path {hdri_path}"
+    #     args += f" --start_frame {start_frame} --end_frame {end_frame}"
+    #     args += f" --combination {combination_strings[i]}"
+
+    #     command = f"{sys.executable} -m simian.render -- {args}"
+    #     logger.info(f"Worker running simian.render")
+
+    #     subprocess.run(["bash", "-c", command], check=True)
+
+    # distributask.upload_directory(output_dir)
+
+
+    # s3 bucket
+
     os.makedirs(output_dir, exist_ok=True)
 
-    # render images in batches (batches to handle rate limiting of uploads)
-    batch_size = len(combination_indeces)
-    for i in range(batch_size):
+    combination_index = combination_indeces[0]
+    combination = combination_strings[0]
 
-        args = f" --width {width} --height {height} --combination_index {combination_indeces[i]}"
-        args += f" --output_dir {output_dir}"
-        args += f" --hdri_path {hdri_path}"
-        args += f" --start_frame {start_frame} --end_frame {end_frame}"
-        args += f" --combination {combination_strings[i]}"
+    args = f" --width {width} --height {height} --combination_index {combination_index}"
+    args += f" --output_dir {output_dir}"
+    args += f" --hdri_path {hdri_path}"
+    args += f" --start_frame {start_frame} --end_frame {end_frame}"
+    args += f" --combination {combination}"
 
-        command = f"{sys.executable} -m simian.render -- {args}"
-        logger.info(f"Worker running simian.render")
+    command = f"{sys.executable} -m simian.render -- {args}"
+    logger.info(f"Worker running simian.render")
 
-        subprocess.run(["bash", "-c", command], check=True)
+    subprocess.run(["bash", "-c", command], check=True)
 
-    distributask.upload_directory(output_dir)
+    file = f"{output_dir}/{combination_index}.mp4"
+
+
+    s3_client = boto3.client('s3')
+    s3_client.upload_file(file, os.getenv("S3_BUCKET_NAME"), f"{combination_index}.mp4")
 
     return "Task completed"
 
