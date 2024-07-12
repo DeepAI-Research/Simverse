@@ -84,11 +84,12 @@ def run_job(
 
     subprocess.run(["bash", "-c", command], check=True)
 
-    file = f"{output_dir}/{combination_index}.mp4"
+    file_location = f"{output_dir}/{combination_index}.mp4"
 
+    file_upload_name = f"{combination_index:03d}.mp4"
 
     s3_client = boto3.client('s3')
-    s3_client.upload_file(file, os.getenv("S3_BUCKET_NAME"), f"{combination_index}.mp4")
+    s3_client.upload_file(file_location, os.getenv("S3_BUCKET_NAME"), file_upload_name)
 
     return "Task completed"
 
