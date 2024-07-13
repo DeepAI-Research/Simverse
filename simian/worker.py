@@ -88,7 +88,7 @@ def run_job(
 
     file_location = f"{output_dir}/{combination_index}.mp4"
 
-    file_upload_name = f"{combination_index:03d}.mp4"
+    file_upload_name = f"{combination_index:04d}.mp4"
 
     s3_client = boto3.client('s3')
     s3_client.upload_file(file_location, os.getenv("S3_BUCKET_NAME"), file_upload_name)

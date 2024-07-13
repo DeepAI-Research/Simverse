@@ -165,7 +165,7 @@ if __name__ == "__main__":
         # Submit tasks to queue in batches
         for combination_index in range(
             job_config["start_index"],
-            min(job_config["end_index"], len(job_config["combinations"])),
+            job_config["end_index"],
             batch_size,
         ):
             task = distributask.execute_function(
@@ -209,8 +209,8 @@ if __name__ == "__main__":
 
                 time.sleep(1)
                 current_time = time.time()
-                # check if node is inactive every 10 minutes
-                if current_time - start_time > 60*10:
+                # check if node is inactive every 5 minutes
+                if current_time - start_time > 60*5:
                     start_time = time.time()
                     for node in rented_nodes:
                         # get log with api call
