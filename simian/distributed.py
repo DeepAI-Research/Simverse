@@ -209,8 +209,8 @@ if __name__ == "__main__":
 
                 time.sleep(1)
                 current_time = time.time()
-                # check if node is inactive every interval
-                if current_time - start_time > 30:
+                # check if node is inactive every 10 minutes
+                if current_time - start_time > 60*10:
                     start_time = time.time()
                     for node in rented_nodes:
                         # get log with api call
@@ -233,7 +233,7 @@ if __name__ == "__main__":
         print("All tasks have been completed!")
 
     parser = argparse.ArgumentParser(description="Simian CLI")
-    parser.add_argument("--start-index", type=int, help="Starting index for rendering")
+    parser.add_argument("--start_index", type=int, help="Starting index for rendering")
     parser.add_argument(
         "--combinations-file", help="Path to the combinations JSON file"
     )

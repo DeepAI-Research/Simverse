@@ -43,8 +43,6 @@ def run_job(
         combination_string = shlex.quote(combination_string)
         combination_strings.append(combination_string)
 
-    print(distributask.app.conf)
-
     # huggingface
 
     # # create output directory, add time to name so each new directory is unique

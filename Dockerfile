@@ -25,7 +25,7 @@ COPY requirements.txt .
 
 RUN python3.11 -m pip install --upgrade --ignore-installed setuptools wheel
 RUN python3.11 -m pip install omegaconf requests argparse numpy scipy rich chromadb bpy boto3
-RUN python3.11 -m pip install distributask==0.0.39
+RUN python3.11 -m pip install distributask==0.0.40
 
 COPY simian/ ./simian/
 COPY data/ ./data/
