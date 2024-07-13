@@ -43,6 +43,7 @@ def run_job(
         combination_string = shlex.quote(combination_string)
         combination_strings.append(combination_string)
 
+    print(distributask.app.conf)
 
     # huggingface
 

@@ -216,19 +216,18 @@ if __name__ == "__main__":
                         # get log with api call
                         log_response = distributask.get_node_log(node)
                         if log_response:
-                            if log_response.status_code == 200:
-                                # if "Task completed" in two consecutive logs, terminate node
-                                try:
-                                    last_msg = log_response.text.splitlines()[-3:]
-                                    if any("Task completed" in msg for msg in last_msg) and inactivity_log[node["instance_id"]] == 0:
-                                        inactivity_log[node["instance_id"]] = 1
-                                    elif any("Task completed" in msg for msg in last_msg) and inactivity_log[node["instance_id"]] == 1:
-                                        distributask.terminate_nodes([node])
-                                        print("node terminated")
-                                    else:
-                                        inactivity_log[node["instance_id"]] == 0
-                                except:
-                                    pass
+                            # if "Task completed" in two consecutive logs, terminate node
+                            try:
+                                last_msg = log_response.text.splitlines()[-3:]
+                                if any("Task completed" in msg for msg in last_msg) and inactivity_log[node["instance_id"]] == 0:
+                                    inactivity_log[node["instance_id"]] = 1
+                                elif any("Task completed" in msg for msg in last_msg) and inactivity_log[node["instance_id"]] == 1:
+                                    distributask.terminate_nodes([node])
+                                    print("node terminated")
+                                else:
+                                    inactivity_log[node["instance_id"]] == 0
+                            except:
+                                pass
 
 
         print("All tasks have been completed!")
