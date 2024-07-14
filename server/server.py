@@ -5,17 +5,19 @@ from rich.progress import Progress, TextColumn, BarColumn, TimeRemainingColumn, 
 from rich.console import Console
 from rich.panel import Panel
 
-# New client initialization
+# Initialize Chroma client
 chroma_client = chromadb.PersistentClient(path="./chroma_db")
-
-# Create or get the collection
-collection = chroma_client.get_or_create_collection(name="simversedb")
 
 # Initialize the embedding function using Sentence Transformers
 sentence_transformer_ef = embedding_functions.SentenceTransformerEmbeddingFunction(model_name="all-MiniLM-L6-v2")
 
+# Create or get collections for each data type
+object_collection = chroma_client.get_or_create_collection(name="object_captions")
+hdri_collection = chroma_client.get_or_create_collection(name="hdri_backgrounds")
+texture_collection = chroma_client.get_or_create_collection(name="textures")
+
 # Function to process data in batches
-def process_in_batches(file_path, batch_size=1000):
+def process_in_batches(file_path, collection, batch_size=1000):
     console = Console()
     
     with open(file_path, 'r') as file:
@@ -33,7 +35,7 @@ def process_in_batches(file_path, batch_size=1000):
         console=console,
         expand=True
     ) as progress:
-        task = progress.add_task("[green]Processing batches", total=total_items, current_batch="0")
+        task = progress.add_task(f"[green]Processing {file_path}", total=total_items, current_batch="0")
 
         for i in range(0, total_items, batch_size):
             batch_ids = all_ids[i:i+batch_size]
@@ -52,17 +54,63 @@ def process_in_batches(file_path, batch_size=1000):
             # Update progress
             progress.update(task, advance=len(batch_ids), current_batch=f"{i+1}-{min(i+batch_size, total_items)}")
 
-    console.print(Panel.fit("Data processing complete!", border_style="green"))
+    console.print(Panel.fit(f"Data processing complete for {file_path}!", border_style="green"))
 
-# # Process the data
-# process_in_batches('./datasets/cap3d_captions.json', batch_size=1000)
+# Process each data type
+# process_in_batches('./datasets/cap3d_captions.json', object_collection, batch_size=1000)
+# process_in_batches('./datasets/hdri_data.json', hdri_collection, batch_size=1000)
+# process_in_batches('./datasets/texture_data.json', texture_collection, batch_size=1000)
 
-# Verify the upsert by querying
+# Function to query a single collection
+def query_collection(query, collection, n_results=2):
+    console = Console()
+    query_embedding = sentence_transformer_ef([query])
+    results = collection.query(
+        query_embeddings=query_embedding,
+        n_results=n_results
+    )
+    console.print(Panel(str(results), title=f"Query Results for {collection.name}", expand=False))
+    return results
+
+# Example usage
 console = Console()
-query = "A person is playing the guitar."
-query_embedding = sentence_transformer_ef([query])
-results = collection.query(
-    query_embeddings=query_embedding,
-    n_results=2  # Number of results to return
-)
-console.print(Panel(str(results), title="Query Results", expand=False))
+query = "A person is playing the guitar in a studio."
+
+console.print(Panel("Querying Object Captions Collection", style="bold magenta"))
+object_results = query_collection(query, object_collection, n_results=2)
+
+console.print(Panel("Querying HDRI Backgrounds Collection", style="bold cyan"))
+hdri_results = query_collection(query, hdri_collection, n_results=2)
+
+console.print(Panel("Querying Textures Collection", style="bold green"))
+texture_results = query_collection(query, texture_collection, n_results=2)
+
+# Optional: You can still combine results if needed
+def combine_results(object_results, hdri_results, texture_results):
+    # This is a placeholder function. Implement the logic to combine results based on your needs.
+    combined_results = {
+        "object_captions": object_results,
+        "hdri_backgrounds": hdri_results,
+        "textures": texture_results
+    }
+    return combined_results
+
+combined_results = combine_results(object_results, hdri_results, texture_results)
+console.print(Panel(str(combined_results), title="Combined Query Results", expand=False))
+
+# # Main execution
+# if __name__ == "__main__":
+#     console.print(Panel("Chroma Database Query System", style="bold blue"))
+#     while True:
+#         user_query = console.input("[bold yellow]Enter your query (or 'quit' to exit): ")
+#         if user_query.lower() == 'quit':
+#             break
+        
+#         console.print(Panel("Querying Object Captions Collection", style="bold magenta"))
+#         query_collection(user_query, object_collection, n_results=2)
+        
+#         console.print(Panel("Querying HDRI Backgrounds Collection", style="bold cyan"))
+#         query_collection(user_query, hdri_collection, n_results=2)
+        
+#         console.print(Panel("Querying Textures Collection", style="bold green"))
+#         query_collection(user_query, texture_collection, n_results=2)

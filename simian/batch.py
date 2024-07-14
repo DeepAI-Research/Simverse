@@ -9,6 +9,7 @@ from questionary import Style
 from questionary import Choice, select
 from rich.console import Console
 
+# from server.server import query_collection, object_collection, hdri_collection, texture_collection
 
 console = Console()
 
@@ -199,20 +200,33 @@ def parse_args(args_list=None) -> argparse.Namespace:
 
 
 def prompt_based_rendering():
-    print("Prompt-based rendering mode coming soon... :)")
+    while True:
+        prompt = input("Enter your prompt (or 'quit' to exit): ")
+        if prompt.lower() == 'quit':
+            break
+        
+        # Process the prompt here
+        # This could involve parsing the prompt, setting up parameters, and calling render_objects
+        print(f"Processing prompt: {prompt}")
 
-    # while True:
-    #     prompt = input("Enter your prompt (or 'quit' to exit): ")
-    #     if prompt.lower() == 'quit':
-    #         break
+        # call llm to extract objects, hdri, textures
+        objects = ["A person playing the guitar in a studio", "A person playing the piano in a studio"]
+        hdri = ["A studio with a guitar", "A studio with a piano"]
+        textures = ["Wooden texture", "Metal texture"]
+
+        # query the collections and loop through the results
+        for obj in objects:
+            object_results = query_collection(obj, object_collection, n_results=2)
         
-    #     # Process the prompt here
-    #     # This could involve parsing the prompt, setting up parameters, and calling render_objects
-    #     print(f"Processing prompt: {prompt}")
+        for h in hdri:
+            hdri_results = query_collection(h, hdri_collection, n_results=2)
         
-    #     # Example (you'll need to implement the actual logic):
-    #     # params = parse_prompt(prompt)
-    #     # render_objects(**params)
+        for t in textures:
+            texture_results = query_collection(t, texture_collection, n_results=2)        
+
+        # Example (you'll need to implement the actual logic):
+        # params = parse_prompt(prompt)
+        # render_objects(**params)
 
 
 def main():

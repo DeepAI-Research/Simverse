@@ -162,12 +162,88 @@ if __name__ == "__main__":
 
 
     CONTEXT_STRING_2 = """
-        Go back and check the prompt that you rewrote.
-        You may rewrite the language in the prompt so that it sounds more modern and human-like but make sure to recheck and rewrite the captions to makes sure that you captured
-        all objects and their relative positions. Make sure to simplify and reduce sentences where need be.
+    Hey, I need you to rewrite these scene descriptions super casually, like you're telling a friend about a cool video idea. Here's what to do:
+
+    1. Keep it super simple and chatty. No tech talk at all.
+    2. Keep the main objects and where they are, but say it in a really casual way.
+    3. Describe the camera and scene in a way anyone can picture, like "the camera's checking out the whole scene" instead of specific angles.
+    4. Mention the overall vibe of the scene - what it looks like, feels like.
+    5. If stuff is moving, just say it's moving without any exact speeds.
+    6. Keep the important parts of the background and effects, but say it in a really laid-back way.
+    7. Don't use ANY numbers. Use words like "big", "small", "close", "far" instead.
+    8. It's cool to leave out details that aren't super important.
+
+    Most importantly: Keep the JSON structure exactly the same, just rewrite the content of each field.
+
+    Example:
+    Original:
+    {
+        "index": 0,
+        "objects_caption": "Object caption: The blue and green plane and umbrella shifts to the forward at regular 0.07 each second.",
+        "background_caption": "Scene background: The landscape is Park Parking.",
+        "orientation_caption": "Camera orientation: Pitch: horizontally level, Yaw: far left front.",
+        "framing_caption": "Camera framing: Zoomed in The camera has a 17 degree FOV. (117.00 mm focal length)",
+        "animation_caption": "Camera animation: Animations move at an expedited speed in the scene.",
+        "stage_caption": "Scene stage: The background environment is Park Parking. The flooring texture is Red Brick Plaster Patch.",
+        "postprocessing_caption": "Post-processing effects: Extreme bloom is used in the scene. The scene is rendered with a moderate ambient occlusion effect. High motion blur is used in the scene.",
+        "caption": "The blue and green plane and umbrella reaches 3feet in height. The blue and green plane and umbrella shifts to the forward at regular 0.07 each second. Pitch: horizontally level, Yaw: far left front. Zoomed in The camera has a 17 degree FOV. (117.00 mm focal length) Extreme bloom is used in the scene. The scene is rendered with a moderate ambient occlusion effect. High motion blur is used in the scene. The background environment is Park Parking. The flooring texture is Red Brick Plaster Patch. Animations move at an expedited speed in the scene."
+    }
+
+    Rewritten:
+    {
+        "index": 0,
+        "objects_caption": "Object caption: There's this cool plane and umbrella combo, blue and green, moving forward slowly.",
+        "background_caption": "Scene background: We're in a park parking lot.",
+        "orientation_caption": "Camera orientation: The camera's looking straight ahead, but from the far left.",
+        "framing_caption": "Camera framing: It's zoomed in pretty close.",
+        "animation_caption": "Camera animation: Everything's moving pretty fast.",
+        "stage_caption": "Scene stage: We're in a park parking lot with this red brick floor that's got some patches.",
+        "postprocessing_caption": "Post-processing effects: The scene's super bright and glowy, with some blurring when things move.",
+        "caption": "awesome blue and green plane with an umbrella, and it's slowly moving forward. The camera's zoomed in close, watching it from the left side. Everything's moving pretty fast, and the whole scene is super bright and glowy. We're in a park parking lot, and the ground is this cool red brick with some patches. When stuff moves, it gets all blurry. It's like a super stylized, fast-paced shot in a quirky movie!"
+    }
+
+    Remember, keep it super casual and you can sound super lazy. MUST capture all important details like objects in scene, movement, and maybe background stuff.
+    Below are groups of captions that NEED to be rewritten by the guidelines. Btw stop using intros like "Picture this" or stupid stuff. Just cut to the chase.
+
+    Rewrite the following captions and return them in the same format.
+    """
+
+    CONTEXT_STRING_3  = """
+    Hey, I need you to rewrite these scene descriptions super casually and super direct.
+
+    Example:
+    Original:
+    {
+        "index": 0,
+        "objects_caption": "Object caption: The blue and green plane and umbrella shifts to the forward at regular 0.07 each second.",
+        "background_caption": "Scene background: The landscape is Park Parking.",
+        "orientation_caption": "Camera orientation: Pitch: horizontally level, Yaw: far left front.",
+        "framing_caption": "Camera framing: Zoomed in The camera has a 17 degree FOV. (117.00 mm focal length)",
+        "animation_caption": "Camera animation: Animations move at an expedited speed in the scene.",
+        "stage_caption": "Scene stage: The background environment is Park Parking. The flooring texture is Red Brick Plaster Patch.",
+        "postprocessing_caption": "Post-processing effects: Extreme bloom is used in the scene. The scene is rendered with a moderate ambient occlusion effect. High motion blur is used in the scene.",
+        "caption": "The blue and green plane and umbrella reaches 3feet in height. The blue and green plane and umbrella shifts to the forward at regular 0.07 each second. Pitch: horizontally level, Yaw: far left front. Zoomed in The camera has a 17 degree FOV. (117.00 mm focal length) Extreme bloom is used in the scene. The scene is rendered with a moderate ambient occlusion effect. High motion blur is used in the scene. The background environment is Park Parking. The flooring texture is Red Brick Plaster Patch. Animations move at an expedited speed in the scene."
+    }
+
+    Rewritten:
+    {
+        "index": 0,
+        "objects_caption": "Object caption: plane and umbrella combo, blue and green, moving forward slow.",
+        "background_caption": "Scene background: park parking lot.",
+        "orientation_caption": "Camera orientation: camera looks straight ahead, far left.",
+        "framing_caption": "Camera framing: zoomed in close.",
+        "animation_caption": "Camera animation: animation moves pretty fast.",
+        "stage_caption": "Scene stage: In a park parking lot with red brick floor that's got some patches.",
+        "postprocessing_caption": "Post-processing effects: The scene's super bright and glowy, with some blurring when things move.",
+        "caption": "blue and green plane with an umbrella, and it's slowly moving forward. camera zoomed in close, from the left side. Everything moves fast, scene is super bright and glowy. In park parking lot, and the ground is red brick with some patches. When stuff moves, blurry. fast-paced."
+    }
+
+    MUST capture all important details like objects in scene, position of objects in scene and relative to each other, movement, background stuff and more!
+    Below are groups of captions that NEED to be rewritten by the guidelines. Be direct as possible.
+    Rewrite the following captions and return them in the same format.
     """
 
     model = setup_gemini()
     combinations = read_combinations()
-    rewritten_combinations = rewrite_captions_in_batches(model, combinations, CONTEXT_STRING_1)
+    rewritten_combinations = rewrite_captions_in_batches(model, combinations, CONTEXT_STRING_3)
     write_to_file(rewritten_combinations)
