@@ -10,6 +10,7 @@ captions_list = []
 # Extract captions for each combination
 for combination in data['combinations']:
     captions = {
+        'index': combination.get('index', ''),
         'caption': combination.get('caption', ''),
         'objects_caption': combination.get('objects_caption', ''),
         'background_caption': combination.get('background_caption', ''),
