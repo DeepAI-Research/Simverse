@@ -49,7 +49,8 @@ if __name__ == "__main__":
             "redis_user": args.redis_user or env_vars.get("REDIS_USER", ""),
             "redis_password": args.redis_password or env_vars.get("REDIS_PASSWORD", ""),
             "amazon_key_id": args.amazon_key_id or env_vars.get("AMAZON_KEY_ID", ""),
-            "amazon_secret_key": args.amazon_secret_key or env_vars.get("AMAZON_SECRET_KEY", ""),
+            "amazon_secret_key": args.amazon_secret_key
+            or env_vars.get("AMAZON_SECRET_KEY", ""),
             "s3_bucket_name": args.s3_bucket_name or env_vars.get("S3_BUCKET_NAME", ""),
             "hf_token": args.hf_token or env_vars.get("HF_TOKEN", ""),
             "hf_repo_id": args.hf_repo_id or env_vars.get("HF_REPO_ID", ""),
@@ -57,6 +58,7 @@ if __name__ == "__main__":
             or int(env_vars.get("BROKER_POOL_LIMIT", 1)),
             "render_batch_size": args.render_batch_size
             or int(env_vars.get("RENDER_BATCH_SIZE", 1)),
+            "inactivity_check_interval": args.inactivity_check or int(env_vars.get("INACTVITY_INTERVAL", 600))
         }
 
         # Load combinations from file
@@ -102,6 +104,7 @@ if __name__ == "__main__":
             "amazon_secret_key": settings["amazon_secret_key"],
             "broker_pool_limit": settings["broker_pool_limit"],
             "render_batch_size": settings["render_batch_size"],
+            "inactivity_check_interval": settings["inactivity_check_interval"]
         }
 
         instance_env = {
@@ -122,7 +125,6 @@ if __name__ == "__main__":
         for key, value in job_config.items():
             if key != "combinations":
                 print(f"{key}: {value}")
-
 
         distributask = Distributask(
             hf_repo_id=job_config["hf_repo_id"],
@@ -152,12 +154,11 @@ if __name__ == "__main__":
         print("Total nodes rented: ", len(rented_nodes))
 
         distributask.register_function(run_job)
-        
+
         while True:
             user_input = input("press r when workers are ready: ")
             if user_input == "r":
                 break
-
 
         tasks = []
 
@@ -174,15 +175,15 @@ if __name__ == "__main__":
                     "combination_indeces": [
                         index
                         for index in range(
-                            combination_index, 
-                            min(combination_index + batch_size, settings["end_index"])
+                            combination_index,
+                            min(combination_index + batch_size, settings["end_index"]),
                         )
                     ],
                     "combinations": [
                         job_config["combinations"][index]
                         for index in range(
-                            combination_index, 
-                            min(combination_index + batch_size, settings["end_index"])
+                            combination_index,
+                            min(combination_index + batch_size, settings["end_index"]),
                         )
                     ],
                     "width": job_config["width"],
@@ -209,8 +210,8 @@ if __name__ == "__main__":
 
                 time.sleep(1)
                 current_time = time.time()
-                # check if node is inactive every 5 minutes
-                if current_time - start_time > 60*5:
+                # check if node is inactive at set interval
+                if current_time - start_time > settings["inactivity_check_interval"]:
                     start_time = time.time()
                     for node in rented_nodes:
                         # get log with api call
@@ -219,16 +220,21 @@ if __name__ == "__main__":
                             # if "Task completed" in two consecutive logs, terminate node
                             try:
                                 last_msg = log_response.text.splitlines()[-3:]
-                                if any("Task completed" in msg for msg in last_msg) and inactivity_log[node["instance_id"]] == 0:
+                                if (
+                                    any("Task completed" in msg for msg in last_msg)
+                                    and inactivity_log[node["instance_id"]] == 0
+                                ):
                                     inactivity_log[node["instance_id"]] = 1
-                                elif any("Task completed" in msg for msg in last_msg) and inactivity_log[node["instance_id"]] == 1:
+                                elif (
+                                    any("Task completed" in msg for msg in last_msg)
+                                    and inactivity_log[node["instance_id"]] == 1
+                                ):
                                     distributask.terminate_nodes([node])
                                     print("node terminated")
                                 else:
                                     inactivity_log[node["instance_id"]] == 0
                             except:
                                 pass
-
 
         print("All tasks have been completed!")
 
@@ -261,6 +267,8 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--render_batch_size", type=int, help="Batch size of simian rendering"
+    )
+    parser.add_argument("--inactivity_check", type=int, help="The interval of checking and terminating nodes for inactivity in seconds"
     )
     args = parser.parse_args()
 
