@@ -203,44 +203,59 @@ def prompt_based_rendering():
     The camera shows black and white images of an arrow, a metal pole, and a sword. The camera is tilted down and looking to the right. It has a wide view of the objects and a mild bloom effect. The scene is an evening road with a factory brick ground and has a calm and slow animation with extreme motion blur.
     """
 
-    chromadb = initialize_chroma_db()
+    from chromadb.utils import embedding_functions
+    from sentence_transformers import SentenceTransformer
 
-    while True:
-        prompt = input("Enter your prompt (or 'quit' to exit): ")
-        if prompt.lower() == 'quit':
-            break
-        
-        # Process the prompt here
-        # This could involve parsing the prompt, setting up parameters, and calling render_objects
-        print(f"Processing prompt: {prompt}")
+    chroma_client = initialize_chroma_db(reset_hdri=True, reset_textures=True)
 
-        # Generate Gemini
-        model = setup_gemini()
-        objects_background_ground_prompt = generate_gemini(model, OBJECTS_PROMPT, prompt)
-        objects_background_ground_list = json.loads(objects_background_ground_prompt)
+    model = SentenceTransformer('all-MiniLM-L6-v2')  # or another appropriate model
 
-        # split array, background and ground are last two elements
-        objects_prompt = objects_background_ground_list[:-2]
-        background_prompt = objects_background_ground_list[-2]
-        ground_prompt = objects_background_ground_list[-1]
+    # Create the embedding function
+    sentence_transformer_ef = model.encode
+    # Create the embedding function
+    sentence_transformer_ef = embedding_functions.SentenceTransformerEmbeddingFunction(model_name='all-MiniLM-L6-v2')
 
-        # chroma
-        chroma_client, sentence_transformer_ef, object_collection, hdri_collection, texture_collection = initialize_chroma()
-        
-        ground_ids = []
-        for i, obj in enumerate(objects_prompt):
-            object_options =  query_collection(obj, object_collection, sentence_transformer_ef, n_results=2)
-            print(object_options)
-            ground_ids.append(object_options[0])
-        
-        background = query_collection(background_prompt, hdri_collection, sentence_transformer_ef, n_results=2)
-        ground_texture = query_collection(ground_prompt, texture_collection, sentence_transformer_ef, n_results=2)
+    # Create or get collections for each data type
+    object_collection = chroma_client.get_or_create_collection(name="object_captions")
+    hdri_collection = chroma_client.get_or_create_collection(name="hdri_backgrounds")
+    texture_collection = chroma_client.get_or_create_collection(name="textures")
 
-    # The camera shows black and white images of an arrow, a metal pole, and a sword. The camera is tilted down and looking to the right. It has a wide view of the objects and a mild bloom effect. The scene is an evening road with a factory brick ground and has a calm and slow animation with extreme motion blur.
-        print(objects_prompt)
-        print(type(objects_prompt))
-        # objects_json_prompt = generate_gemini(model, OBJECTS_PROMPT, prompt)
-        # camera_prompt = generate_gemini(model, OBJECTS_PROMPT, prompt)
+    prompt = input("Enter your prompt (or 'quit' to exit): ")
+
+    # Generate Gemini
+    model = setup_gemini()
+    objects_background_ground_prompt = generate_gemini(model, OBJECTS_PROMPT, prompt)
+    objects_background_ground_list = json.loads(objects_background_ground_prompt)
+
+    # split array, background and ground are last two elements
+    objects_prompt = objects_background_ground_list[:-2]
+    background_prompt = objects_background_ground_list[-2]
+    ground_prompt = objects_background_ground_list[-1]
+    
+    object_ids = []
+    for i, obj in enumerate(objects_prompt):
+        object_options =  query_collection(obj, sentence_transformer_ef, object_collection, n_results=2)
+        object_ids.append({object_options["ids"][0][0]: obj})
+
+    print("THIS IS THE OBJECT_IDS: ", object_ids)
+    
+
+    background_query = query_collection(background_prompt, sentence_transformer_ef, hdri_collection, n_results=2)
+    print("THIS IS THE BACKGROUND QUERY: ", background_query)
+    background = background_query["ids"][0][0]
+    ground_texture_query = query_collection(ground_prompt, sentence_transformer_ef, texture_collection, n_results=2)["ids"][0][0]
+    print("THIS IS THE GROUND TEXTURE QUERY: ", ground_texture_query)
+    ground = ground_texture_query["ids"][0][0]
+
+    prompt += str(object_ids)
+    print("This is the prompt: ", prompt)
+
+    objects_json_prompt = generate_gemini(model, OBJECTS_JSON_PROMPT, prompt)
+    objects_parse = json.loads(objects_json_prompt)
+
+    camera_prompt = generate_gemini(model, OBJECTS_PROMPT, prompt)
+    camera_parse = json.loads(objects_json_prompt)
+
 
 
 def main():

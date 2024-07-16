@@ -9,7 +9,7 @@ from sentence_transformers import SentenceTransformer
 from chromadb.config import Settings
 
 
-def initialize_chroma_db():
+def initialize_chroma_db(reset_hdri=False, reset_textures=False):
     db_path = "./chroma_db"
     
     # Check if the database directory exists
@@ -39,6 +39,28 @@ def initialize_chroma_db():
     # Adjusted paths to reflect the correct location of the datasets folder
     datasets_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../datasets"))
 
+    def reset_and_process(collection, file_path, description):
+        print(f"Resetting and reprocessing {description}...")
+        # Get all IDs in the collection
+        all_ids = collection.get(include=['embeddings'])['ids']
+        if all_ids:
+            # Delete all documents if there are any
+            collection.delete(ids=all_ids)
+        # Process the data
+        process_in_batches(file_path, collection, batch_size=1000)
+        
+     # Reset and reprocess HDRI if requested
+    if reset_hdri:
+        reset_and_process(hdri_collection, os.path.join(datasets_path, 'hdri_data.json'), "HDRI backgrounds")
+    elif hdri_collection.count() == 0:
+        process_in_batches(os.path.join(datasets_path, 'hdri_data.json'), hdri_collection, batch_size=1000)
+
+    # Reset and reprocess textures if requested
+    if reset_textures:
+        reset_and_process(texture_collection, os.path.join(datasets_path, 'texture_data.json'), "textures")
+    elif texture_collection.count() == 0:
+        process_in_batches(os.path.join(datasets_path, 'texture_data.json'), texture_collection, batch_size=1000)
+
     process_if_empty(object_collection, os.path.join(datasets_path, 'cap3d_captions.json'), "object captions")
     process_if_empty(hdri_collection, os.path.join(datasets_path, 'hdri_data.json'), "HDRI backgrounds")
     process_if_empty(texture_collection, os.path.join(datasets_path, 'texture_data.json'), "textures")
@@ -67,13 +89,8 @@ def initialize_chroma_db():
     return chroma_client
 
 
-# Function to process data in batches
 def process_in_batches(file_path, collection, batch_size=1000):
-    model = SentenceTransformer('all-MiniLM-L6-v2')  # or another appropriate model
-
-    # Create the embedding function
-    sentence_transformer_ef = model.encode
-    # Create the embedding function
+    model = SentenceTransformer('all-MiniLM-L6-v2')
     sentence_transformer_ef = embedding_functions.SentenceTransformerEmbeddingFunction(model_name='all-MiniLM-L6-v2')
 
     console = Console()
@@ -83,6 +100,16 @@ def process_in_batches(file_path, collection, batch_size=1000):
     
     all_ids = list(data.keys())
     total_items = len(all_ids)
+
+    def convert_to_chroma_compatible(value):
+        if isinstance(value, (str, int, float, bool)):
+            return value
+        elif isinstance(value, list):
+            return ', '.join(map(str, value))
+        elif isinstance(value, dict):
+            return json.dumps(value)
+        else:
+            return str(value)
 
     with Progress(
         TextColumn("[progress.description]{task.description}"),
@@ -97,7 +124,28 @@ def process_in_batches(file_path, collection, batch_size=1000):
 
         for i in range(0, total_items, batch_size):
             batch_ids = all_ids[i:i+batch_size]
-            batch_documents = [data[id] for id in batch_ids]
+            batch_documents = []
+            batch_metadatas = []
+            
+            for id in batch_ids:
+                item = data[id]
+                if isinstance(item, str):
+                    # For object captions, keep as is
+                    batch_documents.append(item)
+                    batch_metadatas.append(None)
+                else:
+                    # For HDRIs and textures
+                    name = item.get('name', id)
+                    categories = ' '.join(item.get('categories', []))
+                    tags = ' '.join(item.get('tags', []))
+                    
+                    # Create a searchable document string
+                    document = f"{name} {categories} {tags}".strip()
+                    batch_documents.append(document)
+                    
+                    # Convert metadata to Chroma-compatible format
+                    compatible_metadata = {k: convert_to_chroma_compatible(v) for k, v in item.items()}
+                    batch_metadatas.append(compatible_metadata)
             
             # Compute embeddings for the batch using the embedding function
             embeddings = sentence_transformer_ef(batch_documents)
@@ -106,7 +154,8 @@ def process_in_batches(file_path, collection, batch_size=1000):
             collection.upsert(
                 ids=batch_ids,
                 embeddings=embeddings,
-                documents=batch_documents
+                documents=batch_documents,
+                metadatas=batch_metadatas
             )
 
             # Update progress
@@ -114,18 +163,30 @@ def process_in_batches(file_path, collection, batch_size=1000):
 
     console.print(Panel.fit(f"Data processing complete for {file_path}!", border_style="green"))
 
-
-# Function to query a single collection
-def query_collection(sentence_transformer_ef, query, collection, n_results=2):
+def query_collection(query, sentence_transformer_ef, collection, n_results=2):
     console = Console()
     query_embedding = sentence_transformer_ef([query])
     results = collection.query(
         query_embeddings=query_embedding,
-        n_results=n_results
+        n_results=n_results,
+        include=["metadatas", "documents", "distances"]
     )
+    
+    def parse_metadata_value(value):
+        if isinstance(value, str):
+            if value.startswith('[') and value.endswith(']'):
+                return value.strip('[]').split(', ')
+            elif value.startswith('{') and value.endswith('}'):
+                return json.loads(value)
+        return value
+
+    # Parse the metadata values
+    for i, metadata in enumerate(results['metadatas'][0]):
+        if metadata:
+            results['metadatas'][0][i] = {k: parse_metadata_value(v) for k, v in metadata.items()}
+    
     console.print(Panel(str(results), title=f"Query Results for {collection.name}", expand=False))
     return results
-
 
 # Optional: You can still combine results if needed
 def combine_results(object_results, hdri_results, texture_results):

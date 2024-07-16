@@ -216,6 +216,7 @@ Prompt/caption: A house with a detailed roof and a map on the ceiling moves slow
     }
 ],
 
+TIP: Only add movement to the object if it is moving. If it is not moving, do not include the movement attribute.
 
 Now generate the correct object placements and structures based on the prompt:  
 """
