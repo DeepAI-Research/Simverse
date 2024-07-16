@@ -9,3 +9,5 @@ rich
 chromadb
 sentence_transformers
 questionary
+google-generativeai
+datasets

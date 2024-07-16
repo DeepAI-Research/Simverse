@@ -9,10 +9,10 @@ from questionary import Style
 from questionary import Choice, select
 from rich.console import Console
 
-# from server.server import query_collection, object_collection, hdri_collection, texture_collection
+from simian.prompts import generate_gemini, setup_gemini, CAMERA_PROMPT, OBJECTS_JSON_PROMPT, OBJECTS_PROMPT
+from .server import initialize_chroma_db, query_collection, process_in_batches
 
 console = Console()
-
 
 def select_mode():
     custom_style = Style([
@@ -198,8 +198,13 @@ def parse_args(args_list=None) -> argparse.Namespace:
     return args
 
 
-
 def prompt_based_rendering():
+    """
+    The camera shows black and white images of an arrow, a metal pole, and a sword. The camera is tilted down and looking to the right. It has a wide view of the objects and a mild bloom effect. The scene is an evening road with a factory brick ground and has a calm and slow animation with extreme motion blur.
+    """
+
+    chromadb = initialize_chroma_db()
+
     while True:
         prompt = input("Enter your prompt (or 'quit' to exit): ")
         if prompt.lower() == 'quit':
@@ -209,24 +214,33 @@ def prompt_based_rendering():
         # This could involve parsing the prompt, setting up parameters, and calling render_objects
         print(f"Processing prompt: {prompt}")
 
-        # call llm to extract objects, hdri, textures
-        objects = ["A person playing the guitar in a studio", "A person playing the piano in a studio"]
-        hdri = ["A studio with a guitar", "A studio with a piano"]
-        textures = ["Wooden texture", "Metal texture"]
+        # Generate Gemini
+        model = setup_gemini()
+        objects_background_ground_prompt = generate_gemini(model, OBJECTS_PROMPT, prompt)
+        objects_background_ground_list = json.loads(objects_background_ground_prompt)
 
-        # query the collections and loop through the results
-        for obj in objects:
-            object_results = query_collection(obj, object_collection, n_results=2)
-        
-        for h in hdri:
-            hdri_results = query_collection(h, hdri_collection, n_results=2)
-        
-        for t in textures:
-            texture_results = query_collection(t, texture_collection, n_results=2)        
+        # split array, background and ground are last two elements
+        objects_prompt = objects_background_ground_list[:-2]
+        background_prompt = objects_background_ground_list[-2]
+        ground_prompt = objects_background_ground_list[-1]
 
-        # Example (you'll need to implement the actual logic):
-        # params = parse_prompt(prompt)
-        # render_objects(**params)
+        # chroma
+        chroma_client, sentence_transformer_ef, object_collection, hdri_collection, texture_collection = initialize_chroma()
+        
+        ground_ids = []
+        for i, obj in enumerate(objects_prompt):
+            object_options =  query_collection(obj, object_collection, sentence_transformer_ef, n_results=2)
+            print(object_options)
+            ground_ids.append(object_options[0])
+        
+        background = query_collection(background_prompt, hdri_collection, sentence_transformer_ef, n_results=2)
+        ground_texture = query_collection(ground_prompt, texture_collection, sentence_transformer_ef, n_results=2)
+
+    # The camera shows black and white images of an arrow, a metal pole, and a sword. The camera is tilted down and looking to the right. It has a wide view of the objects and a mild bloom effect. The scene is an evening road with a factory brick ground and has a calm and slow animation with extreme motion blur.
+        print(objects_prompt)
+        print(type(objects_prompt))
+        # objects_json_prompt = generate_gemini(model, OBJECTS_PROMPT, prompt)
+        # camera_prompt = generate_gemini(model, OBJECTS_PROMPT, prompt)
 
 
 def main():

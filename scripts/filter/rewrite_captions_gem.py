@@ -193,6 +193,7 @@ if __name__ == "__main__":
     Example:
     Original:
     {
+        "index": 0,
         "caption": "The blue and green plane and umbrella reaches 3feet in height. The blue and green plane and umbrella shifts to the forward at regular 0.07 each second. Pitch: horizontally level, Yaw: far left front. Zoomed in The camera has a 17 degree FOV. (117.00 mm focal length) Extreme bloom is used in the scene. The scene is rendered with a moderate ambient occlusion effect. High motion blur is used in the scene. The background environment is Park Parking. The flooring texture is Red Brick Plaster Patch. Animations move at an expedited speed in the scene."
         "objects_caption": "Object caption: The blue and green plane and umbrella shifts to the forward at regular 0.07 each second.",
         "background_caption": "Scene background: The landscape is Park Parking.",
@@ -205,6 +206,7 @@ if __name__ == "__main__":
 
     Rewritten:
     {
+        "index": 0,
         "caption": "blue and green plane with an umbrella, and it's slowly moving forward. camera zoomed in close, from the left side. Everything moves fast, scene is super bright and glowy. In park parking lot, and the ground is red brick with some patches. When stuff moves, blurry. fast-paced."
         "objects_caption": "Object caption: plane and umbrella combo, blue and green, moving forward slow.",
         "background_caption": "Scene background: park parking lot.",
