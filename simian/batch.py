@@ -198,15 +198,48 @@ def parse_args(args_list=None) -> argparse.Namespace:
     return args
 
 
+def parse_gemini_json(raw_output):
+    print("Raw output:")
+    print(raw_output)
+
+    try:
+        # Extract JSON content from the code block if present
+        if "```json" in raw_output:
+            json_start = raw_output.index("```json") + 7
+            json_end = raw_output.rindex("```")
+            json_content = raw_output[json_start:json_end].strip()
+        else:
+            json_content = raw_output.strip()
+
+        # Remove any leading or trailing commas
+        json_content = json_content.strip(',')
+
+        # If the content starts with a key (e.g., "objects":), wrap it in curly braces
+        if json_content.strip().startswith('"') and ':' in json_content:
+            json_content = "{" + json_content + "}"
+
+        # Parse the JSON
+        parsed_json = json.loads(json_content)
+        
+        print("Successfully parsed JSON:")
+        print(json.dumps(parsed_json, indent=2))
+        
+        return parsed_json
+    except json.JSONDecodeError as e:
+        print(f"Error parsing JSON: {str(e)}")
+        return None
+
+
 def prompt_based_rendering():
     """
-    The camera shows black and white images of an arrow, a metal pole, and a sword. The camera is tilted down and looking to the right. It has a wide view of the objects and a mild bloom effect. The scene is an evening road with a factory brick ground and has a calm and slow animation with extreme motion blur.
+    Example: The camera shows black and white images of an arrow, a metal pole, and a sword. The camera is tilted down and looking to the right. It has a wide view of the objects and a mild bloom effect. The scene is an evening road with a factory brick ground and has a calm and slow animation with extreme motion blur.
     """
 
+    import random
     from chromadb.utils import embedding_functions
     from sentence_transformers import SentenceTransformer
 
-    chroma_client = initialize_chroma_db(reset_hdri=True, reset_textures=True)
+    chroma_client = initialize_chroma_db(reset_hdri=False, reset_textures=False)
 
     model = SentenceTransformer('all-MiniLM-L6-v2')  # or another appropriate model
 
@@ -241,21 +274,79 @@ def prompt_based_rendering():
     
 
     background_query = query_collection(background_prompt, sentence_transformer_ef, hdri_collection, n_results=2)
-    print("THIS IS THE BACKGROUND QUERY: ", background_query)
-    background = background_query["ids"][0][0]
-    ground_texture_query = query_collection(ground_prompt, sentence_transformer_ef, texture_collection, n_results=2)["ids"][0][0]
-    print("THIS IS THE GROUND TEXTURE QUERY: ", ground_texture_query)
-    ground = ground_texture_query["ids"][0][0]
+    background_id = background_query["ids"][0][0]
+    background_data = background_query["metadatas"][0][0]
+
+    formatted_background = {
+        "background": {
+            "name": background_data['name'],
+            "url": background_data['url'],
+            "id": background_id,
+            "from": "hdri_data"
+        }
+    }
+    print("Formatted background:", formatted_background)
+
+    ground_texture_query = query_collection(ground_prompt, sentence_transformer_ef, texture_collection, n_results=2)
+    ground_id = ground_texture_query["ids"][0][0]
+    ground_data = ground_texture_query["metadatas"][0][0]
+
+    formatted_stage = {
+        "stage": {
+            "material": {
+                "name": ground_data['name'],
+                "maps": ground_data['maps']
+            },
+            "uv_scale": [random.uniform(0.8, 1.2), random.uniform(0.8, 1.2)],
+            "uv_rotation": random.uniform(0, 360)
+        }
+    }
+    print("Formatted stage:", formatted_stage)
 
     prompt += str(object_ids)
     print("This is the prompt: ", prompt)
 
-    objects_json_prompt = generate_gemini(model, OBJECTS_JSON_PROMPT, prompt)
-    objects_parse = json.loads(objects_json_prompt)
+    objects_json_prompt = generate_gemini(model, OBJECTS_JSON_PROMPT, prompt + str(object_ids))
+    objects_parse = parse_gemini_json(objects_json_prompt)
+    
+    # Check if objects_parse is a list (as expected) or None
+    objects_list = objects_parse if isinstance(objects_parse, list) else []
 
-    camera_prompt = generate_gemini(model, OBJECTS_PROMPT, prompt)
-    camera_parse = json.loads(objects_json_prompt)
+    # Generate and parse camera settings
+    camera_prompt = generate_gemini(model, CAMERA_PROMPT, prompt)
+    camera_parse = parse_gemini_json(camera_prompt)
 
+    # Ensure camera_parse is a dictionary
+    camera_parse = camera_parse if isinstance(camera_parse, dict) else {}
+
+    # Combine all pieces into the final structure
+    final_structure = {
+        "index": 0,  # You might want to generate this dynamically if needed
+        "objects": objects_list,
+        "background": {
+            "name": background_data['name'],
+            "url": background_data['url'],
+            "id": background_id,
+            "from": "hdri_data"
+        },
+        "orientation": camera_parse.get("orientation", {}),
+        "framing": camera_parse.get("framing", {}),
+        "animation": camera_parse.get("animation", {}),
+        "stage": {
+            "material": {
+                "name": ground_data['name'],
+                "maps": ground_data['maps']
+            },
+            "uv_scale": [random.uniform(0.8, 1.2), random.uniform(0.8, 1.2)],
+            "uv_rotation": random.uniform(0, 360)
+        },
+        "postprocessing": camera_parse.get("postprocessing", {})
+    }
+
+    print("Final combined structure:")
+    print(json.dumps(final_structure, indent=2))
+
+    return final_structure
 
 
 def main():

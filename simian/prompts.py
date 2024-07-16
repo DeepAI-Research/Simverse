@@ -2194,6 +2194,73 @@ Prompt/caption: A house with a roof is on the left and a skateboard ramp with a 
     },
 }
 
+Example 3:
+Prompt/caption: Show a stick with a blue and white handle, a blue crystal, and a blue and white bird, a light blue hat with white polka dots, a turquoise window with a blue shutter, a chicken in a yellow dress, and a house with trees, a pool, and cars. The chicken is to the right and behind the window. The window is in front of the hat. The stick is to the left of the hat. The hat is behind the window. The house is to the left of and behind the window. Camera follows the chicken as it moves. Camera is positioned low and far right. Use a very wide camera angle. The scene is set at night with cobblestone flooring, no bloom, and some motion blur.
+
+{
+    "orientation_caption": "Camera orientation: The camera is steeply downward, far back to the right.",
+    "orientation": {
+        "yaw": 225,
+        "pitch": 40
+    },
+    "framing_caption": "Camera framing: Extremely wide coverage The camera has a 76 degree field of view. (22.00 mm focal length)",
+    "framing": {
+        "fov": 76,
+        "coverage_factor": 3.8613973293159507,
+        "name": "extreme_wide"
+    },
+    "animation_caption": "Camera animation: Capturing A low poly a chicken in a yellow dress in motion, the camera stays locked on target. The scene has a typical animation speed.",
+    "animation": {
+        "name": "orbit_left",
+        "keyframes": [
+            {
+                "CameraAnimationRoot": {
+                    "rotation": [
+                        0,
+                        0,
+                        90
+                    ]
+                }
+            },
+            {
+                "CameraAnimationRoot": {
+                    "rotation": [
+                        0,
+                        0,
+                        0
+                    ]
+                }
+            }
+        ],
+        "speed_factor": 1.228949164388366
+    },
+    "postprocessing_caption": "Post-processing effects: No bloom is present in the scene. Medium motion blur is used in the scene.",
+    "postprocessing": {
+        "bloom": {
+            "threshold": 0.95650677196721,
+            "intensity": 0.017154654617546394,
+            "radius": 6.005265759454469,
+            "type": "none"
+        },
+        "ssao": {
+            "distance": 0.7460410976901686,
+            "factor": 0.7479792653337443,
+            "type": "high"
+        },
+        "ssrr": {
+            "max_roughness": 0.3143241035761323,
+            "thickness": 4.2697366020954,
+            "type": "high"
+        },
+        "motionblur": {
+            "shutter_speed": 0.40866738731531493,
+            "type": "medium"
+        }
+    },
+}
+
+You must include all attributes. Be sure to include keyframes and CameraAnimationRoot stuff. Go back and make sure you're not missing anhthing.
+
 Generate the correct values for the orientation, framing, and postprocessing based on the caption:
 """
 
