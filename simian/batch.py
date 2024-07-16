@@ -338,6 +338,34 @@ def prompt_based_rendering():
     
     write_combinations_json(updated_combination)
 
+    print("Rendering the generated combination...")
+    
+    # Get the directory of the current script
+    current_dir = os.path.dirname(os.path.realpath(__file__))
+    
+    # Set default rendering parameters
+    width = 1024
+    height = 576
+    start_frame = 1
+    end_frame = 65
+
+    # Call render_objects function to render the combination
+    render_objects(
+        processes=None,  # Use default
+        render_timeout=3000,
+        width=width,
+        height=height,
+        start_index=0,  # We only have one combination, so start at index 0
+        end_index=1,    # And end at index 1 (exclusive)
+        start_frame=start_frame,
+        end_frame=end_frame,
+        images=False,   # Generate video, not images
+        blend_file=None,
+        animation_length=100  # Use full animation length
+    )
+
+    print("Rendering completed.")
+
     return updated_combination
 
 

@@ -79,6 +79,19 @@ def load_user_blend_file(user_blend_file):
         return False
 
 
+def should_apply_movement(objects):
+    """
+    Check if any object in the scene has movement defined.
+    
+    Args:
+    objects (list): List of object dictionaries.
+    
+    Returns:
+    bool: True if any object has movement, False otherwise.
+    """
+    return any('movement' in obj for obj in objects)
+
+
 def render_scene(
     output_dir: str,
     context: bpy.types.Context,
@@ -189,8 +202,14 @@ def render_scene(
     yaw = combination["orientation"]["yaw"]\
     
     # check if combination["no_movement"] exists and is True
-    if not combination.get("no_movement", False):
+
+    # In your main rendering function:
+    all_objects = combination.get('objects', [])
+
+    if should_apply_movement(all_objects):
         all_objects, step_vector = apply_movement(all_objects, yaw, scene.frame_start)
+    else:
+        print("No movement detected in the scene.")
         
     for obj_dict in all_objects:
         obj = list(obj_dict.keys())[0]
