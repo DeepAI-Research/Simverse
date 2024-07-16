@@ -999,8 +999,6 @@ def generate_combinations(
             camera_follow = random.choice([True, False])
             max_speed = random.uniform(0.1, 0.5)
 
-            print("These are all the random values: ", movement, ontop_data, camera_follow, max_speed)
-
         # Generate objects
         combination["objects_caption"] = "Object caption:"
         objects = generate_objects(
