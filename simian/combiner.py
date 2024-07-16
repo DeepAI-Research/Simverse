@@ -887,6 +887,32 @@ def generate_background(
     return background
 
 
+def calculate_transformed_positions(combination):
+    print("Input to calculate_transformed_positions:")
+    print(json.dumps(combination, indent=2))
+
+    # Extract objects and orientation from the combination
+    objects = combination.get('objects', [])
+    orientation = combination.get('orientation', {})
+    
+    if 'orientation' not in combination:
+        raise KeyError("'orientation' key is missing from the combination")
+    
+    if 'yaw' not in orientation:
+        raise KeyError("'yaw' key is missing from the orientation")
+
+    yaw = orientation['yaw']
+
+    # Adjust positions based on the camera's yaw
+    adjusted_objects = adjust_positions(objects, yaw)
+
+    # Update the objects in the combination with their transformed positions
+    for original_obj, adjusted_obj in zip(objects, adjusted_objects):
+        original_obj['transformed_position'] = adjusted_obj['transformed_position']
+
+    return combination
+
+
 def generate_stage(texture_data) -> Dict[str, Any]:
     """
     Generate a random stage.

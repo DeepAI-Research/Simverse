@@ -11,6 +11,7 @@ from rich.console import Console
 
 from simian.prompts import generate_gemini, setup_gemini, CAMERA_PROMPT, OBJECTS_JSON_PROMPT, OBJECTS_PROMPT
 from .server import initialize_chroma_db, query_collection, process_in_batches
+from .combiner import calculate_transformed_positions
 
 console = Console()
 
@@ -312,41 +313,60 @@ def prompt_based_rendering():
     # Check if objects_parse is a list (as expected) or None
     objects_list = objects_parse if isinstance(objects_parse, list) else []
 
-    # Generate and parse camera settings
     camera_prompt = generate_gemini(model, CAMERA_PROMPT, prompt)
     camera_parse = parse_gemini_json(camera_prompt)
 
-    # Ensure camera_parse is a dictionary
-    camera_parse = camera_parse if isinstance(camera_parse, dict) else {}
+    print("Camera parse result:")
+    print(json.dumps(camera_parse, indent=2))
 
     # Combine all pieces into the final structure
     final_structure = {
-        "index": 0,  # You might want to generate this dynamically if needed
+        "index": 0,
         "objects": objects_list,
-        "background": {
-            "name": background_data['name'],
-            "url": background_data['url'],
-            "id": background_id,
-            "from": "hdri_data"
-        },
+        "background": formatted_background["background"],
         "orientation": camera_parse.get("orientation", {}),
         "framing": camera_parse.get("framing", {}),
         "animation": camera_parse.get("animation", {}),
-        "stage": {
-            "material": {
-                "name": ground_data['name'],
-                "maps": ground_data['maps']
-            },
-            "uv_scale": [random.uniform(0.8, 1.2), random.uniform(0.8, 1.2)],
-            "uv_rotation": random.uniform(0, 360)
-        },
+        "stage": formatted_stage["stage"],
         "postprocessing": camera_parse.get("postprocessing", {})
     }
 
-    print("Final combined structure:")
+    print("Final structure:")
     print(json.dumps(final_structure, indent=2))
 
-    return final_structure
+    updated_combination = calculate_transformed_positions(final_structure)
+    
+    write_combinations_json(updated_combination)
+
+    return updated_combination
+
+
+def write_combinations_json(combination, output_file="combinations.json"):
+    """
+    Write the combination data to a JSON file.
+
+    Args:
+    combination (dict): The combination data to write.
+    output_file (str): The name of the output JSON file. Defaults to "combinations.json".
+    """
+    # Prepare the data structure
+    data = {
+        "seed": 0,  # You might want to make this dynamic
+        "count": 1,  # Since we're only writing one combination
+        "combinations": [combination]
+    }
+
+    # Get the directory of the current script
+    current_dir = os.path.dirname(os.path.realpath(__file__))
+    
+    # Construct the full path for the output file
+    output_path = os.path.join(current_dir, "..", output_file)
+
+    # Write the data to the JSON file
+    with open(output_path, 'w') as f:
+        json.dump(data, f, indent=4)
+
+    print(f"Combination data has been written to {output_path}")
 
 
 def main():
