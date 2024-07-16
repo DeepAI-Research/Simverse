@@ -214,10 +214,17 @@ def render_scene(
     for obj_dict in all_objects:
         obj = list(obj_dict.keys())[0]
         properties = obj_dict[obj]
-        if properties.get("camera_follow", {}).get("follow", False):
-            focus_object = obj
+        if isinstance(properties, dict):  # Ensure properties is a dictionary
+            if "camera_follow" in properties:
+                if properties["camera_follow"].get("follow", False):
+                    focus_object = obj
+                    break
+    # If no object with camera_follow was found, use the first object as focus
+    if focus_object is None and all_objects:
+        focus_object = list(all_objects[0].keys())[0] # change this
+
     position_camera(combination, focus_object)
-    if not combination.get("no_movement", False):
+    if not combination.get("no_movement", False) and should_apply_movement(all_objects):
         apply_animation(all_objects, focus_object, step_vector, start_frame, end_frame)
 
     # Randomize image sizes
