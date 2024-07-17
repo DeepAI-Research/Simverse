@@ -212,7 +212,8 @@ def render_scene(
     # In the render_scene function:
     if should_apply_movement(combination['objects']) and not combination.get("no_movement", False):
         all_objects, step_vector = apply_movement(all_objects, yaw, scene.frame_start)
-        apply_animation(all_objects, focus_object, step_vector, start_frame, end_frame)
+        check_camera_follow = any(obj.get("camera_follow", {}).get("follow", False) for obj in combination['objects'])
+        apply_animation(all_objects, focus_object, step_vector, start_frame, end_frame, check_camera_follow)
     else:
         print("No movement applied to the scene.")
 

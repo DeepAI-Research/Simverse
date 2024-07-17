@@ -543,7 +543,7 @@ def apply_movement(objects, yaw, start_frame):
     return objects, step_vector
 
     
-def apply_animation(all_objects, focus_obj, step_vector, start_frame, end_frame):
+def apply_animation(all_objects, focus_obj, step_vector, start_frame, end_frame, check_camera_follow):
     """
     Apply animation to objects based on the step vector.
 
@@ -564,7 +564,7 @@ def apply_animation(all_objects, focus_obj, step_vector, start_frame, end_frame)
     for obj_dict in all_objects:
         obj = list(obj_dict.keys())[0]
         for frame in range(start_frame + 1, end_frame + 1):
-            if obj == focus_obj:
+            if obj == focus_obj and check_camera_follow:
                 camera.location += step_vector
                 camera.keyframe_insert(data_path="location", frame=frame)
 
