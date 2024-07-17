@@ -82,7 +82,7 @@ Or generate all or part of the combination set using the `batch.py` script:
 
 Run:
 ```
-python3 simian/batch.py
+python3 -m simian.batch
 ```
 
 #### Batched Option
