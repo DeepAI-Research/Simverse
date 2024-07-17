@@ -260,9 +260,7 @@ def generate_object_name_description_captions(
 
         object_name_descriptions.append(object_name_description_relationship)
 
-    # Randomize order of object descriptions
     random.shuffle(object_name_descriptions)
-    # Join the object descriptions
     object_name_descriptions = " ".join(object_name_descriptions)
 
     return object_name_descriptions
@@ -309,6 +307,7 @@ def add_movement_to_objects(objects, movement=False, max_speed=0.5):
             obj["movement"] = {"direction": direction, "speed": speed}
     return objects
 
+
 def generate_fov_caption(combination: Dict[str, Any]) -> str:
     """
     Generate a caption for the field of view (FOV) based on the combination data.
@@ -319,6 +318,7 @@ def generate_fov_caption(combination: Dict[str, Any]) -> str:
     Returns:
         str: FOV caption.
     """
+    
     fov_templates = {
         "degrees": [
             "The camera has a <fov> degree field of view.",

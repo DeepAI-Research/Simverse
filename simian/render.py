@@ -92,6 +92,17 @@ def should_apply_movement(objects):
     return any('movement' in obj for obj in objects)
 
 
+def select_focus_object(all_objects):
+    for obj_dict in all_objects:
+        obj = list(obj_dict.keys())[0]
+        properties = obj_dict[obj]
+        if isinstance(properties, dict) and properties.get("placement") == 4:
+            return obj
+    
+    # If no object with placement 4 is found, return the first object
+    return list(all_objects[0].keys())[0] if all_objects else None
+
+
 def render_scene(
     output_dir: str,
     context: bpy.types.Context,
@@ -171,16 +182,12 @@ def render_scene(
         meshes = get_meshes_in_hierarchy(obj)
         obj = meshes[0]
 
-        if focus_object is None:
-            focus_object = obj
-
         unparent_keep_transform(obj)
         set_pivot_to_bottom(obj)
 
         obj.scale = [object_data["scale"]["factor"] for _ in range(3)]
         normalize_object_scale(obj)
-
-        obj.name = object_data["uid"]  # Set the Blender object's name to the UID
+        obj.name = object_data["uid"] 
 
         all_objects.append({obj: object_data})
 
@@ -205,27 +212,18 @@ def render_scene(
 
     # In your main rendering function:
     all_objects = combination.get('objects', [])
+    focus_object = select_focus_object(all_objects)
+    if focus_object is None:
+        logger.error("No valid focus object found. Cannot position camera.")
+        return  # Exit the function if no valid focus object is found
+    
+    position_camera(combination, focus_object)
 
     if should_apply_movement(all_objects):
         all_objects, step_vector = apply_movement(all_objects, yaw, scene.frame_start)
+        apply_animation(all_objects, focus_object, step_vector, start_frame, end_frame)
     else:
         print("No movement detected in the scene.")
-        
-    for obj_dict in all_objects:
-        obj = list(obj_dict.keys())[0]
-        properties = obj_dict[obj]
-        if isinstance(properties, dict):  # Ensure properties is a dictionary
-            if "camera_follow" in properties:
-                if properties["camera_follow"].get("follow", False):
-                    focus_object = obj
-                    break
-    # If no object with camera_follow was found, use the first object as focus
-    if focus_object is None and all_objects:
-        focus_object = list(all_objects[0].keys())[0] # change this
-
-    position_camera(combination, focus_object)
-    if not combination.get("no_movement", False) and should_apply_movement(all_objects):
-        apply_animation(all_objects, focus_object, step_vector, start_frame, end_frame)
 
     # Randomize image sizes
     sizes = [

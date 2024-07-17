@@ -4,10 +4,10 @@ import os
 import subprocess
 import sys
 import argparse
-from typing import Optional
 from questionary import Style
 from questionary import Choice, select
 from rich.console import Console
+from typing import Any, Dict, List, Optional
 
 from simian.prompts import generate_gemini, setup_gemini, CAMERA_PROMPT, OBJECTS_JSON_PROMPT, OBJECTS_PROMPT
 from .server import initialize_chroma_db, query_collection, process_in_batches
@@ -16,11 +16,15 @@ from .combiner import calculate_transformed_positions
 console = Console()
 
 def select_mode():
+    """
+    Prompt the user to select the rendering mode (Prompt Mode or Batch Mode).
+    """
+
     custom_style = Style([
-        ('question', 'fg:#FF9D00 bold'),  # Orange color for the question
-        ('pointer', 'fg:#FF9D00 bold'),   # Orange color for the pointer
-        ('highlighted', 'fg:#00FFFF bold'),  # Cyan color for highlighted option
-        ('default', 'fg:#FFFFFF'),  # White color for non-highlighted options
+        ('question', 'fg:#FF9D00 bold'), 
+        ('pointer', 'fg:#FF9D00 bold'),  
+        ('highlighted', 'fg:#00FFFF bold'),
+        ('default', 'fg:#FFFFFF'),
     ])
 
     options = [
@@ -34,8 +38,8 @@ def select_mode():
         use_indicator=True,
         style=custom_style,
         instruction='Use ↑ and ↓ to navigate, Enter to select',
-        qmark="",  # Remove the question mark
-        pointer="▶",  # Use a triangle as a pointer
+        qmark="", 
+        pointer="▶", 
     ).ask()
 
     console.print(f"\nEntering {selected}", style="bold green")
@@ -119,7 +123,17 @@ def render_objects(
         subprocess.run(["bash", "-c", command], timeout=render_timeout, check=False)
 
 
-def parse_args(args_list=None) -> argparse.Namespace:
+def parse_args(args_list = None) -> argparse.Namespace:
+    """
+    Parse the command-line arguments for the rendering process.
+
+    Args:
+        args_list (Optional[List[str]]): A list of command-line arguments. Defaults to None.
+
+    Returns:
+        argparse.Namespace: The parsed command-line arguments.
+    """
+
     parser = argparse.ArgumentParser(
         description="Automate the rendering of objects using Blender."
     )
@@ -199,12 +213,18 @@ def parse_args(args_list=None) -> argparse.Namespace:
     return args
 
 
-def parse_gemini_json(raw_output):
-    print("Raw output:")
-    print(raw_output)
+def parse_gemini_json(raw_output: str) -> Optional[dict]:
+    """
+    Parse the JSON output from the Gemini API.
+
+    Args:
+        raw_output (str): The raw output from the Gemini API.
+
+    Returns:
+        Optional[dict]: The parsed JSON output as a dictionary, or None if an error occurs.
+    """
 
     try:
-        # Extract JSON content from the code block if present
         if "```json" in raw_output:
             json_start = raw_output.index("```json") + 7
             json_end = raw_output.rindex("```")
@@ -233,7 +253,7 @@ def parse_gemini_json(raw_output):
 
 def prompt_based_rendering():
     """
-    Example: The camera shows black and white images of an arrow, a metal pole, and a sword. The camera is tilted down and looking to the right. It has a wide view of the objects and a mild bloom effect. The scene is an evening road with a factory brick ground and has a calm and slow animation with extreme motion blur.
+    Perform prompt-based rendering using the Gemini API and ChromaDB.
     """
 
     import random
@@ -241,12 +261,8 @@ def prompt_based_rendering():
     from sentence_transformers import SentenceTransformer
 
     chroma_client = initialize_chroma_db(reset_hdri=False, reset_textures=False)
-
     model = SentenceTransformer('all-MiniLM-L6-v2')  # or another appropriate model
-
-    # Create the embedding function
     sentence_transformer_ef = model.encode
-    # Create the embedding function
     sentence_transformer_ef = embedding_functions.SentenceTransformerEmbeddingFunction(model_name='all-MiniLM-L6-v2')
 
     # Create or get collections for each data type
@@ -270,10 +286,7 @@ def prompt_based_rendering():
     for i, obj in enumerate(objects_prompt):
         object_options =  query_collection(obj, sentence_transformer_ef, object_collection, n_results=2)
         object_ids.append({object_options["ids"][0][0]: obj})
-
-    print("THIS IS THE OBJECT_IDS: ", object_ids)
     
-
     background_query = query_collection(background_prompt, sentence_transformer_ef, hdri_collection, n_results=2)
     background_id = background_query["ids"][0][0]
     background_data = background_query["metadatas"][0][0]
@@ -286,10 +299,8 @@ def prompt_based_rendering():
             "from": "hdri_data"
         }
     }
-    print("Formatted background:", formatted_background)
 
     ground_texture_query = query_collection(ground_prompt, sentence_transformer_ef, texture_collection, n_results=2)
-    ground_id = ground_texture_query["ids"][0][0]
     ground_data = ground_texture_query["metadatas"][0][0]
 
     formatted_stage = {
@@ -302,22 +313,15 @@ def prompt_based_rendering():
             "uv_rotation": random.uniform(0, 360)
         }
     }
-    print("Formatted stage:", formatted_stage)
 
     prompt += str(object_ids)
-    print("This is the prompt: ", prompt)
 
     objects_json_prompt = generate_gemini(model, OBJECTS_JSON_PROMPT, prompt + str(object_ids))
     objects_parse = parse_gemini_json(objects_json_prompt)
-    
-    # Check if objects_parse is a list (as expected) or None
     objects_list = objects_parse if isinstance(objects_parse, list) else []
 
     camera_prompt = generate_gemini(model, CAMERA_PROMPT, prompt)
     camera_parse = parse_gemini_json(camera_prompt)
-
-    print("Camera parse result:")
-    print(json.dumps(camera_parse, indent=2))
 
     # Combine all pieces into the final structure
     final_structure = {
@@ -331,14 +335,8 @@ def prompt_based_rendering():
         "postprocessing": camera_parse.get("postprocessing", {})
     }
 
-    print("Final structure:")
-    print(json.dumps(final_structure, indent=2))
-
     updated_combination = calculate_transformed_positions(final_structure)
-    
     write_combinations_json(updated_combination)
-
-    print("Rendering the generated combination...")
     
     # Get the directory of the current script
     current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -349,33 +347,33 @@ def prompt_based_rendering():
     start_frame = 1
     end_frame = 65
 
-    # Call render_objects function to render the combination
     render_objects(
-        processes=None,  # Use default
+        processes=None,
         render_timeout=3000,
         width=width,
         height=height,
-        start_index=0,  # We only have one combination, so start at index 0
-        end_index=1,    # And end at index 1 (exclusive)
+        start_index=0, 
+        end_index=1,
         start_frame=start_frame,
         end_frame=end_frame,
-        images=False,   # Generate video, not images
+        images=False,  
         blend_file=None,
-        animation_length=100  # Use full animation length
+        animation_length=100 
     )
-
-    print("Rendering completed.")
 
     return updated_combination
 
 
-def write_combinations_json(combination, output_file="combinations.json"):
+def write_combinations_json(combination: Dict[str, Any], output_file: str = "combinations.json"):
     """
     Write the combination data to a JSON file.
 
     Args:
-    combination (dict): The combination data to write.
-    output_file (str): The name of the output JSON file. Defaults to "combinations.json".
+        combination (dict): The combination data to write.
+        output_file (str): The name of the output JSON file. Defaults to "combinations.json".
+
+    Returns:
+        None
     """
     # Prepare the data structure
     data = {
@@ -393,8 +391,6 @@ def write_combinations_json(combination, output_file="combinations.json"):
     # Write the data to the JSON file
     with open(output_path, 'w') as f:
         json.dump(data, f, indent=4)
-
-    print(f"Combination data has been written to {output_path}")
 
 
 def main():
