@@ -10,6 +10,16 @@ from chromadb.config import Settings
 
 
 def initialize_chroma_db(reset_hdri=False, reset_textures=False):
+    """
+    Initialize the Chroma database with the provided data files.
+
+    Args:
+        reset_hdri (bool): Whether to reset and reprocess the HDRI backgrounds.
+        reset_textures (bool): Whether to reset and reprocess the textures.
+
+    Returns:
+        chroma_client (chromadb.PersistentClient): The initialized Chroma client.
+    """
     db_path = "./chroma_db"
     
     # Check if the database directory exists
@@ -90,7 +100,18 @@ def initialize_chroma_db(reset_hdri=False, reset_textures=False):
 
 
 def process_in_batches(file_path, collection, batch_size=1000):
-    model = SentenceTransformer('all-MiniLM-L6-v2')
+    """
+    Process the data in the specified file in batches and upsert it into the collection.
+
+    Args:
+        file_path (str): The path to the file containing the data.
+        collection (chromadb.Collection): The collection to upsert the data into.
+        batch_size (int): The size of each batch for processing.
+    
+    Returns:
+        None
+    """
+    
     sentence_transformer_ef = embedding_functions.SentenceTransformerEmbeddingFunction(model_name='all-MiniLM-L6-v2')
 
     console = Console()
@@ -163,7 +184,21 @@ def process_in_batches(file_path, collection, batch_size=1000):
 
     console.print(Panel.fit(f"Data processing complete for {file_path}!", border_style="green"))
 
+
 def query_collection(query, sentence_transformer_ef, collection, n_results=2):
+    """
+    Query the specified collection with the given query and display the results.
+
+    Args:
+        query (str): The query string to search for.
+        sentence_transformer_ef (embedding_functions.SentenceTransformerEmbeddingFunction): The SentenceTransformer embedding function.
+        collection (chromadb.Collection): The collection to query.
+        n_results (int): The number of results to display.
+    
+    Returns:
+        dict: The query results.
+    """
+
     console = Console()
     query_embedding = sentence_transformer_ef([query])
     results = collection.query(
@@ -187,13 +222,3 @@ def query_collection(query, sentence_transformer_ef, collection, n_results=2):
     
     console.print(Panel(str(results), title=f"Query Results for {collection.name}", expand=False))
     return results
-
-# Optional: You can still combine results if needed
-def combine_results(object_results, hdri_results, texture_results):
-    # This is a placeholder function. Implement the logic to combine results based on your needs.
-    combined_results = {
-        "object_captions": object_results,
-        "hdri_backgrounds": hdri_results,
-        "textures": texture_results
-    }
-    return combined_results
