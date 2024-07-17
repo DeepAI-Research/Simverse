@@ -93,14 +93,23 @@ def should_apply_movement(objects):
 
 
 def select_focus_object(all_objects):
+    """
+    Selects the focus object for the camera.
+
+    Args:
+        all_objects (list): List of object dictionaries.
+
+    Returns:
+        bpy.types.Object: The focus object.
+    """
     for obj_dict in all_objects:
-        obj = list(obj_dict.keys())[0]
+        obj = list(obj_dict.keys())[0]  # This is the actual Blender object
         properties = obj_dict[obj]
         if isinstance(properties, dict) and properties.get("placement") == 4:
             return obj
     
     # If no object with placement 4 is found, return the first object
-    return list(all_objects[0].keys())[0] if all_objects else None
+    return all_objects[0].keys()[0] if all_objects else None
 
 
 def render_scene(
@@ -167,9 +176,7 @@ def render_scene(
     focus_object = None
 
     for object_data in combination["objects"]:
-        object_file = objaverse.load_objects([object_data["uid"]])[
-            object_data["uid"]
-        ]
+        object_file = objaverse.load_objects([object_data["uid"]])[object_data["uid"]]
 
         load_object(object_file)
         obj = [obj for obj in context.view_layer.objects.selected][0]
@@ -208,15 +215,10 @@ def render_scene(
     place_objects_on_grid(all_objects, largest_length)
     yaw = combination["orientation"]["yaw"]\
     
-    # check if combination["no_movement"] exists and is True
-
-    # In your main rendering function:
-    all_objects = combination.get('objects', [])
     focus_object = select_focus_object(all_objects)
-    if focus_object is None:
-        logger.error("No valid focus object found. Cannot position camera.")
+    if focus_object is None or not isinstance(focus_object, bpy.types.Object):
+        logger.error("No valid focus object found or focus object is not a Blender object. Cannot position camera.")
         return  # Exit the function if no valid focus object is found
-    
     position_camera(combination, focus_object)
 
     if should_apply_movement(all_objects):
