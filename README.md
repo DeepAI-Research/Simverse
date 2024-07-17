@@ -58,7 +58,7 @@ python3 -m simian.combiner --count 1000 --seed 42 --camera_follow
 ```
 
 Randomly apply movement, object stacking, and camera follow effects:
-```
+```bash
 python3 -m simian.combiner --count 1000 --seed 42 --random
 ```
 
@@ -76,14 +76,6 @@ Configure the flags as needed:
 - `animation_length` is a percentage from 0-100 which describes how fast the animation should occur within the frames
 
 Or generate all or part of the combination set using the `batch.py` script:
-
-
-### Generating Videos or Images
-
-Run:
-```
-python3 -m simian.batch
-```
 
 #### Batched Option
 
