@@ -492,11 +492,12 @@ def generate_animation_captions(combination: Dict[str, Any], camera_data) -> Lis
     )
 
     animation_speeds = camera_data["animation_speed"]
+    animation_name = combination["animation"]["name"]
 
-    animation_type = "none"
+    animation_speed_type = "none"
     for speed_range in animation_speeds["types"].values():
         if speed_range["min"] <= speed_factor <= speed_range["max"]:
-            animation_type = next(
+            animation_speed_type = next(
                 (
                     t
                     for t, details in animation_speeds["types"].items()
@@ -507,13 +508,21 @@ def generate_animation_captions(combination: Dict[str, Any], camera_data) -> Lis
             descriptions = speed_range["descriptions"]
             break
 
-    if animation_type != "none":
+    if animation_speed_type != "none":
         flat_descriptions = flatten_descriptions(descriptions)
-        animation_caption = random.choice(flat_descriptions)
-        animation_caption = animation_caption.replace(
+        animation_speed_caption = random.choice(flat_descriptions)
+        animation_speed_caption = animation_speed_caption.replace(
             "<animation_speed_value>", speed_factor_str
         )
-        return [animation_caption]
+    
+    animation_descriptions = next(
+        (anim['descriptions'] for anim in camera_data['animations'] if anim['name'] == animation_name),
+        []
+    )
+
+    if animation_descriptions:
+        animation_caption = random.choice(animation_descriptions)
+        return [f"{animation_caption} {animation_speed_caption}".strip()]
 
     return []
 

@@ -190,34 +190,27 @@ def render_scene(
         create_photosphere(args.hdri_path, combination).scale = (10, 10, 10)
         stage = create_stage(combination)
         apply_stage_material(stage, combination)
-
-    # Unlock and unhide the initial objects
+    
     unlock_objects(initial_objects)
 
     set_camera_settings(combination)
-    set_camera_animation(combination, end_frame-start_frame, animation_length)
+    set_camera_animation(combination, 100, animation_length)
     
     place_objects_on_grid(all_objects, largest_length)
-    yaw = combination["orientation"]["yaw"]\
+    yaw = combination["orientation"]["yaw"]
     
     focus_object = select_focus_object(all_objects)
     if focus_object is None or not isinstance(focus_object, bpy.types.Object):
         logger.error("No valid focus object found or focus object is not a Blender object. Cannot position camera.")
-        return  # Exit the function if no valid focus object is found
+        return  
+
     position_camera(combination, focus_object)
 
-    def should_apply_movement(objects):
-        return any('movement' in obj.get('properties', {}) for obj in objects)
-
-    # In the render_scene function:
-    if should_apply_movement(combination['objects']) and not combination.get("no_movement", False):
+    if not combination.get("no_movement", False):
         all_objects, step_vector = apply_movement(all_objects, yaw, scene.frame_start)
         check_camera_follow = any(obj.get("camera_follow", {}).get("follow", False) for obj in combination['objects'])
         apply_animation(all_objects, focus_object, step_vector, start_frame, end_frame, check_camera_follow)
-    else:
-        print("No movement applied to the scene.")
 
-    # Randomize image sizes
     sizes = [
         (1920, 1080),
         (1024, 1024),

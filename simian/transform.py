@@ -224,58 +224,62 @@ def check_overlap_xy(
     return overlap
 
 
-def bring_objects_to_origin(objects: List[Dict[bpy.types.Object, Dict]]) -> None:
-    """Bring objects to the origin while avoiding collisions.
-
-    Args:
-        objects (List[Dict[bpy.types.Object, Dict]]): List of object dictionaries.
-    """
-    object_bboxes = []
-    for obj_dict in objects:
-        obj = list(obj_dict.keys())[0]
-        xy_corners = get_world_bounding_box_xy(obj)
-        object_bboxes.append({obj: xy_corners})
+def bring_objects_to_origin(objects):
+    def move_object_and_children(obj, move_vector):
+        obj.location += move_vector
+        for child in obj.children:
+            move_object_and_children(child, move_vector)
 
     for obj_dict in objects:
         obj = list(obj_dict.keys())[0]
-        if obj.location.x == 0 and obj.location.y == 0:
+        if obj.parent is not None:
+            continue  # Skip children, they will be moved with their parent
+
+        if obj.location.length < 0.01:
+            print(f"  {obj.name} is already close to origin, skipping.")
             continue
 
-        direction = Vector((-obj.location.x, -obj.location.y, 0)).normalized()
-        distance_to_origin = obj.location.length
-        step_size = min(distance_to_origin / 10, 0.5)  # Dynamic step size
+        step_size = min(obj.location.length / 10, 0.5)
         iterations = 0
         max_iterations = 1000
 
         while iterations < max_iterations:
-            obj.location += direction * step_size
+            direction = Vector((-obj.location.x, -obj.location.y, 0)).normalized()
+            move_vector = direction * step_size
+            
+            # Move the parent object and all its children
+            move_object_and_children(obj, move_vector)
+            
             bpy.context.view_layer.update()
+            
             current_obj_bbox = get_world_bounding_box_xy(obj)
             collision = False
 
-            for other_obj_dict in object_bboxes:
+            for other_obj_dict in objects:
                 other_obj = list(other_obj_dict.keys())[0]
-                other_bbox = other_obj_dict[other_obj]
+                if other_obj != obj and other_obj.parent is None:
+                    other_bbox = get_world_bounding_box_xy(other_obj)
+                    if check_overlap_xy(current_obj_bbox, other_bbox):
+                        collision = True
+                        print(f"    Collision detected with {other_obj.name}")
+                        break
 
-                if other_obj != obj and check_overlap_xy(current_obj_bbox, other_bbox):
-                    obj.location -= direction * step_size
-                    bpy.context.view_layer.update()
-                    collision = True
+            if collision:
+                # Revert the movement
+                move_object_and_children(obj, -move_vector)
+                bpy.context.view_layer.update()
+                step_size *= 0.5
+                if step_size < 0.001:
                     break
+                continue
 
-            if collision or (obj.location.x == 0 and obj.location.y == 0):
+            if obj.location.length < 0.01:
                 break
 
             iterations += 1
-            distance_to_origin = obj.location.length
-            step_size = min(
-                distance_to_origin / 10, 0.5
-            )  # Update step size dynamically
+            step_size = min(obj.location.length / 10, 0.5)
 
-        for bbox_dict in object_bboxes:
-            if list(bbox_dict.keys())[0] == obj:
-                bbox_dict[obj] = current_obj_bbox
-                break
+    bpy.context.view_layer.update()
 
 
 def place_objects_on_grid(
@@ -490,9 +494,9 @@ def apply_movement(objects, yaw, start_frame):
 
     # Get camera plane vertices
     plane_vertices = get_camera_plane_vertices(camera, start_frame)
-    # create_mesh_from_vertices(plane_vertices)
-    # visualize_frustum(camera, plane_vertices)
-    # visualize_plane_vertices(plane_vertices)
+    create_mesh_from_vertices(plane_vertices)
+    visualize_frustum(camera, plane_vertices)
+    visualize_plane_vertices(plane_vertices)
 
     # Calculate midpoints of each edge
     bottom_center = (plane_vertices[0] + plane_vertices[3]) / 2
@@ -555,7 +559,7 @@ def apply_animation(all_objects, focus_obj, step_vector, start_frame, end_frame,
         end_frame (int): Ending frame number for the animation.
     
     Returns:
-        None
+        None 
     """
 
     scene = bpy.context.scene
