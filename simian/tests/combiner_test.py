@@ -683,50 +683,54 @@ def test_flatten_descriptions():
 
 
 def test_generate_animation_captions():
-    combination = {"animation": {"speed_factor": 1.5}}
+    combination = {
+        "animation": {
+            "name": "zoom_in",
+            "speed_factor": 1.5
+        }
+    }
 
     camera_data = {
+        "animations": [
+            {
+                "name": "zoom_in",
+                "descriptions": [
+                    "The camera zooms in.",
+                    "Move closer to the scene.",
+                    "Zoom in to the scene."
+                ]
+            }
+        ],
         "animation_speed": {
             "types": {
-                "slow": {"min": 0.5, "max": 1.0, "descriptions": ["Slow zoom in."]},
-                "fast": {"min": 1.0, "max": 2.0, "descriptions": ["Fast zoom in."]}
+                "slow": {"min": 0.5, "max": 1.0, "descriptions": ["Slow animation speed <animation_speed_value> applied."]},
+                "fast": {"min": 1.0, "max": 2.0, "descriptions": ["Fast animation speed <animation_speed_value> applied."]}
             }
         }
     }
 
     captions = generate_animation_captions(combination, camera_data)
 
-    # Extract the animation descriptions from the camera_data
-    animation_types = camera_data["animation_speed"]["types"]
-    expected_captions = []
-    for details in animation_types.values():
-        if details["min"] <= combination["animation"]["speed_factor"] <= details["max"]:
-            expected_captions.extend(details["descriptions"])
+    assert len(captions) == 1, f"Expected 1 caption, but got {len(captions)}"
+    generated_caption = captions[0]
 
-    # Flatten the expected_captions list
-    flat_expected_captions = flatten_descriptions(expected_captions)
+    # Check if the generated caption contains a valid animation description
+    animation_descriptions = next(anim['descriptions'] for anim in camera_data['animations'] if anim['name'] == combination['animation']['name'])
+    animation_part_valid = any(desc.lower() in generated_caption.lower() for desc in animation_descriptions)
+    assert animation_part_valid, f"Generated caption doesn't contain a valid animation description for {combination['animation']['name']}"
 
-    # Check if any of the expected captions are in the generated caption
-    speed_factor_str = speed_factor_to_percentage(
-        combination["animation"]["speed_factor"]
-    )
-    caption_found = any(
-        expected_caption.replace("<animation_speed_value>", speed_factor_str)
-        in captions
-        for expected_caption in flat_expected_captions
-    ) or any(
-        expected_caption.replace(
-            "<animation_speed_value>", f"{combination['animation']['speed_factor']}x"
-        )
-        in captions
-        for expected_caption in flat_expected_captions
-    )
+    # Check if the generated caption contains a valid speed description
+    speed_factor = combination['animation']['speed_factor']
+    speed_type = next((t for t, v in camera_data['animation_speed']['types'].items() if v['min'] <= speed_factor <= v['max']), None)
+    assert speed_type, f"No matching speed type found for speed factor: {speed_factor}"
 
-    assert caption_found, "Animation caption is incorrect."
+    speed_descriptions = camera_data['animation_speed']['types'][speed_type]['descriptions']
+    speed_part_valid = any(desc.lower().replace('<animation_speed_value>', f"{speed_factor:.2f}") in generated_caption.lower() for desc in speed_descriptions)
+    assert speed_part_valid, f"Generated caption doesn't contain a valid speed description for speed type: {speed_type}"
 
     print("============ Test Passed: test_generate_animation_captions ============")
 
-
+    
 def test_generate_postprocessing():
     camera_data = {
         "postprocessing": {

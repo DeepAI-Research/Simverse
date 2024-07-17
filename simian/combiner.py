@@ -474,57 +474,44 @@ def speed_factor_to_percentage(speed_factor: float) -> str:
     return f"{percentage}%"
 
 
-def generate_animation_captions(combination: Dict[str, Any], camera_data) -> List[str]:
-    """
-    Generate captions for camera animations based on the combination data and speed factor.
-    Copy codeArgs:
-        combination (Dict[str, Any]): Combination data.
-        camera_data (Dict[str, Any]): Camera data.
-
-    Returns:
-        List[str]: List of animation captions.
-    """
-    speed_factor = round(combination["animation"]["speed_factor"], 2)
-    speed_factor_str = (
-        speed_factor_to_percentage(speed_factor)
-        if random.choice([True, False])
-        else f"{speed_factor}x"
-    )
-
-    animation_speeds = camera_data["animation_speed"]
+def generate_animation_captions(combination, camera_data) -> List[str]:
+    logging.basicConfig(level=logging.DEBUG)
     animation_name = combination["animation"]["name"]
-
-    animation_speed_type = "none"
-    for speed_range in animation_speeds["types"].values():
-        if speed_range["min"] <= speed_factor <= speed_range["max"]:
-            animation_speed_type = next(
-                (
-                    t
-                    for t, details in animation_speeds["types"].items()
-                    if details == speed_range
-                ),
-                "none",
-            )
-            descriptions = speed_range["descriptions"]
-            break
-
-    if animation_speed_type != "none":
-        flat_descriptions = flatten_descriptions(descriptions)
-        animation_speed_caption = random.choice(flat_descriptions)
-        animation_speed_caption = animation_speed_caption.replace(
-            "<animation_speed_value>", speed_factor_str
-        )
+    speed_factor = combination["animation"]["speed_factor"]
     
-    animation_descriptions = next(
-        (anim['descriptions'] for anim in camera_data['animations'] if anim['name'] == animation_name),
-        []
+    logging.debug(f"Searching for animation: {animation_name}")
+    logging.debug(f"Animations in camera_data: {[anim['name'] for anim in camera_data.get('animations', [])]}")
+    
+    animation = next((anim for anim in camera_data['animations'] if anim['name'] == animation_name), None)
+    
+    if not animation or 'descriptions' not in animation:
+        logging.error(f"No descriptions found for animation: {animation_name}")
+        return [f"The camera performs a {animation_name} animation."]
+    
+    animation_description = random.choice(animation['descriptions'])
+    
+    speed_type = next(
+        (t for t, v in camera_data['animation_speed']['types'].items() 
+         if v['min'] <= speed_factor <= v['max']),
+        None
     )
-
-    if animation_descriptions:
-        animation_caption = random.choice(animation_descriptions)
-        return [f"{animation_caption} {animation_speed_caption}".strip()]
-
-    return []
+    
+    if not speed_type:
+        logging.warning(f"No matching speed type found for speed factor: {speed_factor}")
+        speed_description = f"at a speed factor of {speed_factor:.2f}"
+    else:
+        speed_descriptions = camera_data['animation_speed']['types'][speed_type]['descriptions']
+        
+        # Handle potentially nested speed descriptions
+        if isinstance(speed_descriptions[0], list):
+            speed_descriptions = speed_descriptions[0]
+        
+        speed_description = random.choice(speed_descriptions)
+        speed_description = speed_description.replace('<animation_speed_value>', f"{speed_factor:.2f}")
+    
+    result = [f"{animation_description} {speed_description}"]
+    logging.debug(f"Generated caption: {result}")
+    return result
 
 
 def generate_movement_captions(combination: Dict[str, Any], object_data) -> List[str]:
