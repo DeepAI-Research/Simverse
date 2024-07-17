@@ -214,7 +214,17 @@ def parse_args(args_list = None) -> argparse.Namespace:
     return args
 
 
-
+def should_apply_movement(all_objects):
+    """
+    Check if any object in the scene has movement defined.
+    
+    Args:
+        all_objects (list): List of object dictionaries.
+    
+    Returns:
+        bool: True if any object has movement, False otherwise.
+    """
+    return any('movement' in obj_dict[list(obj_dict.keys())[0]] for obj_dict in all_objects)
 
 
 def prompt_based_rendering():
@@ -300,6 +310,9 @@ def prompt_based_rendering():
         "stage": formatted_stage["stage"],
         "postprocessing": camera_parse.get("postprocessing", {})
     }
+
+    if not should_apply_movement(final_structure["objects"]):
+        final_structure["no_movement"] = True
 
     updated_combination = calculate_transformed_positions(final_structure)
     write_combinations_json(updated_combination)

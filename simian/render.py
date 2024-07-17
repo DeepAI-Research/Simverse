@@ -79,37 +79,22 @@ def load_user_blend_file(user_blend_file):
         return False
 
 
-def should_apply_movement(objects):
-    """
-    Check if any object in the scene has movement defined.
-    
-    Args:
-    objects (list): List of object dictionaries.
-    
-    Returns:
-    bool: True if any object has movement, False otherwise.
-    """
-    return any('movement' in obj for obj in objects)
-
-
 def select_focus_object(all_objects):
-    """
-    Selects the focus object for the camera.
-
-    Args:
-        all_objects (list): List of object dictionaries.
-
-    Returns:
-        bpy.types.Object: The focus object.
-    """
     for obj_dict in all_objects:
         obj = list(obj_dict.keys())[0]  # This is the actual Blender object
+        properties = obj_dict[obj]
+        if isinstance(properties, dict) and properties.get("camera_follow", {}).get("follow", False):
+            return obj
+    
+    # If no object with camera_follow, fall back to placement 4 or the first object
+    for obj_dict in all_objects:
+        obj = list(obj_dict.keys())[0]
         properties = obj_dict[obj]
         if isinstance(properties, dict) and properties.get("placement") == 4:
             return obj
     
     # If no object with placement 4 is found, return the first object
-    return all_objects[0].keys()[0] if all_objects else None
+    return list(all_objects[0].keys())[0] if all_objects else None
 
 
 def render_scene(
@@ -221,11 +206,15 @@ def render_scene(
         return  # Exit the function if no valid focus object is found
     position_camera(combination, focus_object)
 
-    if should_apply_movement(all_objects):
+    def should_apply_movement(objects):
+        return any('movement' in obj.get('properties', {}) for obj in objects)
+
+    # In the render_scene function:
+    if should_apply_movement(combination['objects']) and not combination.get("no_movement", False):
         all_objects, step_vector = apply_movement(all_objects, yaw, scene.frame_start)
         apply_animation(all_objects, focus_object, step_vector, start_frame, end_frame)
     else:
-        print("No movement detected in the scene.")
+        print("No movement applied to the scene.")
 
     # Randomize image sizes
     sizes = [
