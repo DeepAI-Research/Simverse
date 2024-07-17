@@ -5,6 +5,7 @@ import sys
 import subprocess
 import boto3
 import shlex
+import time
 from typing import Any, Dict
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
@@ -18,8 +19,9 @@ def run_job(
     height: int,
     output_dir: str,
     hdri_path: str,
+    upload_dest: str,
     start_frame: int = 0,
-    end_frame: int = 65,
+    end_frame: int = 65
 ) -> None:
     """
     Run a rendering job with the specified combination index and settings.
@@ -43,55 +45,56 @@ def run_job(
         combination_string = shlex.quote(combination_string)
         combination_strings.append(combination_string)
 
-    # huggingface
+    # upload to Hugging Face
+    if upload_dest == "hf":
 
-    # # create output directory, add time to name so each new directory is unique
-    # output_dir += str(time.time())
-    # os.makedirs(output_dir, exist_ok=True)
+        # create output directory, add time to name so each new directory is unique
+        output_dir += str(time.time())
+        os.makedirs(output_dir, exist_ok=True)
 
-    # # render images in batches (batches to handle rate limiting of uploads)
-    # batch_size = len(combination_indeces)
-    # for i in range(batch_size):
+        # render images in batches (batches to handle rate limiting of uploads)
+        batch_size = len(combination_indeces)
+        for i in range(batch_size):
 
-    #     args = f" --width {width} --height {height} --combination_index {combination_indeces[i]}"
-    #     args += f" --output_dir {output_dir}"
-    #     args += f" --hdri_path {hdri_path}"
-    #     args += f" --start_frame {start_frame} --end_frame {end_frame}"
-    #     args += f" --combination {combination_strings[i]}"
+            args = f" --width {width} --height {height} --combination_index {combination_indeces[i]}"
+            args += f" --output_dir {output_dir}"
+            args += f" --hdri_path {hdri_path}"
+            args += f" --start_frame {start_frame} --end_frame {end_frame}"
+            args += f" --combination {combination_strings[i]}"
 
-    #     command = f"{sys.executable} -m simian.render -- {args}"
-    #     logger.info(f"Worker running simian.render")
+            command = f"{sys.executable} -m simian.render -- {args}"
+            logger.info(f"Worker running simian.render")
 
-    #     subprocess.run(["bash", "-c", command], check=True)
+            subprocess.run(["bash", "-c", command], check=True)
 
-    # distributask.upload_directory(output_dir)
+        distributask.upload_directory(output_dir)
+
+    # upload to aws s3 bucket
+    else:
+
+        os.makedirs(output_dir, exist_ok=True)
+
+        combination_index = combination_indeces[0]
+        combination = combination_strings[0]
+
+        args = f" --width {width} --height {height} --combination_index {combination_index}"
+        args += f" --output_dir {output_dir}"
+        args += f" --hdri_path {hdri_path}"
+        args += f" --start_frame {start_frame} --end_frame {end_frame}"
+        args += f" --combination {combination}"
+
+        command = f"{sys.executable} -m simian.render -- {args}"
+        logger.info(f"Worker running simian.render")
+
+        subprocess.run(["bash", "-c", command], check=True)
 
 
-    # s3 bucket
+        file_location = f"{output_dir}/{combination_index}.mp4"
 
-    os.makedirs(output_dir, exist_ok=True)
+        file_upload_name = f"{combination_index:05d}.mp4"
 
-    combination_index = combination_indeces[0]
-    combination = combination_strings[0]
-
-    args = f" --width {width} --height {height} --combination_index {combination_index}"
-    args += f" --output_dir {output_dir}"
-    args += f" --hdri_path {hdri_path}"
-    args += f" --start_frame {start_frame} --end_frame {end_frame}"
-    args += f" --combination {combination}"
-
-    command = f"{sys.executable} -m simian.render -- {args}"
-    logger.info(f"Worker running simian.render")
-
-    subprocess.run(["bash", "-c", command], check=True)
-
-
-    file_location = f"{output_dir}/{combination_index}.mp4"
-
-    file_upload_name = f"{combination_index:04d}.mp4"
-
-    s3_client = boto3.client('s3')
-    s3_client.upload_file(file_location, os.getenv("S3_BUCKET_NAME"), file_upload_name)
+        s3_client = boto3.client('s3')
+        s3_client.upload_file(file_location, os.getenv("S3_BUCKET_NAME"), file_upload_name)
 
     return "Task completed"
 

@@ -7,5 +7,6 @@ distributask
 bpy
 rich
 chromadb
+boto3
 sentence_transformers
 questionary

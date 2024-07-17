@@ -238,11 +238,11 @@ def render_scene(
         bpy.ops.render.render(animation=True)
 
         # uncomment this to prevent generation of blend files
-        # bpy.ops.wm.save_as_mainfile(
-        #     filepath=os.path.join(output_dir, f"{combination_index}.blend")
-        # )
+        bpy.ops.wm.save_as_mainfile(
+            filepath=os.path.join(output_dir, f"{combination_index}.blend")
+        )
 
-        # logger.info(f"Rendered video saved to {render_path}")
+        logger.info(f"Rendered video saved to {render_path}")
 
 
 if __name__ == "__main__":

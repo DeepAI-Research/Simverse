@@ -36,9 +36,9 @@ if __name__ == "__main__":
             or env_vars.get("COMBINATIONS_FILE", "combinations.json"),
             "end_index": args.end_index or int(env_vars.get("END_INDEX", 100)),
             "start_frame": args.start_frame or int(env_vars.get("START_FRAME", 0)),
-            "end_frame": args.end_frame or int(env_vars.get("END_FRAME", 65)),
-            "width": args.width or int(env_vars.get("WIDTH", 1920)),
-            "height": args.height or int(env_vars.get("HEIGHT", 1080)),
+            "end_frame": args.end_frame or int(env_vars.get("END_FRAME", 300)),
+            "width": args.width or int(env_vars.get("WIDTH", 1280)),
+            "height": args.height or int(env_vars.get("HEIGHT", 720)),
             "output_dir": args.output_dir or env_vars.get("OUTPUT_DIR", "./renders"),
             "hdri_path": args.hdri_path or env_vars.get("HDRI_PATH", "./backgrounds"),
             "max_price": args.max_price or float(env_vars.get("MAX_PRICE", 0.1)),
@@ -58,7 +58,8 @@ if __name__ == "__main__":
             or int(env_vars.get("BROKER_POOL_LIMIT", 1)),
             "render_batch_size": args.render_batch_size
             or int(env_vars.get("RENDER_BATCH_SIZE", 1)),
-            "inactivity_check_interval": args.inactivity_check or int(env_vars.get("INACTVITY_INTERVAL", 600))
+            "inactivity_check_interval": args.inactivity_check or int(env_vars.get("INACTVITY_INTERVAL", 600)),
+            "upload_destination": args.upload_dest or env_vars.get("UPLOAD_DEST", "s3")
         }
 
         # Load combinations from file
@@ -104,7 +105,8 @@ if __name__ == "__main__":
             "amazon_secret_key": settings["amazon_secret_key"],
             "broker_pool_limit": settings["broker_pool_limit"],
             "render_batch_size": settings["render_batch_size"],
-            "inactivity_check_interval": settings["inactivity_check_interval"]
+            "inactivity_check_interval": settings["inactivity_check_interval"],
+            "upload_destination": settings["upload_destination"]
         }
 
         instance_env = {
@@ -190,8 +192,9 @@ if __name__ == "__main__":
                     "height": job_config["height"],
                     "output_dir": job_config["output_dir"],
                     "hdri_path": job_config["hdri_path"],
+                    "upload_dest": job_config["upload_destination"],
                     "start_frame": job_config["start_frame"],
-                    "end_frame": job_config["end_frame"],
+                    "end_frame": job_config["end_frame"]
                 },
             )
             tasks.append(task)
@@ -269,6 +272,8 @@ if __name__ == "__main__":
         "--render_batch_size", type=int, help="Batch size of simian rendering"
     )
     parser.add_argument("--inactivity_check", type=int, help="The interval of checking and terminating nodes for inactivity in seconds"
+    )
+    parser.add_argument("--upload_dest", type=int, help="The desired destination of uploads at task completion"
     )
     args = parser.parse_args()
 
