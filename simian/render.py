@@ -194,7 +194,7 @@ def render_scene(
     unlock_objects(initial_objects)
 
     set_camera_settings(combination)
-    set_camera_animation(combination, 100, animation_length)
+    set_camera_animation(combination, end_frame-start_frame, animation_length)
     
     place_objects_on_grid(all_objects, largest_length)
     yaw = combination["orientation"]["yaw"]
