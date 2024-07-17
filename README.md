@@ -77,6 +77,14 @@ Configure the flags as needed:
 
 Or generate all or part of the combination set using the `batch.py` script:
 
+
+### Generating Videos or Images
+
+Run:
+```
+python3 -m simian.batch
+```
+
 #### Batched Option
 
 To generate videos use the arrow keys and select enter. Then 

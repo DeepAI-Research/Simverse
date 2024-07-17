@@ -1,4 +1,5 @@
 import json
+import readline
 import multiprocessing
 import os
 import subprocess
