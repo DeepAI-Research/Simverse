@@ -1,5 +1,6 @@
 import os
 import json
+from typing import Optional
 import google.generativeai as genai
 from dotenv import load_dotenv
 
@@ -2263,6 +2264,45 @@ You must include all attributes. Be sure to include keyframes and CameraAnimatio
 
 Generate the correct values for the orientation, framing, and postprocessing based on the caption:
 """
+
+
+def parse_gemini_json(raw_output: str) -> Optional[dict]:
+    """
+    Parse the JSON output from the Gemini API.
+
+    Args:
+        raw_output (str): The raw output from the Gemini API.
+
+    Returns:
+        Optional[dict]: The parsed JSON output as a dictionary, or None if an error occurs.
+    """
+
+    try:
+        if "```json" in raw_output:
+            json_start = raw_output.index("```json") + 7
+            json_end = raw_output.rindex("```")
+            json_content = raw_output[json_start:json_end].strip()
+        else:
+            json_content = raw_output.strip()
+
+        # Remove any leading or trailing commas
+        json_content = json_content.strip(',')
+
+        # If the content starts with a key (e.g., "objects":), wrap it in curly braces
+        if json_content.strip().startswith('"') and ':' in json_content:
+            json_content = "{" + json_content + "}"
+
+        # Parse the JSON
+        parsed_json = json.loads(json_content)
+        
+        print("Successfully parsed JSON:")
+        print(json.dumps(parsed_json, indent=2))
+        
+        return parsed_json
+    except json.JSONDecodeError as e:
+        print(f"Error parsing JSON: {str(e)}")
+        return None
+
 
 def setup_gemini():
     genai.configure(api_key=os.getenv('GOOGLE_API_KEY'))
