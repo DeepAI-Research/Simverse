@@ -1,24 +1,31 @@
 import json
+import readline
 import multiprocessing
 import os
 import subprocess
 import sys
 import argparse
-from typing import Optional
 from questionary import Style
 from questionary import Choice, select
 from rich.console import Console
+from typing import Any, Dict, List, Optional
 
+from simian.prompts import generate_gemini, setup_gemini, parse_gemini_json, CAMERA_PROMPT, OBJECTS_JSON_PROMPT, OBJECTS_PROMPT, OBJECTS_JSON_IMPROVEMENT_PROMPT, CAMERA_JSON_IMPROVEMENT_PROMPT
+from .server import initialize_chroma_db, query_collection
+from .combiner import calculate_transformed_positions
 
 console = Console()
 
-
 def select_mode():
+    """
+    Prompt the user to select the rendering mode (Prompt Mode or Batch Mode).
+    """
+
     custom_style = Style([
-        ('question', 'fg:#FF9D00 bold'),  # Orange color for the question
-        ('pointer', 'fg:#FF9D00 bold'),   # Orange color for the pointer
-        ('highlighted', 'fg:#00FFFF bold'),  # Cyan color for highlighted option
-        ('default', 'fg:#FFFFFF'),  # White color for non-highlighted options
+        ('question', 'fg:#FF9D00 bold'), 
+        ('pointer', 'fg:#FF9D00 bold'),  
+        ('highlighted', 'fg:#00FFFF bold'),
+        ('default', 'fg:#FFFFFF'),
     ])
 
     options = [
@@ -32,8 +39,8 @@ def select_mode():
         use_indicator=True,
         style=custom_style,
         instruction='Use ↑ and ↓ to navigate, Enter to select',
-        qmark="",  # Remove the question mark
-        pointer="▶",  # Use a triangle as a pointer
+        qmark="", 
+        pointer="▶", 
     ).ask()
 
     console.print(f"\nEntering {selected}", style="bold green")
@@ -117,7 +124,17 @@ def render_objects(
         subprocess.run(["bash", "-c", command], timeout=render_timeout, check=False)
 
 
-def parse_args(args_list=None) -> argparse.Namespace:
+def parse_args(args_list = None) -> argparse.Namespace:
+    """
+    Parse the command-line arguments for the rendering process.
+
+    Args:
+        args_list (Optional[List[str]]): A list of command-line arguments. Defaults to None.
+
+    Returns:
+        argparse.Namespace: The parsed command-line arguments.
+    """
+
     parser = argparse.ArgumentParser(
         description="Automate the rendering of objects using Blender."
     )
@@ -197,22 +214,162 @@ def parse_args(args_list=None) -> argparse.Namespace:
     return args
 
 
+def should_apply_movement(all_objects):
+    """
+    Check if any object in the scene has movement defined.
+    
+    Args:
+        all_objects (list): List of object dictionaries.
+    
+    Returns:
+        bool: True if any object has movement, False otherwise.
+    """
+    return any('movement' in obj_dict[list(obj_dict.keys())[0]] for obj_dict in all_objects)
+
 
 def prompt_based_rendering():
-    print("Prompt-based rendering mode coming soon... :)")
+    """
+    Perform prompt-based rendering using the Gemini API and ChromaDB.
+    """
 
-    # while True:
-    #     prompt = input("Enter your prompt (or 'quit' to exit): ")
-    #     if prompt.lower() == 'quit':
-    #         break
-        
-    #     # Process the prompt here
-    #     # This could involve parsing the prompt, setting up parameters, and calling render_objects
-    #     print(f"Processing prompt: {prompt}")
-        
-    #     # Example (you'll need to implement the actual logic):
-    #     # params = parse_prompt(prompt)
-    #     # render_objects(**params)
+    import random
+    from chromadb.utils import embedding_functions
+    from sentence_transformers import SentenceTransformer
+
+    chroma_client = initialize_chroma_db(reset_hdri=False, reset_textures=False)
+    model = SentenceTransformer('all-MiniLM-L6-v2')  # or another appropriate model
+    sentence_transformer_ef = model.encode
+    sentence_transformer_ef = embedding_functions.SentenceTransformerEmbeddingFunction(model_name='all-MiniLM-L6-v2')
+
+    # Create or get collections for each data type
+    object_collection = chroma_client.get_or_create_collection(name="object_captions")
+    hdri_collection = chroma_client.get_or_create_collection(name="hdri_backgrounds")
+    texture_collection = chroma_client.get_or_create_collection(name="textures")
+
+    prompt = input("Enter your prompt (or 'quit' to exit): ")
+
+    # Generate Gemini
+    model = setup_gemini()
+    objects_background_ground_prompt = generate_gemini(model, OBJECTS_PROMPT, prompt)
+    objects_background_ground_list = json.loads(objects_background_ground_prompt)
+
+    # split array, background and ground are last two elements
+    objects_prompt = objects_background_ground_list[:-2]
+    background_prompt = objects_background_ground_list[-2]
+    ground_prompt = objects_background_ground_list[-1]
+    
+    object_ids = []
+    for i, obj in enumerate(objects_prompt):
+        object_options =  query_collection(obj, sentence_transformer_ef, object_collection, n_results=2)
+        object_ids.append({object_options["ids"][0][0]: obj})
+    
+    background_query = query_collection(background_prompt, sentence_transformer_ef, hdri_collection, n_results=2)
+    background_id = background_query["ids"][0][0]
+    background_data = background_query["metadatas"][0][0]
+
+    formatted_background = {
+        "background": {
+            "name": background_data['name'],
+            "url": background_data['url'],
+            "id": background_id,
+            "from": "hdri_data"
+        }
+    }
+
+    ground_texture_query = query_collection(ground_prompt, sentence_transformer_ef, texture_collection, n_results=2)
+    ground_data = ground_texture_query["metadatas"][0][0]
+
+    formatted_stage = {
+        "stage": {
+            "material": {
+                "name": ground_data['name'],
+                "maps": ground_data['maps']
+            },
+            "uv_scale": [random.uniform(0.8, 1.2), random.uniform(0.8, 1.2)],
+            "uv_rotation": random.uniform(0, 360)
+        }
+    }
+
+    prompt += str(object_ids)
+
+    objects_json_prompt = generate_gemini(model, OBJECTS_JSON_PROMPT, prompt + str(object_ids))
+    objects_parse = parse_gemini_json(objects_json_prompt)
+    objects_list = objects_parse if isinstance(objects_parse, list) else []
+
+    camera_prompt = generate_gemini(model, CAMERA_PROMPT, prompt)
+    camera_parse = parse_gemini_json(camera_prompt)
+
+    # Combine all pieces into the final structure
+    final_structure = {
+        "index": 0,
+        "objects": objects_list,
+        "background": formatted_background["background"],
+        "orientation": camera_parse.get("orientation", {}),
+        "framing": camera_parse.get("framing", {}),
+        "animation": camera_parse.get("animation", {}),
+        "stage": formatted_stage["stage"],
+        "postprocessing": camera_parse.get("postprocessing", {})
+    }
+
+    if not should_apply_movement(final_structure["objects"]):
+        final_structure["no_movement"] = True
+
+    updated_combination = calculate_transformed_positions(final_structure)
+    write_combinations_json(updated_combination)
+    
+    # Get the directory of the current script
+    current_dir = os.path.dirname(os.path.realpath(__file__))
+    
+    # Set default rendering parameters
+    width = 1024
+    height = 576
+    start_frame = 1
+    end_frame = 65
+
+    render_objects(
+        processes=None,
+        render_timeout=3000,
+        width=width,
+        height=height,
+        start_index=0, 
+        end_index=1,
+        start_frame=start_frame,
+        end_frame=end_frame,
+        images=False,  
+        blend_file=None,
+        animation_length=100 
+    )
+
+    return updated_combination
+
+
+def write_combinations_json(combination: Dict[str, Any], output_file: str = "combinations.json"):
+    """
+    Write the combination data to a JSON file.
+
+    Args:
+        combination (dict): The combination data to write.
+        output_file (str): The name of the output JSON file. Defaults to "combinations.json".
+
+    Returns:
+        None
+    """
+    # Prepare the data structure
+    data = {
+        "seed": 0,  # You might want to make this dynamic
+        "count": 1,  # Since we're only writing one combination
+        "combinations": [combination]
+    }
+
+    # Get the directory of the current script
+    current_dir = os.path.dirname(os.path.realpath(__file__))
+    
+    # Construct the full path for the output file
+    output_path = os.path.join(current_dir, "..", output_file)
+
+    # Write the data to the JSON file
+    with open(output_path, 'w') as f:
+        json.dump(data, f, indent=4)
 
 
 def main():

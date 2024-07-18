@@ -1,7 +1,7 @@
 import json
 
 # Load the existing combinations.json file
-with open('./combinations_processed.json', 'r') as file:
+with open('./combinations.json', 'r') as file:
     data = json.load(file)
 
 # Initialize a list to store the extracted captions
@@ -10,20 +10,20 @@ captions_list = []
 # Extract captions for each combination
 for combination in data['combinations']:
     captions = {
-        'index': combination['index'],
+        'index': combination.get('index', ''),
+        'caption': combination.get('caption', ''),
         'objects_caption': combination.get('objects_caption', ''),
         'background_caption': combination.get('background_caption', ''),
         'orientation_caption': combination.get('orientation_caption', ''),
         'framing_caption': combination.get('framing_caption', ''),
         'animation_caption': combination.get('animation_caption', ''),
         'stage_caption': combination.get('stage_caption', ''),
-        'postprocessing_caption': combination.get('postprocessing_caption', ''),
-        'caption': combination.get('caption', '')
+        'postprocessing_caption': combination.get('postprocessing_caption', '')
     }
     captions_list.append(captions)
 
 # Determine the number of files needed
-max_rows_per_file = 500
+max_rows_per_file = 5000
 num_files = (len(captions_list) + max_rows_per_file - 1) // max_rows_per_file
 
 # Save the extracted captions to multiple JSON files

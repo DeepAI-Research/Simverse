@@ -10,3 +10,5 @@ chromadb
 boto3
 sentence_transformers
 questionary
+google-generativeai
+datasets

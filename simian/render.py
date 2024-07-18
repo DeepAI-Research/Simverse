@@ -20,7 +20,11 @@ from .camera import (
     set_camera_animation,
     set_camera_settings,
 )
-from .transform import find_largest_length, place_objects_on_grid, apply_movement, apply_animation
+from .transform import(
+    find_largest_length, 
+    place_objects_on_grid,
+    apply_animation
+)
 from .object import (
     apply_all_modifiers,
     apply_and_remove_armatures,
@@ -77,6 +81,24 @@ def load_user_blend_file(user_blend_file):
     except Exception as e:
         logger.error(f"Failed to load Blender file {user_blend_file}: {e}")
         return False
+
+
+def select_focus_object(all_objects):
+    for obj_dict in all_objects:
+        obj = list(obj_dict.keys())[0]  # This is the actual Blender object
+        properties = obj_dict[obj]
+        if isinstance(properties, dict) and properties.get("camera_follow", {}).get("follow", False):
+            return obj
+    
+    # If no object with camera_follow, fall back to placement 4 or the first object
+    for obj_dict in all_objects:
+        obj = list(obj_dict.keys())[0]
+        properties = obj_dict[obj]
+        if isinstance(properties, dict) and properties.get("placement") == 4:
+            return obj
+    
+    # If no object with placement 4 is found, return the first object
+    return list(all_objects[0].keys())[0] if all_objects else None
 
 
 def render_scene(
@@ -143,9 +165,7 @@ def render_scene(
     focus_object = None
 
     for object_data in combination["objects"]:
-        object_file = objaverse.load_objects([object_data["uid"]])[
-            object_data["uid"]
-        ]
+        object_file = objaverse.load_objects([object_data["uid"]])[object_data["uid"]]
 
         load_object(object_file)
         obj = [obj for obj in context.view_layer.objects.selected][0]
@@ -158,16 +178,12 @@ def render_scene(
         meshes = get_meshes_in_hierarchy(obj)
         obj = meshes[0]
 
-        if focus_object is None:
-            focus_object = obj
-
         unparent_keep_transform(obj)
         set_pivot_to_bottom(obj)
 
         obj.scale = [object_data["scale"]["factor"] for _ in range(3)]
         normalize_object_scale(obj)
-
-        obj.name = object_data["uid"]  # Set the Blender object's name to the UID
+        obj.name = object_data["uid"] 
 
         all_objects.append({obj: object_data})
 
@@ -178,30 +194,26 @@ def render_scene(
         create_photosphere(args.hdri_path, combination).scale = (10, 10, 10)
         stage = create_stage(combination)
         apply_stage_material(stage, combination)
-
-    # Unlock and unhide the initial objects
+    
     unlock_objects(initial_objects)
 
     set_camera_settings(combination)
     set_camera_animation(combination, end_frame-start_frame, animation_length)
     
     place_objects_on_grid(all_objects, largest_length)
-    yaw = combination["orientation"]["yaw"]\
+    yaw = combination["orientation"]["yaw"]
     
-    # check if combination["no_movement"] exists and is True
-    if not combination.get("no_movement", False):
-        all_objects, step_vector = apply_movement(all_objects, yaw, scene.frame_start)
-        
-    for obj_dict in all_objects:
-        obj = list(obj_dict.keys())[0]
-        properties = obj_dict[obj]
-        if properties.get("camera_follow", {}).get("follow", False):
-            focus_object = obj
-    position_camera(combination, focus_object)
-    if not combination.get("no_movement", False):
-        apply_animation(all_objects, focus_object, step_vector, start_frame, end_frame)
+    focus_object = select_focus_object(all_objects)
+    if focus_object is None or not isinstance(focus_object, bpy.types.Object):
+        logger.error("No valid focus object found or focus object is not a Blender object. Cannot position camera.")
+        return  
 
-    # Randomize image sizes
+    position_camera(combination, focus_object)
+
+    if not combination.get("no_movement", False):
+        check_camera_follow = any(obj.get("camera_follow", {}).get("follow", False) for obj in combination['objects'])
+        apply_animation(all_objects, focus_object, yaw, scene.frame_start, end_frame, check_camera_follow)
+
     sizes = [
         (1920, 1080),
         (1024, 1024),

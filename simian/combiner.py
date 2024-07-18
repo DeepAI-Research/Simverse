@@ -260,9 +260,7 @@ def generate_object_name_description_captions(
 
         object_name_descriptions.append(object_name_description_relationship)
 
-    # Randomize order of object descriptions
     random.shuffle(object_name_descriptions)
-    # Join the object descriptions
     object_name_descriptions = " ".join(object_name_descriptions)
 
     return object_name_descriptions
@@ -309,6 +307,7 @@ def add_movement_to_objects(objects, movement=False, max_speed=0.5):
             obj["movement"] = {"direction": direction, "speed": speed}
     return objects
 
+
 def generate_fov_caption(combination: Dict[str, Any]) -> str:
     """
     Generate a caption for the field of view (FOV) based on the combination data.
@@ -319,6 +318,7 @@ def generate_fov_caption(combination: Dict[str, Any]) -> str:
     Returns:
         str: FOV caption.
     """
+    
     fov_templates = {
         "degrees": [
             "The camera has a <fov> degree field of view.",
@@ -474,48 +474,44 @@ def speed_factor_to_percentage(speed_factor: float) -> str:
     return f"{percentage}%"
 
 
-def generate_animation_captions(combination: Dict[str, Any], camera_data) -> List[str]:
-    """
-    Generate captions for camera animations based on the combination data and speed factor.
-    Copy codeArgs:
-        combination (Dict[str, Any]): Combination data.
-        camera_data (Dict[str, Any]): Camera data.
-
-    Returns:
-        List[str]: List of animation captions.
-    """
-    speed_factor = round(combination["animation"]["speed_factor"], 2)
-    speed_factor_str = (
-        speed_factor_to_percentage(speed_factor)
-        if random.choice([True, False])
-        else f"{speed_factor}x"
+def generate_animation_captions(combination, camera_data) -> List[str]:
+    logging.basicConfig(level=logging.DEBUG)
+    animation_name = combination["animation"]["name"]
+    speed_factor = combination["animation"]["speed_factor"]
+    
+    logging.debug(f"Searching for animation: {animation_name}")
+    logging.debug(f"Animations in camera_data: {[anim['name'] for anim in camera_data.get('animations', [])]}")
+    
+    animation = next((anim for anim in camera_data['animations'] if anim['name'] == animation_name), None)
+    
+    if not animation or 'descriptions' not in animation:
+        logging.error(f"No descriptions found for animation: {animation_name}")
+        return [f"The camera performs a {animation_name} animation."]
+    
+    animation_description = random.choice(animation['descriptions'])
+    
+    speed_type = next(
+        (t for t, v in camera_data['animation_speed']['types'].items() 
+         if v['min'] <= speed_factor <= v['max']),
+        None
     )
-
-    animation_speeds = camera_data["animation_speed"]
-
-    animation_type = "none"
-    for speed_range in animation_speeds["types"].values():
-        if speed_range["min"] <= speed_factor <= speed_range["max"]:
-            animation_type = next(
-                (
-                    t
-                    for t, details in animation_speeds["types"].items()
-                    if details == speed_range
-                ),
-                "none",
-            )
-            descriptions = speed_range["descriptions"]
-            break
-
-    if animation_type != "none":
-        flat_descriptions = flatten_descriptions(descriptions)
-        animation_caption = random.choice(flat_descriptions)
-        animation_caption = animation_caption.replace(
-            "<animation_speed_value>", speed_factor_str
-        )
-        return [animation_caption]
-
-    return []
+    
+    if not speed_type:
+        logging.warning(f"No matching speed type found for speed factor: {speed_factor}")
+        speed_description = f"at a speed factor of {speed_factor:.2f}"
+    else:
+        speed_descriptions = camera_data['animation_speed']['types'][speed_type]['descriptions']
+        
+        # Handle potentially nested speed descriptions
+        if isinstance(speed_descriptions[0], list):
+            speed_descriptions = speed_descriptions[0]
+        
+        speed_description = random.choice(speed_descriptions)
+        speed_description = speed_description.replace('<animation_speed_value>', f"{speed_factor:.2f}")
+    
+    result = [f"{animation_description} {speed_description}"]
+    logging.debug(f"Generated caption: {result}")
+    return result
 
 
 def generate_movement_captions(combination: Dict[str, Any], object_data) -> List[str]:
@@ -887,6 +883,32 @@ def generate_background(
     return background
 
 
+def calculate_transformed_positions(combination):
+    print("Input to calculate_transformed_positions:")
+    print(json.dumps(combination, indent=2))
+
+    # Extract objects and orientation from the combination
+    objects = combination.get('objects', [])
+    orientation = combination.get('orientation', {})
+    
+    if 'orientation' not in combination:
+        raise KeyError("'orientation' key is missing from the combination")
+    
+    if 'yaw' not in orientation:
+        raise KeyError("'yaw' key is missing from the orientation")
+
+    yaw = orientation['yaw']
+
+    # Adjust positions based on the camera's yaw
+    adjusted_objects = adjust_positions(objects, yaw)
+
+    # Update the objects in the combination with their transformed positions
+    for original_obj, adjusted_obj in zip(objects, adjusted_objects):
+        original_obj['transformed_position'] = adjusted_obj['transformed_position']
+
+    return combination
+
+
 def generate_stage(texture_data) -> Dict[str, Any]:
     """
     Generate a random stage.
@@ -972,8 +994,6 @@ def generate_combinations(
             ontop = random.choice([True, False])
             camera_follow = random.choice([True, False])
             max_speed = random.uniform(0.1, 0.5)
-
-            print("These are all the random values: ", movement, ontop_data, camera_follow, max_speed)
 
         # Generate objects
         combination["objects_caption"] = "Object caption:"

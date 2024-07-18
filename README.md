@@ -58,8 +58,8 @@ python3 -m simian.combiner --count 1000 --seed 42 --camera_follow
 ```
 
 Randomly apply movement, object stacking, and camera follow effects:
-```
-python3 -m simian.combiner --count 150 --seed 42 --random
+```bash
+python3 -m simian.combiner --count 1000 --seed 42 --random
 ```
 
 ### Generating Videos or Images
@@ -82,7 +82,7 @@ Or generate all or part of the combination set using the `batch.py` script:
 
 Run:
 ```
-python3 simian/batch.py
+python3 -m simian.batch
 ```
 
 #### Batched Option
@@ -106,60 +106,11 @@ To generate an image(s):
 
 #### Prompt Option
 
-Coming soon...
+Must first embedd all the data
 
-### SimJSON Dataset Curation
-
-Make captions more prompt friendly.
-
-This is a multi-stage process:
-
-> **_NOTE:_** Create a .env file and add your Google Generative Language API key / OpenAI API key
-
-1. 200 rows of stationary objects:
 ```
-python3 -m simian.combiner --count 200 --seed 32
+python3 server/server.py
 ```
-
-2. 200 rows of moving objects:
-```
-python3 -m simian.combiner --count 200 --seed 42 --movement
-```
-
-3. 150 (reduces to 50) rows of ontop objects:
-```
-python3 -m simian.combiner --count 150 --seed 21 --ontop
-python3 scripts/filter/get_ontop_captions.py 
-```
-
-4. 150 movement with camera_follow:
-```
-python3 -m simian.combiner --count 150 --seed 80 --movement --camera_follow
-```
-
-5. 1000 truly all random
-```
-python3 -m simian.combiner --count 150 --seed 37 --random
-```
-
-Run the following commands bellow after each combination is genereated: 
-
-What the scripts are doing in order:
-- add placeholder values (saved  to combinations_processed.json)
-- get captions to rewrite (gets captions from combinations.json and saves to get_captions_<index>.json in batches of 500 combinations)
-- rewrite captions with Google's Gemini (choose a prompt template)
-```
-python3 scripts/filter/combinations_add_placeholder.py
-
-python3 scripts/filter/get_captions.py
-
-python3 scripts/filter/rewrite_captions_gem.py OR python3 scripts/filter/rewrite_captions_gpt.py
-```
-
-### Distributed rendering
-Rendering can be distributed across multiple machines using the "simian.py" and "worker.py" scripts.
-
-You will need to set up Redis and obtain Huggingface API key to use this feature.
 
 #### Set Up Redis
 You can make a free Redis account [here](https://redis.io/try-free/).
