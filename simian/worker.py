@@ -3,6 +3,8 @@ import logging
 import os
 import sys
 import subprocess
+import boto3
+import shlex
 import time
 from typing import Any, Dict
 
@@ -17,8 +19,9 @@ def run_job(
     height: int,
     output_dir: str,
     hdri_path: str,
+    upload_dest: str,
     start_frame: int = 0,
-    end_frame: int = 65,
+    end_frame: int = 65
 ) -> None:
     """
     Run a rendering job with the specified combination index and settings.
@@ -39,29 +42,59 @@ def run_job(
     combination_strings = []
     for combo in combinations:
         combination_string = json.dumps(combo)
-        combination_string = '"' + combination_string.replace('"', '\\"') + '"'
+        combination_string = shlex.quote(combination_string)
         combination_strings.append(combination_string)
 
-    # create output directory, add time to name so each new directory is unique
-    output_dir += str(time.time())
-    os.makedirs(output_dir, exist_ok=True)
+    # upload to Hugging Face
+    if upload_dest == "hf":
 
-    # render images in batches (batches to handle rate limiting of uploads)
-    batch_size = len(combination_indeces)
-    for i in range(batch_size):
+        # create output directory, add time to name so each new directory is unique
+        output_dir += str(time.time())
+        os.makedirs(output_dir, exist_ok=True)
 
-        args = f" --width {width} --height {height} --combination_index {combination_indeces[i]}"
+        # render images in batches (batches to handle rate limiting of uploads)
+        batch_size = len(combination_indeces)
+        for i in range(batch_size):
+
+            args = f" --width {width} --height {height} --combination_index {combination_indeces[i]}"
+            args += f" --output_dir {output_dir}"
+            args += f" --hdri_path {hdri_path}"
+            args += f" --start_frame {start_frame} --end_frame {end_frame}"
+            args += f" --combination {combination_strings[i]}"
+
+            command = f"{sys.executable} -m simian.render -- {args}"
+            logger.info(f"Worker running simian.render")
+
+            subprocess.run(["bash", "-c", command], check=True)
+
+        distributask.upload_directory(output_dir)
+
+    # upload to aws s3 bucket
+    else:
+
+        os.makedirs(output_dir, exist_ok=True)
+
+        combination_index = combination_indeces[0]
+        combination = combination_strings[0]
+
+        args = f" --width {width} --height {height} --combination_index {combination_index}"
         args += f" --output_dir {output_dir}"
         args += f" --hdri_path {hdri_path}"
         args += f" --start_frame {start_frame} --end_frame {end_frame}"
-        args += f" --combination {combination_strings[i]}"
+        args += f" --combination {combination}"
 
         command = f"{sys.executable} -m simian.render -- {args}"
         logger.info(f"Worker running simian.render")
 
         subprocess.run(["bash", "-c", command], check=True)
 
-    distributaur.upload_directory(output_dir)
+
+        file_location = f"{output_dir}/{combination_index}.mp4"
+
+        file_upload_name = f"{combination_index:05d}.mp4"
+
+        s3_client = boto3.client('s3')
+        s3_client.upload_file(file_location, os.getenv("S3_BUCKET_NAME"), file_upload_name)
 
     return "Task completed"
 
@@ -70,9 +103,9 @@ def run_job(
 # check if celery is in sys.argv, it could be sys.argv[0] but might not be
 
 if __name__ == "__main__" or any("celery" in arg for arg in sys.argv):
-    from distributaur.distributaur import create_from_config
+    from distributask.distributask import create_from_config
 
-    distributaur = create_from_config()
-    distributaur.register_function(run_job)
+    distributask = create_from_config()
+    distributask.register_function(run_job)
 
-    celery = distributaur.app
+    celery = distributask.app

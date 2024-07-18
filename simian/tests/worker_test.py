@@ -13,6 +13,7 @@ def test_run_job(mock_subprocess_run):
     height = 1080
     output_dir = "test_output"
     hdri_path = "test_hdri"
+    upload_dest = "hf"
     start_frame = 0
     end_frame = 10
 
@@ -23,8 +24,9 @@ def test_run_job(mock_subprocess_run):
         height,
         output_dir,
         hdri_path,
+        upload_dest,
         start_frame,
-        end_frame,
+        end_frame
     )
 
     combination_str = json.dumps(combination)
