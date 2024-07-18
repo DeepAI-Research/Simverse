@@ -150,12 +150,19 @@ def test_combination_caption():
     required_combination_fields = [
         "index",
         "objects",
+        "objects_caption",
         "background",
+        "background_caption",
         "orientation",
+        "orientation_caption",
         "framing",
+        "framing_caption",
         "animation",
+        "animation_caption",
         "stage",
+        "stage_caption",
         "postprocessing",
+        "postprocessing_caption",
         "caption",
     ]
 
@@ -195,6 +202,9 @@ def test_combination_caption():
     for obj in first_combination["objects"]:
         assert_fields_exist(obj, required_object_fields)
         assert_fields_exist(obj["scale"], required_scale_fields)
+        assert isinstance(obj["relationships"], str), "relationships should be a string"
+        if "movement" in obj:
+            assert_fields_exist(obj["movement"], ["direction", "speed"])
 
     # Check background fields
     assert_fields_exist(first_combination["background"], required_background_fields)
@@ -210,28 +220,16 @@ def test_combination_caption():
 
     # Check stage fields
     assert_fields_exist(first_combination["stage"], required_stage_fields)
-    assert_fields_exist(
-        first_combination["stage"]["material"], required_material_fields
-    )
+    assert_fields_exist(first_combination["stage"]["material"], required_material_fields)
 
     # Check postprocessing fields
-    assert_fields_exist(
-        first_combination["postprocessing"], required_postprocessing_fields
-    )
-    assert_fields_exist(
-        first_combination["postprocessing"]["bloom"], required_bloom_fields
-    )
-    assert_fields_exist(
-        first_combination["postprocessing"]["ssao"], required_ssao_fields
-    )
-    assert_fields_exist(
-        first_combination["postprocessing"]["ssrr"], required_ssrr_fields
-    )
-    assert_fields_exist(
-        first_combination["postprocessing"]["motionblur"], required_motionblur_fields
-    )
+    assert_fields_exist(first_combination["postprocessing"], required_postprocessing_fields)
+    assert_fields_exist(first_combination["postprocessing"]["bloom"], required_bloom_fields)
+    assert_fields_exist(first_combination["postprocessing"]["ssao"], required_ssao_fields)
+    assert_fields_exist(first_combination["postprocessing"]["ssrr"], required_ssrr_fields)
+    assert_fields_exist(first_combination["postprocessing"]["motionblur"], required_motionblur_fields)
 
-    print("============ Test Passed: test_first_object_requirements ============")
+    print("============ Test Passed: test_combination_structure ============")
 
 
 def test_generate_combinations():
@@ -268,10 +266,25 @@ def test_generate_combinations():
         "animations": [
             {
                 "name": "zoom_in",
-                "types": {
-                    "slow": {"min": 0.5, "max": 1.0, "descriptions": ["Slow zoom in."]},
-                    "fast": {"min": 1.0, "max": 2.0, "descriptions": ["Fast zoom in."]},
-                },
+                "descriptions": [
+                    "The camera zooms in.",
+                    "Zoom in.",
+                    "Move closer to the scene.",
+                    "The camera moves closer to the subject.",
+                    "Zoom in to focus on details."
+                ],
+                "keyframes": [
+                    {
+                        "Camera": {
+                            "angle_offset": 10
+                        }
+                    },
+                    {
+                        "Camera": {
+                            "angle_offset": 0
+                        }
+                    }
+                ]
             }
         ],
         "postprocessing": {
