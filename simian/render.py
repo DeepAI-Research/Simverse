@@ -20,7 +20,12 @@ from .camera import (
     set_camera_animation,
     set_camera_settings,
 )
-from .transform import find_largest_length, place_objects_on_grid, apply_movement, apply_animation
+from .transform import(
+    find_largest_length, 
+    place_objects_on_grid,
+    apply_movement,
+    apply_animation
+)
 from .object import (
     apply_all_modifiers,
     apply_and_remove_armatures,
@@ -207,8 +212,8 @@ def render_scene(
     position_camera(combination, focus_object)
 
     if not combination.get("no_movement", False):
-        all_objects, step_vector = apply_movement(all_objects, yaw, scene.frame_start)
         check_camera_follow = any(obj.get("camera_follow", {}).get("follow", False) for obj in combination['objects'])
+        all_objects, step_vector = apply_movement(all_objects, yaw, scene.frame_start, check_camera_follow)
         apply_animation(all_objects, focus_object, step_vector, start_frame, end_frame, check_camera_follow)
 
     sizes = [

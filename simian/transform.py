@@ -261,7 +261,6 @@ def bring_objects_to_origin(objects):
                     other_bbox = get_world_bounding_box_xy(other_obj)
                     if check_overlap_xy(current_obj_bbox, other_bbox):
                         collision = True
-                        print(f"    Collision detected with {other_obj.name}")
                         break
 
             if collision:
@@ -486,7 +485,7 @@ def draw_vector_from_camera(camera_obj):
     bm.free()
 
 
-def apply_movement(objects, yaw, start_frame):
+def apply_movement(objects, yaw, start_frame, camera_follow):
     yaw_radians = radians(yaw)
     rotation_matrix = mathutils.Matrix.Rotation(yaw_radians, 4, 'Z')
     scene = bpy.context.scene
@@ -541,8 +540,9 @@ def apply_movement(objects, yaw, start_frame):
 
         # Position object at initial location at the start frame
         scene.frame_set(start_frame)
-
-        obj.location += initial_position - (step_vector * 4)
+        
+        if not camera_follow:
+            obj.location += initial_position - (step_vector * 4)
     
     return objects, step_vector
 
