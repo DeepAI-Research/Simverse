@@ -265,7 +265,7 @@ def set_camera_animation(combination: dict, frame_interval: int, animation_lengt
                     camera_data.keyframe_insert(data_path="lens", frame=frame)
 
     bpy.context.scene.frame_set(0)
-
+    
 
 def position_camera(combination: dict, focus_object: bpy.types.Object) -> None:
     """

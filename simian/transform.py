@@ -488,7 +488,7 @@ def apply_animation(objects, focus_obj, yaw, start_frame, end_frame, camera_foll
     yaw_radians = radians(yaw)
     rotation_matrix = mathutils.Matrix.Rotation(yaw_radians, 4, 'Z')
     scene = bpy.context.scene
-    camera = scene.camera
+    camera = scene.camera 
 
     # Get camera plane vertices
     plane_vertices = get_camera_plane_vertices(camera, start_frame)
@@ -516,9 +516,9 @@ def apply_animation(objects, focus_obj, yaw, start_frame, end_frame, camera_foll
         elif movement["direction"] == "left":
             initial_position = right_center
         elif movement["direction"] == "forward":
-            initial_position = top_center
-        elif movement["direction"] == "backward":
             initial_position = bottom_center
+        elif movement["direction"] == "backward":
+            initial_position = top_center
 
         # Rotate direction vector according to yaw
         direction_vector = mathutils.Vector({
@@ -530,10 +530,15 @@ def apply_animation(objects, focus_obj, yaw, start_frame, end_frame, camera_foll
 
         rotated_vector = rotation_matrix @ direction_vector
         step_vector = rotated_vector * movement["speed"]
+
+        # Position object at initial location at the start frame
+        scene.frame_set(start_frame)
         
         if not camera_follow:
             obj.location += initial_position - (step_vector * 4)
         
+        obj.keyframe_insert(data_path="location", frame=start_frame)
+        camera = bpy.data.objects["CameraAnimationRoot"]
         for frame in range(start_frame + 1, end_frame + 1):
             if obj == focus_obj and camera_follow:
                 camera.location += step_vector

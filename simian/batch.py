@@ -10,7 +10,7 @@ from questionary import Choice, select
 from rich.console import Console
 from typing import Any, Dict, List, Optional
 
-from simian.prompts import generate_gemini, setup_gemini, parse_gemini_json, CAMERA_PROMPT, OBJECTS_JSON_PROMPT, OBJECTS_PROMPT
+from simian.prompts import generate_gemini, setup_gemini, parse_gemini_json, CAMERA_PROMPT, OBJECTS_JSON_PROMPT, OBJECTS_PROMPT, OBJECTS_JSON_IMPROVEMENT_PROMPT, CAMERA_JSON_IMPROVEMENT_PROMPT
 from .server import initialize_chroma_db, query_collection
 from .combiner import calculate_transformed_positions
 
