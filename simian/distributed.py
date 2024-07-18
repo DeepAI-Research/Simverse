@@ -6,7 +6,7 @@ import time
 from tqdm import tqdm
 from typing import Dict
 
-from distributaur.distributaur import Distributaur
+from distributask.distributask import Distributask
 
 from .worker import run_job
 
@@ -36,9 +36,9 @@ if __name__ == "__main__":
             or env_vars.get("COMBINATIONS_FILE", "combinations.json"),
             "end_index": args.end_index or int(env_vars.get("END_INDEX", 100)),
             "start_frame": args.start_frame or int(env_vars.get("START_FRAME", 0)),
-            "end_frame": args.end_frame or int(env_vars.get("END_FRAME", 65)),
-            "width": args.width or int(env_vars.get("WIDTH", 1920)),
-            "height": args.height or int(env_vars.get("HEIGHT", 1080)),
+            "end_frame": args.end_frame or int(env_vars.get("END_FRAME", 300)),
+            "width": args.width or int(env_vars.get("WIDTH", 1280)),
+            "height": args.height or int(env_vars.get("HEIGHT", 720)),
             "output_dir": args.output_dir or env_vars.get("OUTPUT_DIR", "./renders"),
             "hdri_path": args.hdri_path or env_vars.get("HDRI_PATH", "./backgrounds"),
             "max_price": args.max_price or float(env_vars.get("MAX_PRICE", 0.1)),
@@ -48,12 +48,18 @@ if __name__ == "__main__":
             "redis_port": args.redis_port or int(env_vars.get("REDIS_PORT", 6379)),
             "redis_user": args.redis_user or env_vars.get("REDIS_USER", ""),
             "redis_password": args.redis_password or env_vars.get("REDIS_PASSWORD", ""),
+            "amazon_key_id": args.amazon_key_id or env_vars.get("AMAZON_KEY_ID", ""),
+            "amazon_secret_key": args.amazon_secret_key
+            or env_vars.get("AMAZON_SECRET_KEY", ""),
+            "s3_bucket_name": args.s3_bucket_name or env_vars.get("S3_BUCKET_NAME", ""),
             "hf_token": args.hf_token or env_vars.get("HF_TOKEN", ""),
             "hf_repo_id": args.hf_repo_id or env_vars.get("HF_REPO_ID", ""),
             "broker_pool_limit": args.broker_pool_limit
             or int(env_vars.get("BROKER_POOL_LIMIT", 1)),
             "render_batch_size": args.render_batch_size
             or int(env_vars.get("RENDER_BATCH_SIZE", 1)),
+            "inactivity_check_interval": args.inactivity_check or int(env_vars.get("INACTVITY_INTERVAL", 600)),
+            "upload_destination": args.upload_dest or env_vars.get("UPLOAD_DEST", "s3")
         }
 
         # Load combinations from file
@@ -94,8 +100,27 @@ if __name__ == "__main__":
             "redis_port": settings["redis_port"],
             "redis_user": settings["redis_user"],
             "redis_password": settings["redis_password"],
+            "amazon_key_id": settings["amazon_key_id"],
+            "s3_bucket_name": settings["s3_bucket_name"],
+            "amazon_secret_key": settings["amazon_secret_key"],
             "broker_pool_limit": settings["broker_pool_limit"],
             "render_batch_size": settings["render_batch_size"],
+            "inactivity_check_interval": settings["inactivity_check_interval"],
+            "upload_destination": settings["upload_destination"]
+        }
+
+        instance_env = {
+            "VAST_API_KEY": settings["api_key"],
+            "HF_TOKEN": settings["hf_token"],
+            "HF_REPO_ID": settings["hf_repo_id"],
+            "REDIS_HOST": settings["redis_host"],
+            "REDIS_PORT": settings["redis_port"],
+            "REDIS_USER": settings["redis_user"],
+            "REDIS_PASSWORD": settings["redis_password"],
+            "AWS_ACCESS_KEY_ID": settings["amazon_key_id"],
+            "AWS_SECRET_ACCESS_KEY": settings["amazon_secret_key"],
+            "S3_BUCKET_NAME": settings["s3_bucket_name"],
+            "BROKER_POOL_LIMIT": settings["broker_pool_limit"],
         }
 
         print("*** JOB CONFIG")
@@ -103,7 +128,7 @@ if __name__ == "__main__":
             if key != "combinations":
                 print(f"{key}: {value}")
 
-        distributaur = Distributaur(
+        distributask = Distributask(
             hf_repo_id=job_config["hf_repo_id"],
             hf_token=job_config["hf_token"],
             vast_api_key=job_config["api_key"],
@@ -121,17 +146,21 @@ if __name__ == "__main__":
 
         # Rent and set up vastai nodes with docker image
         print("Searching for nodes...")
-        num_nodes_avail = len(distributaur.search_offers(max_price))
+        num_nodes_avail = len(distributask.search_offers(max_price))
         print("Total nodes available: ", num_nodes_avail)
 
-        rented_nodes = distributaur.rent_nodes(
-            max_price, max_nodes, docker_image, module_name
+        rented_nodes = distributask.rent_nodes(
+            max_price, max_nodes, docker_image, module_name, env_settings=instance_env
         )
 
         print("Total nodes rented: ", len(rented_nodes))
-        print(rented_nodes)
 
-        distributaur.register_function(run_job)
+        distributask.register_function(run_job)
+
+        while True:
+            user_input = input("press r when workers are ready: ")
+            if user_input == "r":
+                break
 
         tasks = []
 
@@ -139,68 +168,81 @@ if __name__ == "__main__":
         # Submit tasks to queue in batches
         for combination_index in range(
             job_config["start_index"],
-            min(job_config["end_index"], len(job_config["combinations"])),
+            job_config["end_index"],
             batch_size,
         ):
-            task = distributaur.execute_function(
+            task = distributask.execute_function(
                 "run_job",
                 {
                     "combination_indeces": [
                         index
                         for index in range(
-                            combination_index, 
-                            min(combination_index + batch_size, settings["end_index"])
+                            combination_index,
+                            min(combination_index + batch_size, settings["end_index"]),
                         )
                     ],
                     "combinations": [
                         job_config["combinations"][index]
                         for index in range(
-                            combination_index, 
-                            min(combination_index + batch_size, settings["end_index"])
+                            combination_index,
+                            min(combination_index + batch_size, settings["end_index"]),
                         )
                     ],
                     "width": job_config["width"],
                     "height": job_config["height"],
                     "output_dir": job_config["output_dir"],
                     "hdri_path": job_config["hdri_path"],
+                    "upload_dest": job_config["upload_destination"],
                     "start_frame": job_config["start_frame"],
-                    "end_frame": job_config["end_frame"],
+                    "end_frame": job_config["end_frame"]
                 },
             )
             tasks.append(task)
 
-        print("Tasks submitted to queue. Waiting for tasks to complete...")
+        # distributask.monitor_tasks(tasks, show_time_left=False)
 
-        first_task_done = False
-        # Wait for the tasks to complete
-        print("Tasks submitted to queue. Initializing queue...")
+        print("Tasks sent. Starting monitoring")
+        inactivity_log = {node["instance_id"]: 0 for node in rented_nodes}
+
+        start_time = time.time()
         with tqdm(total=len(tasks), unit="task") as pbar:
-            # Check how many tasks are completed
             while not all(task.ready() for task in tasks):
+
                 current_tasks = sum([task.ready() for task in tasks])
                 pbar.update(current_tasks - pbar.n)
-                if current_tasks > 0:
-                    # Begin estimation from time remaining when first task is done
-                    if not first_task_done:
-                        first_task_done = True
-                        first_task_start_time = time.time()
-                        print("Initialization completed. Tasks started...")
 
-                    # Calculate and print total elapsed time and estimated time left
-                    end_time = time.time()
-                    elapsed_time = end_time - first_task_start_time
-                    time_per_tasks = elapsed_time / current_tasks
-                    time_left = time_per_tasks * (len(tasks) - current_tasks)
-
-                    pbar.set_postfix(
-                        elapsed=f"{elapsed_time:.2f}s", time_left=f"{time_left:.2f}"
-                    )
-                time.sleep(2)
+                time.sleep(1)
+                current_time = time.time()
+                # check if node is inactive at set interval
+                if current_time - start_time > settings["inactivity_check_interval"]:
+                    start_time = time.time()
+                    for node in rented_nodes:
+                        # get log with api call
+                        log_response = distributask.get_node_log(node)
+                        if log_response:
+                            # if "Task completed" in two consecutive logs, terminate node
+                            try:
+                                last_msg = log_response.text.splitlines()[-3:]
+                                if (
+                                    any("Task completed" in msg for msg in last_msg)
+                                    and inactivity_log[node["instance_id"]] == 0
+                                ):
+                                    inactivity_log[node["instance_id"]] = 1
+                                elif (
+                                    any("Task completed" in msg for msg in last_msg)
+                                    and inactivity_log[node["instance_id"]] == 1
+                                ):
+                                    distributask.terminate_nodes([node])
+                                    print("node terminated")
+                                else:
+                                    inactivity_log[node["instance_id"]] == 0
+                            except:
+                                pass
 
         print("All tasks have been completed!")
 
     parser = argparse.ArgumentParser(description="Simian CLI")
-    parser.add_argument("--start-index", type=int, help="Starting index for rendering")
+    parser.add_argument("--start_index", type=int, help="Starting index for rendering")
     parser.add_argument(
         "--combinations-file", help="Path to the combinations JSON file"
     )
@@ -220,11 +262,18 @@ if __name__ == "__main__":
     parser.add_argument("--redis_password", help="Redis password")
     parser.add_argument("--hf_token", help="Hugging Face token")
     parser.add_argument("--hf_repo-id", help="Hugging Face repository ID")
+    parser.add_argument("--amazon_key_id", help="amazon secret key id")
+    parser.add_argument("--amazon_secret_key", help="amazon secret access key")
+    parser.add_argument("--s3_bucket_name", help="amazon s3 bucket name")
     parser.add_argument(
         "--broker_pool_limit", type=int, help="Limit on redis pool size"
     )
     parser.add_argument(
         "--render_batch_size", type=int, help="Batch size of simian rendering"
+    )
+    parser.add_argument("--inactivity_check", type=int, help="The interval of checking and terminating nodes for inactivity in seconds"
+    )
+    parser.add_argument("--upload_dest", type=int, help="The desired destination of uploads at task completion"
     )
     args = parser.parse_args()
 
