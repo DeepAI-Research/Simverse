@@ -236,7 +236,6 @@ def bring_objects_to_origin(objects):
             continue  # Skip children, they will be moved with their parent
 
         if obj.location.length < 0.01:
-            print(f"  {obj.name} is already close to origin, skipping.")
             continue
 
         step_size = min(obj.location.length / 10, 0.5)
@@ -485,7 +484,7 @@ def draw_vector_from_camera(camera_obj):
     bm.free()
 
 
-def apply_movement(objects, yaw, start_frame, camera_follow):
+def apply_animation(objects, focus_obj, yaw, start_frame, end_frame, camera_follow):
     yaw_radians = radians(yaw)
     rotation_matrix = mathutils.Matrix.Rotation(yaw_radians, 4, 'Z')
     scene = bpy.context.scene
@@ -523,52 +522,20 @@ def apply_movement(objects, yaw, start_frame, camera_follow):
 
         # Rotate direction vector according to yaw
         direction_vector = mathutils.Vector({
-            "forward": (1, 0, 0),
-            "backward": (-1, 0, 0),
+            "forward": (-1, 0, 0),
+            "backward": (1, 0, 0),
             "right": (0, 1, 0),
             "left": (0, -1, 0)
         }[movement["direction"]])
 
         rotated_vector = rotation_matrix @ direction_vector
         step_vector = rotated_vector * movement["speed"]
-
-        offset = Vector((0, 0, 0))
-        if movement["direction"] in ["forward", "backward"]:
-            offset.y = obj.dimensions.y
-        elif movement["direction"] in ["left", "right"]:
-            offset.x = obj.dimensions.x
-
-        # Position object at initial location at the start frame
-        scene.frame_set(start_frame)
         
         if not camera_follow:
             obj.location += initial_position - (step_vector * 4)
-    
-    return objects, step_vector
-
-    
-def apply_animation(all_objects, focus_obj, step_vector, start_frame, end_frame, check_camera_follow):
-    """
-    Apply animation to objects based on the step vector.
-
-    Args:
-        all_objects (List[Dict[bpy.types.Object, Dict]]): List of object dictionaries.
-        focus_obj (bpy.types.Object): Camera object to focus
-        step_vector (mathutils.Vector): Vector representing the movement step.
-        start_frame (int): Starting frame number for the animation.
-        end_frame (int): Ending frame number for the animation.
-    
-    Returns:
-        None 
-    """
-
-    scene = bpy.context.scene
-    camera = bpy.data.objects["CameraAnimationRoot"]
-
-    for obj_dict in all_objects:
-        obj = list(obj_dict.keys())[0]
+        
         for frame in range(start_frame + 1, end_frame + 1):
-            if obj == focus_obj and check_camera_follow:
+            if obj == focus_obj and camera_follow:
                 camera.location += step_vector
                 camera.keyframe_insert(data_path="location", frame=frame)
 
