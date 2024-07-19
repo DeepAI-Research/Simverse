@@ -491,7 +491,7 @@ def apply_animation(objects, focus_obj, yaw, start_frame, end_frame, camera_foll
     camera = scene.camera 
 
     # Get camera plane vertices
-    # plane_vertices = get_camera_plane_vertices(camera, start_frame)
+    plane_vertices = get_camera_plane_vertices(camera, start_frame)
     # create_mesh_from_vertices(plane_vertices)
     # visualize_frustum(camera, plane_vertices)
     # visualize_plane_vertices(plane_vertices)
