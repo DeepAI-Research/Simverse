@@ -4535,9 +4535,6 @@ def parse_gemini_json(raw_output: str) -> Optional[dict]:
         # Parse the JSON
         parsed_json = json.loads(json_content)
         
-        print("Successfully parsed JSON:")
-        print(json.dumps(parsed_json, indent=2))
-        
         return parsed_json
     except json.JSONDecodeError as e:
         print(f"Error parsing JSON: {str(e)}")
