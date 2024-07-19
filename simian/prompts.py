@@ -23,6 +23,7 @@ OBJECTS_PROMPT = """
     ["hedgehog", "campfire that has marshmallows", "cake", "sword", "clock", "brass sculpture", "hooks", "lock", "painting", "pot", "statue", "Hochsal Forest", "cobblestone floor"]
 
     include descriptions of the objects like if it says "black and white arrow" don't just say arrow include the description of that object.
+    Recheck your answer.
     Here is the caption:
 """
 

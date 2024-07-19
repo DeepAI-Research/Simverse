@@ -237,9 +237,6 @@ def prompt_based_rendering():
     from sentence_transformers import SentenceTransformer
 
     chroma_client = initialize_chroma_db(reset_hdri=False, reset_textures=False)
-    model = SentenceTransformer('all-MiniLM-L6-v2')  # or another appropriate model
-    sentence_transformer_ef = model.encode
-    sentence_transformer_ef = embedding_functions.SentenceTransformerEmbeddingFunction(model_name='all-MiniLM-L6-v2')
 
     # Create or get collections for each data type
     object_collection = chroma_client.get_or_create_collection(name="object_captions")
@@ -260,10 +257,10 @@ def prompt_based_rendering():
     
     object_ids = []
     for i, obj in enumerate(objects_prompt):
-        object_options =  query_collection(obj, sentence_transformer_ef, object_collection, n_results=2)
+        object_options =  query_collection(obj, object_collection, n_results=2)
         object_ids.append({object_options["ids"][0][0]: obj})
     
-    background_query = query_collection(background_prompt, sentence_transformer_ef, hdri_collection, n_results=2)
+    background_query = query_collection(background_prompt, hdri_collection, n_results=2)
     background_id = background_query["ids"][0][0]
     background_data = background_query["metadatas"][0][0]
 
