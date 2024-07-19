@@ -241,23 +241,26 @@ def prompt_based_rendering():
     sentence_transformer_ef = model.encode
     sentence_transformer_ef = embedding_functions.SentenceTransformerEmbeddingFunction(model_name='all-MiniLM-L6-v2')
 
-    # Create or get collections for each data type
+    # # Create or get collections for each data type
     object_collection = chroma_client.get_or_create_collection(name="object_captions")
-    hdri_collection = chroma_client.get_or_create_collection(name="hdri_backgrounds")
-    texture_collection = chroma_client.get_or_create_collection(name="textures")
+    # hdri_collection = chroma_client.get_or_create_collection(name="hdri_backgrounds")
+    # texture_collection = chroma_client.get_or_create_collection(name="textures")
 
-    prompt = input("Enter your prompt (or 'quit' to exit): ")
+    # prompt = input("Enter your prompt (or 'quit' to exit): ")
 
-    # Generate Gemini
-    model = setup_gemini()
-    objects_background_ground_prompt = generate_gemini(model, OBJECTS_PROMPT, prompt)
-    objects_background_ground_list = json.loads(objects_background_ground_prompt)
+    # # Generate Gemini
+    # model = setup_gemini()
+    # objects_background_ground_prompt = generate_gemini(model, OBJECTS_PROMPT, prompt)
+    # objects_background_ground_list = json.loads(objects_background_ground_prompt)
 
-    # split array, background and ground are last two elements
-    objects_prompt = objects_background_ground_list[:-2]
-    background_prompt = objects_background_ground_list[-2]
-    ground_prompt = objects_background_ground_list[-1]
+    # # split array, background and ground are last two elements
+    # objects_prompt = objects_background_ground_list[:-2]
+    # background_prompt = objects_background_ground_list[-2]
+    # ground_prompt = objects_background_ground_list[-1]
     
+    object_options =  query_collection("a black anvil", sentence_transformer_ef, object_collection, n_results=2)
+    return
+
     object_ids = []
     for i, obj in enumerate(objects_prompt):
         object_options =  query_collection(obj, sentence_transformer_ef, object_collection, n_results=2)

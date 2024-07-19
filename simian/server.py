@@ -78,7 +78,7 @@ def initialize_chroma_db(reset_hdri=False, reset_textures=False):
     # Check if collections are empty and process data if needed
     if object_collection.count() == 0:
         print("Processing object captions...")
-        process_in_batches('../datasets/cap3d_captions.json', object_collection, batch_size=1000)
+        process_in_batches_objects('../datasets/cap3d_captions.json', object_collection, batch_size=1000)
     else:
         print("Object captions already processed. Skipping.")
 
@@ -97,6 +97,58 @@ def initialize_chroma_db(reset_hdri=False, reset_textures=False):
     print("Database initialization complete.")
 
     return chroma_client
+
+
+def process_in_batches_objects(file_path, collection, batch_size=1000):
+    """
+    Process the data in the specified file in batches and upsert it into the collection for objects.
+
+    Args:
+        file_path (str): The path to the file containing the data.
+        collection (chromadb.Collection): The collection to upsert the data into.
+        batch_size (int): The size of each batch for processing.
+    
+    Returns:
+        None
+    """
+    sentence_transformer_ef = embedding_functions.SentenceTransformerEmbeddingFunction(model_name='all-MiniLM-L6-v2')
+    console = Console()
+    
+    with open(file_path, 'r') as file:
+        data = json.load(file)
+    
+    all_ids = list(data.keys())
+    total_items = len(all_ids)
+
+    with Progress(
+        TextColumn("[progress.description]{task.description}"),
+        BarColumn(),
+        MofNCompleteColumn(),
+        TimeRemainingColumn(),
+        TextColumn("Batch: {task.fields[current_batch]}"),
+        console=console,
+        expand=True
+    ) as progress:
+        task = progress.add_task(f"[green]Processing {file_path}", total=total_items, current_batch="0")
+
+        for i in range(0, total_items, batch_size):
+            batch_ids = all_ids[i:i+batch_size]
+            batch_documents = [data[id] for id in batch_ids]
+            
+            # Compute embeddings for the batch using the embedding function
+            embeddings = sentence_transformer_ef(batch_documents)
+            
+            # Upsert the batch into the collection
+            collection.upsert(
+                ids=batch_ids,
+                embeddings=embeddings,
+                documents=batch_documents
+            )
+
+            # Update progress
+            progress.update(task, advance=len(batch_ids), current_batch=f"{i+1}-{min(i+batch_size, total_items)}")
+
+    console.print(Panel.fit(f"Data processing complete for {file_path}!", border_style="green"))
 
 
 def process_in_batches(file_path, collection, batch_size=1000):
