@@ -294,7 +294,6 @@ def prompt_based_rendering():
 
     objects_json_prompt = generate_gemini(model, OBJECTS_JSON_PROMPT, prompt + str(object_ids))
     objects_parse = parse_gemini_json(objects_json_prompt)
-    objects_list = objects_parse if isinstance(objects_parse, list) else []
 
     camera_prompt = generate_gemini(model, CAMERA_PROMPT, prompt)
     camera_parse = parse_gemini_json(camera_prompt)
@@ -302,7 +301,7 @@ def prompt_based_rendering():
     # Combine all pieces into the final structure
     final_structure = {
         "index": 0,
-        "objects": objects_list,
+        "objects": objects_parse.get("objects"),
         "background": formatted_background["background"],
         "orientation": camera_parse.get("orientation", {}),
         "framing": camera_parse.get("framing", {}),
