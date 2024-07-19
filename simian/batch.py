@@ -273,7 +273,7 @@ def prompt_based_rendering():
         }
     }
 
-    ground_texture_query = query_collection(ground_prompt, sentence_transformer_ef, texture_collection, n_results=2)
+    ground_texture_query = query_collection(ground_prompt, texture_collection, n_results=2)
     ground_data = ground_texture_query["metadatas"][0][0]
 
     formatted_stage = {
