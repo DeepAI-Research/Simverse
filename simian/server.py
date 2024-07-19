@@ -237,7 +237,7 @@ def process_in_batches(file_path, collection, batch_size=1000):
     console.print(Panel.fit(f"Data processing complete for {file_path}!", border_style="green"))
 
 
-def query_collection(query, sentence_transformer_ef, collection, n_results=2):
+def query_collection(query, collection, n_results=2):
     """
     Query the specified collection with the given query and display the results.
 
@@ -250,6 +250,10 @@ def query_collection(query, sentence_transformer_ef, collection, n_results=2):
     Returns:
         dict: The query results.
     """
+
+    model = SentenceTransformer('all-MiniLM-L6-v2')  # or another appropriate model
+    sentence_transformer_ef = model.encode
+    sentence_transformer_ef = embedding_functions.SentenceTransformerEmbeddingFunction(model_name='all-MiniLM-L6-v2')
 
     console = Console()
     query_embedding = sentence_transformer_ef([query])
