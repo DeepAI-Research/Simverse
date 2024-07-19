@@ -4507,6 +4507,7 @@ JSON:
 
 
 def parse_gemini_json(raw_output: str) -> Optional[dict]:
+    print(raw_output)
     """
     Parse the JSON output from the Gemini API.
 
@@ -4558,13 +4559,27 @@ def setup_gemini():
 
 
 def generate_gemini(model, template, prompt):
+    import time
     content = template + prompt
 
-    try:
-        chat_session = model.start_chat(history=[])
-        response = chat_session.send_message(content)
-        captions_content = response.text.strip()
-        
-        return captions_content
-    except Exception as e:
-        print(f"Error: {str(e)}")
+    max_retries = 3
+    step = 30
+    delay = 30
+
+    for attempt in range(max_retries):
+        try:
+            chat_session = model.start_chat(history=[])
+            response = chat_session.send_message(content)
+            captions_content = response.text.strip()
+            return captions_content
+        except Exception as e:
+            print(f"Error on attempt {attempt + 1}: {str(e)}")
+            if attempt < max_retries - 1:
+                print(f"Retrying in {delay} seconds...")
+                time.sleep(delay)
+                delay += step  # Exponential backoff
+            else:
+                print("Max retries reached. Returning None.")
+                return None
+
+    return None
