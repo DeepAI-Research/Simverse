@@ -519,16 +519,23 @@ def apply_animation(objects, focus_obj, yaw, start_frame, end_frame, camera_foll
             initial_position = bottom_center
         elif movement["direction"] == "backward":
             initial_position = top_center
+        elif movement["direction"] == "up":
+            initial_position = obj.location
+
 
         # Rotate direction vector according to yaw
         direction_vector = mathutils.Vector({
             "forward": (-1, 0, 0),
             "backward": (1, 0, 0),
             "right": (0, 1, 0),
-            "left": (0, -1, 0)
+            "left": (0, -1, 0),
+            "up": (0, 0, 1)
         }[movement["direction"]])
 
-        rotated_vector = rotation_matrix @ direction_vector
+        if movement["direction"] != "up":
+            rotated_vector = rotation_matrix @ direction_vector
+        else:
+            rotated_vector = direction_vector
         step_vector = rotated_vector * movement["speed"]
 
         # Position object at initial location at the start frame
