@@ -302,7 +302,7 @@ def generate_relationship_captions(combination: Dict[str, Any]) -> List[str]:
 def add_movement_to_objects(objects, movement=False, max_speed=0.5):
     if movement:
         for obj in objects:
-            direction = random.choice(["left", "right", "forward", "backward", "up", "down"])
+            direction = random.choice(["left", "right", "forward", "backward", "up"])
             speed = random.uniform(0.1, max_speed)/1.5
             obj["movement"] = {"direction": direction, "speed": speed}
     return objects
