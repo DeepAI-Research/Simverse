@@ -34,7 +34,7 @@ if __name__ == "__main__":
             "start_index": args.start_index or int(env_vars.get("START_INDEX", 0)),
             "combinations_file": args.combinations_file
             or env_vars.get("COMBINATIONS_FILE", "combinations.json"),
-            "end_index": args.end_index or int(env_vars.get("END_INDEX", 100)),
+            "end_index": args.end_index or int(env_vars.get("END_INDEX", -1)),
             "start_frame": args.start_frame or int(env_vars.get("START_FRAME", 0)),
             "end_frame": args.end_frame or int(env_vars.get("END_FRAME", 300)),
             "width": args.width or int(env_vars.get("WIDTH", 1280)),
@@ -66,6 +66,10 @@ if __name__ == "__main__":
         with open(settings["combinations_file"], "r") as f:
             combinations = json.load(f)
             settings["combinations"] = combinations["combinations"]
+
+        # if no end_index is specified, set it to the number of combinations
+        if settings["end_index"] == -1:
+            settings["end_index"] = len(settings["combinations"])
 
         return settings
 
@@ -166,6 +170,9 @@ if __name__ == "__main__":
 
         batch_size = job_config["render_batch_size"]
         # Submit tasks to queue in batches
+
+
+
         for combination_index in range(
             job_config["start_index"],
             job_config["end_index"],

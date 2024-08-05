@@ -237,8 +237,8 @@ def render_scene(
         logger.info(f"Rendered image saved to {render_path}")
     else:
         # Render the entire animation as a video
-        scene.render.resolution_x = 1920
-        scene.render.resolution_y = 1080
+        scene.render.resolution_x = 1280
+        scene.render.resolution_y = 720
         scene.render.resolution_percentage = 100
         scene.render.image_settings.file_format = "FFMPEG"
         scene.render.ffmpeg.format = "MPEG4"
@@ -250,9 +250,9 @@ def render_scene(
         bpy.ops.render.render(animation=True)
 
         # uncomment this to prevent generation of blend files
-        bpy.ops.wm.save_as_mainfile(
-            filepath=os.path.join(output_dir, f"{combination_index}.blend")
-        )
+        # bpy.ops.wm.save_as_mainfile(
+        #     filepath=os.path.join(output_dir, f"{combination_index}.blend")
+        # )
 
         logger.info(f"Rendered video saved to {render_path}")
 
